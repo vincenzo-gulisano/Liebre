@@ -18,26 +18,19 @@
  */
 
 package operator;
+
 import tuple.Tuple;
 
 public class OperatorKey<T1 extends Tuple, T2 extends Tuple> {
 
-    final String identifier;
-    final Class<T1> type1;
-    final Class<T2> type2;
+	final String identifier;
+	final Class<T1> type1;
+	final Class<T2> type2;
 
-    // final Operator<T1, T2> operator;
-
-    public OperatorKey(String identifier, Class<T1> type1, Class<T2> type2) {
-	this.identifier = identifier;
-	this.type1 = type1;
-	this.type2 = type2;
-	// this.operator = operator;
-    }
-
-    // @Override
-    // public int compareTo(OperatorKey<T1, T2> o) {
-    // return this.identifier.compareTo(o.identifier);
-    // }
+	public OperatorKey(String identifier, Class<T1> type1, Class<T2> type2) {
+		this.identifier = identifier;
+		this.type1 = type1;
+		this.type2 = type2;
+	}
 
 }

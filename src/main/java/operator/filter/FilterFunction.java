@@ -18,11 +18,11 @@
  */
 
 package operator.filter;
-import tuple.Tuple;
 
+import tuple.Tuple;
 
 public interface FilterFunction<T extends Tuple> {
 
-    public boolean forward(T tuple);
+	public boolean forward(T tuple);
 
 }

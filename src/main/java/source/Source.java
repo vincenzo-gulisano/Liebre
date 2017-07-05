@@ -18,15 +18,16 @@
  */
 
 package source;
+
 import stream.Stream;
 import tuple.Tuple;
 
 public interface Source<T extends Tuple> extends Runnable {
 
-    public void registerOut(Stream<T> out);
+	public void registerOut(Stream<T> out);
 
-    public void activate();
+	public void activate();
 
-    public void deActivate();
+	public void deActivate();
 
 }

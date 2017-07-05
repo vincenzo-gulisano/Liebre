@@ -24,55 +24,55 @@ import stream.Stream;
 import tuple.Tuple;
 
 public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> implements
-	Operator<T1, T2> {
+		Operator<T1, T2> {
 
-    protected Stream<T1> in;
-    protected Stream<T2> out;
-    protected boolean active = false;
-    private BaseOperator<T1, T2> operator;
-    private AvgStat processingTimeStat;
+	protected Stream<T1> in;
+	protected Stream<T2> out;
+	protected boolean active = false;
+	private BaseOperator<T1, T2> operator;
+	private AvgStat processingTimeStat;
 
-    public OperatorStatistic(BaseOperator<T1, T2> operator, String outputFile) {
-	this.operator = operator;
-	this.processingTimeStat = new AvgStat(outputFile, true);
-    }
-
-    public OperatorStatistic(BaseOperator<T1, T2> operator, String outputFile,
-	    boolean autoFlush) {
-	this.operator = operator;
-	this.processingTimeStat = new AvgStat(outputFile, autoFlush);
-    }
-
-    @Override
-    public void registerIn(Stream<T1> in) {
-	this.in = in;
-    }
-
-    @Override
-    public void registerOut(Stream<T2> out) {
-	this.out = out;
-    }
-
-    @Override
-    public void run() {
-	while (active) {
-	    process();
+	public OperatorStatistic(BaseOperator<T1, T2> operator, String outputFile) {
+		this.operator = operator;
+		this.processingTimeStat = new AvgStat(outputFile, true);
 	}
-    }
 
-    @Override
-    public void activate() {
-	active = true;
-    }
+	public OperatorStatistic(BaseOperator<T1, T2> operator, String outputFile,
+			boolean autoFlush) {
+		this.operator = operator;
+		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
+	}
 
-    @Override
-    public void deActivate() {
-	active = false;
-    }
+	@Override
+	public void registerIn(Stream<T1> in) {
+		this.in = in;
+	}
 
-    protected void process() {
-	long start = System.nanoTime();
-	this.operator.process();
-	processingTimeStat.add(System.nanoTime()-start);
-    }
+	@Override
+	public void registerOut(Stream<T2> out) {
+		this.out = out;
+	}
+
+	@Override
+	public void run() {
+		while (active) {
+			process();
+		}
+	}
+
+	@Override
+	public void activate() {
+		active = true;
+	}
+
+	@Override
+	public void deActivate() {
+		active = false;
+	}
+
+	protected void process() {
+		long start = System.nanoTime();
+		this.operator.process();
+		processingTimeStat.add(System.nanoTime() - start);
+	}
 }

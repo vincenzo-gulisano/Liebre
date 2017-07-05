@@ -65,7 +65,7 @@ public class BaseQuery {
 			}
 		}, inKey);
 
-		q.addOperator("countOp", new BaseOperator<MyTuple, MyTuple>() {
+		q.addOperator("multiply", new BaseOperator<MyTuple, MyTuple>() {
 			@Override
 			protected List<MyTuple> processTuple(MyTuple tuple) {
 				List<MyTuple> result = new LinkedList<MyTuple>();

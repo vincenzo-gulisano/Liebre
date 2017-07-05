@@ -26,29 +26,29 @@ import operator.BaseOperator;
 import tuple.Tuple;
 
 public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends
-	BaseOperator<T1, T2> {
+		BaseOperator<T1, T2> {
 
-    private MapFunction<T1, T2> map;
+	private MapFunction<T1, T2> map;
 
-    public MapOperator(MapFunction<T1, T2> map) {
-	this.map = map;
-    }
-
-    @Override
-    protected void process() {
-	T1 inTuple = in.getNextTuple();
-	if (inTuple != null) {
-	    T2 outTuple = map.map(inTuple);
-	    if (outTuple != null) {
-		out.addTuple(outTuple);
-	    }
+	public MapOperator(MapFunction<T1, T2> map) {
+		this.map = map;
 	}
-    }
 
-    @Override
-    protected List<T2> processTuple(T1 tuple) {
-	List<T2> result = new LinkedList<T2>();
-	result.add(map.map(tuple));
-	return result;
-    }
+	@Override
+	protected void process() {
+		T1 inTuple = in.getNextTuple();
+		if (inTuple != null) {
+			T2 outTuple = map.map(inTuple);
+			if (outTuple != null) {
+				out.addTuple(outTuple);
+			}
+		}
+	}
+
+	@Override
+	protected List<T2> processTuple(T1 tuple) {
+		List<T2> result = new LinkedList<T2>();
+		result.add(map.map(tuple));
+		return result;
+	}
 }

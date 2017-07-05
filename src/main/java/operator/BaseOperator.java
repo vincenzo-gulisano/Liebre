@@ -25,52 +25,52 @@ import stream.Stream;
 import tuple.Tuple;
 
 public abstract class BaseOperator<T1 extends Tuple, T2 extends Tuple>
-	implements Operator<T1, T2> {
+		implements Operator<T1, T2> {
 
-    protected Stream<T1> in;
-    protected Stream<T2> out;
-    protected boolean active = false;
+	protected Stream<T1> in;
+	protected Stream<T2> out;
+	protected boolean active = false;
 
-    public BaseOperator() {
-    }
-
-    @Override
-    public void registerIn(Stream<T1> in) {
-	this.in = in;
-    }
-
-    @Override
-    public void registerOut(Stream<T2> out) {
-	this.out = out;
-    }
-
-    @Override
-    public void run() {
-	while (active) {
-	    process();
+	public BaseOperator() {
 	}
-    }
 
-    @Override
-    public void activate() {
-	active = true;
-    }
-
-    @Override
-    public void deActivate() {
-	active = false;
-    }
-
-    protected void process() {
-	T1 inTuple = in.getNextTuple();
-	if (inTuple != null) {
-	    List<T2> outTuples = processTuple(inTuple);
-	    if (outTuples != null) {
-		for (T2 t : outTuples)
-		    out.addTuple(t);
-	    }
+	@Override
+	public void registerIn(Stream<T1> in) {
+		this.in = in;
 	}
-    }
 
-    protected abstract List<T2> processTuple(T1 tuple);
+	@Override
+	public void registerOut(Stream<T2> out) {
+		this.out = out;
+	}
+
+	@Override
+	public void run() {
+		while (active) {
+			process();
+		}
+	}
+
+	@Override
+	public void activate() {
+		active = true;
+	}
+
+	@Override
+	public void deActivate() {
+		active = false;
+	}
+
+	protected void process() {
+		T1 inTuple = in.getNextTuple();
+		if (inTuple != null) {
+			List<T2> outTuples = processTuple(inTuple);
+			if (outTuples != null) {
+				for (T2 t : outTuples)
+					out.addTuple(t);
+			}
+		}
+	}
+
+	protected abstract List<T2> processTuple(T1 tuple);
 }

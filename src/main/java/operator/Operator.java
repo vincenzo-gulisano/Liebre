@@ -18,17 +18,18 @@
  */
 
 package operator;
+
 import stream.Stream;
 import tuple.Tuple;
 
 public interface Operator<T1 extends Tuple, T2 extends Tuple> extends Runnable {
 
-    public void registerIn(Stream<T1> in);
+	public void registerIn(Stream<T1> in);
 
-    public void registerOut(Stream<T2> out);
+	public void registerOut(Stream<T2> out);
 
-    public void activate();
+	public void activate();
 
-    public void deActivate();
+	public void deActivate();
 
 }

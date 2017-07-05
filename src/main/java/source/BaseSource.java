@@ -24,34 +24,34 @@ import tuple.Tuple;
 
 public abstract class BaseSource<T extends Tuple> implements Source<T> {
 
-    protected Stream<T> out;
-    protected boolean active = false;
+	protected Stream<T> out;
+	protected boolean active = false;
 
-    @Override
-    public void registerOut(Stream<T> out) {
-	this.out = out;
-    }
-
-    @Override
-    public void run() {
-	while (active) {
-	    process();
+	@Override
+	public void registerOut(Stream<T> out) {
+		this.out = out;
 	}
-    }
 
-    @Override
-    public void activate() {
-	active = true;
-    }
+	@Override
+	public void run() {
+		while (active) {
+			process();
+		}
+	}
 
-    @Override
-    public void deActivate() {
-	active = false;
-    }
+	@Override
+	public void activate() {
+		active = true;
+	}
 
-    protected void process() {
-	out.addTuple(getNextTuple());
-    }
+	@Override
+	public void deActivate() {
+		active = false;
+	}
 
-    protected abstract T getNextTuple();
+	protected void process() {
+		out.addTuple(getNextTuple());
+	}
+
+	protected abstract T getNextTuple();
 }

@@ -26,17 +26,9 @@ public class StreamKey<T extends Tuple> {
 	final String identifier;
 	public final Class<T> type;
 
-	// final Stream<T> stream;
-
 	public StreamKey(String identifier, Class<T> type) {
 		this.identifier = identifier;
 		this.type = type;
-		// this.stream = stream;
 	}
-
-	// @Override
-	// public int compareTo(StreamKey<T> o) {
-	// return this.identifier.compareTo(o.identifier);
-	// }
 
 }

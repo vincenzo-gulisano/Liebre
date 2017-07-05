@@ -27,100 +27,100 @@ import operator.BaseOperator;
 import tuple.RichTuple;
 
 public class TimeBasedNonAlignedSingleWindowAggregate<T1 extends RichTuple, T2 extends RichTuple>
-	extends BaseOperator<T1, T2> {
+		extends BaseOperator<T1, T2> {
 
-    private double WS;
-    private double WA;
-    private TimeBasedSingleWindow<T1, T2> aggregateWindow;
+	private double WS;
+	private double WA;
+	private TimeBasedSingleWindow<T1, T2> aggregateWindow;
 
-    HashMap<String, LinkedList<T1>> tuples;
-    HashMap<String, TimeBasedSingleWindow<T1, T2>> windows;
-    HashMap<String, Double> windowsEarliestTimestamps;
+	HashMap<String, LinkedList<T1>> tuples;
+	HashMap<String, TimeBasedSingleWindow<T1, T2>> windows;
+	HashMap<String, Double> windowsEarliestTimestamps;
 
-    public TimeBasedNonAlignedSingleWindowAggregate(double WS, double WA,
-	    TimeBasedSingleWindow<T1, T2> aggregateWindow) {
-	tuples = new HashMap<String, LinkedList<T1>>();
-	windows = new HashMap<String, TimeBasedSingleWindow<T1, T2>>();
-	windowsEarliestTimestamps = new HashMap<String, Double>();
-	this.WS = WS;
-	this.WA = WA;
-	this.aggregateWindow = aggregateWindow;
-    }
+	public TimeBasedNonAlignedSingleWindowAggregate(double WS, double WA,
+			TimeBasedSingleWindow<T1, T2> aggregateWindow) {
+		tuples = new HashMap<String, LinkedList<T1>>();
+		windows = new HashMap<String, TimeBasedSingleWindow<T1, T2>>();
+		windowsEarliestTimestamps = new HashMap<String, Double>();
+		this.WS = WS;
+		this.WA = WA;
+		this.aggregateWindow = aggregateWindow;
+	}
 
-    public double getEarliestWinStartTS(double ts) {
-	return Math.max((Math.floor(ts / WA) - Math.ceil(WS / WA) + 1) * WA,
-		0.0);
-    }
+	public double getEarliestWinStartTS(double ts) {
+		return Math.max((Math.floor(ts / WA) - Math.ceil(WS / WA) + 1) * WA,
+				0.0);
+	}
 
-    public List<T2> processTuple(T1 t) {
+	public List<T2> processTuple(T1 t) {
 
-	List<T2> result = new LinkedList<T2>();
+		List<T2> result = new LinkedList<T2>();
 
-	double earliestWinStartTSforT = getEarliestWinStartTS(t.getTS());
-	String key = t.getKey();
+		double earliestWinStartTSforT = getEarliestWinStartTS(t.getTS());
+		String key = t.getKey();
 
-	/*
-	 * If a window for the key exist, check whether stale tuples exist,
-	 * purge them and then shift the window
-	 */
-	if (windows.containsKey(key)) {
-	    // Assumption: if windows contains the key, then there is at least a
-	    // tuple and an earliest timestamp !!!
+		/*
+		 * If a window for the key exist, check whether stale tuples exist,
+		 * purge them and then shift the window
+		 */
+		if (windows.containsKey(key)) {
+			// Assumption: if windows contains the key, then there is at least a
+			// tuple and an earliest timestamp !!!
 
-	    double earliestWinStartTS = windowsEarliestTimestamps.get(key);
+			double earliestWinStartTS = windowsEarliestTimestamps.get(key);
 
-	    T2 outTuple = null;
+			T2 outTuple = null;
 
-	    while (earliestWinStartTS < earliestWinStartTSforT) {
+			while (earliestWinStartTS < earliestWinStartTSforT) {
 
-		outTuple = windows.get(key).getAggregatedResult(
-			earliestWinStartTS, t);
+				outTuple = windows.get(key).getAggregatedResult(
+						earliestWinStartTS, t);
 
-		// purge stale tuples
-		while (tuples.get(key).size() > 0) {
-		    T1 tuple = tuples.get(key).peek();
-		    if (tuple.getTS() < earliestWinStartTS + WA) {
-			windows.get(key).remove(tuple);
-			tuples.get(key).pop();
-		    } else {
-			break;
-		    }
+				// purge stale tuples
+				while (tuples.get(key).size() > 0) {
+					T1 tuple = tuples.get(key).peek();
+					if (tuple.getTS() < earliestWinStartTS + WA) {
+						windows.get(key).remove(tuple);
+						tuples.get(key).pop();
+					} else {
+						break;
+					}
+				}
+				// Shift the window
+				windowsEarliestTimestamps.put(key, earliestWinStartTS + WA);
+				earliestWinStartTS = windowsEarliestTimestamps.get(key);
+			}
+
+			if (outTuple != null)
+				result.add(outTuple);
 		}
-		// Shift the window
-		windowsEarliestTimestamps.put(key, earliestWinStartTS + WA);
-		earliestWinStartTS = windowsEarliestTimestamps.get(key);
-	    }
 
-	    if (outTuple != null)
-		result.add(outTuple);
+		// Add contribution of this tuple
+		if (!windows.containsKey(key)) {
+			windows.put(
+					key,
+					aggregateWindow.factory((long) earliestWinStartTSforT,
+							t.getKey()));
+			windowsEarliestTimestamps.put(key, earliestWinStartTSforT);
+			tuples.put(key, new LinkedList<T1>());
+		}
+
+		windows.get(key).add(t);
+
+		// Store tuple
+		tuples.get(key).add(t);
+
+		return result;
+
 	}
 
-	// Add contribution of this tuple
-	if (!windows.containsKey(key)) {
-	    windows.put(
-		    key,
-		    aggregateWindow.factory((long) earliestWinStartTSforT,
-			    t.getKey()));
-	    windowsEarliestTimestamps.put(key, earliestWinStartTSforT);
-	    tuples.put(key, new LinkedList<T1>());
+	@Override
+	protected void process() {
+		T1 inTuple = in.getNextTuple();
+		if (inTuple != null) {
+			for (T2 outT : processTuple(inTuple))
+				out.addTuple(outT);
+		}
 	}
-
-	windows.get(key).add(t);
-
-	// Store tuple
-	tuples.get(key).add(t);
-
-	return result;
-
-    }
-
-    @Override
-    protected void process() {
-	T1 inTuple = in.getNextTuple();
-	if (inTuple != null) {
-	    for (T2 outT : processTuple(inTuple))
-		out.addTuple(outT);
-	}
-    }
 
 }

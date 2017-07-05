@@ -23,6 +23,6 @@ import tuple.Tuple;
 
 public interface TextSinkFunction<T extends Tuple> {
 
-    public String convertTupleToLine(T tuple);
+	public String convertTupleToLine(T tuple);
 
 }

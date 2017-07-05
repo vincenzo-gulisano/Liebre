@@ -24,40 +24,40 @@ import tuple.Tuple;
 
 public abstract class BaseSink<T extends Tuple> implements Sink<T> {
 
-    protected Stream<T> in;
-    protected boolean active = false;
+	protected Stream<T> in;
+	protected boolean active = false;
 
-    public BaseSink() {
-    }
-
-    @Override
-    public void registerIn(Stream<T> in) {
-	this.in = in;
-    }
-
-    @Override
-    public void run() {
-	while (active) {
-	    process();
+	public BaseSink() {
 	}
-    }
 
-    @Override
-    public void activate() {
-	active = true;
-    }
-
-    @Override
-    public void deActivate() {
-	active = false;
-    }
-
-    protected void process() {
-	T t = in.getNextTuple();
-	if (t != null) {
-	    processTuple(t);
+	@Override
+	public void registerIn(Stream<T> in) {
+		this.in = in;
 	}
-    }
 
-    protected abstract void processTuple(T tuple);
+	@Override
+	public void run() {
+		while (active) {
+			process();
+		}
+	}
+
+	@Override
+	public void activate() {
+		active = true;
+	}
+
+	@Override
+	public void deActivate() {
+		active = false;
+	}
+
+	protected void process() {
+		T t = in.getNextTuple();
+		if (t != null) {
+			processTuple(t);
+		}
+	}
+
+	protected abstract void processTuple(T tuple);
 }

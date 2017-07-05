@@ -18,24 +18,17 @@
  */
 
 package source;
+
 import tuple.Tuple;
 
 public class SourceKey<T extends Tuple> {
 
-    final String identifier;
-    final Class<T> type;
+	final String identifier;
+	final Class<T> type;
 
-    // final Operator<T1, T2> operator;
-
-    public SourceKey(String identifier, Class<T> type) {
-	this.identifier = identifier;
-	this.type = type;
-	// this.operator = operator;
-    }
-
-    // @Override
-    // public int compareTo(OperatorKey<T1, T2> o) {
-    // return this.identifier.compareTo(o.identifier);
-    // }
+	public SourceKey(String identifier, Class<T> type) {
+		this.identifier = identifier;
+		this.type = type;
+	}
 
 }

@@ -27,27 +27,27 @@ import tuple.Tuple;
 
 public class FilterOperator<T extends Tuple> extends BaseOperator<T, T> {
 
-    private FilterFunction<T> filter;
+	private FilterFunction<T> filter;
 
-    public FilterOperator(FilterFunction<T> filter) {
-	this.filter = filter;
-    }
-
-    @Override
-    protected void process() {
-	T inTuple = in.getNextTuple();
-	if (inTuple != null && filter.forward(inTuple)) {
-	    out.addTuple(inTuple);
+	public FilterOperator(FilterFunction<T> filter) {
+		this.filter = filter;
 	}
-    }
 
-    @Override
-    protected List<T> processTuple(T tuple) {
-	List<T> result = new LinkedList<T>();
-	if (filter.forward(tuple)) {
-	    out.addTuple(tuple);
+	@Override
+	protected void process() {
+		T inTuple = in.getNextTuple();
+		if (inTuple != null && filter.forward(inTuple)) {
+			out.addTuple(inTuple);
+		}
 	}
-	return result;
-    }
+
+	@Override
+	protected List<T> processTuple(T tuple) {
+		List<T> result = new LinkedList<T>();
+		if (filter.forward(tuple)) {
+			out.addTuple(tuple);
+		}
+		return result;
+	}
 
 }

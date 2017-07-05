@@ -29,45 +29,45 @@ import tuple.Tuple;
 
 public class TextSink<T extends Tuple> extends BaseSink<T> {
 
-    private boolean closed;
+	private boolean closed;
 
-    private PrintWriter pw;
-    private TextSinkFunction<T> function;
+	private PrintWriter pw;
+	private TextSinkFunction<T> function;
 
-    public TextSink(String fileName, TextSinkFunction<T> function,
-	    boolean autoFlush) {
-	closed = false;
-	this.function = function;
-	try {
-	    this.pw = new PrintWriter(new FileWriter(fileName), autoFlush);
-	    closed = false;
-	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
-	} catch (IOException e) {
-	    e.printStackTrace();
+	public TextSink(String fileName, TextSinkFunction<T> function,
+			boolean autoFlush) {
+		closed = false;
+		this.function = function;
+		try {
+			this.pw = new PrintWriter(new FileWriter(fileName), autoFlush);
+			closed = false;
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-    }
 
-    public void write(String s) {
-	pw.println(s);
-    }
-
-    public void close() {
-	if (!closed) {
-	    pw.flush();
-	    pw.close();
-	    closed = true;
+	public void write(String s) {
+		pw.println(s);
 	}
-    }
 
-    public void deActivate() {
-	active = false;
-	close();
-    }
+	public void close() {
+		if (!closed) {
+			pw.flush();
+			pw.close();
+			closed = true;
+		}
+	}
 
-    @Override
-    protected void processTuple(T tuple) {
-	write(function.convertTupleToLine(tuple));
-    }
+	public void deActivate() {
+		active = false;
+		close();
+	}
+
+	@Override
+	protected void processTuple(T tuple) {
+		write(function.convertTupleToLine(tuple));
+	}
 
 }

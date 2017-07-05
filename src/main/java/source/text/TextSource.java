@@ -29,54 +29,54 @@ import tuple.Tuple;
 
 public class TextSource<T extends Tuple> extends BaseSource<T> {
 
-    private BufferedReader br;
-    private String nextLine;
-    private boolean hasNext;
-    TextSourceFunction<T> function;
+	private BufferedReader br;
+	private String nextLine;
+	private boolean hasNext;
+	TextSourceFunction<T> function;
 
-    public TextSource(String fileName, TextSourceFunction<T> function) {
+	public TextSource(String fileName, TextSourceFunction<T> function) {
 
-	this.function = function;
-	this.nextLine = "";
-	this.hasNext = true;
-	try {
-	    this.br = new BufferedReader(new FileReader(fileName));
-	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
-	}
-    }
-
-    protected void process() {
-	if (hasNext())
-	    out.addTuple(getNextTuple());
-    }
-
-    public boolean hasNext() {
-	if (hasNext)
-	    try {
-		if ((nextLine = br.readLine()) == null) {
-		    br.close();
-		    hasNext = false;
-		    deActivate();
+		this.function = function;
+		this.nextLine = "";
+		this.hasNext = true;
+		try {
+			this.br = new BufferedReader(new FileReader(fileName));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
-	    } catch (IOException e) {
-		e.printStackTrace();
-	    }
-	return hasNext;
-    }
-
-    public T getNextTuple() {
-	return function.getNext(nextLine);
-    }
-
-    public void close() {
-	if (hasNext) {
-	    try {
-		br.close();
-	    } catch (IOException e) {
-		e.printStackTrace();
-	    }
 	}
-    }
+
+	protected void process() {
+		if (hasNext())
+			out.addTuple(getNextTuple());
+	}
+
+	public boolean hasNext() {
+		if (hasNext)
+			try {
+				if ((nextLine = br.readLine()) == null) {
+					br.close();
+					hasNext = false;
+					deActivate();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		return hasNext;
+	}
+
+	public T getNextTuple() {
+		return function.getNext(nextLine);
+	}
+
+	public void close() {
+		if (hasNext) {
+			try {
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 }

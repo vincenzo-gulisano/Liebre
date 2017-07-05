@@ -25,46 +25,46 @@ import java.io.PrintWriter;
 
 public class AvgStat {
 
-    private long sum;
-    private long count;
+	private long sum;
+	private long count;
 
-    PrintWriter out;
+	PrintWriter out;
 
-    long prevSec;
+	long prevSec;
 
-    public AvgStat(String outputFile, boolean autoFlush) {
-	this.sum = 0;
-	this.count = 0;
+	public AvgStat(String outputFile, boolean autoFlush) {
+		this.sum = 0;
+		this.count = 0;
 
-	FileWriter outFile;
-	try {
-	    outFile = new FileWriter(outputFile);
-	    out = new PrintWriter(outFile, autoFlush);
-	} catch (IOException e) {
-	    e.printStackTrace();
+		FileWriter outFile;
+		try {
+			outFile = new FileWriter(outputFile);
+			out = new PrintWriter(outFile, autoFlush);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		prevSec = System.currentTimeMillis() / 1000;
+
 	}
 
-	prevSec = System.currentTimeMillis() / 1000;
+	public void add(long v) {
 
-    }
+		long thisSec = System.currentTimeMillis() / 1000;
+		while (prevSec < thisSec) {
+			out.println(prevSec * 1000 + "," + (count != 0 ? sum / count : -1));
+			sum = 0;
+			count = 0;
+			prevSec++;
+		}
 
-    public void add(long v) {
+		sum += v;
+		count++;
 
-	long thisSec = System.currentTimeMillis() / 1000;
-	while (prevSec < thisSec) {
-	    out.println(prevSec * 1000 + "," + (count != 0 ? sum / count : -1));
-	    sum = 0;
-	    count = 0;
-	    prevSec++;
 	}
 
-	sum += v;
-	count++;
-
-    }
-
-    public void close() {
-	out.close();
-    }
+	public void close() {
+		out.close();
+	}
 
 }

@@ -18,15 +18,16 @@
  */
 
 package sink;
+
 import stream.Stream;
 import tuple.Tuple;
 
 public interface Sink<T extends Tuple> extends Runnable {
 
-    public void registerIn(Stream<T> in);
+	public void registerIn(Stream<T> in);
 
-    public void activate();
+	public void activate();
 
-    public void deActivate();
+	public void deActivate();
 
 }

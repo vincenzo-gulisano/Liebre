@@ -23,6 +23,6 @@ import tuple.Tuple;
 
 public interface TextSourceFunction<T extends Tuple> {
 
-    public T getNext(String line);
+	public T getNext(String line);
 
 }

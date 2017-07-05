@@ -18,11 +18,11 @@
  */
 
 package operator.map;
-import tuple.Tuple;
 
+import tuple.Tuple;
 
 public interface MapFunction<T1 extends Tuple, T2 extends Tuple> {
 
-    public T2 map(T1 tuple);
+	public T2 map(T1 tuple);
 
 }

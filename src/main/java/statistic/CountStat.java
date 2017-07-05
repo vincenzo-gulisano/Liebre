@@ -24,39 +24,39 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class CountStat {
-    private long count;
+	private long count;
 
-    PrintWriter out;
+	PrintWriter out;
 
-    long prevSec;
+	long prevSec;
 
-    public CountStat(String outputFile, boolean autoFlush) {
-	this.count = 0;
+	public CountStat(String outputFile, boolean autoFlush) {
+		this.count = 0;
 
-	FileWriter outFile;
-	try {
-	    outFile = new FileWriter(outputFile);
-	    out = new PrintWriter(outFile, autoFlush);
-	} catch (IOException e) {
-	    e.printStackTrace();
+		FileWriter outFile;
+		try {
+			outFile = new FileWriter(outputFile);
+			out = new PrintWriter(outFile, autoFlush);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		prevSec = System.currentTimeMillis() / 1000;
+
 	}
 
-	prevSec = System.currentTimeMillis() / 1000;
+	public void increase(long v) {
 
-    }
-
-    public void increase(long v) {
-
-	long thisSec = System.currentTimeMillis() / 1000;
-	while (prevSec < thisSec) {
-	    out.println(prevSec * 1000 + "," + count);
-	    count = 0;
-	    prevSec++;
+		long thisSec = System.currentTimeMillis() / 1000;
+		while (prevSec < thisSec) {
+			out.println(prevSec * 1000 + "," + count);
+			count = 0;
+			prevSec++;
+		}
+		count += v;
 	}
-	count += v;
-    }
 
-    public void close() {
-	out.close();
-    }
+	public void close() {
+		out.close();
+	}
 }

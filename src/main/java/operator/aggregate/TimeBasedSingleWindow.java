@@ -26,14 +26,14 @@ import tuple.RichTuple;
  * of the window to set the key in the output tuple if needed */
 public interface TimeBasedSingleWindow<T1 extends RichTuple, T2 extends RichTuple> {
 
-    public TimeBasedSingleWindow<T1, T2> factory(long timestamp, String key);
+	public TimeBasedSingleWindow<T1, T2> factory(long timestamp, String key);
 
-    public void add(T1 t);
+	public void add(T1 t);
 
-    public void remove(T1 t);
+	public void remove(T1 t);
 
-    public T2 getAggregatedResult(double timestamp, T1 triggeringTuple);
+	public T2 getAggregatedResult(double timestamp, T1 triggeringTuple);
 
-    public long size();
+	public long size();
 
 }
