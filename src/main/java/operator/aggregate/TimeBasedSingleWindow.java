@@ -21,9 +21,6 @@ package operator.aggregate;
 
 import tuple.RichTuple;
 
-/* Assumptions: (1) all tuples added to an instance of such a 
- * window share the same key and (2) it is the responsibility 
- * of the window to set the key in the output tuple if needed */
 public interface TimeBasedSingleWindow<T1 extends RichTuple, T2 extends RichTuple> {
 
 	public TimeBasedSingleWindow<T1, T2> factory(long timestamp, String key);
@@ -32,8 +29,6 @@ public interface TimeBasedSingleWindow<T1 extends RichTuple, T2 extends RichTupl
 
 	public void remove(T1 t);
 
-	public T2 getAggregatedResult(double timestamp, T1 triggeringTuple);
-
-	public long size();
+	public T2 getAggregatedResult();
 
 }

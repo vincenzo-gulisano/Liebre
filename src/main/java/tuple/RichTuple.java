@@ -21,7 +21,7 @@ package tuple;
 
 public interface RichTuple extends Tuple {
 
-	public double getTS();
+	public long getTimestamp();
 
 	public String getKey();
 }

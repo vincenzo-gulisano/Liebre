@@ -26,52 +26,70 @@ import source.text.TextSourceFunction;
 import stream.StreamKey;
 import tuple.Tuple;
 
-public class TextMap {
+public class TextMap2 {
 	public static void main(String[] args) {
 
-		class MyTuple implements Tuple {
+		class InputTuple implements Tuple {
 			public long timestamp;
 			public int key;
 			public int value;
 
-			public MyTuple(long timestamp, int key, int value) {
+			public InputTuple(long timestamp, int key, int value) {
 				this.timestamp = timestamp;
 				this.key = key;
 				this.value = value;
 			}
 		}
 
+		class OutputTuple implements Tuple {
+			public long timestamp;
+			public int key;
+			public int valueA;
+			public int valueB;
+			public int valueC;
+
+			public OutputTuple(InputTuple t) {
+				this.timestamp = t.timestamp;
+				this.key = t.key;
+				this.valueA = t.value * 2;
+				this.valueB = t.value / 2;
+				this.valueC = t.value + 10;
+			}
+		}
+
 		Query q = new Query();
 
-		StreamKey<MyTuple> inKey = q.addStream("in", MyTuple.class);
-		StreamKey<MyTuple> outKey = q.addStream("out", MyTuple.class);
+		StreamKey<InputTuple> inKey = q.addStream("in", InputTuple.class);
+		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
 
 		q.addTextSource("inSource",
 				"/Users/vinmas/Documents/workspace_java/lepre/data/input.txt",
-				new TextSourceFunction<MyTuple>() {
+				new TextSourceFunction<InputTuple>() {
 					@Override
-					public MyTuple getNext(String line) {
+					public InputTuple getNext(String line) {
 						String[] tokens = line.split(",");
-						return new MyTuple(Long.valueOf(tokens[0]), Integer
+						return new InputTuple(Long.valueOf(tokens[0]), Integer
 								.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
 					}
 				}, inKey);
 
-		q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
-			@Override
-			public MyTuple map(MyTuple tuple) {
-				return new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2);
-			}
-		}, inKey, outKey);
+		q.addMapOperator("transform",
+				new MapFunction<InputTuple, OutputTuple>() {
+					@Override
+					public OutputTuple map(InputTuple tuple) {
+						return new OutputTuple(tuple);
+					}
+				}, inKey, outKey);
 
 		q.addTextSink(
 				"outSink",
 				"/Users/vinmas/Documents/workspace_java/lepre/data/outputmap.txt",
-				new TextSinkFunction<MyTuple>() {
+				new TextSinkFunction<OutputTuple>() {
 					@Override
-					public String convertTupleToLine(MyTuple tuple) {
+					public String convertTupleToLine(OutputTuple tuple) {
 						return tuple.timestamp + "," + tuple.key + ","
-								+ tuple.value;
+								+ tuple.valueA + "," + tuple.valueB + ","
+								+ tuple.valueC;
 					}
 				}, outKey);
 

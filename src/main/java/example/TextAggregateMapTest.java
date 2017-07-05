@@ -20,7 +20,6 @@
 package example;
 
 import operator.aggregate.TimeBasedSingleWindow;
-import operator.filter.FilterFunction;
 import query.Query;
 import sink.text.TextSinkFunction;
 import source.text.TextSourceFunction;
@@ -32,53 +31,54 @@ public class TextAggregateMapTest {
 
 		class InputTuple implements RichTuple {
 			public long timestamp;
-			public int a;
-			public int b;
+			public int key;
+			public int value;
 
-			public InputTuple(long timestamp, int a, int b) {
+			public InputTuple(long timestamp, int key, int value) {
 				this.timestamp = timestamp;
-				this.a = a;
-				this.b = b;
+				this.key = key;
+				this.value = value;
 			}
 
 			@Override
-			public double getTS() {
+			public long getTimestamp() {
 				return timestamp;
 			}
 
 			@Override
 			public String getKey() {
-				return a + "";
+				return key + "";
 			}
 		}
 
 		class OutputTuple implements RichTuple {
 			public long timestamp;
-			public int a;
+			public int key;
 			public int count;
+			public double average;
 
-			public OutputTuple(long timestamp, int a, int count) {
+			public OutputTuple(long timestamp, int key, int count,
+					double average) {
 				this.timestamp = timestamp;
-				this.a = a;
+				this.key = key;
 				this.count = count;
+				this.average = average;
 			}
 
 			@Override
-			public double getTS() {
+			public long getTimestamp() {
 				return timestamp;
 			}
 
 			@Override
 			public String getKey() {
-				return a + "";
+				return key + "";
 			}
 		}
 
 		Query q = new Query();
 
 		StreamKey<InputTuple> inKey = q.addStream("in", InputTuple.class);
-		StreamKey<OutputTuple> aggOutKey = q.addStream("mapOut",
-				OutputTuple.class);
 		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
 
 		q.addTextSource("inSource",
@@ -94,32 +94,28 @@ public class TextAggregateMapTest {
 
 		class Win implements TimeBasedSingleWindow<InputTuple, OutputTuple> {
 
-			private int count = 0;
-			private int sum = 0;
+			private double count = 0;
+			private double sum = 0;
 			private long startTimestamp;
 			private int key;
 
 			@Override
 			public void add(InputTuple t) {
 				count++;
-				sum += t.b;
+				sum += t.value;
 			}
 
 			@Override
 			public void remove(InputTuple t) {
 				count--;
-				sum -= t.b;
+				sum -= t.value;
 			}
 
 			@Override
-			public OutputTuple getAggregatedResult(double timestamp,
-					InputTuple triggeringTuple) {
-				return new OutputTuple(startTimestamp, key, sum);
-			}
-
-			@Override
-			public long size() {
-				return count;
+			public OutputTuple getAggregatedResult() {
+				double average = count > 0 ? sum / count : 0;
+				return new OutputTuple(startTimestamp, key, (int) count,
+						average);
 			}
 
 			@Override
@@ -134,14 +130,7 @@ public class TextAggregateMapTest {
 		}
 		;
 		q.addAggregateOperator("aggOp", new Win(), 7 * 24 * 3600, 24 * 3600,
-				inKey, aggOutKey);
-
-		q.addFilterOperator("filter", new FilterFunction<OutputTuple>() {
-			@Override
-			public boolean forward(OutputTuple tuple) {
-				return tuple.count >= 3;
-			}
-		}, aggOutKey, outKey);
+				inKey, outKey);
 
 		q.addTextSink(
 				"outSink",
@@ -149,8 +138,8 @@ public class TextAggregateMapTest {
 				new TextSinkFunction<OutputTuple>() {
 					@Override
 					public String convertTupleToLine(OutputTuple tuple) {
-						return tuple.timestamp + "," + tuple.a + ","
-								+ tuple.count;
+						return tuple.timestamp + "," + tuple.key + ","
+								+ tuple.count + "," + tuple.average;
 					}
 				}, outKey);
 
