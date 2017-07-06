@@ -106,6 +106,9 @@ public class TextJoin {
 				new Predicate<InputTuple1, InputTuple2, OutputTuple>() {
 					@Override
 					public OutputTuple compare(InputTuple1 t1, InputTuple2 t2) {
+						System.out.println("comparing " + t1.getTimestamp()
+								+ "-" + t1.a + " with " + t2.getTimestamp()
+								+ "-" + t2.b);
 						if (t1.a < t2.b)
 							return new OutputTuple(t1.getTimestamp(), t1, t2);
 						return null;

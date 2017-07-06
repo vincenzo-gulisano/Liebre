@@ -40,6 +40,7 @@ import operator2in.Operator2In;
 import operator2in.Operator2InKey;
 import operator2in.Operator2InStatistic;
 import operator2in.join.Predicate;
+import operator2in.join.TimeBasedJoin;
 import sink.Sink;
 import sink.SinkKey;
 import sink.text.TextSink;
@@ -246,22 +247,25 @@ public class Query {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T1 extends Tuple, T2 extends Tuple, T3 extends Tuple> Operator2In<T1, T2, T3> addJoinOperator(
+	public <T1 extends RichTuple, T2 extends RichTuple, T3 extends RichTuple> Operator2In<T1, T2, T3> addJoinOperator(
 			String identifier, Predicate<T1, T2, T3> predicate, long WS,
 			StreamKey<T1> in1Key, StreamKey<T2> in2Key, StreamKey<T3> outKey) {
-		// Operator2InKey<T1, T2, T3> key = new Operator2InKey<T1, T2, T3>(
-		// identifier, in1Key.type, in2Key.type, outKey.type);
+		Operator2InKey<T1, T2, T3> key = new Operator2InKey<T1, T2, T3>(
+				identifier, in1Key.type, in2Key.type, outKey.type);
 		Operator2In<T1, T2, T3> op = null;
-		// if (keepStatistics) {
-		// op = new Operator2InStatistic<T1, T2, T3>(predicate, statsFolder
-		// + File.pathSeparator + identifier + ".proc.csv", autoFlush);
-		// } else {
-		// op = predicate;
-		// }
+
+		if (keepStatistics) {
+			op = new Operator2InStatistic<T1, T2, T3>(
+					new TimeBasedJoin<T1, T2, T3>(WS, predicate), statsFolder
+							+ File.pathSeparator + identifier + ".proc.csv",
+					autoFlush);
+		} else {
+			op = new TimeBasedJoin<T1, T2, T3>(WS, predicate);
+		}
 		op.registerIn1((Stream<T1>) streams.get(in1Key));
 		op.registerIn2((Stream<T2>) streams.get(in2Key));
 		op.registerOut((Stream<T3>) streams.get(outKey));
-		// operators2in.put(key, op);
+		operators2in.put(key, op);
 		return op;
 	}
 
