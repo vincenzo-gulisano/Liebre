@@ -64,8 +64,8 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 	}
 
 	public long getEarliestWinStartTS(long ts) {
-		return (long) Math.max((Math.floor(ts / WA) - Math.ceil(WS / WA) + 1) * WA,
-				0.0);
+		return (long) Math.max((Math.floor(ts / WA) - Math.ceil(WS / WA) + 1)
+				* WA, 0.0);
 	}
 
 	public List<T2> processTuple(T1 t) {
@@ -134,6 +134,10 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 						windows.get(earliestWinStartTS));
 				windowsCounters.get(earliestWinStartTS + WA).putAll(
 						windowsCounters.get(earliestWinStartTS));
+				for (TimeBasedSingleWindow<T1, T2> w : windows.get(
+						earliestWinStartTS + WA).values()) {
+					w.setStartTimestamp(earliestWinStartTS + WA);
+				}
 				windows.remove(earliestWinStartTS);
 				windowsCounters.remove(earliestWinStartTS);
 			} else {
@@ -149,10 +153,12 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 					new HashMap<String, WinCounter>());
 		}
 		if (!windows.get(earliestWinStartTSforT).containsKey(t.getKey())) {
-			windows.get(earliestWinStartTSforT).put(
-					t.getKey(),
-					aggregateWindow.factory((long) earliestWinStartTSforT,
-							t.getKey()));
+			windows.get(earliestWinStartTSforT).put(t.getKey(),
+					aggregateWindow.factory());
+			windows.get(earliestWinStartTSforT).get(t.getKey())
+					.setKey(t.getKey());
+			windows.get(earliestWinStartTSforT).get(t.getKey())
+					.setStartTimestamp(earliestWinStartTSforT);
 			windowsCounters.get(earliestWinStartTSforT).put(t.getKey(),
 					new WinCounter());
 		}

@@ -112,6 +112,133 @@ Please notice:
 1. When adding a Filter operator, you provide an instance of _FilterFunction&lt;T&gt;_, which defines method _public boolean forward(T tuple)_.
 2. Since the filter does not modify the tuple type, you only define one type (_MyTuple_) in the example
 
+#### Operator - Aggregate
+
+Differently from the Map's and the Filter's _stateless_ analysis, the Aggregate runs _stateful_ analysis.
+_Stateless_ means each output tuple depends on exactly 1 input tuple (or to be more formal, means that the operator does not maintain a state that evolves depending on the tuples being processed).
+_Stateful_, on the hand, means that each output tuple depends on multiple input tuples.
+
+The Aggregate ooperator aggregates multiple tuples with functions such as _sum_, _max_, _min_ or any other user-defined function. Since streams are unbounded, the aggregation is performed over _windows_.
+It allows for such functions to be computed over all the incoming tuples or for different _group-by_ values.
+The semantics of streaming aggregation depends on the type and behavior of its _window_, while the memory footprint and the processing cost depend on its internal implementation. Many variations have been discussed in the literature. You might want to have a look at [1](), [2](2) and [3](3) for more details.
+
+The Aggregate currently provided by Liebre is for time-based sliding windows and is implemented maintaining a single window for each distinct group-by value.
+
+In the following, we build an example step-by-step:
+
+The first difference from other operators is in how you define your tuple. In this case, it should implement the **RichTuple** interface:
+
+```java
+class InputTuple implements RichTuple {
+	public long timestamp;
+	public int key;
+	public int value;
+
+	public InputTuple(long timestamp, int key, int value) {
+		this.timestamp = timestamp;
+		this.key = key;
+		this.value = value;
+	}
+
+	@Override
+	public long getTimestamp() {
+		return timestamp;
+	}
+
+	@Override
+	public String getKey() {
+		return key + "";
+	}
+}
+
+class OutputTuple implements RichTuple {
+	public long timestamp;
+	public int key;
+	public int count;
+	public double average;
+
+	public OutputTuple(long timestamp, int key, int count,
+		double average) {
+		this.timestamp = timestamp;
+		this.key = key;
+		this.count = count;
+		this.average = average;
+	}
+
+	@Override
+	public long getTimestamp() {
+		return timestamp;
+	}
+
+	@Override
+	public String getKey() {
+		return key + "";
+	}
+}
+```
+
+Please notice:
+
+1. You need to define a _long getTimestamp()_ method, because of the time-based sliding windows. You decide the unit of measure of the timestamp
+2. You need to define a _String getKey()_ so that tuples giving the same key are aggregated together. If you want to aggregate all tuples together (not by key) you can just return an empty String.
+
+Once the input and output tuples types are defined, you can specify the function you will use to aggregate the data. In the following example, our window will count the tuples observed in the window and also compute the average for the field _value_:
+
+```java
+class Win extends BaseTimeBasedSingleWindow<InputTuple, OutputTuple> {
+
+	private double count = 0;
+	private double sum = 0;
+
+	@Override
+	public void add(InputTuple t) {
+		count++;
+		sum += t.value;
+	}
+
+	@Override
+	public void remove(InputTuple t) {
+		count--;
+		sum -= t.value;
+	}
+
+	@Override
+	public OutputTuple getAggregatedResult() {
+		double average = count > 0 ? sum / count : 0;
+		return new OutputTuple(startTimestamp, Integer.valueOf(key),
+			(int) count, average);
+	}
+
+	@Override
+	public TimeBasedSingleWindow<InputTuple, OutputTuple> factory() {
+		return new Win();
+	}
+
+}
+```
+
+Please notice:
+
+1. You provide the implementation for the methods invoked to add and remove tuples from the window (_void add(InputTuple t)_ and _void remove(InputTuple t)_).
+2. You specify how to produce the output tuple (notice fields _startTimestamp_ - the start timestamp of the window - and _key_ are given to you by the class _BaseTimeBasedSingleWindow_).
+3. You also define the method _factory()_, which you can use to initiliaze your variables (if needed).
+
+Once you define the types for the input and output tuples and the window, you can then add the aggregate to the query:
+
+
+```java
+q.addAggregateOperator("aggOp", new Win(), WS, WA, inKey, outKey);
+```
+
+As shown, aside from the id of the operator, an instance of the window and the keys for the input and output streams, you also specify the window size (WS) and the window advance (WA), using the same unit of measure used by your tuples. For instance, if the timestamp of the tuples are in second, the following aggregate defined a window of size 4 weeks and advance 1 week:
+
+```java
+q.addAggregateOperator("aggOp", new Win(), 4 * 7 * 24 * 3600,
+	7 * 24 * 3600, inKey, outKey);	
+```
+
+##### **Please notice:** The Aggregate enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order**. If you want to know more about deterministic processing, please have a look at [1]() and [2]().
+
 #### Sink - TextSink
 
 If you are writing tuples to a text file, then the TextSink allows you to minimize the information you need to provide to the query in order to instantiate such a sink. In the following example, we write tuples composed by attributes _&lt;timestamp,key,value&gt;_ to a file (we use again the MyTuple defined for the TextSink).

@@ -23,12 +23,16 @@ import tuple.RichTuple;
 
 public interface TimeBasedSingleWindow<T1 extends RichTuple, T2 extends RichTuple> {
 
-	public TimeBasedSingleWindow<T1, T2> factory(long timestamp, String key);
+	public TimeBasedSingleWindow<T1, T2> factory();
 
 	public void add(T1 t);
 
 	public void remove(T1 t);
 
 	public T2 getAggregatedResult();
+
+	public void setKey(String key);
+
+	public void setStartTimestamp(long startTimestamp);
 
 }

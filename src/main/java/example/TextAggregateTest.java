@@ -19,6 +19,7 @@
 
 package example;
 
+import operator.aggregate.BaseTimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindow;
 import query.Query;
 import sink.text.TextSinkFunction;
@@ -26,7 +27,7 @@ import source.text.TextSourceFunction;
 import stream.StreamKey;
 import tuple.RichTuple;
 
-public class TextAggregateMapTest {
+public class TextAggregateTest {
 	public static void main(String[] args) {
 
 		class InputTuple implements RichTuple {
@@ -82,7 +83,7 @@ public class TextAggregateMapTest {
 		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
 
 		q.addTextSource("inSource",
-				"/Users/vinmas/Documents/workspace_java/lepre/data/input.txt",
+				"/Users/vinmas/repositories/Liebre/test_data/agg_input.txt",
 				new TextSourceFunction<InputTuple>() {
 					@Override
 					public InputTuple getNext(String line) {
@@ -92,12 +93,10 @@ public class TextAggregateMapTest {
 					}
 				}, inKey);
 
-		class Win implements TimeBasedSingleWindow<InputTuple, OutputTuple> {
+		class Win extends BaseTimeBasedSingleWindow<InputTuple, OutputTuple> {
 
 			private double count = 0;
 			private double sum = 0;
-			private long startTimestamp;
-			private int key;
 
 			@Override
 			public void add(InputTuple t) {
@@ -114,27 +113,23 @@ public class TextAggregateMapTest {
 			@Override
 			public OutputTuple getAggregatedResult() {
 				double average = count > 0 ? sum / count : 0;
-				return new OutputTuple(startTimestamp, key, (int) count,
-						average);
+				return new OutputTuple(startTimestamp, Integer.valueOf(key),
+						(int) count, average);
 			}
 
 			@Override
-			public TimeBasedSingleWindow<InputTuple, OutputTuple> factory(
-					long timestamp, String key) {
-				Win w = new Win();
-				w.startTimestamp = startTimestamp;
-				w.key = Integer.valueOf(key);
-				return w;
+			public TimeBasedSingleWindow<InputTuple, OutputTuple> factory() {
+				return new Win();
 			}
 
 		}
 		;
-		q.addAggregateOperator("aggOp", new Win(), 7 * 24 * 3600, 24 * 3600,
-				inKey, outKey);
 
-		q.addTextSink(
-				"outSink",
-				"/Users/vinmas/Documents/workspace_java/lepre/data/outputaggregateandfilter.txt",
+		q.addAggregateOperator("aggOp", new Win(), 4 * 7 * 24 * 3600,
+				7 * 24 * 3600, inKey, outKey);
+
+		q.addTextSink("outSink",
+				"/Users/vinmas/repositories/Liebre/test_data/agg_output.txt",
 				new TextSinkFunction<OutputTuple>() {
 					@Override
 					public String convertTupleToLine(OutputTuple tuple) {
