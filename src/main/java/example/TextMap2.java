@@ -62,8 +62,7 @@ public class TextMap2 {
 		StreamKey<InputTuple> inKey = q.addStream("in", InputTuple.class);
 		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
 
-		q.addTextSource("inSource",
-				"/Users/vinmas/Documents/workspace_java/lepre/data/input.txt",
+		q.addTextSource("inSource", args[0],
 				new TextSourceFunction<InputTuple>() {
 					@Override
 					public InputTuple getNext(String line) {
@@ -81,17 +80,13 @@ public class TextMap2 {
 					}
 				}, inKey, outKey);
 
-		q.addTextSink(
-				"outSink",
-				"/Users/vinmas/Documents/workspace_java/lepre/data/outputmap.txt",
-				new TextSinkFunction<OutputTuple>() {
-					@Override
-					public String convertTupleToLine(OutputTuple tuple) {
-						return tuple.timestamp + "," + tuple.key + ","
-								+ tuple.valueA + "," + tuple.valueB + ","
-								+ tuple.valueC;
-					}
-				}, outKey);
+		q.addTextSink("outSink", args[1], new TextSinkFunction<OutputTuple>() {
+			@Override
+			public String convertTupleToLine(OutputTuple tuple) {
+				return tuple.timestamp + "," + tuple.key + "," + tuple.valueA
+						+ "," + tuple.valueB + "," + tuple.valueC;
+			}
+		}, outKey);
 
 		q.activate();
 		try {

@@ -27,7 +27,7 @@ import source.text.TextSourceFunction;
 import stream.StreamKey;
 import tuple.Tuple;
 
-public class TextMapFilterTest {
+public class TextMapFilter {
 	public static void main(String[] args) {
 
 		class MyTuple implements Tuple {
@@ -48,16 +48,14 @@ public class TextMapFilterTest {
 		StreamKey<MyTuple> mapOutKey = q.addStream("mapOut", MyTuple.class);
 		StreamKey<MyTuple> outKey = q.addStream("out", MyTuple.class);
 
-		q.addTextSource("inSource",
-				"/Users/vinmas/Documents/workspace_java/lepre/data/input.txt",
-				new TextSourceFunction<MyTuple>() {
-					@Override
-					public MyTuple getNext(String line) {
-						String[] tokens = line.split(",");
-						return new MyTuple(Long.valueOf(tokens[0]), Integer
-								.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
-					}
-				}, inKey);
+		q.addTextSource("inSource", args[0], new TextSourceFunction<MyTuple>() {
+			@Override
+			public MyTuple getNext(String line) {
+				String[] tokens = line.split(",");
+				return new MyTuple(Long.valueOf(tokens[0]), Integer
+						.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+			}
+		}, inKey);
 
 		q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
 			@Override
@@ -73,16 +71,12 @@ public class TextMapFilterTest {
 			}
 		}, mapOutKey, outKey);
 
-		q.addTextSink(
-				"outSink",
-				"/Users/vinmas/Documents/workspace_java/lepre/data/outputmapandfilter.txt",
-				new TextSinkFunction<MyTuple>() {
-					@Override
-					public String convertTupleToLine(MyTuple tuple) {
-						return tuple.timestamp + "," + tuple.key + ","
-								+ tuple.value;
-					}
-				}, outKey);
+		q.addTextSink("outSink", args[1], new TextSinkFunction<MyTuple>() {
+			@Override
+			public String convertTupleToLine(MyTuple tuple) {
+				return tuple.timestamp + "," + tuple.key + "," + tuple.value;
+			}
+		}, outKey);
 
 		q.activate();
 		try {

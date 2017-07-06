@@ -237,7 +237,71 @@ q.addAggregateOperator("aggOp", new Win(), 4 * 7 * 24 * 3600,
 	7 * 24 * 3600, inKey, outKey);	
 ```
 
-##### **Please notice:** The Aggregate enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order**. If you want to know more about deterministic processing, please have a look at [1]() and [2]().
+##### **Please notice:** The Aggregate enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order**. If you want to know more about deterministic processing, please have a look at [AGGREGATE]().
+
+#### Operator - Join
+
+Similarly to the Aggregate, the Join is a _stateful_ operator. It compares tuples from 2 streams with a given predicate and forwards an output tuple every time the predicate holds. For this operator, you can specify different types for the two input tuples and for the output one. Since the join also operates on _time-based sliding windows_, these types should implement _RichTuple_ or extend _BaseRichTuple_:
+
+```java
+class InputTuple1 extends BaseRichTuple {
+
+	public int a;
+
+	public InputTuple1(long timestamp, int a) {
+		super(timestamp, "");
+		this.a = a;
+	}
+
+}
+
+class InputTuple2 extends BaseRichTuple {
+
+	public int b;
+
+	public InputTuple2(long timestamp, int b) {
+		super(timestamp, "");
+		this.b = b;
+	}
+
+}
+
+class OutputTuple extends BaseRichTuple {
+
+	public InputTuple1 t1;
+	public InputTuple2 t2;
+
+	public OutputTuple(long timestamp, InputTuple1 t1, InputTuple2 t2) {
+		super(timestamp, "");
+		this.t1 = t1;
+		this.t2 = t2;
+	}
+
+}
+```
+
+Please notice: Since the field _key_ is not used in this example, we simply set an empty string for it.
+
+Once the types for input and output tuples are defined, we can proceed adding the join operator to the query. In the example, we want to produce an output tuple carrying each pair of input tuples for which _a &lt; b_:
+
+```java
+q.addJoinOperator("join",
+	new Predicate<InputTuple1, InputTuple2, OutputTuple>() {
+		@Override
+		public OutputTuple compare(InputTuple1 t1, InputTuple2 t2) {
+			if (t1.a < t2.b)
+				return new OutputTuple(t1.getTimestamp(), t1, t2);
+			return null;
+		}
+	}, 3000, in1Key, in2Key, outKey);
+```
+
+Please notice:
+
+1. Since the join operates on sliding windows, we specify the window size (3 seconds in the example, because the unit of time for the tuples is millisecond).
+2. We provide 2 keys, one for each input stream, and 1 for the output stream.
+3. Also the Join enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order** from each input stream. If you want to know more about deterministic processing, please have a look at [JOIN]().
+
 
 #### Sink - TextSink
 

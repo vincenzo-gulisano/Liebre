@@ -27,7 +27,7 @@ import source.text.TextSourceFunction;
 import stream.StreamKey;
 import tuple.RichTuple;
 
-public class TextAggregateTest {
+public class TextAggregate {
 	public static void main(String[] args) {
 
 		class InputTuple implements RichTuple {
@@ -82,8 +82,7 @@ public class TextAggregateTest {
 		StreamKey<InputTuple> inKey = q.addStream("in", InputTuple.class);
 		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
 
-		q.addTextSource("inSource",
-				"/Users/vinmas/repositories/Liebre/test_data/agg_input.txt",
+		q.addTextSource("inSource", args[0],
 				new TextSourceFunction<InputTuple>() {
 					@Override
 					public InputTuple getNext(String line) {
@@ -128,15 +127,13 @@ public class TextAggregateTest {
 		q.addAggregateOperator("aggOp", new Win(), 4 * 7 * 24 * 3600,
 				7 * 24 * 3600, inKey, outKey);
 
-		q.addTextSink("outSink",
-				"/Users/vinmas/repositories/Liebre/test_data/agg_output.txt",
-				new TextSinkFunction<OutputTuple>() {
-					@Override
-					public String convertTupleToLine(OutputTuple tuple) {
-						return tuple.timestamp + "," + tuple.key + ","
-								+ tuple.count + "," + tuple.average;
-					}
-				}, outKey);
+		q.addTextSink("outSink", args[1], new TextSinkFunction<OutputTuple>() {
+			@Override
+			public String convertTupleToLine(OutputTuple tuple) {
+				return tuple.timestamp + "," + tuple.key + "," + tuple.count
+						+ "," + tuple.average;
+			}
+		}, outKey);
 
 		q.activate();
 		try {

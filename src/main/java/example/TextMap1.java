@@ -46,16 +46,14 @@ public class TextMap1 {
 		StreamKey<MyTuple> inKey = q.addStream("in", MyTuple.class);
 		StreamKey<MyTuple> outKey = q.addStream("out", MyTuple.class);
 
-		q.addTextSource("inSource",
-				"/Users/vinmas/Documents/workspace_java/lepre/data/input.txt",
-				new TextSourceFunction<MyTuple>() {
-					@Override
-					public MyTuple getNext(String line) {
-						String[] tokens = line.split(",");
-						return new MyTuple(Long.valueOf(tokens[0]), Integer
-								.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
-					}
-				}, inKey);
+		q.addTextSource("inSource", args[0], new TextSourceFunction<MyTuple>() {
+			@Override
+			public MyTuple getNext(String line) {
+				String[] tokens = line.split(",");
+				return new MyTuple(Long.valueOf(tokens[0]), Integer
+						.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+			}
+		}, inKey);
 
 		q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
 			@Override
@@ -64,16 +62,12 @@ public class TextMap1 {
 			}
 		}, inKey, outKey);
 
-		q.addTextSink(
-				"outSink",
-				"/Users/vinmas/Documents/workspace_java/lepre/data/outputmap.txt",
-				new TextSinkFunction<MyTuple>() {
-					@Override
-					public String convertTupleToLine(MyTuple tuple) {
-						return tuple.timestamp + "," + tuple.key + ","
-								+ tuple.value;
-					}
-				}, outKey);
+		q.addTextSink("outSink", args[1], new TextSinkFunction<MyTuple>() {
+			@Override
+			public String convertTupleToLine(MyTuple tuple) {
+				return tuple.timestamp + "," + tuple.key + "," + tuple.value;
+			}
+		}, outKey);
 
 		q.activate();
 		try {

@@ -35,6 +35,11 @@ import operator.filter.FilterFunction;
 import operator.filter.FilterOperator;
 import operator.map.MapFunction;
 import operator.map.MapOperator;
+import operator2in.BaseOperator2In;
+import operator2in.Operator2In;
+import operator2in.Operator2InKey;
+import operator2in.Operator2InStatistic;
+import operator2in.join.Predicate;
 import sink.Sink;
 import sink.SinkKey;
 import sink.text.TextSink;
@@ -58,6 +63,7 @@ public class Query {
 
 	private final Map<StreamKey<? extends Tuple>, Stream<? extends Tuple>> streams = new HashMap<StreamKey<? extends Tuple>, Stream<? extends Tuple>>();
 	private final Map<OperatorKey<? extends Tuple, ? extends Tuple>, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<OperatorKey<? extends Tuple, ? extends Tuple>, Operator<? extends Tuple, ? extends Tuple>>();
+	private final Map<Operator2InKey<? extends Tuple, ? extends Tuple, ? extends Tuple>, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<Operator2InKey<? extends Tuple, ? extends Tuple, ? extends Tuple>, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>>();
 	private final Map<SourceKey<? extends Tuple>, Source<? extends Tuple>> sources = new HashMap<SourceKey<? extends Tuple>, Source<? extends Tuple>>();
 	private final Map<SinkKey<? extends Tuple>, Sink<? extends Tuple>> sinks = new HashMap<SinkKey<? extends Tuple>, Sink<? extends Tuple>>();
 
@@ -219,6 +225,46 @@ public class Query {
 		return key;
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T1 extends Tuple, T2 extends Tuple, T3 extends Tuple> Operator2In<T1, T2, T3> addOperator2In(
+			String identifier, BaseOperator2In<T1, T2, T3> operator,
+			StreamKey<T1> in1Key, StreamKey<T2> in2Key, StreamKey<T3> outKey) {
+		Operator2InKey<T1, T2, T3> key = new Operator2InKey<T1, T2, T3>(
+				identifier, in1Key.type, in2Key.type, outKey.type);
+		Operator2In<T1, T2, T3> op = null;
+		if (keepStatistics) {
+			op = new Operator2InStatistic<T1, T2, T3>(operator, statsFolder
+					+ File.pathSeparator + identifier + ".proc.csv", autoFlush);
+		} else {
+			op = operator;
+		}
+		op.registerIn1((Stream<T1>) streams.get(in1Key));
+		op.registerIn2((Stream<T2>) streams.get(in2Key));
+		op.registerOut((Stream<T3>) streams.get(outKey));
+		operators2in.put(key, op);
+		return op;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T1 extends Tuple, T2 extends Tuple, T3 extends Tuple> Operator2In<T1, T2, T3> addJoinOperator(
+			String identifier, Predicate<T1, T2, T3> predicate, long WS,
+			StreamKey<T1> in1Key, StreamKey<T2> in2Key, StreamKey<T3> outKey) {
+		// Operator2InKey<T1, T2, T3> key = new Operator2InKey<T1, T2, T3>(
+		// identifier, in1Key.type, in2Key.type, outKey.type);
+		Operator2In<T1, T2, T3> op = null;
+		// if (keepStatistics) {
+		// op = new Operator2InStatistic<T1, T2, T3>(predicate, statsFolder
+		// + File.pathSeparator + identifier + ".proc.csv", autoFlush);
+		// } else {
+		// op = predicate;
+		// }
+		op.registerIn1((Stream<T1>) streams.get(in1Key));
+		op.registerIn2((Stream<T2>) streams.get(in2Key));
+		op.registerOut((Stream<T3>) streams.get(outKey));
+		// operators2in.put(key, op);
+		return op;
+	}
+
 	public void activate() {
 		for (Sink<? extends Tuple> s : sinks.values()) {
 			s.activate();
@@ -227,6 +273,13 @@ public class Query {
 			threads.add(t);
 		}
 		for (Operator<? extends Tuple, ? extends Tuple> o : operators.values()) {
+			o.activate();
+			Thread t = new Thread(o);
+			t.start();
+			threads.add(t);
+		}
+		for (Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple> o : operators2in
+				.values()) {
 			o.activate();
 			Thread t = new Thread(o);
 			t.start();
@@ -245,6 +298,10 @@ public class Query {
 			s.deActivate();
 		}
 		for (Operator<? extends Tuple, ? extends Tuple> o : operators.values()) {
+			o.deActivate();
+		}
+		for (Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple> o : operators2in
+				.values()) {
 			o.deActivate();
 		}
 		for (Sink<? extends Tuple> s : sinks.values()) {
