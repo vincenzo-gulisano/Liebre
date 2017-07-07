@@ -37,4 +37,14 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 		return stream.poll();
 	}
 
+	@Override
+	public void activate() {
+
+	}
+
+	@Override
+	public void deActivate() {
+
+	}
+
 }

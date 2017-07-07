@@ -27,4 +27,8 @@ public interface Stream<T extends Tuple> {
 
 	public T getNextTuple();
 
+	public void activate();
+
+	public void deActivate();
+
 }

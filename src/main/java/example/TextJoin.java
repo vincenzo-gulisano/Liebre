@@ -27,6 +27,7 @@ import sink.BaseSink;
 import source.BaseSource;
 import stream.StreamKey;
 import tuple.BaseRichTuple;
+import util.Util;
 
 public class TextJoin {
 	public static void main(String[] args) {
@@ -123,11 +124,7 @@ public class TextJoin {
 		}, outKey);
 
 		q.activate();
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		Util.sleep(5000);
 		q.deActivate();
 
 	}

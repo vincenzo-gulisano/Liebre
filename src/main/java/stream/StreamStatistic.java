@@ -49,4 +49,14 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 		return out;
 	}
 
+	@Override
+	public void activate() {
+	}
+
+	@Override
+	public void deActivate() {
+		inRate.close();
+		outRate.close();
+	}
+
 }

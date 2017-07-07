@@ -52,7 +52,7 @@ public class AvgStat {
 
 		long thisSec = System.currentTimeMillis() / 1000;
 		while (prevSec < thisSec) {
-			out.println(prevSec * 1000 + "," + (count != 0 ? sum / count : -1));
+			out.println(prevSec + "," + (count != 0 ? sum / count : -1));
 			sum = 0;
 			count = 0;
 			prevSec++;
@@ -64,6 +64,12 @@ public class AvgStat {
 	}
 
 	public void close() {
+		long thisSec = System.currentTimeMillis() / 1000;
+		while (prevSec <= thisSec) {
+			out.println(prevSec + "," + (count != 0 ? sum / count : -1));
+			count = 0;
+			prevSec++;
+		}
 		out.close();
 	}
 

@@ -46,11 +46,13 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> implements
 	@Override
 	public void registerIn(Stream<T1> in) {
 		this.in = in;
+		this.operator.registerIn(in);
 	}
 
 	@Override
 	public void registerOut(Stream<T2> out) {
 		this.out = out;
+		this.operator.registerOut(out);
 	}
 
 	@Override
@@ -67,6 +69,7 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> implements
 
 	@Override
 	public void deActivate() {
+		processingTimeStat.close();
 		active = false;
 	}
 

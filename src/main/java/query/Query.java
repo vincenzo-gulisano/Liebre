@@ -80,14 +80,22 @@ public class Query {
 		this.autoFlush = autoFlush;
 	}
 
+	public void activateStatistics(String statisticsFolder) {
+		keepStatistics = true;
+		this.statsFolder = statisticsFolder;
+		this.autoFlush = true;
+	}
+
 	public <T extends Tuple> StreamKey<T> addStream(String identifier,
 			Class<T> type) {
 		StreamKey<T> key = new StreamKey<>("in", type);
 		Stream<T> stream = null;
 		if (keepStatistics) {
-			stream = new StreamStatistic<T>(stream, statsFolder
-					+ File.pathSeparator + identifier + ".in.csv", statsFolder
-					+ File.pathSeparator + identifier + ".out.csv", autoFlush);
+			stream = new StreamStatistic<T>(
+					new ConcurrentLinkedListStream<T>(), statsFolder
+							+ File.separator + identifier + ".in.csv",
+					statsFolder + File.separator + identifier + ".out.csv",
+					autoFlush);
 		} else {
 			stream = new ConcurrentLinkedListStream<T>();
 		}
@@ -104,7 +112,7 @@ public class Query {
 		Operator<T1, T2> op = null;
 		if (keepStatistics) {
 			op = new OperatorStatistic<T1, T2>(operator, statsFolder
-					+ File.pathSeparator + identifier + ".proc.csv", autoFlush);
+					+ File.separator + identifier + ".proc.csv", autoFlush);
 		} else {
 			op = operator;
 		}
@@ -124,7 +132,7 @@ public class Query {
 		if (keepStatistics) {
 			agg = new OperatorStatistic<T1, T2>(
 					new TimeBasedSingleWindowAggregate<T1, T2>(WS, WA, window),
-					statsFolder + File.pathSeparator + identifier + ".proc.csv",
+					statsFolder + File.separator + identifier + ".proc.csv",
 					autoFlush);
 		} else {
 			agg = new TimeBasedSingleWindowAggregate<T1, T2>(WS, WA, window);
@@ -144,7 +152,7 @@ public class Query {
 		Operator<T1, T2> map = null;
 		if (keepStatistics) {
 			map = new OperatorStatistic<T1, T2>(new MapOperator<T1, T2>(
-					mapFunction), statsFolder + File.pathSeparator + identifier
+					mapFunction), statsFolder + File.separator + identifier
 					+ ".proc.csv", autoFlush);
 		} else {
 			map = new MapOperator<T1, T2>(mapFunction);
@@ -165,7 +173,7 @@ public class Query {
 		if (keepStatistics) {
 			filter = new OperatorStatistic<T, T>(
 					new FilterOperator<T>(filterF), statsFolder
-							+ File.pathSeparator + identifier + ".proc.csv",
+							+ File.separator + identifier + ".proc.csv",
 					autoFlush);
 		} else {
 			filter = new FilterOperator<T>(filterF);
@@ -235,7 +243,7 @@ public class Query {
 		Operator2In<T1, T2, T3> op = null;
 		if (keepStatistics) {
 			op = new Operator2InStatistic<T1, T2, T3>(operator, statsFolder
-					+ File.pathSeparator + identifier + ".proc.csv", autoFlush);
+					+ File.separator + identifier + ".proc.csv", autoFlush);
 		} else {
 			op = operator;
 		}
@@ -270,6 +278,9 @@ public class Query {
 	}
 
 	public void activate() {
+		for (Stream<? extends Tuple> s : streams.values()) {
+			s.activate();
+		}
 		for (Sink<? extends Tuple> s : sinks.values()) {
 			s.activate();
 			Thread t = new Thread(s);
@@ -317,6 +328,10 @@ public class Query {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+		}
+
+		for (Stream<? extends Tuple> s : streams.values()) {
+			s.deActivate();
 		}
 	}
 }

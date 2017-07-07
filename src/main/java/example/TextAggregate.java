@@ -26,6 +26,7 @@ import sink.text.TextSinkFunction;
 import source.text.TextSourceFunction;
 import stream.StreamKey;
 import tuple.RichTuple;
+import util.Util;
 
 public class TextAggregate {
 	public static void main(String[] args) {
@@ -136,11 +137,7 @@ public class TextAggregate {
 		}, outKey);
 
 		q.activate();
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		Util.sleep(5000);
 		q.deActivate();
 
 	}

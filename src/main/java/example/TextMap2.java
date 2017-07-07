@@ -25,6 +25,7 @@ import sink.text.TextSinkFunction;
 import source.text.TextSourceFunction;
 import stream.StreamKey;
 import tuple.Tuple;
+import util.Util;
 
 public class TextMap2 {
 	public static void main(String[] args) {
@@ -59,13 +60,16 @@ public class TextMap2 {
 
 		Query q = new Query();
 
+		q.activateStatistics(args[0]);
+
 		StreamKey<InputTuple> inKey = q.addStream("in", InputTuple.class);
 		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
 
-		q.addTextSource("inSource", args[0],
+		q.addTextSource("inSource", args[1],
 				new TextSourceFunction<InputTuple>() {
 					@Override
 					public InputTuple getNext(String line) {
+						Util.sleep(50);
 						String[] tokens = line.split(",");
 						return new InputTuple(Long.valueOf(tokens[0]), Integer
 								.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
@@ -80,7 +84,7 @@ public class TextMap2 {
 					}
 				}, inKey, outKey);
 
-		q.addTextSink("outSink", args[1], new TextSinkFunction<OutputTuple>() {
+		q.addTextSink("outSink", args[2], new TextSinkFunction<OutputTuple>() {
 			@Override
 			public String convertTupleToLine(OutputTuple tuple) {
 				return tuple.timestamp + "," + tuple.key + "," + tuple.valueA
@@ -89,11 +93,7 @@ public class TextMap2 {
 		}, outKey);
 
 		q.activate();
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		Util.sleep(40000);
 		q.deActivate();
 
 	}

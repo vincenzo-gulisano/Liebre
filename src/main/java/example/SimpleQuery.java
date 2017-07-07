@@ -29,8 +29,9 @@ import sink.BaseSink;
 import source.BaseSource;
 import stream.StreamKey;
 import tuple.Tuple;
+import util.Util;
 
-public class BaseQuery {
+public class SimpleQuery {
 	public static void main(String[] args) {
 
 		class MyTuple implements Tuple {
@@ -47,6 +48,8 @@ public class BaseQuery {
 
 		Query q = new Query();
 
+		q.activateStatistics(args[0]);
+
 		StreamKey<MyTuple> inKey = q.addStream("in", MyTuple.class);
 		StreamKey<MyTuple> outKey = q.addStream("out", MyTuple.class);
 
@@ -55,11 +58,7 @@ public class BaseQuery {
 
 			@Override
 			protected MyTuple getNextTuple() {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				Util.sleep(100);
 				return new MyTuple(System.currentTimeMillis(), r.nextInt(5), r
 						.nextInt(100));
 			}
@@ -84,11 +83,7 @@ public class BaseQuery {
 		}, outKey);
 
 		q.activate();
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		Util.sleep(30000);
 		q.deActivate();
 
 	}

@@ -46,10 +46,9 @@ public class CountStat {
 	}
 
 	public void increase(long v) {
-
 		long thisSec = System.currentTimeMillis() / 1000;
 		while (prevSec < thisSec) {
-			out.println(prevSec * 1000 + "," + count);
+			out.println(prevSec + "," + count);
 			count = 0;
 			prevSec++;
 		}
@@ -57,6 +56,12 @@ public class CountStat {
 	}
 
 	public void close() {
+		long thisSec = System.currentTimeMillis() / 1000;
+		while (prevSec <= thisSec) {
+			out.println(prevSec + "," + count);
+			count = 0;
+			prevSec++;
+		}
 		out.close();
 	}
 }
