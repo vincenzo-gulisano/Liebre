@@ -41,12 +41,16 @@ import operator2in.Operator2InKey;
 import operator2in.Operator2InStatistic;
 import operator2in.join.Predicate;
 import operator2in.join.TimeBasedJoin;
+import sink.BaseSink;
 import sink.Sink;
 import sink.SinkKey;
+import sink.SinkStatistic;
 import sink.text.TextSink;
 import sink.text.TextSinkFunction;
+import source.BaseSource;
 import source.Source;
 import source.SourceKey;
+import source.SourceStatistic;
 import source.text.TextSource;
 import source.text.TextSourceFunction;
 import stream.ConcurrentLinkedListStream;
@@ -186,10 +190,17 @@ public class Query {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Tuple> SourceKey<T> addSource(String identifier,
-			Source<T> source, StreamKey<T> outKey) {
+			BaseSource<T> source, StreamKey<T> outKey) {
 		SourceKey<T> key = new SourceKey<T>(identifier, outKey.type);
-		source.registerOut((Stream<T>) streams.get(outKey));
-		sources.put(key, source);
+		Source<T> s = null;
+		if (keepStatistics) {
+			s = new SourceStatistic<T>(source, statsFolder + File.separator
+					+ identifier + ".proc.csv");
+		} else {
+			s = source;
+		}
+		s.registerOut((Stream<T>) streams.get(outKey));
+		sources.put(key, s);
 		return key;
 	}
 
@@ -197,7 +208,14 @@ public class Query {
 	public <T extends Tuple> SourceKey<T> addTextSource(String identifier,
 			String fileName, TextSourceFunction<T> function, StreamKey<T> outKey) {
 		SourceKey<T> key = new SourceKey<T>(identifier, outKey.type);
-		Source<T> source = new TextSource<T>(fileName, function);
+		Source<T> source = null;
+		if (keepStatistics) {
+			source = new SourceStatistic<T>(new TextSource<T>(fileName,
+					function), statsFolder + File.separator + identifier
+					+ ".proc.csv");
+		} else {
+			source = new TextSource<T>(fileName, function);
+		}
 		source.registerOut((Stream<T>) streams.get(outKey));
 		sources.put(key, source);
 		return key;
@@ -205,10 +223,17 @@ public class Query {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Tuple> SinkKey<T> addSink(String identifier,
-			Sink<T> sink, StreamKey<T> streamKey) {
+			BaseSink<T> sink, StreamKey<T> streamKey) {
 		SinkKey<T> key = new SinkKey<T>(identifier, streamKey.type);
-		sink.registerIn((Stream<T>) streams.get(streamKey));
-		sinks.put(key, sink);
+		Sink<T> s = null;
+		if (keepStatistics) {
+			s = new SinkStatistic<T>(sink, statsFolder + File.separator
+					+ identifier + ".proc.csv");
+		} else {
+			s = sink;
+		}
+		s.registerIn((Stream<T>) streams.get(streamKey));
+		sinks.put(key, s);
 		return key;
 	}
 
@@ -217,9 +242,16 @@ public class Query {
 			String fileName, TextSinkFunction<T> function,
 			StreamKey<T> streamKey) {
 		SinkKey<T> key = new SinkKey<T>(identifier, streamKey.type);
-		Sink<T> sink = new TextSink<T>(fileName, function, true);
-		sink.registerIn((Stream<T>) streams.get(streamKey));
-		sinks.put(key, sink);
+		BaseSink<T> sink = new TextSink<T>(fileName, function, true);
+		Sink<T> s = null;
+		if (keepStatistics) {
+			s = new SinkStatistic<T>(sink, statsFolder + File.separator
+					+ identifier + ".proc.csv");
+		} else {
+			s = sink;
+		}
+		s.registerIn((Stream<T>) streams.get(streamKey));
+		sinks.put(key, s);
 		return key;
 	}
 
