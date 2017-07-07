@@ -69,6 +69,8 @@ public class TextJoin {
 
 		Query q = new Query();
 
+		q.activateStatistics(args[0]);
+
 		StreamKey<InputTuple1> in1Key = q.addStream("in1", InputTuple1.class);
 		StreamKey<InputTuple2> in2Key = q.addStream("in2", InputTuple2.class);
 		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
@@ -114,7 +116,7 @@ public class TextJoin {
 							return new OutputTuple(t1.getTimestamp(), t1, t2);
 						return null;
 					}
-				}, 3000, in1Key, in2Key, outKey);
+				}, 10000, in1Key, in2Key, outKey);
 
 		q.addSink("outSink", new BaseSink<OutputTuple>() {
 			@Override
@@ -124,7 +126,7 @@ public class TextJoin {
 		}, outKey);
 
 		q.activate();
-		Util.sleep(5000);
+		Util.sleep(30000);
 		q.deActivate();
 
 	}

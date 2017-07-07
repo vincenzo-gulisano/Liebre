@@ -80,10 +80,12 @@ public class TextAggregate {
 
 		Query q = new Query();
 
+		q.activateStatistics(args[0]);
+
 		StreamKey<InputTuple> inKey = q.addStream("in", InputTuple.class);
 		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
 
-		q.addTextSource("inSource", args[0],
+		q.addTextSource("inSource", args[1],
 				new TextSourceFunction<InputTuple>() {
 					@Override
 					public InputTuple getNext(String line) {
@@ -128,7 +130,7 @@ public class TextAggregate {
 		q.addAggregateOperator("aggOp", new Win(), 4 * 7 * 24 * 3600,
 				7 * 24 * 3600, inKey, outKey);
 
-		q.addTextSink("outSink", args[1], new TextSinkFunction<OutputTuple>() {
+		q.addTextSink("outSink", args[2], new TextSinkFunction<OutputTuple>() {
 			@Override
 			public String convertTupleToLine(OutputTuple tuple) {
 				return tuple.timestamp + "," + tuple.key + "," + tuple.count
@@ -137,7 +139,7 @@ public class TextAggregate {
 		}, outKey);
 
 		q.activate();
-		Util.sleep(5000);
+		Util.sleep(30000);
 		q.deActivate();
 
 	}
