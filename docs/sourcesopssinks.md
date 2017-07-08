@@ -177,6 +177,8 @@ class OutputTuple implements RichTuple {
 }
 ```
 
+BASERICHTUPLE EXAMPLE
+
 Please notice:
 
 1. You need to define a _long getTimestamp()_ method, because of the time-based sliding windows. You decide the unit of measure of the timestamp

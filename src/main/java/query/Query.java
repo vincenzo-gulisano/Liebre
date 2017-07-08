@@ -297,7 +297,7 @@ public class Query {
 		if (keepStatistics) {
 			op = new Operator2InStatistic<T1, T2, T3>(
 					new TimeBasedJoin<T1, T2, T3>(WS, predicate), statsFolder
-							+ File.pathSeparator + identifier + ".proc.csv",
+							+ File.separator + identifier + ".proc.csv",
 					autoFlush);
 		} else {
 			op = new TimeBasedJoin<T1, T2, T3>(WS, predicate);

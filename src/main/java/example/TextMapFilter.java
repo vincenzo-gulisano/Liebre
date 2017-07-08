@@ -83,7 +83,7 @@ public class TextMapFilter {
 		}, outKey);
 
 		q.activate();
-		Util.sleep(10000);
+		Util.sleep(20000);
 		q.deActivate();
 
 	}

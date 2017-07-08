@@ -25,56 +25,30 @@ import query.Query;
 import sink.text.TextSinkFunction;
 import source.text.TextSourceFunction;
 import stream.StreamKey;
-import tuple.RichTuple;
+import tuple.BaseRichTuple;
 import util.Util;
 
 public class TextAggregate {
 	public static void main(String[] args) {
 
-		class InputTuple implements RichTuple {
-			public long timestamp;
-			public int key;
+		class InputTuple extends BaseRichTuple {
 			public int value;
 
 			public InputTuple(long timestamp, int key, int value) {
-				this.timestamp = timestamp;
-				this.key = key;
+				super(timestamp, key + "");
 				this.value = value;
-			}
-
-			@Override
-			public long getTimestamp() {
-				return timestamp;
-			}
-
-			@Override
-			public String getKey() {
-				return key + "";
 			}
 		}
 
-		class OutputTuple implements RichTuple {
-			public long timestamp;
-			public int key;
+		class OutputTuple extends BaseRichTuple {
 			public int count;
 			public double average;
 
 			public OutputTuple(long timestamp, int key, int count,
 					double average) {
-				this.timestamp = timestamp;
-				this.key = key;
+				super(timestamp, key + "");
 				this.count = count;
 				this.average = average;
-			}
-
-			@Override
-			public long getTimestamp() {
-				return timestamp;
-			}
-
-			@Override
-			public String getKey() {
-				return key + "";
 			}
 		}
 
@@ -133,8 +107,8 @@ public class TextAggregate {
 		q.addTextSink("outSink", args[2], new TextSinkFunction<OutputTuple>() {
 			@Override
 			public String convertTupleToLine(OutputTuple tuple) {
-				return tuple.timestamp + "," + tuple.key + "," + tuple.count
-						+ "," + tuple.average;
+				return tuple.getTimestamp() + "," + tuple.getKey() + ","
+						+ tuple.count + "," + tuple.average;
 			}
 		}, outKey);
 
