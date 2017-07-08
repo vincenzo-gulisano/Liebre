@@ -1,8 +1,6 @@
 ## The basics
 
-<p align="center">
-<a><img src="https://vgulisano.files.wordpress.com/2017/07/query.jpg?w=300" alt="" width="300" height="161" /></a>
-</p>
+![](images/query.jpg)
 
 A streaming application runs a **query**, a directed acyclic graph of **sources**, **operators** and **sinks** connected by **streams**:
 1. Sources produce tuples
@@ -15,7 +13,7 @@ When you create your query, you add **sources**, **operators** and **sinks** and
 
 In this example, a source creates a stream of tuples with attributes _&lt;timestamp,key,value&gt;_ and feeds them to an operator that multiplies the value by 2. This operator feeds its output tuples to a sink that prints them.
 
-*** ADD A FIGURE HERE ***
+![](images/simplequery.jpg)
 
 ```Java
 class MyTuple implements Tuple {

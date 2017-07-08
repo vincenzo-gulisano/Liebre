@@ -1,11 +1,13 @@
 
-<p align="center">
-<a><img src="https://vgulisano.files.wordpress.com/2017/07/liebre.jpg?w=300" alt="" width="300" height="161" /></a>
-</p>
+![](docs/images/liebre.jpg)
 
-BLA BLA BLA
+Here you can find the documentation about the Liebre Stream Processing Engine (SPE).
+Some motivation about this project can be found [here]().
 
-Here you the link to the documentation:
+If you have any questions, please write to [info@vincenzogulisano.com](mailto:info@vincenzogulisano.com)
 
-1. [The basics](docs/basics.md)
-2. 
+Documentation:
+
+1. [Basic concepts](docs/basics.md)
+2. [Sources, operators and sinks](docs/sourcesopssinks.md)
+3. [Statistics](stats.md)
