@@ -1,3 +1,6 @@
+
+[![](images/liebre_small.jpg)](../index.md)
+
 ## The basics
 
 ![](images/query.jpg)

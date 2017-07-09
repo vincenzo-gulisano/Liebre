@@ -1,9 +1,12 @@
+
+[![](images/liebre_small.jpg)](../index.md)
+
 ## Liebre sources, operators and sinks
 
 Liebre gives you the possibility of fully defining the semantics of sources, operators and sinks. At the same time, it offers a set of common sources, operators and sinks.
 Here you find their description.
 
-#### Source - TextSource
+#### Source - TextSource (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMap1.java))
 
 If you are reading tuples from a text file, then the TextSource allows you to minimize the information you need to provide to the query in order to instantiate such a source. In the following example, we read tuples composed by attributes _&lt;timestamp,key,value&gt;_ from a file.
 
@@ -34,13 +37,13 @@ q.addTextSource("inSource",
 
 Please notice:
 
-1. As for the example in [the basics](), you need to specify an id for the operator you are adding (in this case _inSource_).
-2. Instead of a BaseSource (as in [the basics]() example), you are now passing a _TextSourceFunction_, for which you only specify the method _getNext(String line)_.
-3. As for the example in [the basics](), you need to specify the key of the stream to which the Source forwards tuples.
+1. As for the example in [the basics](basics.md), you need to specify an id for the operator you are adding (in this case _inSource_).
+2. Instead of a BaseSource (as in [the basics](basics.md) example), you are now passing a _TextSourceFunction_, for which you only specify the method _getNext(String line)_.
+3. As for the example in [the basics](basics.md), you need to specify the key of the stream to which the Source forwards tuples.
 
-#### Operator - Map
+#### Operator - Map (complete examples [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMap2.java) and [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMap1.java))
 
-The Map operator allows you to transform each input tuple into a different output tuple (possibly of a different type). In the following example we transform each input tuple of type _InputTuple_ into a tuple of type _OutputTuple_:
+The Map operator allows you to transform each input tuple into a different output tuple (possibly of a different type). In the following example, we transform each input tuple of type _InputTuple_ into a tuple of type _OutputTuple_:
 
 ```java
 class InputTuple implements Tuple {
@@ -94,9 +97,9 @@ q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
 }, inKey, outKey);
 ```
 
-#### Operator - Filter
+#### Operator - Filter (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMapFilter.java))
 
-The Filter operator allows you to check whether a certain input tuple should be forwarded or not. In the following example, each input tuple of type _MyTuple_ is forwarded if the value is greater than:
+The Filter operator allows you to check whether a certain input tuple should be forwarded or not. In the following example, each input tuple of type _MyTuple_ is forwarded if the value is greater than 150.
 
 ```java
 q.addFilterOperator("filter", new FilterFunction<MyTuple>() {
@@ -109,24 +112,23 @@ q.addFilterOperator("filter", new FilterFunction<MyTuple>() {
 
 Please notice:
 
-1. When adding a Filter operator, you provide an instance of _FilterFunction&lt;T&gt;_, which defines method _public boolean forward(T tuple)_.
-2. Since the filter does not modify the tuple type, you only define one type (_MyTuple_) in the example
+1. When adding a Filter operator, you provide an instance of _FilterFunction&lt;T&gt;_, which defines the method _public boolean forward(T tuple)_.
+2. Since the filter does not modify the tuple type, you only define one type (_MyTuple_ in the example).
 
-#### Operator - Aggregate
+#### Operator - Aggregate (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextAggregate.java))
 
 Differently from the Map's and the Filter's _stateless_ analysis, the Aggregate runs _stateful_ analysis.
-_Stateless_ means each output tuple depends on exactly 1 input tuple (or to be more formal, means that the operator does not maintain a state that evolves depending on the tuples being processed).
-_Stateful_, on the hand, means that each output tuple depends on multiple input tuples.
+_Stateless_ means each output tuple depends on exactly onr input tuple (or to be more formal, it means that the operator does not maintain a state that evolves depending on the tuples being processed).
+_Stateful_, on the other hand, means that each output tuple depends on multiple input tuples.
 
-The Aggregate ooperator aggregates multiple tuples with functions such as _sum_, _max_, _min_ or any other user-defined function. Since streams are unbounded, the aggregation is performed over _windows_.
+The Aggregate operator aggregates multiple tuples with functions such as _sum_, _max_, _min_ or any other user-defined function. Since streams are unbounded, the aggregation is performed over _windows_.
 It allows for such functions to be computed over all the incoming tuples or for different _group-by_ values.
-The semantics of streaming aggregation depends on the type and behavior of its _window_, while the memory footprint and the processing cost depend on its internal implementation. Many variations have been discussed in the literature. You might want to have a look at [1](), [2](2) and [3](3) for more details.
 
+The semantics of streaming aggregation depend on the type and behavior of its _window_, while the memory footprint and the processing cost depend on its internal implementation. Many variations have been discussed in the literature. 
 The Aggregate currently provided by Liebre is for time-based sliding windows and is implemented maintaining a single window for each distinct group-by value.
+In the following, we build an example step-by-step.
 
-In the following, we build an example step-by-step:
-
-The first difference from other operators is in how you define your tuple. In this case, it should implement the **RichTuple** interface:
+For an Aggregate operator, our input and output tuples must implement the **RichTuple** interface:
 
 ```java
 class InputTuple implements RichTuple {
@@ -177,12 +179,35 @@ class OutputTuple implements RichTuple {
 }
 ```
 
-BASERICHTUPLE EXAMPLE
-
 Please notice:
 
-1. You need to define a _long getTimestamp()_ method, because of the time-based sliding windows. You decide the unit of measure of the timestamp
+1. You need to define a _long getTimestamp()_ method, because of the time-based sliding windows.
 2. You need to define a _String getKey()_ so that tuples giving the same key are aggregated together. If you want to aggregate all tuples together (not by key) you can just return an empty String.
+
+For your convenience, you can also extend the BaseRichTuple class, which defines fields and method to keep the _timestamp_ and _key_ fields:
+
+```java
+class InputTuple extends BaseRichTuple {
+	public int value;
+
+	public InputTuple(long timestamp, int key, int value) {
+		super(timestamp, key + "");
+		this.value = value;
+	}
+}
+
+class OutputTuple extends BaseRichTuple {
+	public int count;
+	public double average;
+
+	public OutputTuple(long timestamp, int key, int count,
+		double average) {
+		super(timestamp, key + "");
+		this.count = count;
+		this.average = average;
+	}
+}
+```
 
 Once the input and output tuples types are defined, you can specify the function you will use to aggregate the data. In the following example, our window will count the tuples observed in the window and also compute the average for the field _value_:
 
@@ -223,7 +248,7 @@ Please notice:
 
 1. You provide the implementation for the methods invoked to add and remove tuples from the window (_void add(InputTuple t)_ and _void remove(InputTuple t)_).
 2. You specify how to produce the output tuple (notice fields _startTimestamp_ - the start timestamp of the window - and _key_ are given to you by the class _BaseTimeBasedSingleWindow_).
-3. You also define the method _factory()_, which you can use to initiliaze your variables (if needed).
+3. You also define the method _factory()_, which you can use to initialize your variables (if needed).
 
 Once you define the types for the input and output tuples and the window, you can then add the aggregate to the query:
 
@@ -232,16 +257,16 @@ Once you define the types for the input and output tuples and the window, you ca
 q.addAggregateOperator("aggOp", new Win(), WS, WA, inKey, outKey);
 ```
 
-As shown, aside from the id of the operator, an instance of the window and the keys for the input and output streams, you also specify the window size (WS) and the window advance (WA), using the same unit of measure used by your tuples. For instance, if the timestamp of the tuples are in second, the following aggregate defined a window of size 4 weeks and advance 1 week:
+As shown, aside from the id of the operator, an instance of the window and the keys for the input and output streams, you also specify the window size (WS) and the window advance (WA), using the same unit of measure used by your tuples. For instance, if the timestamp of the tuples are in seconds, the following aggregate defined a window of size 4 weeks and advance 1 week:
 
 ```java
 q.addAggregateOperator("aggOp", new Win(), 4 * 7 * 24 * 3600,
 	7 * 24 * 3600, inKey, outKey);	
 ```
 
-##### **Please notice:** The Aggregate enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order**. If you want to know more about deterministic processing, please have a look at [AGGREGATE]().
+##### **Please notice:** The Aggregate enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order**.
 
-#### Operator - Join
+#### Operator - Join (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextJoin.java))
 
 Similarly to the Aggregate, the Join is a _stateful_ operator. It compares tuples from 2 streams with a given predicate and forwards an output tuple every time the predicate holds. For this operator, you can specify different types for the two input tuples and for the output one. Since the join also operates on _time-based sliding windows_, these types should implement _RichTuple_ or extend _BaseRichTuple_:
 
@@ -302,10 +327,9 @@ Please notice:
 
 1. Since the join operates on sliding windows, we specify the window size (3 seconds in the example, because the unit of time for the tuples is millisecond).
 2. We provide 2 keys, one for each input stream, and 1 for the output stream.
-3. Also the Join enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order** from each input stream. If you want to know more about deterministic processing, please have a look at [JOIN]().
+3. Also the Join enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order** from each input stream.
 
-
-#### Sink - TextSink
+#### Sink - TextSink (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMap1.java))
 
 If you are writing tuples to a text file, then the TextSink allows you to minimize the information you need to provide to the query in order to instantiate such a sink. In the following example, we write tuples composed by attributes _&lt;timestamp,key,value&gt;_ to a file (we use again the MyTuple defined for the TextSink).
 
@@ -327,5 +351,3 @@ Please notice:
 1. As for the example in [the basics](), you need to specify an id for the operator you are adding (in this case _inSource_).
 2. Instead of a BaseSource (as in [the basics]() example), you are now passing a _TextSourceFunction_, for which you only specify the method _getNext(String line)_.
 3. As for the example in [the basics](), you need to specify the key of the stream to which the Source forwards tuples.
-
-Please look at examples [1](),[2](),[3]() and [4]().
