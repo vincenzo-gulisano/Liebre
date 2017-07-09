@@ -1,5 +1,5 @@
 
-[![](images/liebre_small.jpg)](../index.md)
+[![](images/liebre_small.jpg)](../index)
 
 ## The basics
 
