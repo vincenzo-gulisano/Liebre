@@ -19,16 +19,14 @@
 
 package operator;
 
+import java.util.List;
+
 import statistic.AvgStat;
-import stream.Stream;
 import tuple.Tuple;
 
-public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> implements
-		Operator<T1, T2> {
+public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
+		BaseOperator<T1, T2> {
 
-	protected Stream<T1> in;
-	protected Stream<T2> out;
-	protected boolean active = false;
 	private BaseOperator<T1, T2> operator;
 	private AvgStat processingTimeStat;
 
@@ -44,30 +42,6 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> implements
 	}
 
 	@Override
-	public void registerIn(Stream<T1> in) {
-		this.in = in;
-		this.operator.registerIn(in);
-	}
-
-	@Override
-	public void registerOut(Stream<T2> out) {
-		this.out = out;
-		this.operator.registerOut(out);
-	}
-
-	@Override
-	public void run() {
-		while (active) {
-			process();
-		}
-	}
-
-	@Override
-	public void activate() {
-		active = true;
-	}
-
-	@Override
 	public void deActivate() {
 		processingTimeStat.close();
 		active = false;
@@ -77,5 +51,10 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> implements
 		long start = System.nanoTime();
 		this.operator.process();
 		processingTimeStat.add(System.nanoTime() - start);
+	}
+
+	@Override
+	protected List<T2> processTuple(T1 tuple) {
+		return null;
 	}
 }

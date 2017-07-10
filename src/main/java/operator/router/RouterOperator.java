@@ -17,11 +17,41 @@
  *
  */
 
-package tuple;
+package operator.router;
 
-public interface RichTuple extends Tuple  {
+import java.util.HashMap;
+import java.util.List;
 
-	public long getTimestamp();
+import operator.BaseOperator;
+import stream.Stream;
+import tuple.Tuple;
 
-	public String getKey();
+public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
+
+	private RouterFunction<T> router;
+	protected HashMap<String, Stream<T>> outs;
+
+	public RouterOperator(RouterFunction<T> router) {
+		this.router = router;
+		outs = new HashMap<String, Stream<T>>();
+	}
+
+	public void registerOut(String id, Stream<T> out) {
+		this.outs.put(id, out);
+	}
+
+	@Override
+	protected void process() {
+		T inTuple = in.getNextTuple();
+		if (inTuple != null) {
+			for (String stream : router.chooseStreams(inTuple))
+				outs.get(stream).addTuple(inTuple);
+		}
+	}
+
+	@Override
+	protected List<T> processTuple(T tuple) {
+		return null;
+	}
+
 }

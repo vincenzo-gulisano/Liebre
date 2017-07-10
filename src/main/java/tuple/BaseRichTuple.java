@@ -21,6 +21,7 @@ package tuple;
 
 public class BaseRichTuple implements RichTuple {
 
+	private static final long serialVersionUID = -1096134766842666299L;
 	protected long timestamp;
 	protected String key;
 

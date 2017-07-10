@@ -36,17 +36,17 @@ public abstract class BaseOperator2In<T1 extends Tuple, T2 extends Tuple, T3 ext
 	}
 
 	@Override
-	public void registerIn1(Stream<T1> in) {
+	public void registerIn1(String id, Stream<T1> in) {
 		this.in1 = in;
 	}
 
 	@Override
-	public void registerIn2(Stream<T2> in) {
+	public void registerIn2(String id, Stream<T2> in) {
 		this.in2 = in;
 	}
 
 	@Override
-	public void registerOut(Stream<T3> out) {
+	public void registerOut(String id, Stream<T3> out) {
 		this.out = out;
 	}
 

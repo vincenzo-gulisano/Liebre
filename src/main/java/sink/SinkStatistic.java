@@ -20,13 +20,10 @@
 package sink;
 
 import statistic.AvgStat;
-import stream.Stream;
 import tuple.Tuple;
 
-public class SinkStatistic<T extends Tuple> implements Sink<T> {
+public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 
-	protected Stream<T> in;
-	protected boolean active = false;
 	private BaseSink<T> sink;
 	private AvgStat processingTimeStat;
 
@@ -41,24 +38,6 @@ public class SinkStatistic<T extends Tuple> implements Sink<T> {
 	}
 
 	@Override
-	public void registerIn(Stream<T> in) {
-		this.in = in;
-		this.sink.registerIn(in);
-	}
-
-	@Override
-	public void run() {
-		while (active) {
-			process();
-		}
-	}
-
-	@Override
-	public void activate() {
-		active = true;
-	}
-
-	@Override
 	public void deActivate() {
 		processingTimeStat.close();
 		active = false;
@@ -68,5 +47,9 @@ public class SinkStatistic<T extends Tuple> implements Sink<T> {
 		long start = System.nanoTime();
 		this.sink.process();
 		processingTimeStat.add(System.nanoTime() - start);
+	}
+
+	@Override
+	protected void processTuple(T tuple) {
 	}
 }

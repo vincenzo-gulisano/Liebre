@@ -20,13 +20,10 @@
 package source;
 
 import statistic.AvgStat;
-import stream.Stream;
 import tuple.Tuple;
 
-public class SourceStatistic<T extends Tuple> implements Source<T> {
+public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 
-	protected Stream<T> out;
-	protected boolean active = false;
 	private BaseSource<T> source;
 	private AvgStat processingTimeStat;
 
@@ -42,24 +39,6 @@ public class SourceStatistic<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public void registerOut(Stream<T> out) {
-		this.out = out;
-		this.source.registerOut(out);
-	}
-
-	@Override
-	public void run() {
-		while (active) {
-			process();
-		}
-	}
-
-	@Override
-	public void activate() {
-		active = true;
-	}
-
-	@Override
 	public void deActivate() {
 		processingTimeStat.close();
 		active = false;
@@ -69,5 +48,10 @@ public class SourceStatistic<T extends Tuple> implements Source<T> {
 		long start = System.nanoTime();
 		this.source.process();
 		processingTimeStat.add(System.nanoTime() - start);
+	}
+
+	@Override
+	protected T getNextTuple() {
+		return null;
 	}
 }

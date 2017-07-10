@@ -17,11 +17,14 @@
  *
  */
 
-package tuple;
+package operator.router;
 
-public interface RichTuple extends Tuple  {
+import java.util.List;
 
-	public long getTimestamp();
+import tuple.Tuple;
 
-	public String getKey();
+public interface RouterFunction<T extends Tuple> {
+
+	public List<String> chooseStreams(T tuple);
+
 }

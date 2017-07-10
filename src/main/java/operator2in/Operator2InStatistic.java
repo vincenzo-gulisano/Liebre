@@ -19,17 +19,14 @@
 
 package operator2in;
 
+import java.util.List;
+
 import statistic.AvgStat;
-import stream.Stream;
 import tuple.Tuple;
 
 public class Operator2InStatistic<T1 extends Tuple, T2 extends Tuple, T3 extends Tuple>
-		implements Operator2In<T1, T2, T3> {
+		extends BaseOperator2In<T1, T2, T3> {
 
-	protected Stream<T1> in1;
-	protected Stream<T2> in2;
-	protected Stream<T3> out;
-	protected boolean active = false;
 	private BaseOperator2In<T1, T2, T3> operator;
 	private AvgStat processingTimeStat;
 
@@ -46,36 +43,6 @@ public class Operator2InStatistic<T1 extends Tuple, T2 extends Tuple, T3 extends
 	}
 
 	@Override
-	public void registerIn1(Stream<T1> in) {
-		this.in1 = in;
-		this.operator.registerIn1(in);
-	}
-
-	@Override
-	public void registerIn2(Stream<T2> in) {
-		this.in2 = in;
-		this.operator.registerIn2(in);
-	}
-
-	@Override
-	public void registerOut(Stream<T3> out) {
-		this.out = out;
-		this.operator.registerOut(out);
-	}
-
-	@Override
-	public void run() {
-		while (active) {
-			process();
-		}
-	}
-
-	@Override
-	public void activate() {
-		active = true;
-	}
-
-	@Override
 	public void deActivate() {
 		processingTimeStat.close();
 		active = false;
@@ -85,5 +52,15 @@ public class Operator2InStatistic<T1 extends Tuple, T2 extends Tuple, T3 extends
 		long start = System.nanoTime();
 		this.operator.process();
 		processingTimeStat.add(System.nanoTime() - start);
+	}
+
+	@Override
+	protected List<T3> processTupleIn1(T1 tuple) {
+		return null;
+	}
+
+	@Override
+	protected List<T3> processTupleIn2(T2 tuple) {
+		return null;
 	}
 }

@@ -24,9 +24,9 @@ import tuple.Tuple;
 
 public interface Operator<T1 extends Tuple, T2 extends Tuple> extends Runnable {
 
-	public void registerIn(Stream<T1> in);
+	public void registerIn(String id, Stream<T1> in);
 
-	public void registerOut(Stream<T2> out);
+	public void registerOut(String id, Stream<T2> out);
 
 	public void activate();
 

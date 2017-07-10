@@ -23,7 +23,7 @@ import tuple.Tuple;
 
 public class StreamKey<T extends Tuple> {
 
-	final String identifier;
+	public final String identifier;
 	public final Class<T> type;
 
 	public StreamKey(String identifier, Class<T> type) {
