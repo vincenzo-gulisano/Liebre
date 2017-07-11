@@ -22,18 +22,36 @@ package stream;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import tuple.Tuple;
+import util.BackOff;
 
 public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	private ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
+	private BackOff writerBackOff, readerBackOff;
+	private long tuplesWritten, tuplesRead;
+
+	public ConcurrentLinkedListStream() {
+		writerBackOff = new BackOff(1, 20, 5);
+		readerBackOff = new BackOff(1, 20, 5);
+		tuplesWritten = 0;
+		tuplesRead = 0;
+	}
 
 	@Override
 	public void addTuple(T tuple) {
+		if (tuplesWritten - tuplesRead > 10000)
+			writerBackOff.backoff();
 		stream.add(tuple);
+		tuplesWritten++;
 	}
 
 	@Override
 	public T getNextTuple() {
+		T nextTuple = stream.poll();
+		if (nextTuple == null)
+			readerBackOff.backoff();
+		else
+			tuplesRead++;
 		return stream.poll();
 	}
 
