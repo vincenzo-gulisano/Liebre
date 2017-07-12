@@ -24,12 +24,12 @@ import java.util.List;
 import operator.BaseOperator;
 import tuple.Tuple;
 
-public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends
+public class FlatMapOperator<T1 extends Tuple, T2 extends Tuple> extends
 		BaseOperator<T1, T2> {
 
-	private MapFunction<T1, T2> map;
+	private FlatMapFunction<T1, T2> map;
 
-	public MapOperator(MapFunction<T1, T2> map) {
+	public FlatMapOperator(FlatMapFunction<T1, T2> map) {
 		this.map = map;
 	}
 
@@ -37,8 +37,8 @@ public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends
 	protected void process() {
 		T1 inTuple = in.getNextTuple();
 		if (inTuple != null) {
-			T2 outTuple = map.map(inTuple);
-			if (outTuple != null) {
+			List<T2> outTuples = map.map(inTuple);
+			for (T2 outTuple : outTuples) {
 				out.addTuple(outTuple);
 			}
 		}

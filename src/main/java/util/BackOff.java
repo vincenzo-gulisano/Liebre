@@ -17,7 +17,7 @@ public class BackOff {
 		currentRetries = retries;
 	}
 
-	public int backoff() {
+	public void backoff() {
 
 		int delay = rand.nextInt(currentLimit);
 		currentRetries--;
@@ -27,7 +27,15 @@ public class BackOff {
 		}
 
 		Util.sleep(delay);
-		return delay;
+	}
+
+	public void relax() {
+		if (currentRetries < retries) {
+			currentRetries++;
+			if (currentRetries == retries)
+				currentLimit = (currentLimit / 2 >= min) ? currentLimit / 2
+						: min;
+		}
 	}
 
 }

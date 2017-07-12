@@ -33,6 +33,8 @@ import operator.aggregate.TimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindowAggregate;
 import operator.filter.FilterFunction;
 import operator.filter.FilterOperator;
+import operator.map.FlatMapFunction;
+import operator.map.FlatMapOperator;
 import operator.map.MapFunction;
 import operator.map.MapOperator;
 import operator.router.RouterFunction;
@@ -147,6 +149,23 @@ public class Query {
 		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier,
 				inKey.type, outKey.type);
 		BaseOperator<T1, T2> map = new MapOperator<T1, T2>(mapFunction);
+		map.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
+		map.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
+		if (keepStatistics) {
+			map = new OperatorStatistic<T1, T2>(map, statsFolder
+					+ File.separator + identifier + ".proc.csv", autoFlush);
+		}
+		operators.put(key, map);
+		return map;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(
+			String identifier, FlatMapFunction<T1, T2> mapFunction,
+			StreamKey<T1> inKey, StreamKey<T2> outKey) {
+		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier,
+				inKey.type, outKey.type);
+		BaseOperator<T1, T2> map = new FlatMapOperator<T1, T2>(mapFunction);
 		map.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
 		map.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
 		if (keepStatistics) {

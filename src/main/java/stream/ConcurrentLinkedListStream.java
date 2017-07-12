@@ -41,6 +41,8 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	public void addTuple(T tuple) {
 		if (tuplesWritten - tuplesRead > 10000)
 			writerBackOff.backoff();
+		else if (tuplesWritten - tuplesRead < 1000)
+			writerBackOff.relax();
 		stream.add(tuple);
 		tuplesWritten++;
 	}
@@ -50,9 +52,11 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 		T nextTuple = stream.poll();
 		if (nextTuple == null)
 			readerBackOff.backoff();
-		else
+		else {
+			readerBackOff.relax();
 			tuplesRead++;
-		return stream.poll();
+		}
+		return nextTuple;
 	}
 
 	@Override
