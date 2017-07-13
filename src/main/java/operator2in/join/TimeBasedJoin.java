@@ -78,14 +78,21 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 		}
 	}
 
+	protected void purge(long ts) {
+		while (in1Tuples.size() > 0
+				&& in1Tuples.peek().getTimestamp() < ts - ws)
+			in1Tuples.poll();
+		while (in2Tuples.size() > 0
+				&& in2Tuples.peek().getTimestamp() < ts - ws)
+			in2Tuples.poll();
+	}
+
 	@Override
 	protected List<T3> processTupleIn1(T1 tuple) {
 
 		List<T3> results = new LinkedList<T3>();
 
-		while (in2Tuples.size() > 0
-				&& in2Tuples.peek().getTimestamp() < tuple.getTimestamp() - ws)
-			in2Tuples.poll();
+		purge(tuple.getTimestamp());
 
 		if (in2Tuples.size() > 0) {
 
@@ -140,9 +147,7 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 	protected List<T3> processTupleIn2(T2 tuple) {
 		List<T3> results = new LinkedList<T3>();
 
-		while (in1Tuples.size() > 0
-				&& in1Tuples.peek().getTimestamp() < tuple.getTimestamp() - ws)
-			in1Tuples.poll();
+		purge(tuple.getTimestamp());
 
 		if (in1Tuples.size() > 0) {
 
