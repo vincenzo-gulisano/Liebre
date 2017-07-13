@@ -19,8 +19,6 @@
 
 package operator.map;
 
-import java.util.List;
-
 import operator.BaseOperator;
 import tuple.Tuple;
 
@@ -44,8 +42,8 @@ public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends
 		}
 	}
 
-	@Override
-	protected List<T2> processTuple(T1 tuple) {
-		return null;
-	}
+//	@Override
+//	protected List<T2> processTuple(T1 tuple) {
+//		return null;
+//	}
 }

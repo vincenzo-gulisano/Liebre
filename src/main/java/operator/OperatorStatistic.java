@@ -19,8 +19,6 @@
 
 package operator;
 
-import java.util.List;
-
 import statistic.AvgStat;
 import tuple.Tuple;
 
@@ -52,9 +50,9 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
 		this.operator.process();
 		processingTimeStat.add(System.nanoTime() - start);
 	}
-
-	@Override
-	protected List<T2> processTuple(T1 tuple) {
-		return null;
-	}
+	//
+	// @Override
+	// protected List<T2> processTuple(T1 tuple) {
+	// return null;
+	// }
 }

@@ -19,8 +19,6 @@
 
 package example;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 import operator.BaseOperator;
@@ -66,11 +64,12 @@ public class SimpleQuery {
 
 		q.addOperator("multiply", new BaseOperator<MyTuple, MyTuple>() {
 			@Override
-			protected List<MyTuple> processTuple(MyTuple tuple) {
-				List<MyTuple> result = new LinkedList<MyTuple>();
-				result.add(new MyTuple(tuple.timestamp, tuple.key,
-						tuple.value * 2));
-				return result;
+			protected void process() {
+				MyTuple inTuple = in.getNextTuple();
+				if (inTuple != null) {
+					out.addTuple(new MyTuple(inTuple.timestamp, inTuple.key,
+							inTuple.value * 2));
+				}
 			}
 		}, inKey, outKey);
 

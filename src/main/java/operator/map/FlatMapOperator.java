@@ -44,8 +44,8 @@ public class FlatMapOperator<T1 extends Tuple, T2 extends Tuple> extends
 		}
 	}
 
-	@Override
-	protected List<T2> processTuple(T1 tuple) {
-		return null;
-	}
+//	@Override
+//	protected List<T2> processTuple(T1 tuple) {
+//		return null;
+//	}
 }
