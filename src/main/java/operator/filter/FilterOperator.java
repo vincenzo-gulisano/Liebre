@@ -19,6 +19,9 @@
 
 package operator.filter;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import operator.BaseOperator;
 import tuple.Tuple;
 
@@ -30,22 +33,19 @@ public class FilterOperator<T extends Tuple> extends BaseOperator<T, T> {
 		this.filter = filter;
 	}
 
-	@Override
-	protected void process() {
-		T inTuple = in.getNextTuple();
-		if (inTuple != null && filter.forward(inTuple)) {
-			out.addTuple(inTuple);
-		}
-	}
-
-	// // TODO do we need this method?
 	// @Override
-	// protected List<T> processTuple(T tuple) {
-	// List<T> result = new LinkedList<T>();
-	// if (filter.forward(tuple)) {
-	// out.addTuple(tuple);
+	// public void process() {
+	// T inTuple = in.getNextTuple();
+	// if (inTuple != null && filter.forward(inTuple)) {
+	// out.addTuple(inTuple);
 	// }
-	// return result;
 	// }
 
+	@Override
+	public List<T> processTuple(T tuple) {
+		List<T> result = new LinkedList<T>();
+		if (filter.forward(tuple))
+			result.add(tuple);
+		return result;
+	}
 }

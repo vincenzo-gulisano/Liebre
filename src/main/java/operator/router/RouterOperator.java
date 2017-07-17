@@ -20,6 +20,7 @@
 package operator.router;
 
 import java.util.HashMap;
+import java.util.List;
 
 import operator.BaseOperator;
 import stream.Stream;
@@ -40,7 +41,7 @@ public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 	}
 
 	@Override
-	protected void process() {
+	public void process() {
 		T inTuple = in.getNextTuple();
 		if (inTuple != null) {
 			for (String stream : router.chooseStreams(inTuple))
@@ -48,9 +49,9 @@ public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 		}
 	}
 
-//	@Override
-//	protected List<T> processTuple(T tuple) {
-//		return null;
-//	}
+	@Override
+	public List<T> processTuple(T tuple) {
+		return null;
+	}
 
 }

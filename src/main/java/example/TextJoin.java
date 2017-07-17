@@ -79,7 +79,7 @@ public class TextJoin {
 			Random r = new Random();
 
 			@Override
-			protected InputTuple1 getNextTuple() {
+			public InputTuple1 getNextTuple() {
 				try {
 					Thread.sleep(1100);
 				} catch (InterruptedException e) {
@@ -94,7 +94,7 @@ public class TextJoin {
 			Random r = new Random();
 
 			@Override
-			protected InputTuple2 getNextTuple() {
+			public InputTuple2 getNextTuple() {
 				try {
 					Thread.sleep(800);
 				} catch (InterruptedException e) {
@@ -120,7 +120,7 @@ public class TextJoin {
 
 		q.addSink("outSink", new BaseSink<OutputTuple>() {
 			@Override
-			protected void processTuple(OutputTuple tuple) {
+			public void processTuple(OutputTuple tuple) {
 				System.out.println(tuple.t1.a + " <--> " + tuple.t2.b);
 			}
 		}, outKey);

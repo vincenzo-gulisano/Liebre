@@ -32,7 +32,7 @@ public class TextSink<T extends Tuple> extends BaseSink<T> {
 	private boolean closed;
 
 	private PrintWriter pw;
-	private TextSinkFunction<T> function;
+	protected TextSinkFunction<T> function;
 
 	public TextSink(String fileName, TextSinkFunction<T> function,
 			boolean autoFlush) {
@@ -66,7 +66,7 @@ public class TextSink<T extends Tuple> extends BaseSink<T> {
 	}
 
 	@Override
-	protected void processTuple(T tuple) {
+	public void processTuple(T tuple) {
 		write(function.convertTupleToLine(tuple));
 	}
 

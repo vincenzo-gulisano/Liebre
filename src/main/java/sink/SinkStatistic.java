@@ -43,13 +43,13 @@ public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 		active = false;
 	}
 
-	protected void process() {
+	public void process() {
 		long start = System.nanoTime();
 		this.sink.process();
 		processingTimeStat.add(System.nanoTime() - start);
 	}
 
 	@Override
-	protected void processTuple(T tuple) {
+	public void processTuple(T tuple) {
 	}
 }

@@ -172,12 +172,12 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 
 	}
 
-	@Override
-	protected void process() {
-		T1 inTuple = in.getNextTuple();
-		if (inTuple != null) {
-			for (T2 outT : processTuple(inTuple))
-				out.addTuple(outT);
-		}
-	}
+//	@Override
+//	public void process() {
+//		T1 inTuple = in.getNextTuple();
+//		if (inTuple != null) {
+//			for (T2 outT : processTuple(inTuple))
+//				out.addTuple(outT);
+//		}
+//	}
 }

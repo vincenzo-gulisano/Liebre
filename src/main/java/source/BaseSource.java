@@ -49,9 +49,9 @@ public abstract class BaseSource<T extends Tuple> implements Source<T> {
 		active = false;
 	}
 
-	protected void process() {
+	public void process() {
 		out.addTuple(getNextTuple());
 	}
 
-	protected abstract T getNextTuple();
+	public abstract T getNextTuple();
 }

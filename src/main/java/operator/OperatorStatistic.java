@@ -19,6 +19,8 @@
 
 package operator;
 
+import java.util.List;
+
 import statistic.AvgStat;
 import tuple.Tuple;
 
@@ -45,14 +47,17 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
 		active = false;
 	}
 
-	protected void process() {
+//	public void process() {
+//		long start = System.nanoTime();
+//		this.operator.process();
+//		processingTimeStat.add(System.nanoTime() - start);
+//	}
+
+	@Override
+	public List<T2> processTuple(T1 tuple) {
 		long start = System.nanoTime();
 		this.operator.process();
 		processingTimeStat.add(System.nanoTime() - start);
+		return null;
 	}
-	//
-	// @Override
-	// protected List<T2> processTuple(T1 tuple) {
-	// return null;
-	// }
 }

@@ -19,6 +19,8 @@
 
 package operator;
 
+import java.util.List;
+
 import stream.Stream;
 import tuple.Tuple;
 
@@ -59,18 +61,18 @@ public abstract class BaseOperator<T1 extends Tuple, T2 extends Tuple>
 		active = false;
 	}
 
-	protected abstract void process();
+//	public abstract void process();
 	
-//	protected void process() {
-//		T1 inTuple = in.getNextTuple();
-//		if (inTuple != null) {
-//			List<T2> outTuples = processTuple(inTuple);
-//			if (outTuples != null) {
-//				for (T2 t : outTuples)
-//					out.addTuple(t);
-//			}
-//		}
-//	}
-//
-//	protected abstract List<T2> processTuple(T1 tuple);
+	public void process() {
+		T1 inTuple = in.getNextTuple();
+		if (inTuple != null) {
+			List<T2> outTuples = processTuple(inTuple);
+			if (outTuples != null) {
+				for (T2 t : outTuples)
+					out.addTuple(t);
+			}
+		}
+	}
+
+	public abstract List<T2> processTuple(T1 tuple);
 }

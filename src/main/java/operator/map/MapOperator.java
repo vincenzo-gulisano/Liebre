@@ -19,6 +19,9 @@
 
 package operator.map;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import operator.BaseOperator;
 import tuple.Tuple;
 
@@ -31,19 +34,21 @@ public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends
 		this.map = map;
 	}
 
-	@Override
-	protected void process() {
-		T1 inTuple = in.getNextTuple();
-		if (inTuple != null) {
-			T2 outTuple = map.map(inTuple);
-			if (outTuple != null) {
-				out.addTuple(outTuple);
-			}
-		}
-	}
-
 //	@Override
-//	protected List<T2> processTuple(T1 tuple) {
-//		return null;
+//	public void process() {
+//		T1 inTuple = in.getNextTuple();
+//		if (inTuple != null) {
+//			T2 outTuple = map.map(inTuple);
+//			if (outTuple != null) {
+//				out.addTuple(outTuple);
+//			}
+//		}
 //	}
+
+	@Override
+	public List<T2> processTuple(T1 tuple) {
+		List<T2> result = new LinkedList<T2>();
+		result.add(map.map(tuple));
+		return result;
+	}
 }

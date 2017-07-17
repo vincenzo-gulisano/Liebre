@@ -46,7 +46,7 @@ public class TextSource<T extends Tuple> extends BaseSource<T> {
 		}
 	}
 
-	protected void process() {
+	public void process() {
 		if (hasNext())
 			out.addTuple(getNextTuple());
 	}

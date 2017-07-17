@@ -33,19 +33,19 @@ public class FlatMapOperator<T1 extends Tuple, T2 extends Tuple> extends
 		this.map = map;
 	}
 
-	@Override
-	protected void process() {
-		T1 inTuple = in.getNextTuple();
-		if (inTuple != null) {
-			List<T2> outTuples = map.map(inTuple);
-			for (T2 outTuple : outTuples) {
-				out.addTuple(outTuple);
-			}
-		}
-	}
-
 //	@Override
-//	protected List<T2> processTuple(T1 tuple) {
-//		return null;
+//	public void process() {
+//		T1 inTuple = in.getNextTuple();
+//		if (inTuple != null) {
+//			List<T2> outTuples = map.map(inTuple);
+//			for (T2 outTuple : outTuples) {
+//				out.addTuple(outTuple);
+//			}
+//		}
 //	}
+
+	@Override
+	public List<T2> processTuple(T1 tuple) {
+		return map.map(tuple);
+	}
 }

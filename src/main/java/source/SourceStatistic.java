@@ -44,14 +44,14 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 		active = false;
 	}
 
-	protected void process() {
+	public void process() {
 		long start = System.nanoTime();
 		this.source.process();
 		processingTimeStat.add(System.nanoTime() - start);
 	}
 
 	@Override
-	protected T getNextTuple() {
+	public T getNextTuple() {
 		return null;
 	}
 }

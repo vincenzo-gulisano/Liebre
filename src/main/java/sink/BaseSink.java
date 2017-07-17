@@ -52,12 +52,12 @@ public abstract class BaseSink<T extends Tuple> implements Sink<T> {
 		active = false;
 	}
 
-	protected void process() {
+	public void process() {
 		T t = in.getNextTuple();
 		if (t != null) {
 			processTuple(t);
 		}
 	}
 
-	protected abstract void processTuple(T tuple);
+	public abstract void processTuple(T tuple);
 }
