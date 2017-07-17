@@ -46,10 +46,10 @@ public class TextSource<T extends Tuple> extends BaseSource<T> {
 		}
 	}
 
-	public void process() {
-		if (hasNext())
-			out.addTuple(getNextTuple());
-	}
+//	public void process() {
+//		if (hasNext())
+//			out.addTuple(getNextTuple());
+//	}
 
 	public boolean hasNext() {
 		if (hasNext)
@@ -66,7 +66,10 @@ public class TextSource<T extends Tuple> extends BaseSource<T> {
 	}
 
 	public T getNextTuple() {
-		return function.getNext(nextLine);
+		if (hasNext())
+			return function.getNext(nextLine);
+		else
+			return null;
 	}
 
 	public void close() {

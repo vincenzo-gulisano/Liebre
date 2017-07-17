@@ -48,7 +48,8 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 		long start = System.nanoTime();
 		T t = this.source.getNextTuple();
 		processingTimeStat.add(System.nanoTime() - start);
-		out.addTuple(t);
+		if (t != null)
+			out.addTuple(t);
 	}
 
 	@Override
