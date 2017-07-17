@@ -28,7 +28,7 @@ import tuple.Tuple;
 
 public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 
-	private RouterFunction<T> router;
+	protected RouterFunction<T> router;
 	protected HashMap<String, Stream<T>> outs;
 
 	public RouterOperator(RouterFunction<T> router) {

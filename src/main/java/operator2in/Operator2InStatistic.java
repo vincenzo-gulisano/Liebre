@@ -48,19 +48,36 @@ public class Operator2InStatistic<T1 extends Tuple, T2 extends Tuple, T3 extends
 		active = false;
 	}
 
-	protected void process() {
-		long start = System.nanoTime();
-		this.operator.process();
-		processingTimeStat.add(System.nanoTime() - start);
+	public void process() {
+		T1 inTuple1 = in1.getNextTuple();
+		if (inTuple1 != null) {
+			long start = System.nanoTime();
+			List<T3> outTuples = this.operator.processTupleIn1(inTuple1);
+			processingTimeStat.add(System.nanoTime() - start);
+			if (outTuples != null) {
+				for (T3 t : outTuples)
+					out.addTuple(t);
+			}
+		}
+		T2 inTuple2 = in2.getNextTuple();
+		if (inTuple2 != null) {
+			long start = System.nanoTime();
+			List<T3> outTuples = this.operator.processTupleIn2(inTuple2);
+			processingTimeStat.add(System.nanoTime() - start);
+			if (outTuples != null) {
+				for (T3 t : outTuples)
+					out.addTuple(t);
+			}
+		}
 	}
 
 	@Override
-	protected List<T3> processTupleIn1(T1 tuple) {
+	public List<T3> processTupleIn1(T1 tuple) {
 		return null;
 	}
 
 	@Override
-	protected List<T3> processTupleIn2(T2 tuple) {
+	public List<T3> processTupleIn2(T2 tuple) {
 		return null;
 	}
 }

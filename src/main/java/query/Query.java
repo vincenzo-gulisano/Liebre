@@ -39,6 +39,7 @@ import operator.map.MapFunction;
 import operator.map.MapOperator;
 import operator.router.RouterFunction;
 import operator.router.RouterOperator;
+import operator.router.RouterStatisticOperator;
 import operator2in.BaseOperator2In;
 import operator2in.Operator2In;
 import operator2in.Operator2InKey;
@@ -113,13 +114,13 @@ public class Query {
 			StreamKey<T1> inKey, StreamKey<T2> outKey) {
 		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier,
 				inKey.type, outKey.type);
-		operator.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
-		operator.registerOut(outKey.identifier,
-				(Stream<T2>) streams.get(outKey));
 		if (keepStatistics) {
 			operator = new OperatorStatistic<T1, T2>(operator, statsFolder
 					+ File.separator + identifier + ".proc.csv", autoFlush);
 		}
+		operator.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
+		operator.registerOut(outKey.identifier,
+				(Stream<T2>) streams.get(outKey));
 		operators.put(key, operator);
 		return operator;
 	}
@@ -132,12 +133,12 @@ public class Query {
 				inKey.type, outKey.type);
 		BaseOperator<T1, T2> agg = new TimeBasedSingleWindowAggregate<T1, T2>(
 				WS, WA, window);
-		agg.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
-		agg.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
 		if (keepStatistics) {
 			agg = new OperatorStatistic<T1, T2>(agg, statsFolder
 					+ File.separator + identifier + ".proc.csv", autoFlush);
 		}
+		agg.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
+		agg.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
 		operators.put(key, agg);
 		return agg;
 	}
@@ -149,12 +150,12 @@ public class Query {
 		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier,
 				inKey.type, outKey.type);
 		BaseOperator<T1, T2> map = new MapOperator<T1, T2>(mapFunction);
-		map.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
-		map.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
 		if (keepStatistics) {
 			map = new OperatorStatistic<T1, T2>(map, statsFolder
 					+ File.separator + identifier + ".proc.csv", autoFlush);
 		}
+		map.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
+		map.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
 		operators.put(key, map);
 		return map;
 	}
@@ -166,12 +167,12 @@ public class Query {
 		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier,
 				inKey.type, outKey.type);
 		BaseOperator<T1, T2> map = new FlatMapOperator<T1, T2>(mapFunction);
-		map.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
-		map.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
 		if (keepStatistics) {
 			map = new OperatorStatistic<T1, T2>(map, statsFolder
 					+ File.separator + identifier + ".proc.csv", autoFlush);
 		}
+		map.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
+		map.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
 		operators.put(key, map);
 		return map;
 	}
@@ -183,12 +184,12 @@ public class Query {
 		OperatorKey<T, T> key = new OperatorKey<T, T>(identifier, inKey.type,
 				outKey.type);
 		BaseOperator<T, T> filter = new FilterOperator<T>(filterF);
-		filter.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
-		filter.registerOut(outKey.identifier, (Stream<T>) streams.get(outKey));
 		if (keepStatistics) {
 			filter = new OperatorStatistic<T, T>(filter, statsFolder
 					+ File.separator + identifier + ".proc.csv", autoFlush);
 		}
+		filter.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
+		filter.registerOut(outKey.identifier, (Stream<T>) streams.get(outKey));
 		operators.put(key, filter);
 		return filter;
 	}
@@ -199,15 +200,19 @@ public class Query {
 			List<StreamKey<T>> outKeys) {
 		OperatorKey<T, T> key = new OperatorKey<T, T>(identifier, inKey.type,
 				outKeys.get(0).type);
-		BaseOperator<T, T> router = new RouterOperator<T>(routerF);
+		BaseOperator<T, T> router = null;
+		// Notice that the router is a special case which needs a dedicated
+		// statistics operator
+		if (keepStatistics) {
+			router = new RouterStatisticOperator<T>(routerF, statsFolder
+					+ File.separator + identifier + ".proc.csv", autoFlush);
+		} else {
+			router = new RouterOperator<T>(routerF);
+		}
 		router.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
 		for (StreamKey<T> outKey : outKeys)
 			router.registerOut(outKey.identifier,
 					(Stream<T>) streams.get(outKey));
-		if (keepStatistics) {
-			router = new OperatorStatistic<T, T>(router, statsFolder
-					+ File.separator + identifier + ".proc.csv", autoFlush);
-		}
 		operators.put(key, router);
 		return router;
 	}
@@ -216,11 +221,11 @@ public class Query {
 	public <T extends Tuple> SourceKey<T> addSource(String identifier,
 			BaseSource<T> source, StreamKey<T> outKey) {
 		SourceKey<T> key = new SourceKey<T>(identifier, outKey.type);
-		source.registerOut((Stream<T>) streams.get(outKey));
 		if (keepStatistics) {
 			source = new SourceStatistic<T>(source, statsFolder
 					+ File.separator + identifier + ".proc.csv");
 		}
+		source.registerOut((Stream<T>) streams.get(outKey));
 		sources.put(key, source);
 		return key;
 	}
@@ -230,11 +235,11 @@ public class Query {
 			String fileName, TextSourceFunction<T> function, StreamKey<T> outKey) {
 		SourceKey<T> key = new SourceKey<T>(identifier, outKey.type);
 		BaseSource<T> source = new TextSource<T>(fileName, function);
-		source.registerOut((Stream<T>) streams.get(outKey));
 		if (keepStatistics) {
 			source = new SourceStatistic<T>(source, statsFolder
 					+ File.separator + identifier + ".proc.csv");
 		}
+		source.registerOut((Stream<T>) streams.get(outKey));
 		sources.put(key, source);
 		return key;
 	}
@@ -243,11 +248,11 @@ public class Query {
 	public <T extends Tuple> SinkKey<T> addSink(String identifier,
 			BaseSink<T> sink, StreamKey<T> streamKey) {
 		SinkKey<T> key = new SinkKey<T>(identifier, streamKey.type);
-		sink.registerIn((Stream<T>) streams.get(streamKey));
 		if (keepStatistics) {
 			sink = new SinkStatistic<T>(sink, statsFolder + File.separator
 					+ identifier + ".proc.csv");
 		}
+		sink.registerIn((Stream<T>) streams.get(streamKey));
 		sinks.put(key, sink);
 		return key;
 	}
@@ -258,11 +263,11 @@ public class Query {
 			StreamKey<T> streamKey) {
 		SinkKey<T> key = new SinkKey<T>(identifier, streamKey.type);
 		BaseSink<T> sink = new TextSink<T>(fileName, function, true);
-		sink.registerIn((Stream<T>) streams.get(streamKey));
 		if (keepStatistics) {
 			sink = new SinkStatistic<T>(sink, statsFolder + File.separator
 					+ identifier + ".proc.csv");
 		}
+		sink.registerIn((Stream<T>) streams.get(streamKey));
 		sinks.put(key, sink);
 		return key;
 	}
@@ -273,11 +278,11 @@ public class Query {
 			StreamKey<T> streamKey) {
 		SinkKey<T> key = new SinkKey<T>(identifier, streamKey.type);
 		BaseSink<T> sink = new TextSink<T>(fileName, function, autoFlush);
-		sink.registerIn((Stream<T>) streams.get(streamKey));
 		if (keepStatistics) {
 			sink = new SinkStatistic<T>(sink, statsFolder + File.separator
 					+ identifier + ".proc.csv");
 		}
+		sink.registerIn((Stream<T>) streams.get(streamKey));
 		sinks.put(key, sink);
 		return key;
 	}
@@ -288,17 +293,17 @@ public class Query {
 			StreamKey<T1> in1Key, StreamKey<T2> in2Key, StreamKey<T3> outKey) {
 		Operator2InKey<T1, T2, T3> key = new Operator2InKey<T1, T2, T3>(
 				identifier, in1Key.type, in2Key.type, outKey.type);
+		if (keepStatistics) {
+			operator = new Operator2InStatistic<T1, T2, T3>(operator,
+					statsFolder + File.separator + identifier + ".proc.csv",
+					autoFlush);
+		}
 		operator.registerIn1(in1Key.identifier,
 				(Stream<T1>) streams.get(in1Key));
 		operator.registerIn2(in2Key.identifier,
 				(Stream<T2>) streams.get(in2Key));
 		operator.registerOut(outKey.identifier,
 				(Stream<T3>) streams.get(outKey));
-		if (keepStatistics) {
-			operator = new Operator2InStatistic<T1, T2, T3>(operator,
-					statsFolder + File.separator + identifier + ".proc.csv",
-					autoFlush);
-		}
 		operators2in.put(key, operator);
 		return operator;
 	}
@@ -311,14 +316,13 @@ public class Query {
 				identifier, in1Key.type, in2Key.type, outKey.type);
 		BaseOperator2In<T1, T2, T3> op = new TimeBasedJoin<T1, T2, T3>(WS,
 				predicate);
-		op.registerIn1(in1Key.identifier, (Stream<T1>) streams.get(in1Key));
-		op.registerIn2(in2Key.identifier, (Stream<T2>) streams.get(in2Key));
-		op.registerOut(outKey.identifier, (Stream<T3>) streams.get(outKey));
-
 		if (keepStatistics) {
 			op = new Operator2InStatistic<T1, T2, T3>(op, statsFolder
 					+ File.separator + identifier + ".proc.csv", autoFlush);
 		}
+		op.registerIn1(in1Key.identifier, (Stream<T1>) streams.get(in1Key));
+		op.registerIn2(in2Key.identifier, (Stream<T2>) streams.get(in2Key));
+		op.registerOut(outKey.identifier, (Stream<T3>) streams.get(outKey));
 		operators2in.put(key, op);
 		return op;
 	}

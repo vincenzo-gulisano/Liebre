@@ -67,7 +67,7 @@ public abstract class BaseOperator2In<T1 extends Tuple, T2 extends Tuple, T3 ext
 		active = false;
 	}
 
-	protected void process() {
+	public void process() {
 		T1 inTuple1 = in1.getNextTuple();
 		if (inTuple1 != null) {
 			List<T3> outTuples = processTupleIn1(inTuple1);
@@ -86,7 +86,7 @@ public abstract class BaseOperator2In<T1 extends Tuple, T2 extends Tuple, T3 ext
 		}
 	}
 
-	protected abstract List<T3> processTupleIn1(T1 tuple);
+	public abstract List<T3> processTupleIn1(T1 tuple);
 
-	protected abstract List<T3> processTupleIn2(T2 tuple);
+	public abstract List<T3> processTupleIn2(T2 tuple);
 }

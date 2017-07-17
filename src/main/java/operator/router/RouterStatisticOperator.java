@@ -17,27 +17,25 @@
  *
  */
 
-package operator;
+package operator.router;
 
 import java.util.List;
 
 import statistic.AvgStat;
 import tuple.Tuple;
 
-public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
-		BaseOperator<T1, T2> {
+public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> {
 
-	private BaseOperator<T1, T2> operator;
 	private AvgStat processingTimeStat;
 
-	public OperatorStatistic(BaseOperator<T1, T2> operator, String outputFile) {
-		this.operator = operator;
+	public RouterStatisticOperator(RouterFunction<T> router, String outputFile) {
+		super(router);
 		this.processingTimeStat = new AvgStat(outputFile, true);
 	}
 
-	public OperatorStatistic(BaseOperator<T1, T2> operator, String outputFile,
+	public RouterStatisticOperator(RouterFunction<T> router, String outputFile,
 			boolean autoFlush) {
-		this.operator = operator;
+		super(router);
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
 
@@ -47,31 +45,16 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
 		active = false;
 	}
 
+	@Override
 	public void process() {
-		T1 inTuple = in.getNextTuple();
+		T inTuple = in.getNextTuple();
 		if (inTuple != null) {
 			long start = System.nanoTime();
-			List<T2> outTuples = this.operator.processTuple(inTuple);
+			List<String> streams = router.chooseStreams(inTuple);
 			processingTimeStat.add(System.nanoTime() - start);
-			if (outTuples != null) {
-				for (T2 t : outTuples)
-					out.addTuple(t);
-			}
+			for (String stream : streams)
+				outs.get(stream).addTuple(inTuple);
 		}
 	}
 
-	// public void process() {
-	//
-	// long start = System.nanoTime();
-	// this.operator.process();
-	// processingTimeStat.add(System.nanoTime() - start);
-	// }
-
-	@Override
-	public List<T2> processTuple(T1 tuple) {
-		// long start = System.nanoTime();
-		// this.operator.process();
-		// processingTimeStat.add(System.nanoTime() - start);
-		return null;
-	}
 }

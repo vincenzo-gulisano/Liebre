@@ -65,14 +65,14 @@ public class SimpleQuery {
 		}, inKey);
 
 		q.addOperator("multiply", new BaseOperator<MyTuple, MyTuple>() {
-			@Override
-			public void process() {
-				MyTuple inTuple = in.getNextTuple();
-				if (inTuple != null) {
-					out.addTuple(new MyTuple(inTuple.timestamp, inTuple.key,
-							inTuple.value * 2));
-				}
-			}
+//			@Override
+//			public void process() {
+//				MyTuple inTuple = in.getNextTuple();
+//				if (inTuple != null) {
+//					out.addTuple(new MyTuple(inTuple.timestamp, inTuple.key,
+//							inTuple.value * 2));
+//				}
+//			}
 
 			@Override
 			public List<MyTuple> processTuple(MyTuple tuple) {

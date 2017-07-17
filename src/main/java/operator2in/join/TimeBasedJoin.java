@@ -49,7 +49,7 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 		in2TuplesBuffer = new LinkedList<T2>();
 	}
 
-	protected void process() {
+	public void process() {
 		T1 inTuple1 = in1.getNextTuple();
 		while (inTuple1 != null) {
 			in1buffer(inTuple1);
@@ -87,30 +87,73 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 			in2Tuples.poll();
 	}
 
-	@Override
-	protected List<T3> processTupleIn1(T1 tuple) {
-
+	private List<T3> processReadyTuples() {
+		
 		List<T3> results = new LinkedList<T3>();
+		
+		while (in1buffered() && in2buffered()) {
+			if (buffer1Peek().getTimestamp() < buffer2Peek().getTimestamp()) {
+				
+				T1 tuple = buffer1Poll();
+				
+				purge(tuple.getTimestamp());
 
-		purge(tuple.getTimestamp());
+				if (in2Tuples.size() > 0) {
 
-		if (in2Tuples.size() > 0) {
+					for (T2 t : in2Tuples) {
+						T3 result = predicate.compare(tuple, t);
+						if (result != null) {
+							results.add(result);
+						}
 
-			for (T2 t : in2Tuples) {
-				T3 result = predicate.compare(tuple, t);
-				if (result != null) {
-					results.add(result);
+					}
+
 				}
 
+				in1Tuples.add(tuple);
+				
+			} else {
+
+				T2 tuple = buffer2Poll();
+				
+				purge(tuple.getTimestamp());
+
+				if (in1Tuples.size() > 0) {
+
+					for (T1 t : in1Tuples) {
+						T3 result = predicate.compare(t, tuple);
+						if (result != null) {
+							results.add(result);
+						}
+
+					}
+
+				}
+
+				in2Tuples.add(tuple);
+				
 			}
-
 		}
-
-		in1Tuples.add(tuple);
-
+		
 		return results;
+		
+	}
+	
+	@Override
+	public List<T3> processTupleIn1(T1 tuple) {
+
+		in1buffer(tuple);
+		return processReadyTuples();
+		
 	}
 
+	@Override
+	public List<T3> processTupleIn2(T2 tuple) {
+
+		in2buffer(tuple);
+		return processReadyTuples();
+		
+	}
 	private boolean in1buffered() {
 		return !in1TuplesBuffer.isEmpty();
 	}
@@ -142,28 +185,6 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 	private T2 buffer2Poll() {
 		return in2TuplesBuffer.poll();
 	}
-
-	@Override
-	protected List<T3> processTupleIn2(T2 tuple) {
-		List<T3> results = new LinkedList<T3>();
-
-		purge(tuple.getTimestamp());
-
-		if (in1Tuples.size() > 0) {
-
-			for (T1 t : in1Tuples) {
-				T3 result = predicate.compare(t, tuple);
-				if (result != null) {
-					results.add(result);
-				}
-
-			}
-
-		}
-
-		in2Tuples.add(tuple);
-
-		return results;
-	}
+	
 
 }
