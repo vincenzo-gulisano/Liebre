@@ -44,8 +44,10 @@ public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 	public void process() {
 		T inTuple = in.getNextTuple();
 		if (inTuple != null) {
-			for (String stream : router.chooseStreams(inTuple))
-				outs.get(stream).addTuple(inTuple);
+			List<String> streams = router.chooseStreams(inTuple);
+			if (streams != null)
+				for (String stream : router.chooseStreams(inTuple))
+					outs.get(stream).addTuple(inTuple);
 		}
 	}
 

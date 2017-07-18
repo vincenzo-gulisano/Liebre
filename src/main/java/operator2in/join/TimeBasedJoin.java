@@ -49,35 +49,6 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 		in2TuplesBuffer = new LinkedList<T2>();
 	}
 
-	// public void process() {
-	// T1 inTuple1 = in1.getNextTuple();
-	// while (inTuple1 != null) {
-	// in1buffer(inTuple1);
-	// inTuple1 = in1.getNextTuple();
-	// }
-	// T2 inTuple2 = in2.getNextTuple();
-	// while (inTuple2 != null) {
-	// in2buffer(inTuple2);
-	// inTuple2 = in2.getNextTuple();
-	// }
-	//
-	// while (in1buffered() && in2buffered()) {
-	// if (buffer1Peek().getTimestamp() < buffer2Peek().getTimestamp()) {
-	// List<T3> outTuples = processTupleIn1(buffer1Poll());
-	// if (outTuples != null) {
-	// for (T3 t : outTuples)
-	// out.addTuple(t);
-	// }
-	// } else {
-	// List<T3> outTuples = processTupleIn2(buffer2Poll());
-	// if (outTuples != null) {
-	// for (T3 t : outTuples)
-	// out.addTuple(t);
-	// }
-	// }
-	// }
-	// }
-
 	protected void purge(long ts) {
 		while (in1Tuples.size() > 0
 				&& in1Tuples.peek().getTimestamp() < ts - ws)

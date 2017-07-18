@@ -33,14 +33,6 @@ public class FilterOperator<T extends Tuple> extends BaseOperator<T, T> {
 		this.filter = filter;
 	}
 
-	// @Override
-	// public void process() {
-	// T inTuple = in.getNextTuple();
-	// if (inTuple != null && filter.forward(inTuple)) {
-	// out.addTuple(inTuple);
-	// }
-	// }
-
 	@Override
 	public List<T> processTuple(T tuple) {
 		List<T> result = new LinkedList<T>();

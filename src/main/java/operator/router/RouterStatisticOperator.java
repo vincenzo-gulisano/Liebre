@@ -52,8 +52,9 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 			long start = System.nanoTime();
 			List<String> streams = router.chooseStreams(inTuple);
 			processingTimeStat.add(System.nanoTime() - start);
-			for (String stream : streams)
-				outs.get(stream).addTuple(inTuple);
+			if (streams != null)
+				for (String stream : streams)
+					outs.get(stream).addTuple(inTuple);
 		}
 	}
 

@@ -97,6 +97,23 @@ q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
 }, inKey, outKey);
 ```
 
+#### Operator - FlatMap (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextFlatMap.java))
+
+The FlatMap operator is similar to the Map operator, but it allows to transform each input tuple into zero, one or more output tuples. Continuing the previous example, you can add it to your query as follows.
+
+```java
+q.addMapOperator("multiply", new FlatMapFunction<MyTuple, MyTuple>() {
+	@Override
+	public List<MyTuple> map(MyTuple tuple) {
+		List<MyTuple> result = new LinkedList<MyTuple>();
+		result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
+		result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 3));
+		result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 4));
+		return result;
+	}
+}, inKey, outKey);
+```
+
 #### Operator - Filter (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMapFilter.java))
 
 The Filter operator allows you to check whether a certain input tuple should be forwarded or not. In the following example, each input tuple of type _MyTuple_ is forwarded if the value is greater than 150.
@@ -114,6 +131,34 @@ Please notice:
 
 1. When adding a Filter operator, you provide an instance of _FilterFunction&lt;T&gt;_, which defines the method _public boolean forward(T tuple)_.
 2. Since the filter does not modify the tuple type, you only define one type (_MyTuple_ in the example).
+
+#### Operator - Router (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextRouterMap.java))
+
+The Router operator is an enhanced Filter operator that allows you to forward each input tuple to zero, one or multiple output streams. In the following example, each input tuple of type _MyTuple_ is forwarded to one of the two output streams defined for the operator.
+
+```java
+LinkedList<StreamKey<MyTuple>> outs = new LinkedList<StreamKey<MyTuple>>();
+outs.add(outKey1);
+outs.add(outKey2);
+q.addRouterOperator("router", new RouterFunction<MyTuple>() {
+
+	@Override
+	public List<String> chooseStreams(MyTuple tuple) {
+		List<String> result = new LinkedList<String>();
+		if (tuple.getKey().equals("28")) {
+			result.add("out1");
+		} else if (tuple.getKey().equals("29")) {
+			result.add("out2");
+		}
+		return result;
+	}
+}, inKey, outs);
+```
+
+Please notice:
+
+1. When adding a Router operator, you provide the keys for all the output streams the operator works on.
+2. You can also chose not to forwarded an input tuple. In such a case, you can return an empty list.
 
 #### Operator - Aggregate (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextAggregate.java))
 
