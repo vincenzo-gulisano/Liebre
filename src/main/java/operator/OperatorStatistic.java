@@ -60,18 +60,8 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
 		}
 	}
 
-	// public void process() {
-	//
-	// long start = System.nanoTime();
-	// this.operator.process();
-	// processingTimeStat.add(System.nanoTime() - start);
-	// }
-
 	@Override
 	public List<T2> processTuple(T1 tuple) {
-		// long start = System.nanoTime();
-		// this.operator.process();
-		// processingTimeStat.add(System.nanoTime() - start);
 		return null;
 	}
 }

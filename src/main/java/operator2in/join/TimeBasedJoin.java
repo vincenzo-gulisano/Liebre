@@ -49,34 +49,34 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 		in2TuplesBuffer = new LinkedList<T2>();
 	}
 
-	public void process() {
-		T1 inTuple1 = in1.getNextTuple();
-		while (inTuple1 != null) {
-			in1buffer(inTuple1);
-			inTuple1 = in1.getNextTuple();
-		}
-		T2 inTuple2 = in2.getNextTuple();
-		while (inTuple2 != null) {
-			in2buffer(inTuple2);
-			inTuple2 = in2.getNextTuple();
-		}
-
-		while (in1buffered() && in2buffered()) {
-			if (buffer1Peek().getTimestamp() < buffer2Peek().getTimestamp()) {
-				List<T3> outTuples = processTupleIn1(buffer1Poll());
-				if (outTuples != null) {
-					for (T3 t : outTuples)
-						out.addTuple(t);
-				}
-			} else {
-				List<T3> outTuples = processTupleIn2(buffer2Poll());
-				if (outTuples != null) {
-					for (T3 t : outTuples)
-						out.addTuple(t);
-				}
-			}
-		}
-	}
+	// public void process() {
+	// T1 inTuple1 = in1.getNextTuple();
+	// while (inTuple1 != null) {
+	// in1buffer(inTuple1);
+	// inTuple1 = in1.getNextTuple();
+	// }
+	// T2 inTuple2 = in2.getNextTuple();
+	// while (inTuple2 != null) {
+	// in2buffer(inTuple2);
+	// inTuple2 = in2.getNextTuple();
+	// }
+	//
+	// while (in1buffered() && in2buffered()) {
+	// if (buffer1Peek().getTimestamp() < buffer2Peek().getTimestamp()) {
+	// List<T3> outTuples = processTupleIn1(buffer1Poll());
+	// if (outTuples != null) {
+	// for (T3 t : outTuples)
+	// out.addTuple(t);
+	// }
+	// } else {
+	// List<T3> outTuples = processTupleIn2(buffer2Poll());
+	// if (outTuples != null) {
+	// for (T3 t : outTuples)
+	// out.addTuple(t);
+	// }
+	// }
+	// }
+	// }
 
 	protected void purge(long ts) {
 		while (in1Tuples.size() > 0
@@ -88,14 +88,14 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 	}
 
 	private List<T3> processReadyTuples() {
-		
+
 		List<T3> results = new LinkedList<T3>();
-		
+
 		while (in1buffered() && in2buffered()) {
 			if (buffer1Peek().getTimestamp() < buffer2Peek().getTimestamp()) {
-				
+
 				T1 tuple = buffer1Poll();
-				
+
 				purge(tuple.getTimestamp());
 
 				if (in2Tuples.size() > 0) {
@@ -111,11 +111,11 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 				}
 
 				in1Tuples.add(tuple);
-				
+
 			} else {
 
 				T2 tuple = buffer2Poll();
-				
+
 				purge(tuple.getTimestamp());
 
 				if (in1Tuples.size() > 0) {
@@ -131,20 +131,20 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 				}
 
 				in2Tuples.add(tuple);
-				
+
 			}
 		}
-		
+
 		return results;
-		
+
 	}
-	
+
 	@Override
 	public List<T3> processTupleIn1(T1 tuple) {
 
 		in1buffer(tuple);
 		return processReadyTuples();
-		
+
 	}
 
 	@Override
@@ -152,8 +152,9 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 
 		in2buffer(tuple);
 		return processReadyTuples();
-		
+
 	}
+
 	private boolean in1buffered() {
 		return !in1TuplesBuffer.isEmpty();
 	}
@@ -185,6 +186,5 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 	private T2 buffer2Poll() {
 		return in2TuplesBuffer.poll();
 	}
-	
 
 }

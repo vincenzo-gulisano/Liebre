@@ -61,8 +61,6 @@ public abstract class BaseOperator<T1 extends Tuple, T2 extends Tuple>
 		active = false;
 	}
 
-//	public abstract void process();
-	
 	public void process() {
 		T1 inTuple = in.getNextTuple();
 		if (inTuple != null) {

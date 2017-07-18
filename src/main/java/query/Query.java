@@ -125,79 +125,30 @@ public class Query {
 		return operator;
 	}
 
-//	@SuppressWarnings("unchecked")
 	public <T1 extends RichTuple, T2 extends RichTuple> Operator<T1, T2> addAggregateOperator(
 			String identifier, TimeBasedSingleWindow<T1, T2> window, long WS,
 			long WA, StreamKey<T1> inKey, StreamKey<T2> outKey) {
 		
 		return addOperator(identifier, new TimeBasedSingleWindowAggregate<T1, T2>(
 				WS, WA, window), inKey, outKey);
-//		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier,
-//				inKey.type, outKey.type);
-//		BaseOperator<T1, T2> agg = new TimeBasedSingleWindowAggregate<T1, T2>(
-//				WS, WA, window);
-//		if (keepStatistics) {
-//			agg = new OperatorStatistic<T1, T2>(agg, statsFolder
-//					+ File.separator + identifier + ".proc.csv", autoFlush);
-//		}
-//		agg.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
-//		agg.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
-//		operators.put(key, agg);
-//		return agg;
 	}
 
-//	@SuppressWarnings("unchecked")
 	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(
 			String identifier, MapFunction<T1, T2> mapFunction,
 			StreamKey<T1> inKey, StreamKey<T2> outKey) {
 		return addOperator(identifier, new MapOperator<T1, T2>(mapFunction), inKey, outKey);
-//		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier,
-//				inKey.type, outKey.type);
-//		BaseOperator<T1, T2> map = new MapOperator<T1, T2>(mapFunction);
-//		if (keepStatistics) {
-//			map = new OperatorStatistic<T1, T2>(map, statsFolder
-//					+ File.separator + identifier + ".proc.csv", autoFlush);
-//		}
-//		map.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
-//		map.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
-//		operators.put(key, map);
-//		return map;
 	}
 
-//	@SuppressWarnings("unchecked")
 	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(
 			String identifier, FlatMapFunction<T1, T2> mapFunction,
 			StreamKey<T1> inKey, StreamKey<T2> outKey) {
 		return addOperator(identifier, new FlatMapOperator<T1, T2>(mapFunction), inKey, outKey);
-//		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier,
-//				inKey.type, outKey.type);
-//		BaseOperator<T1, T2> map = new FlatMapOperator<T1, T2>(mapFunction);
-//		if (keepStatistics) {
-//			map = new OperatorStatistic<T1, T2>(map, statsFolder
-//					+ File.separator + identifier + ".proc.csv", autoFlush);
-//		}
-//		map.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
-//		map.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
-//		operators.put(key, map);
-//		return map;
 	}
 
-//	@SuppressWarnings("unchecked")
 	public <T extends Tuple> Operator<T, T> addFilterOperator(
 			String identifier, FilterFunction<T> filterF, StreamKey<T> inKey,
 			StreamKey<T> outKey) {
 		return addOperator(identifier, new FilterOperator<T>(filterF), inKey, outKey);
-//		OperatorKey<T, T> key = new OperatorKey<T, T>(identifier, inKey.type,
-//				outKey.type);
-//		BaseOperator<T, T> filter = new FilterOperator<T>(filterF);
-//		if (keepStatistics) {
-//			filter = new OperatorStatistic<T, T>(filter, statsFolder
-//					+ File.separator + identifier + ".proc.csv", autoFlush);
-//		}
-//		filter.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
-//		filter.registerOut(outKey.identifier, (Stream<T>) streams.get(outKey));
-//		operators.put(key, filter);
-//		return filter;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -236,19 +187,9 @@ public class Query {
 		return key;
 	}
 
-//	@SuppressWarnings("unchecked")
 	public <T extends Tuple> SourceKey<T> addTextSource(String identifier,
 			String fileName, TextSourceFunction<T> function, StreamKey<T> outKey) {
 		return addSource(identifier, new TextSource<T>(fileName, function), outKey);
-//		SourceKey<T> key = new SourceKey<T>(identifier, outKey.type);
-//		BaseSource<T> source = new TextSource<T>(fileName, function);
-//		if (keepStatistics) {
-//			source = new SourceStatistic<T>(source, statsFolder
-//					+ File.separator + identifier + ".proc.csv");
-//		}
-//		source.registerOut((Stream<T>) streams.get(outKey));
-//		sources.put(key, source);
-//		return key;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -264,36 +205,16 @@ public class Query {
 		return key;
 	}
 
-//	@SuppressWarnings("unchecked")
 	public <T extends Tuple> SinkKey<T> addTextSink(String identifier,
 			String fileName, TextSinkFunction<T> function,
 			StreamKey<T> streamKey) {
 		return addSink(identifier, new TextSink<T>(fileName, function, true), streamKey);
-//		SinkKey<T> key = new SinkKey<T>(identifier, streamKey.type);
-//		BaseSink<T> sink = new TextSink<T>(fileName, function, true);
-//		if (keepStatistics) {
-//			sink = new SinkStatistic<T>(sink, statsFolder + File.separator
-//					+ identifier + ".proc.csv");
-//		}
-//		sink.registerIn((Stream<T>) streams.get(streamKey));
-//		sinks.put(key, sink);
-//		return key;
 	}
 
-//	@SuppressWarnings("unchecked")
 	public <T extends Tuple> SinkKey<T> addTextSink(String identifier,
 			String fileName, TextSinkFunction<T> function, boolean autoFlush,
 			StreamKey<T> streamKey) {
 		return addSink(identifier, new TextSink<T>(fileName, function, autoFlush), streamKey);
-//		SinkKey<T> key = new SinkKey<T>(identifier, streamKey.type);
-//		BaseSink<T> sink = new TextSink<T>(fileName, function, autoFlush);
-//		if (keepStatistics) {
-//			sink = new SinkStatistic<T>(sink, statsFolder + File.separator
-//					+ identifier + ".proc.csv");
-//		}
-//		sink.registerIn((Stream<T>) streams.get(streamKey));
-//		sinks.put(key, sink);
-//		return key;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -317,25 +238,11 @@ public class Query {
 		return operator;
 	}
 
-//	@SuppressWarnings("unchecked")
 	public <T1 extends RichTuple, T2 extends RichTuple, T3 extends RichTuple> Operator2In<T1, T2, T3> addJoinOperator(
 			String identifier, Predicate<T1, T2, T3> predicate, long WS,
 			StreamKey<T1> in1Key, StreamKey<T2> in2Key, StreamKey<T3> outKey) {
 		return addOperator2In(identifier, new TimeBasedJoin<T1, T2, T3>(WS,
 				predicate), in1Key, in2Key, outKey);
-//		Operator2InKey<T1, T2, T3> key = new Operator2InKey<T1, T2, T3>(
-//				identifier, in1Key.type, in2Key.type, outKey.type);
-//		BaseOperator2In<T1, T2, T3> op = new TimeBasedJoin<T1, T2, T3>(WS,
-//				predicate);
-//		if (keepStatistics) {
-//			op = new Operator2InStatistic<T1, T2, T3>(op, statsFolder
-//					+ File.separator + identifier + ".proc.csv", autoFlush);
-//		}
-//		op.registerIn1(in1Key.identifier, (Stream<T1>) streams.get(in1Key));
-//		op.registerIn2(in2Key.identifier, (Stream<T2>) streams.get(in2Key));
-//		op.registerOut(outKey.identifier, (Stream<T3>) streams.get(outKey));
-//		operators2in.put(key, op);
-//		return op;
 	}
 
 	public void activate() {

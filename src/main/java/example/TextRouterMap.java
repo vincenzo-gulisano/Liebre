@@ -53,6 +53,7 @@ public class TextRouterMap {
 		q.addTextSource("inSource", args[1], new TextSourceFunction<MyTuple>() {
 			@Override
 			public MyTuple getNext(String line) {
+				Util.sleep(5);
 				String[] tokens = line.split(",");
 				return new MyTuple(Long.valueOf(tokens[0]), tokens[1], Integer
 						.valueOf(tokens[2]));

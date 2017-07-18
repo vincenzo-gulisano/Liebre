@@ -42,12 +42,6 @@ public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 		processingTimeStat.close();
 		active = false;
 	}
-//
-//	public void process() {
-//		long start = System.nanoTime();
-//		this.sink.process();
-//		processingTimeStat.add(System.nanoTime() - start);
-//	}
 	
 	public void process() {
 		T t = in.getNextTuple();

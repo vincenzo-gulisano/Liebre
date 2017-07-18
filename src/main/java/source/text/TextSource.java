@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import source.BaseSource;
 import tuple.Tuple;
+import util.Util;
 
 public class TextSource<T extends Tuple> extends BaseSource<T> {
 
@@ -46,11 +47,6 @@ public class TextSource<T extends Tuple> extends BaseSource<T> {
 		}
 	}
 
-//	public void process() {
-//		if (hasNext())
-//			out.addTuple(getNextTuple());
-//	}
-
 	public boolean hasNext() {
 		if (hasNext)
 			try {
@@ -62,6 +58,10 @@ public class TextSource<T extends Tuple> extends BaseSource<T> {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		else {
+			// Prevent spinning
+			Util.sleep(1000);
+		}
 		return hasNext;
 	}
 

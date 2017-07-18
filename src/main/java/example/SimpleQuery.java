@@ -58,22 +58,13 @@ public class SimpleQuery {
 
 			@Override
 			public MyTuple getNextTuple() {
-				Util.sleep(100);
+				Util.sleep(50);
 				return new MyTuple(System.currentTimeMillis(), r.nextInt(5), r
 						.nextInt(100));
 			}
 		}, inKey);
 
 		q.addOperator("multiply", new BaseOperator<MyTuple, MyTuple>() {
-//			@Override
-//			public void process() {
-//				MyTuple inTuple = in.getNextTuple();
-//				if (inTuple != null) {
-//					out.addTuple(new MyTuple(inTuple.timestamp, inTuple.key,
-//							inTuple.value * 2));
-//				}
-//			}
-
 			@Override
 			public List<MyTuple> processTuple(MyTuple tuple) {
 				List<MyTuple> result = new LinkedList<MyTuple>();
