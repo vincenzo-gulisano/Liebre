@@ -37,7 +37,9 @@ public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends
 	@Override
 	public List<T2> processTuple(T1 tuple) {
 		List<T2> result = new LinkedList<T2>();
-		result.add(map.map(tuple));
+		T2 t = map.map(tuple);
+		if (t != null)
+			result.add(t);
 		return result;
 	}
 }
