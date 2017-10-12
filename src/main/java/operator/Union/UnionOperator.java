@@ -17,43 +17,40 @@
  *
  */
 
-package source;
+package operator.Union;
 
+import java.util.HashMap;
+import java.util.List;
+
+import operator.BaseOperator;
 import stream.Stream;
 import tuple.Tuple;
 
-public abstract class BaseSource<T extends Tuple> implements Source<T> {
+public class UnionOperator<T extends Tuple> extends BaseOperator<T, T> {
 
-	protected Stream<T> out;
+	protected HashMap<String, Stream<T>> ins;
 	protected boolean active = false;
 
-	@Override
-	public void registerOut(Stream<T> out) {
-		this.out = out;
+	public UnionOperator() {
+		ins = new HashMap<String, Stream<T>>();
+	}
+
+	public void registerIn(String id, Stream<T> in) {
+		this.ins.put(id, in);
 	}
 
 	@Override
-	public void run() {
-		while (active) {
-			process();
+	public void process() {
+		for (Stream<T> in : ins.values()) {
+			T inTuple = in.getNextTuple();
+			if (inTuple != null) {
+				out.addTuple(inTuple);
+			}
 		}
 	}
 
 	@Override
-	public void activate() {
-		active = true;
+	public List<T> processTuple(T tuple) {
+		return null;
 	}
-
-	@Override
-	public void deActivate() {
-		active = false;
-	}
-
-	public void process() {
-		T t = getNextTuple();
-		if (t != null)
-			out.addTuple(t);
-	}
-
-	public abstract T getNextTuple();
 }

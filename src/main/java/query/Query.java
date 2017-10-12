@@ -29,6 +29,7 @@ import operator.BaseOperator;
 import operator.Operator;
 import operator.OperatorKey;
 import operator.OperatorStatistic;
+import operator.Union.UnionOperator;
 import operator.aggregate.TimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindowAggregate;
 import operator.filter.FilterFunction;
@@ -128,27 +129,31 @@ public class Query {
 	public <T1 extends RichTuple, T2 extends RichTuple> Operator<T1, T2> addAggregateOperator(
 			String identifier, TimeBasedSingleWindow<T1, T2> window, long WS,
 			long WA, StreamKey<T1> inKey, StreamKey<T2> outKey) {
-		
-		return addOperator(identifier, new TimeBasedSingleWindowAggregate<T1, T2>(
-				WS, WA, window), inKey, outKey);
+
+		return addOperator(identifier,
+				new TimeBasedSingleWindowAggregate<T1, T2>(WS, WA, window),
+				inKey, outKey);
 	}
 
 	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(
 			String identifier, MapFunction<T1, T2> mapFunction,
 			StreamKey<T1> inKey, StreamKey<T2> outKey) {
-		return addOperator(identifier, new MapOperator<T1, T2>(mapFunction), inKey, outKey);
+		return addOperator(identifier, new MapOperator<T1, T2>(mapFunction),
+				inKey, outKey);
 	}
 
 	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(
 			String identifier, FlatMapFunction<T1, T2> mapFunction,
 			StreamKey<T1> inKey, StreamKey<T2> outKey) {
-		return addOperator(identifier, new FlatMapOperator<T1, T2>(mapFunction), inKey, outKey);
+		return addOperator(identifier,
+				new FlatMapOperator<T1, T2>(mapFunction), inKey, outKey);
 	}
 
 	public <T extends Tuple> Operator<T, T> addFilterOperator(
 			String identifier, FilterFunction<T> filterF, StreamKey<T> inKey,
 			StreamKey<T> outKey) {
-		return addOperator(identifier, new FilterOperator<T>(filterF), inKey, outKey);
+		return addOperator(identifier, new FilterOperator<T>(filterF), inKey,
+				outKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -175,6 +180,23 @@ public class Query {
 	}
 
 	@SuppressWarnings("unchecked")
+	public <T extends Tuple> Operator<T, T> addUnionOperator(String identifier,
+			List<StreamKey<T>> insKeys, StreamKey<T> outKey) {
+
+		OperatorKey<T, T> key = new OperatorKey<T, T>(identifier,
+				insKeys.get(0).type, outKey.type);
+		BaseOperator<T, T> union = null;
+		// Notice that the union is a special case. No processing stats are kept
+		// since the union does not process tuples.
+		union = new UnionOperator<T>();
+		union.registerOut(outKey.identifier, (Stream<T>) streams.get(outKey));
+		for (StreamKey<T> inKey : insKeys)
+			union.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
+		operators.put(key, union);
+		return union;
+	}
+
+	@SuppressWarnings("unchecked")
 	public <T extends Tuple> SourceKey<T> addSource(String identifier,
 			BaseSource<T> source, StreamKey<T> outKey) {
 		SourceKey<T> key = new SourceKey<T>(identifier, outKey.type);
@@ -189,7 +211,8 @@ public class Query {
 
 	public <T extends Tuple> SourceKey<T> addTextSource(String identifier,
 			String fileName, TextSourceFunction<T> function, StreamKey<T> outKey) {
-		return addSource(identifier, new TextSource<T>(fileName, function), outKey);
+		return addSource(identifier, new TextSource<T>(fileName, function),
+				outKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -208,13 +231,15 @@ public class Query {
 	public <T extends Tuple> SinkKey<T> addTextSink(String identifier,
 			String fileName, TextSinkFunction<T> function,
 			StreamKey<T> streamKey) {
-		return addSink(identifier, new TextSink<T>(fileName, function, true), streamKey);
+		return addSink(identifier, new TextSink<T>(fileName, function, true),
+				streamKey);
 	}
 
 	public <T extends Tuple> SinkKey<T> addTextSink(String identifier,
 			String fileName, TextSinkFunction<T> function, boolean autoFlush,
 			StreamKey<T> streamKey) {
-		return addSink(identifier, new TextSink<T>(fileName, function, autoFlush), streamKey);
+		return addSink(identifier, new TextSink<T>(fileName, function,
+				autoFlush), streamKey);
 	}
 
 	@SuppressWarnings("unchecked")
