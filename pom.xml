@@ -35,4 +35,12 @@
 		</plugins>
 	</build>
 	
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.5</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>
