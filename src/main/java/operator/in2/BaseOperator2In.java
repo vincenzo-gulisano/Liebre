@@ -52,7 +52,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public void run() {
-		while (active) {
+		if (active) {
 			process();
 		}
 	}

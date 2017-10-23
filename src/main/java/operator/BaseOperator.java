@@ -45,7 +45,7 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 
 	@Override
 	public void run() {
-		while (active) {
+		if (active) {
 			process();
 		}
 	}

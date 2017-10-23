@@ -3,14 +3,18 @@ package queries;
 import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 import common.util.Util;
 import dummy.DummyLatencyLogger;
 import dummy.DummyMapFunction;
 import dummy.DummyRouterFunction;
 import dummy.DummyTuple;
+import dummy.FifoTaskPool;
 import query.Query;
 import reports.Report;
+import scheduling.Scheduler;
+import scheduling.impl.ThreadPoolScheduler;
 import source.BaseSource;
 import stream.StreamKey;
 
@@ -49,7 +53,8 @@ public class SampleQuery {
 
 	public static void main(String[] args) {
 
-		Query q = new Query();
+		Scheduler scheduler = new ThreadPoolScheduler(12, 50, TimeUnit.MILLISECONDS, new FifoTaskPool());
+		Query q = new Query(scheduler);
 
 		// This to store all statistics in the given folder
 		q.activateStatistics(args[0]);

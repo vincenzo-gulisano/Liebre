@@ -20,11 +20,14 @@
 package query;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import common.ActiveRunnable;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import operator.BaseOperator;
@@ -49,6 +52,8 @@ import operator.map.MapOperator;
 import operator.router.RouterFunction;
 import operator.router.RouterOperator;
 import operator.router.RouterStatisticOperator;
+import scheduling.Scheduler;
+import scheduling.impl.NoopScheduler;
 import sink.BaseSink;
 import sink.Sink;
 import sink.SinkKey;
@@ -72,16 +77,21 @@ public class Query {
 	private String statsFolder;
 	private boolean autoFlush;
 
-	private final Map<StreamKey<? extends Tuple>, Stream<? extends Tuple>> streams = new HashMap<StreamKey<? extends Tuple>, Stream<? extends Tuple>>();
-	private final Map<OperatorKey<? extends Tuple, ? extends Tuple>, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<OperatorKey<? extends Tuple, ? extends Tuple>, Operator<? extends Tuple, ? extends Tuple>>();
-	private final Map<Operator2InKey<? extends Tuple, ? extends Tuple, ? extends Tuple>, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<Operator2InKey<? extends Tuple, ? extends Tuple, ? extends Tuple>, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>>();
-	private final Map<SourceKey<? extends Tuple>, Source<? extends Tuple>> sources = new HashMap<SourceKey<? extends Tuple>, Source<? extends Tuple>>();
-	private final Map<SinkKey<? extends Tuple>, Sink<? extends Tuple>> sinks = new HashMap<SinkKey<? extends Tuple>, Sink<? extends Tuple>>();
+	private final Map<StreamKey<? extends Tuple>, Stream<? extends Tuple>> streams = new HashMap<>();
+	private final Map<OperatorKey<? extends Tuple, ? extends Tuple>, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
+	private final Map<Operator2InKey<? extends Tuple, ? extends Tuple, ? extends Tuple>, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
+	private final Map<SourceKey<? extends Tuple>, Source<? extends Tuple>> sources = new HashMap<>();
+	private final Map<SinkKey<? extends Tuple>, Sink<? extends Tuple>> sinks = new HashMap<>();
 
-	private List<Thread> threads;
+	private final List<Thread> threads = new LinkedList<>();
+	private final Scheduler scheduler;
 
 	public Query() {
-		threads = new LinkedList<Thread>();
+		this.scheduler = new NoopScheduler();
+	}
+
+	public Query(Scheduler scheduler) {
+		this.scheduler = scheduler;
 	}
 
 	public void activateStatistics(String statisticsFolder, boolean autoFlush) {
@@ -239,48 +249,39 @@ public class Query {
 	}
 
 	public void activate() {
-		for (Stream<? extends Tuple> s : streams.values()) {
-			s.activate();
+		for (Stream<?> stream : streams.values()) {
+			stream.activate();
 		}
-		for (Sink<? extends Tuple> s : sinks.values()) {
-			s.activate();
-			Thread t = new Thread(s);
+		for (ActiveRunnable sink : sinks.values()) {
+			sink.activate();
+			Thread t = new Thread(sink);
 			t.start();
 			threads.add(t);
 		}
-		for (Operator<? extends Tuple, ? extends Tuple> o : operators.values()) {
+		for (ActiveRunnable o : getAllOperators()) {
 			o.activate();
-			Thread t = new Thread(o);
-			t.start();
-			threads.add(t);
 		}
-		for (Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple> o : operators2in.values()) {
-			o.activate();
-			Thread t = new Thread(o);
-			t.start();
-			threads.add(t);
-		}
-		for (Source<? extends Tuple> s : sources.values()) {
-			s.activate();
-			Thread t = new Thread(s);
+		scheduler.addTasks(getAllOperators());
+		scheduler.startTasks();
+		for (ActiveRunnable source : sources.values()) {
+			source.activate();
+			Thread t = new Thread(source);
 			t.start();
 			threads.add(t);
 		}
 	}
 
 	public void deActivate() {
-		for (Source<? extends Tuple> s : sources.values()) {
-			s.deActivate();
+		for (ActiveRunnable source : sources.values()) {
+			source.deActivate();
 		}
-		for (Operator<? extends Tuple, ? extends Tuple> o : operators.values()) {
-			o.deActivate();
+		for (ActiveRunnable operator : getAllOperators()) {
+			operator.deActivate();
 		}
-		for (Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple> o : operators2in.values()) {
-			o.deActivate();
+		for (ActiveRunnable sink : sinks.values()) {
+			sink.deActivate();
 		}
-		for (Sink<? extends Tuple> s : sinks.values()) {
-			s.deActivate();
-		}
+		scheduler.stopTasks();
 		for (Thread t : threads) {
 			try {
 				t.join();
@@ -292,5 +293,11 @@ public class Query {
 		for (Stream<? extends Tuple> s : streams.values()) {
 			s.deActivate();
 		}
+	}
+
+	private Collection<ActiveRunnable> getAllOperators() {
+		List<ActiveRunnable> allOperators = new ArrayList<>(operators.values());
+		allOperators.addAll(this.operators2in.values());
+		return allOperators;
 	}
 }

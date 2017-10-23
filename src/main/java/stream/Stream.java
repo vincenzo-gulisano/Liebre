@@ -19,16 +19,13 @@
 
 package stream;
 
+import common.Active;
 import common.tuple.Tuple;
 
-public interface Stream<T extends Tuple> {
+public interface Stream<T extends Tuple> extends Active {
 
 	public void addTuple(T tuple);
 
 	public T getNextTuple();
-
-	public void activate();
-
-	public void deActivate();
 
 }

@@ -69,4 +69,9 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	}
 
+	@Override
+	public boolean isActive() {
+		return true;
+	}
+
 }

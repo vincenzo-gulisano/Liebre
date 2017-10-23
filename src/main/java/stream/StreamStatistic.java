@@ -28,8 +28,7 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 	private CountStat inRate;
 	private CountStat outRate;
 
-	public StreamStatistic(Stream<T> stream, String inRateFile,
-			String outRateFile, boolean autoFlush) {
+	public StreamStatistic(Stream<T> stream, String inRateFile, String outRateFile, boolean autoFlush) {
 		this.stream = stream;
 		inRate = new CountStat(inRateFile, autoFlush);
 		outRate = new CountStat(outRateFile, autoFlush);
@@ -57,6 +56,11 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 	public void deActivate() {
 		inRate.close();
 		outRate.close();
+	}
+
+	@Override
+	public boolean isActive() {
+		return true;
 	}
 
 }
