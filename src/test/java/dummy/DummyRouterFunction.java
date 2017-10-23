@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import common.util.Util;
 import operator.router.RouterFunction;
-import util.Util;
 
 /**
  * Router operator that copies the input tuple to all the given output streams

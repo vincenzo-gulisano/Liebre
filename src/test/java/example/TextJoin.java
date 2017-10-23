@@ -21,13 +21,13 @@ package example;
 
 import java.util.Random;
 
-import operator2in.join.Predicate;
+import common.tuple.BaseRichTuple;
+import common.util.Util;
+import operator.in2.join.Predicate;
 import query.Query;
 import sink.BaseSink;
 import source.BaseSource;
 import stream.StreamKey;
-import tuple.BaseRichTuple;
-import util.Util;
 
 public class TextJoin {
 	public static void main(String[] args) {

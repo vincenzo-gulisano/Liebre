@@ -21,8 +21,8 @@ package stream;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import tuple.Tuple;
-import util.BackOff;
+import common.tuple.Tuple;
+import common.util.BackOff;
 
 public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 

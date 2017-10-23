@@ -19,8 +19,8 @@
 
 package source;
 
-import statistic.AvgStat;
-import tuple.Tuple;
+import common.statistic.AvgStat;
+import common.tuple.Tuple;
 
 public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 

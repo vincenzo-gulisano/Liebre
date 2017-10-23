@@ -19,8 +19,8 @@
 
 package sink;
 
+import common.tuple.Tuple;
 import stream.Stream;
-import tuple.Tuple;
 
 public abstract class BaseSink<T extends Tuple> implements Sink<T> {
 

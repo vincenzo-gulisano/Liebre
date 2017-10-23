@@ -24,9 +24,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import common.tuple.Tuple;
+import common.util.Util;
 import source.BaseSource;
-import tuple.Tuple;
-import util.Util;
 
 public class TextSource<T extends Tuple> extends BaseSource<T> {
 

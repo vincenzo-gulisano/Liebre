@@ -19,7 +19,7 @@
 
 package source;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public class SourceKey<T extends Tuple> {
 

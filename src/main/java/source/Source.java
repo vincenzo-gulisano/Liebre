@@ -21,7 +21,7 @@ package source;
 
 import common.ActiveRunnable;
 import common.StreamProducer;
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface Source<T extends Tuple> extends ActiveRunnable, StreamProducer<T> {
 

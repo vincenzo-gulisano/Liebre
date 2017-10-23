@@ -19,8 +19,8 @@
 
 package stream;
 
-import statistic.CountStat;
-import tuple.Tuple;
+import common.statistic.CountStat;
+import common.tuple.Tuple;
 
 public class StreamStatistic<T extends Tuple> implements Stream<T> {
 

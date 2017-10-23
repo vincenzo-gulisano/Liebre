@@ -22,8 +22,8 @@ package operator;
 import common.ActiveRunnable;
 import common.StreamConsumer;
 import common.StreamProducer;
+import common.tuple.Tuple;
 import stream.Stream;
-import tuple.Tuple;
 
 public interface Operator<IN extends Tuple, OUT extends Tuple>
 		extends ActiveRunnable, StreamConsumer<IN>, StreamProducer<OUT> {

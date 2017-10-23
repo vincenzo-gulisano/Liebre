@@ -19,7 +19,7 @@
 
 package stream;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public class StreamKey<T extends Tuple> {
 

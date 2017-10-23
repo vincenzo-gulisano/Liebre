@@ -19,7 +19,7 @@
 
 package stream;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface Stream<T extends Tuple> {
 

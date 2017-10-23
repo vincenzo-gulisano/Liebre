@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import common.tuple.RichTuple;
+import common.tuple.Tuple;
 import operator.BaseOperator;
 import operator.Operator;
 import operator.OperatorKey;
@@ -34,6 +36,12 @@ import operator.aggregate.TimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindowAggregate;
 import operator.filter.FilterFunction;
 import operator.filter.FilterOperator;
+import operator.in2.BaseOperator2In;
+import operator.in2.Operator2In;
+import operator.in2.Operator2InKey;
+import operator.in2.Operator2InStatistic;
+import operator.in2.join.Predicate;
+import operator.in2.join.TimeBasedJoin;
 import operator.map.FlatMapFunction;
 import operator.map.FlatMapOperator;
 import operator.map.MapFunction;
@@ -41,12 +49,6 @@ import operator.map.MapOperator;
 import operator.router.RouterFunction;
 import operator.router.RouterOperator;
 import operator.router.RouterStatisticOperator;
-import operator2in.BaseOperator2In;
-import operator2in.Operator2In;
-import operator2in.Operator2InKey;
-import operator2in.Operator2InStatistic;
-import operator2in.join.Predicate;
-import operator2in.join.TimeBasedJoin;
 import sink.BaseSink;
 import sink.Sink;
 import sink.SinkKey;
@@ -63,8 +65,6 @@ import stream.ConcurrentLinkedListStream;
 import stream.Stream;
 import stream.StreamKey;
 import stream.StreamStatistic;
-import tuple.RichTuple;
-import tuple.Tuple;
 
 public class Query {
 

@@ -17,65 +17,43 @@
  *
  */
 
-package operator2in;
+package operator.in2;
 
 import java.util.List;
 
-import stream.Stream;
-import tuple.Tuple;
+import common.statistic.AvgStat;
+import common.tuple.Tuple;
 
-public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
-		implements Operator2In<IN, IN2, OUT> {
+public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
+		extends BaseOperator2In<IN, IN2, OUT> {
 
-	protected Stream<IN> in1;
-	protected Stream<IN2> in2;
-	protected Stream<OUT> out;
-	protected boolean active = false;
+	private BaseOperator2In<IN, IN2, OUT> operator;
+	private AvgStat processingTimeStat;
 
-	public BaseOperator2In() {
+	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator,
+			String outputFile) {
+		this.operator = operator;
+		this.processingTimeStat = new AvgStat(outputFile, true);
 	}
 
-	@Override
-	public void registerIn(String id, Stream<IN> in) {
-		this.in1 = in;
-	}
-
-	@Override
-	public void registerIn2(String id, Stream<IN2> in) {
-		this.in2 = in;
-	}
-
-	@Override
-	public void registerOut(String id, Stream<OUT> out) {
-		this.out = out;
-	}
-
-	@Override
-	public void run() {
-		while (active) {
-			process();
-		}
-	}
-
-	@Override
-	public void activate() {
-		active = true;
+	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator,
+			String outputFile, boolean autoFlush) {
+		this.operator = operator;
+		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
 
 	@Override
 	public void deActivate() {
+		processingTimeStat.close();
 		active = false;
-	}
-
-	@Override
-	public boolean isActive() {
-		return active;
 	}
 
 	public void process() {
 		IN inTuple1 = in1.getNextTuple();
 		if (inTuple1 != null) {
-			List<OUT> outTuples = processTupleIn1(inTuple1);
+			long start = System.nanoTime();
+			List<OUT> outTuples = this.operator.processTupleIn1(inTuple1);
+			processingTimeStat.add(System.nanoTime() - start);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
 					out.addTuple(t);
@@ -83,7 +61,9 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 		}
 		IN2 inTuple2 = in2.getNextTuple();
 		if (inTuple2 != null) {
-			List<OUT> outTuples = processTupleIn2(inTuple2);
+			long start = System.nanoTime();
+			List<OUT> outTuples = this.operator.processTupleIn2(inTuple2);
+			processingTimeStat.add(System.nanoTime() - start);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
 					out.addTuple(t);
@@ -91,7 +71,13 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 		}
 	}
 
-	public abstract List<OUT> processTupleIn1(IN tuple);
+	@Override
+	public List<OUT> processTupleIn1(IN tuple) {
+		return null;
+	}
 
-	public abstract List<OUT> processTupleIn2(IN2 tuple);
+	@Override
+	public List<OUT> processTupleIn2(IN2 tuple) {
+		return null;
+	}
 }

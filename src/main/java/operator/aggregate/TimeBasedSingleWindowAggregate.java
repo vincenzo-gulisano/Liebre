@@ -24,8 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
+import common.tuple.RichTuple;
 import operator.BaseOperator;
-import tuple.RichTuple;
 
 public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends RichTuple>
 		extends BaseOperator<T1, T2> {

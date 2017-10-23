@@ -17,18 +17,8 @@
  *
  */
 
-package util;
+package common.tuple;
 
-public class Util {
-
-	public static void sleep(long millis) {
-		try {
-			Thread.sleep(millis);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			// Restore interruption status for thread
-			Thread.currentThread().interrupt();
-		}
-	}
+public interface Tuple {
 
 }

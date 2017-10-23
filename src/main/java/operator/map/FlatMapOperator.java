@@ -21,8 +21,8 @@ package operator.map;
 
 import java.util.List;
 
+import common.tuple.Tuple;
 import operator.BaseOperator;
-import tuple.Tuple;
 
 public class FlatMapOperator<T1 extends Tuple, T2 extends Tuple> extends
 		BaseOperator<T1, T2> {

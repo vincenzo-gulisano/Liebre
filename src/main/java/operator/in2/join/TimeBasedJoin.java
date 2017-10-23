@@ -17,13 +17,13 @@
  *
  */
 
-package operator2in.join;
+package operator.in2.join;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import operator2in.BaseOperator2In;
-import tuple.RichTuple;
+import common.tuple.RichTuple;
+import operator.in2.BaseOperator2In;
 
 public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extends RichTuple>
 		extends BaseOperator2In<T1, T2, T3> {

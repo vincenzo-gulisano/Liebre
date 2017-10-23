@@ -1,6 +1,6 @@
 package dummy;
 
-import tuple.RichTuple;
+import common.tuple.RichTuple;
 
 /**
  * Dummy tuple which only has a timestamp.

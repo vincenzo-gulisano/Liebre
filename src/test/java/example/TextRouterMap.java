@@ -22,13 +22,13 @@ package example;
 import java.util.LinkedList;
 import java.util.List;
 
+import common.tuple.BaseRichTuple;
+import common.util.Util;
 import operator.router.RouterFunction;
 import query.Query;
 import sink.text.TextSinkFunction;
 import source.text.TextSourceFunction;
 import stream.StreamKey;
-import tuple.BaseRichTuple;
-import util.Util;
 
 public class TextRouterMap {
 	public static void main(String[] args) {

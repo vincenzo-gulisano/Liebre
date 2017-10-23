@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import common.util.Util;
 import dummy.DummyLatencyLogger;
 import dummy.DummyMapFunction;
 import dummy.DummyRouterFunction;
@@ -12,7 +13,6 @@ import query.Query;
 import reports.Report;
 import source.BaseSource;
 import stream.StreamKey;
-import util.Util;
 
 public class SampleQuery {
 

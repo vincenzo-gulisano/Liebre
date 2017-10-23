@@ -19,7 +19,7 @@
 
 package operator.map;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface MapFunction<T1 extends Tuple, T2 extends Tuple> {
 

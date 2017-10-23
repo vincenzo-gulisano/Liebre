@@ -22,8 +22,8 @@ package operator.filter;
 import java.util.LinkedList;
 import java.util.List;
 
+import common.tuple.Tuple;
 import operator.BaseOperator;
-import tuple.Tuple;
 
 public class FilterOperator<T extends Tuple> extends BaseOperator<T, T> {
 

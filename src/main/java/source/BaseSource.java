@@ -19,8 +19,8 @@
 
 package source;
 
+import common.tuple.Tuple;
 import stream.Stream;
-import tuple.Tuple;
 
 public abstract class BaseSource<T extends Tuple> implements Source<T> {
 

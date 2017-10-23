@@ -17,11 +17,12 @@
  *
  */
 
-package tuple;
+package operator.in2.join;
 
-public interface RichTuple extends Tuple  {
+import common.tuple.Tuple;
 
-	public long getTimestamp();
+public interface Predicate<T1 extends Tuple, T2 extends Tuple, T3 extends Tuple> {
 
-	public String getKey();
+	public T3 compare(T1 t1, T2 t2);
+
 }

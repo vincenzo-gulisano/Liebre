@@ -19,7 +19,7 @@
 
 package sink;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public class SinkKey<T extends Tuple> {
 

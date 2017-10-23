@@ -19,7 +19,7 @@
 
 package sink.text;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface TextSinkFunction<T extends Tuple> {
 

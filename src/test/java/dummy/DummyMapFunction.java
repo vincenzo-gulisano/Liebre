@@ -2,8 +2,8 @@ package dummy;
 
 import java.util.Random;
 
+import common.util.Util;
 import operator.map.MapFunction;
-import util.Util;
 
 /**
  * Dummy map operator that sleeps for the given amount of time and then outputs

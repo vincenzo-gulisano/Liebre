@@ -21,7 +21,7 @@ package operator.router;
 
 import java.util.List;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface RouterFunction<T extends Tuple> {
 

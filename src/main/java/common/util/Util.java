@@ -17,14 +17,18 @@
  *
  */
 
-package operator2in;
+package common.util;
 
-import operator.Operator;
-import stream.Stream;
-import tuple.Tuple;
+public class Util {
 
-public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator<IN, OUT> {
-
-	public void registerIn2(String id, Stream<IN2> in);
+	public static void sleep(long millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			// Restore interruption status for thread
+			Thread.currentThread().interrupt();
+		}
+	}
 
 }

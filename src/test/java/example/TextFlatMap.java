@@ -22,13 +22,13 @@ package example;
 import java.util.LinkedList;
 import java.util.List;
 
+import common.tuple.Tuple;
+import common.util.Util;
 import operator.map.FlatMapFunction;
 import query.Query;
 import sink.text.TextSinkFunction;
 import source.text.TextSourceFunction;
 import stream.StreamKey;
-import tuple.Tuple;
-import util.Util;
 
 public class TextFlatMap {
 	public static void main(String[] args) {

@@ -17,25 +17,14 @@
  *
  */
 
-package tuple;
+package operator.in2;
 
-public class BaseRichTuple implements RichTuple {
+import common.tuple.Tuple;
+import operator.Operator;
+import stream.Stream;
 
-	protected long timestamp;
-	protected String key;
+public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator<IN, OUT> {
 
-	public BaseRichTuple(long timestamp, String key) {
-		this.timestamp = timestamp;
-		this.key = key;
-	}
+	public void registerIn2(String id, Stream<IN2> in);
 
-	@Override
-	public long getTimestamp() {
-		return timestamp;
-	}
-
-	@Override
-	public String getKey() {
-		return key;
-	}
 }

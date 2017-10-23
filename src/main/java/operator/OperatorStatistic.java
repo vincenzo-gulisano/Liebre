@@ -21,8 +21,8 @@ package operator;
 
 import java.util.List;
 
-import statistic.AvgStat;
-import tuple.Tuple;
+import common.statistic.AvgStat;
+import common.tuple.Tuple;
 
 public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends
 		BaseOperator<IN, OUT> {

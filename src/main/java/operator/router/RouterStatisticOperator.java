@@ -21,8 +21,8 @@ package operator.router;
 
 import java.util.List;
 
-import statistic.AvgStat;
-import tuple.Tuple;
+import common.statistic.AvgStat;
+import common.tuple.Tuple;
 
 public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> {
 

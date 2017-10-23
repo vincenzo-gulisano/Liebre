@@ -17,7 +17,7 @@
  *
  */
 
-package util;
+package common.util;
 
 import java.util.Random;
 

@@ -24,8 +24,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import common.tuple.Tuple;
 import sink.BaseSink;
-import tuple.Tuple;
 
 public class TextSink<T extends Tuple> extends BaseSink<T> {
 

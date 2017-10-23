@@ -19,7 +19,7 @@
 
 package operator.filter;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface FilterFunction<T extends Tuple> {
 

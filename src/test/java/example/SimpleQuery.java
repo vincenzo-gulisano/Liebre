@@ -23,13 +23,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import common.tuple.Tuple;
+import common.util.Util;
 import operator.BaseOperator;
 import query.Query;
 import sink.BaseSink;
 import source.BaseSource;
 import stream.StreamKey;
-import tuple.Tuple;
-import util.Util;
 
 public class SimpleQuery {
 	public static void main(String[] args) {

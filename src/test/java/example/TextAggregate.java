@@ -19,14 +19,14 @@
 
 package example;
 
+import common.tuple.BaseRichTuple;
+import common.util.Util;
 import operator.aggregate.BaseTimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindow;
 import query.Query;
 import sink.text.TextSinkFunction;
 import source.text.TextSourceFunction;
 import stream.StreamKey;
-import tuple.BaseRichTuple;
-import util.Util;
 
 public class TextAggregate {
 	public static void main(String[] args) {

@@ -21,7 +21,7 @@ package sink;
 
 import common.ActiveRunnable;
 import common.StreamConsumer;
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface Sink<T extends Tuple> extends ActiveRunnable, StreamConsumer<T> {
 

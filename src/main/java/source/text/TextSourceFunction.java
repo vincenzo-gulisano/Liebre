@@ -19,7 +19,7 @@
 
 package source.text;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface TextSourceFunction<T extends Tuple> {
 

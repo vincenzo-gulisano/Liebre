@@ -21,8 +21,8 @@ package operator;
 
 import java.util.List;
 
+import common.tuple.Tuple;
 import stream.Stream;
-import tuple.Tuple;
 
 public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 

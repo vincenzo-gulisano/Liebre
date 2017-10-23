@@ -19,7 +19,7 @@
 
 package operator;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public class OperatorKey<IN extends Tuple, OUT extends Tuple> {
 

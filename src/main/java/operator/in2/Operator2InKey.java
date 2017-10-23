@@ -17,8 +17,23 @@
  *
  */
 
-package tuple;
+package operator.in2;
 
-public interface Tuple {
+import common.tuple.Tuple;
+
+public class Operator2InKey<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> {
+
+	final String identifier;
+	final Class<IN> type1;
+	final Class<IN2> type2;
+	final Class<OUT> type3;
+
+	public Operator2InKey(String identifier, Class<IN> type1, Class<IN2> type2,
+			Class<OUT> type3) {
+		this.identifier = identifier;
+		this.type1 = type1;
+		this.type2 = type2;
+		this.type3 = type3;
+	}
 
 }

@@ -17,23 +17,20 @@
  *
  */
 
-package statistic;
+package common.statistic;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class AvgStat {
-
-	private long sum;
+public class CountStat {
 	private long count;
 
 	PrintWriter out;
 
 	long prevSec;
 
-	public AvgStat(String outputFile, boolean autoFlush) {
-		this.sum = 0;
+	public CountStat(String outputFile, boolean autoFlush) {
 		this.count = 0;
 
 		FileWriter outFile;
@@ -48,29 +45,23 @@ public class AvgStat {
 
 	}
 
-	public void add(long v) {
-
+	public void increase(long v) {
 		long thisSec = System.currentTimeMillis() / 1000;
 		while (prevSec < thisSec) {
-			out.println(prevSec + "," + (count != 0 ? sum / count : -1));
-			sum = 0;
+			out.println(prevSec + "," + count);
 			count = 0;
 			prevSec++;
 		}
-
-		sum += v;
-		count++;
-
+		count += v;
 	}
 
 	public void close() {
 		long thisSec = System.currentTimeMillis() / 1000;
 		while (prevSec <= thisSec) {
-			out.println(prevSec + "," + (count != 0 ? sum / count : -1));
+			out.println(prevSec + "," + count);
 			count = 0;
 			prevSec++;
 		}
 		out.close();
 	}
-
 }

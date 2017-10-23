@@ -19,13 +19,13 @@
 
 package example;
 
+import common.tuple.Tuple;
+import common.util.Util;
 import operator.map.MapFunction;
 import query.Query;
 import sink.text.TextSinkFunction;
 import source.text.TextSourceFunction;
 import stream.StreamKey;
-import tuple.Tuple;
-import util.Util;
 
 public class TextMap1 {
 	public static void main(String[] args) {

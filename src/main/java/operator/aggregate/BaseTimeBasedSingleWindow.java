@@ -19,7 +19,7 @@
 
 package operator.aggregate;
 
-import tuple.RichTuple;
+import common.tuple.RichTuple;
 
 public abstract class BaseTimeBasedSingleWindow<T1 extends RichTuple, T2 extends RichTuple>
 		implements TimeBasedSingleWindow<T1, T2> {

@@ -21,7 +21,7 @@ package operator.map;
 
 import java.util.List;
 
-import tuple.Tuple;
+import common.tuple.Tuple;
 
 public interface FlatMapFunction<T1 extends Tuple, T2 extends Tuple> {
 

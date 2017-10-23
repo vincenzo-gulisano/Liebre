@@ -22,9 +22,9 @@ package operator.router;
 import java.util.HashMap;
 import java.util.List;
 
+import common.tuple.Tuple;
 import operator.BaseOperator;
 import stream.Stream;
-import tuple.Tuple;
 
 public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 
