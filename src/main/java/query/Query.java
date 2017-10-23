@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import common.Active;
 import common.ActiveRunnable;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
@@ -249,38 +250,20 @@ public class Query {
 	}
 
 	public void activate() {
-		for (Stream<?> stream : streams.values()) {
-			stream.activate();
-		}
-		for (ActiveRunnable sink : sinks.values()) {
-			sink.activate();
-			Thread t = new Thread(sink);
-			t.start();
-			threads.add(t);
-		}
+		activateTasks(streams.values());
+		activateTasks(sinks.values());
 		for (ActiveRunnable o : getAllOperators()) {
 			o.activate();
 		}
 		scheduler.addTasks(getAllOperators());
 		scheduler.startTasks();
-		for (ActiveRunnable source : sources.values()) {
-			source.activate();
-			Thread t = new Thread(source);
-			t.start();
-			threads.add(t);
-		}
+		activateTasks(sources.values());
 	}
 
 	public void deActivate() {
-		for (ActiveRunnable source : sources.values()) {
-			source.deActivate();
-		}
-		for (ActiveRunnable operator : getAllOperators()) {
-			operator.deActivate();
-		}
-		for (ActiveRunnable sink : sinks.values()) {
-			sink.deActivate();
-		}
+		deactivateTasks(sources.values());
+		deactivateTasks(getAllOperators());
+		deactivateTasks(sinks.values());
 		scheduler.stopTasks();
 		for (Thread t : threads) {
 			try {
@@ -289,9 +272,23 @@ public class Query {
 				e.printStackTrace();
 			}
 		}
+		deactivateTasks(streams.values());
+	}
 
-		for (Stream<? extends Tuple> s : streams.values()) {
-			s.deActivate();
+	private void activateTasks(Collection<? extends Active> tasks) {
+		for (Active task : tasks) {
+			task.activate();
+			if (task instanceof Runnable) {
+				Thread t = new Thread((Runnable) task);
+				t.start();
+				threads.add(t);
+			}
+		}
+	}
+
+	private void deactivateTasks(Collection<? extends Active> tasks) {
+		for (Active task : tasks) {
+			task.deActivate();
 		}
 	}
 
