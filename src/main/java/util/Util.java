@@ -26,6 +26,8 @@ public class Util {
 			Thread.sleep(millis);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			// Restore interruption status for thread
+			Thread.currentThread().interrupt();
 		}
 	}
 

@@ -24,19 +24,19 @@ import java.util.List;
 import statistic.AvgStat;
 import tuple.Tuple;
 
-public class Operator2InStatistic<T1 extends Tuple, T2 extends Tuple, T3 extends Tuple>
-		extends BaseOperator2In<T1, T2, T3> {
+public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
+		extends BaseOperator2In<IN, IN2, OUT> {
 
-	private BaseOperator2In<T1, T2, T3> operator;
+	private BaseOperator2In<IN, IN2, OUT> operator;
 	private AvgStat processingTimeStat;
 
-	public Operator2InStatistic(BaseOperator2In<T1, T2, T3> operator,
+	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator,
 			String outputFile) {
 		this.operator = operator;
 		this.processingTimeStat = new AvgStat(outputFile, true);
 	}
 
-	public Operator2InStatistic(BaseOperator2In<T1, T2, T3> operator,
+	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator,
 			String outputFile, boolean autoFlush) {
 		this.operator = operator;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
@@ -49,35 +49,35 @@ public class Operator2InStatistic<T1 extends Tuple, T2 extends Tuple, T3 extends
 	}
 
 	public void process() {
-		T1 inTuple1 = in1.getNextTuple();
+		IN inTuple1 = in1.getNextTuple();
 		if (inTuple1 != null) {
 			long start = System.nanoTime();
-			List<T3> outTuples = this.operator.processTupleIn1(inTuple1);
+			List<OUT> outTuples = this.operator.processTupleIn1(inTuple1);
 			processingTimeStat.add(System.nanoTime() - start);
 			if (outTuples != null) {
-				for (T3 t : outTuples)
+				for (OUT t : outTuples)
 					out.addTuple(t);
 			}
 		}
-		T2 inTuple2 = in2.getNextTuple();
+		IN2 inTuple2 = in2.getNextTuple();
 		if (inTuple2 != null) {
 			long start = System.nanoTime();
-			List<T3> outTuples = this.operator.processTupleIn2(inTuple2);
+			List<OUT> outTuples = this.operator.processTupleIn2(inTuple2);
 			processingTimeStat.add(System.nanoTime() - start);
 			if (outTuples != null) {
-				for (T3 t : outTuples)
+				for (OUT t : outTuples)
 					out.addTuple(t);
 			}
 		}
 	}
 
 	@Override
-	public List<T3> processTupleIn1(T1 tuple) {
+	public List<OUT> processTupleIn1(IN tuple) {
 		return null;
 	}
 
 	@Override
-	public List<T3> processTupleIn2(T2 tuple) {
+	public List<OUT> processTupleIn2(IN2 tuple) {
 		return null;
 	}
 }

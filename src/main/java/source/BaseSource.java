@@ -28,7 +28,7 @@ public abstract class BaseSource<T extends Tuple> implements Source<T> {
 	protected boolean active = false;
 
 	@Override
-	public void registerOut(Stream<T> out) {
+	public void registerOut(String id, Stream<T> out) {
 		this.out = out;
 	}
 
@@ -47,6 +47,11 @@ public abstract class BaseSource<T extends Tuple> implements Source<T> {
 	@Override
 	public void deActivate() {
 		active = false;
+	}
+
+	@Override
+	public boolean isActive() {
+		return active;
 	}
 
 	public void process() {

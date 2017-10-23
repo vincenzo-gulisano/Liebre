@@ -24,23 +24,22 @@ import java.util.List;
 import stream.Stream;
 import tuple.Tuple;
 
-public abstract class BaseOperator<T1 extends Tuple, T2 extends Tuple>
-		implements Operator<T1, T2> {
+public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
-	protected Stream<T1> in;
-	protected Stream<T2> out;
+	protected Stream<IN> in;
+	protected Stream<OUT> out;
 	protected boolean active = false;
 
 	public BaseOperator() {
 	}
 
 	@Override
-	public void registerIn(String id, Stream<T1> in) {
+	public void registerIn(String id, Stream<IN> in) {
 		this.in = in;
 	}
 
 	@Override
-	public void registerOut(String id, Stream<T2> out) {
+	public void registerOut(String id, Stream<OUT> out) {
 		this.out = out;
 	}
 
@@ -61,16 +60,20 @@ public abstract class BaseOperator<T1 extends Tuple, T2 extends Tuple>
 		active = false;
 	}
 
+	public boolean isActive() {
+		return active;
+	}
+
 	public void process() {
-		T1 inTuple = in.getNextTuple();
+		IN inTuple = in.getNextTuple();
 		if (inTuple != null) {
-			List<T2> outTuples = processTuple(inTuple);
+			List<OUT> outTuples = processTuple(inTuple);
 			if (outTuples != null) {
-				for (T2 t : outTuples)
+				for (OUT t : outTuples)
 					out.addTuple(t);
 			}
 		}
 	}
 
-	public abstract List<T2> processTuple(T1 tuple);
+	public abstract List<OUT> processTuple(IN tuple);
 }

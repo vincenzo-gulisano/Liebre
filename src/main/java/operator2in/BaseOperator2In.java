@@ -24,29 +24,29 @@ import java.util.List;
 import stream.Stream;
 import tuple.Tuple;
 
-public abstract class BaseOperator2In<T1 extends Tuple, T2 extends Tuple, T3 extends Tuple>
-		implements Operator2In<T1, T2, T3> {
+public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
+		implements Operator2In<IN, IN2, OUT> {
 
-	protected Stream<T1> in1;
-	protected Stream<T2> in2;
-	protected Stream<T3> out;
+	protected Stream<IN> in1;
+	protected Stream<IN2> in2;
+	protected Stream<OUT> out;
 	protected boolean active = false;
 
 	public BaseOperator2In() {
 	}
 
 	@Override
-	public void registerIn1(String id, Stream<T1> in) {
+	public void registerIn(String id, Stream<IN> in) {
 		this.in1 = in;
 	}
 
 	@Override
-	public void registerIn2(String id, Stream<T2> in) {
+	public void registerIn2(String id, Stream<IN2> in) {
 		this.in2 = in;
 	}
 
 	@Override
-	public void registerOut(String id, Stream<T3> out) {
+	public void registerOut(String id, Stream<OUT> out) {
 		this.out = out;
 	}
 
@@ -67,26 +67,31 @@ public abstract class BaseOperator2In<T1 extends Tuple, T2 extends Tuple, T3 ext
 		active = false;
 	}
 
+	@Override
+	public boolean isActive() {
+		return active;
+	}
+
 	public void process() {
-		T1 inTuple1 = in1.getNextTuple();
+		IN inTuple1 = in1.getNextTuple();
 		if (inTuple1 != null) {
-			List<T3> outTuples = processTupleIn1(inTuple1);
+			List<OUT> outTuples = processTupleIn1(inTuple1);
 			if (outTuples != null) {
-				for (T3 t : outTuples)
+				for (OUT t : outTuples)
 					out.addTuple(t);
 			}
 		}
-		T2 inTuple2 = in2.getNextTuple();
+		IN2 inTuple2 = in2.getNextTuple();
 		if (inTuple2 != null) {
-			List<T3> outTuples = processTupleIn2(inTuple2);
+			List<OUT> outTuples = processTupleIn2(inTuple2);
 			if (outTuples != null) {
-				for (T3 t : outTuples)
+				for (OUT t : outTuples)
 					out.addTuple(t);
 			}
 		}
 	}
 
-	public abstract List<T3> processTupleIn1(T1 tuple);
+	public abstract List<OUT> processTupleIn1(IN tuple);
 
-	public abstract List<T3> processTupleIn2(T2 tuple);
+	public abstract List<OUT> processTupleIn2(IN2 tuple);
 }

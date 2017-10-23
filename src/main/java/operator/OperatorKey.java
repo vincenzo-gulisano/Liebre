@@ -21,13 +21,13 @@ package operator;
 
 import tuple.Tuple;
 
-public class OperatorKey<T1 extends Tuple, T2 extends Tuple> {
+public class OperatorKey<IN extends Tuple, OUT extends Tuple> {
 
 	final String identifier;
-	final Class<T1> type1;
-	final Class<T2> type2;
+	final Class<IN> type1;
+	final Class<OUT> type2;
 
-	public OperatorKey(String identifier, Class<T1> type1, Class<T2> type2) {
+	public OperatorKey(String identifier, Class<IN> type1, Class<OUT> type2) {
 		this.identifier = identifier;
 		this.type1 = type1;
 		this.type2 = type2;

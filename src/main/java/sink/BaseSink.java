@@ -31,7 +31,7 @@ public abstract class BaseSink<T extends Tuple> implements Sink<T> {
 	}
 
 	@Override
-	public void registerIn(Stream<T> in) {
+	public void registerIn(String id, Stream<T> in) {
 		this.in = in;
 	}
 
@@ -50,6 +50,11 @@ public abstract class BaseSink<T extends Tuple> implements Sink<T> {
 	@Override
 	public void deActivate() {
 		active = false;
+	}
+
+	@Override
+	public boolean isActive() {
+		return active;
 	}
 
 	public void process() {

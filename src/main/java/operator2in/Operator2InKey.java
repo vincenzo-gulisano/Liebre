@@ -21,15 +21,15 @@ package operator2in;
 
 import tuple.Tuple;
 
-public class Operator2InKey<T1 extends Tuple, T2 extends Tuple, T3 extends Tuple> {
+public class Operator2InKey<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> {
 
 	final String identifier;
-	final Class<T1> type1;
-	final Class<T2> type2;
-	final Class<T3> type3;
+	final Class<IN> type1;
+	final Class<IN2> type2;
+	final Class<OUT> type3;
 
-	public Operator2InKey(String identifier, Class<T1> type1, Class<T2> type2,
-			Class<T3> type3) {
+	public Operator2InKey(String identifier, Class<IN> type1, Class<IN2> type2,
+			Class<OUT> type3) {
 		this.identifier = identifier;
 		this.type1 = type1;
 		this.type2 = type2;

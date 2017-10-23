@@ -19,15 +19,10 @@
 
 package sink;
 
-import stream.Stream;
+import common.ActiveRunnable;
+import common.StreamConsumer;
 import tuple.Tuple;
 
-public interface Sink<T extends Tuple> extends Runnable {
-
-	public void registerIn(Stream<T> in);
-
-	public void activate();
-
-	public void deActivate();
+public interface Sink<T extends Tuple> extends ActiveRunnable, StreamConsumer<T> {
 
 }

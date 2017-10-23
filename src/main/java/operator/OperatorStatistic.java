@@ -24,18 +24,18 @@ import java.util.List;
 import statistic.AvgStat;
 import tuple.Tuple;
 
-public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
-		BaseOperator<T1, T2> {
+public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends
+		BaseOperator<IN, OUT> {
 
-	private BaseOperator<T1, T2> operator;
+	private BaseOperator<IN, OUT> operator;
 	private AvgStat processingTimeStat;
 
-	public OperatorStatistic(BaseOperator<T1, T2> operator, String outputFile) {
+	public OperatorStatistic(BaseOperator<IN, OUT> operator, String outputFile) {
 		this.operator = operator;
 		this.processingTimeStat = new AvgStat(outputFile, true);
 	}
 
-	public OperatorStatistic(BaseOperator<T1, T2> operator, String outputFile,
+	public OperatorStatistic(BaseOperator<IN, OUT> operator, String outputFile,
 			boolean autoFlush) {
 		this.operator = operator;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
@@ -48,20 +48,20 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
 	}
 
 	public void process() {
-		T1 inTuple = in.getNextTuple();
+		IN inTuple = in.getNextTuple();
 		if (inTuple != null) {
 			long start = System.nanoTime();
-			List<T2> outTuples = this.operator.processTuple(inTuple);
+			List<OUT> outTuples = this.operator.processTuple(inTuple);
 			processingTimeStat.add(System.nanoTime() - start);
 			if (outTuples != null) {
-				for (T2 t : outTuples)
+				for (OUT t : outTuples)
 					out.addTuple(t);
 			}
 		}
 	}
 
 	@Override
-	public List<T2> processTuple(T1 tuple) {
+	public List<OUT> processTuple(IN tuple) {
 		return null;
 	}
 }

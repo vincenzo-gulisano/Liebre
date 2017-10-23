@@ -19,20 +19,12 @@
 
 package operator2in;
 
+import operator.Operator;
 import stream.Stream;
 import tuple.Tuple;
 
-public interface Operator2In<T1 extends Tuple, T2 extends Tuple, T3 extends Tuple>
-		extends Runnable {
+public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator<IN, OUT> {
 
-	public void registerIn1(String id, Stream<T1> in);
-
-	public void registerIn2(String id, Stream<T2> in);
-
-	public void registerOut(String id, Stream<T3> out);
-
-	public void activate();
-
-	public void deActivate();
+	public void registerIn2(String id, Stream<IN2> in);
 
 }

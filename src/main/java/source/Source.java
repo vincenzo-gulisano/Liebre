@@ -19,15 +19,10 @@
 
 package source;
 
-import stream.Stream;
+import common.ActiveRunnable;
+import common.StreamProducer;
 import tuple.Tuple;
 
-public interface Source<T extends Tuple> extends Runnable {
-
-	public void registerOut(Stream<T> out);
-
-	public void activate();
-
-	public void deActivate();
+public interface Source<T extends Tuple> extends ActiveRunnable, StreamProducer<T> {
 
 }

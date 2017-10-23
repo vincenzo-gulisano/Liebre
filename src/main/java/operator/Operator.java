@@ -19,17 +19,17 @@
 
 package operator;
 
+import common.ActiveRunnable;
+import common.StreamConsumer;
+import common.StreamProducer;
 import stream.Stream;
 import tuple.Tuple;
 
-public interface Operator<T1 extends Tuple, T2 extends Tuple> extends Runnable {
+public interface Operator<IN extends Tuple, OUT extends Tuple>
+		extends ActiveRunnable, StreamConsumer<IN>, StreamProducer<OUT> {
 
-	public void registerIn(String id, Stream<T1> in);
+	public void registerIn(String id, Stream<IN> in);
 
-	public void registerOut(String id, Stream<T2> out);
-
-	public void activate();
-
-	public void deActivate();
+	public void registerOut(String id, Stream<OUT> out);
 
 }

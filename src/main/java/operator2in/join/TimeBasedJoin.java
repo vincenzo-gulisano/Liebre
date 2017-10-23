@@ -21,6 +21,7 @@ package operator2in.join;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import operator2in.BaseOperator2In;
 import tuple.RichTuple;
 
