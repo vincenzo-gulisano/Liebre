@@ -31,7 +31,8 @@ public class UnionOperator<T extends Tuple> extends BaseOperator<T, T> {
 	protected HashMap<String, Stream<T>> ins;
 	protected boolean active = false;
 
-	public UnionOperator() {
+	public UnionOperator(String id) {
+		super(id);
 		ins = new HashMap<String, Stream<T>>();
 	}
 

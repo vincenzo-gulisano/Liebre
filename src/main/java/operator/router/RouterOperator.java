@@ -31,7 +31,8 @@ public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 	protected RouterFunction<T> router;
 	protected HashMap<String, Stream<T>> outs;
 
-	public RouterOperator(RouterFunction<T> router) {
+	public RouterOperator(String id, RouterFunction<T> router) {
+		super(id);
 		this.router = router;
 		outs = new HashMap<String, Stream<T>>();
 	}

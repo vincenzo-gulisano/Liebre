@@ -59,17 +59,15 @@ public class SimpleQuery {
 			@Override
 			public MyTuple getNextTuple() {
 				Util.sleep(50);
-				return new MyTuple(System.currentTimeMillis(), r.nextInt(5), r
-						.nextInt(100));
+				return new MyTuple(System.currentTimeMillis(), r.nextInt(5), r.nextInt(100));
 			}
 		}, inKey);
 
-		q.addOperator("multiply", new BaseOperator<MyTuple, MyTuple>() {
+		q.addOperator("multiply", new BaseOperator<MyTuple, MyTuple>("M") {
 			@Override
 			public List<MyTuple> processTuple(MyTuple tuple) {
 				List<MyTuple> result = new LinkedList<MyTuple>();
-				result.add(new MyTuple(tuple.timestamp, tuple.key,
-						tuple.value * 2));
+				result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
 				return result;
 			}
 		}, inKey, outKey);
@@ -77,8 +75,7 @@ public class SimpleQuery {
 		q.addSink("outSink", new BaseSink<MyTuple>() {
 			@Override
 			public void processTuple(MyTuple tuple) {
-				System.out.println(tuple.timestamp + "," + tuple.key + ","
-						+ tuple.value);
+				System.out.println(tuple.timestamp + "," + tuple.key + "," + tuple.value);
 			}
 		}, outKey);
 

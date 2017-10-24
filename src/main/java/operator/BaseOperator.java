@@ -29,8 +29,10 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 	protected Stream<IN> in;
 	protected Stream<OUT> out;
 	protected boolean active = false;
+	private final String id;
 
-	public BaseOperator() {
+	public BaseOperator(String id) {
+		this.id = id;
 	}
 
 	@Override
@@ -75,5 +77,20 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 		}
 	}
 
+	@Override
+	public synchronized long getPriority() {
+		return in != null ? in.size() : 0;
+	}
+
+	@Override
+	public String getId() {
+		return this.id;
+	}
+
 	public abstract List<OUT> processTuple(IN tuple);
+
+	@Override
+	public String toString() {
+		return String.format("OP-%s [priority=%d]", id, getPriority());
+	}
 }

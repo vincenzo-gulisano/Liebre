@@ -11,9 +11,11 @@ import dummy.DummyMapFunction;
 import dummy.DummyRouterFunction;
 import dummy.DummyTuple;
 import dummy.FifoTaskPool;
+import operator.Operator;
 import query.Query;
 import reports.Report;
 import scheduling.Scheduler;
+import scheduling.TaskPool;
 import scheduling.impl.ThreadPoolScheduler;
 import source.BaseSource;
 import stream.StreamKey;
@@ -45,7 +47,7 @@ public class SampleQuery {
 		// Query 4
 		static final long I5 = 35;
 		static final long M = 50;
-		static final long N = 5000;
+		static final long N = 450;
 
 		private Throughput() {
 		}
@@ -53,7 +55,8 @@ public class SampleQuery {
 
 	public static void main(String[] args) {
 
-		Scheduler scheduler = new ThreadPoolScheduler(12, 50, TimeUnit.MILLISECONDS, new FifoTaskPool());
+		TaskPool<Operator<?, ?>> pool = new FifoTaskPool();
+		Scheduler scheduler = new ThreadPoolScheduler(8, 100, TimeUnit.MILLISECONDS, pool);
 		Query q = new Query(scheduler);
 
 		// This to store all statistics in the given folder
@@ -171,8 +174,7 @@ public class SampleQuery {
 
 		// Report basic measurements
 		Report.reportOutput("latency", "ms", args[0]);
-		Report.reportOutput("proc", "tuples/second", args[0]);
-
+		System.out.println(pool.toString());
 	}
 
 }

@@ -25,12 +25,12 @@ import java.util.List;
 import common.tuple.Tuple;
 import operator.BaseOperator;
 
-public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends
-		BaseOperator<T1, T2> {
+public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends BaseOperator<T1, T2> {
 
 	private MapFunction<T1, T2> map;
 
-	public MapOperator(MapFunction<T1, T2> map) {
+	public MapOperator(String id, MapFunction<T1, T2> map) {
+		super(id);
 		this.map = map;
 	}
 

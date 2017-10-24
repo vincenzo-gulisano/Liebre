@@ -28,4 +28,5 @@ public interface Stream<T extends Tuple> extends Active {
 
 	public T getNextTuple();
 
+	public long size();
 }

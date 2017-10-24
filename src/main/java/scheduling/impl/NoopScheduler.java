@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import operator.Operator;
 import scheduling.ActiveThread;
 import scheduling.Scheduler;
 
@@ -34,7 +35,7 @@ public class NoopScheduler implements Scheduler {
 	}
 
 	@Override
-	public void addTasks(Collection<? extends Runnable> tasks) {
+	public void addTasks(Collection<? extends Operator<?, ?>> tasks) {
 		operators.addAll(tasks);
 	}
 

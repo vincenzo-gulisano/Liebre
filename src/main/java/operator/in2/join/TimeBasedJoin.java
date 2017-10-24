@@ -39,7 +39,8 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 	private LinkedList<T1> in1TuplesBuffer;
 	private LinkedList<T2> in2TuplesBuffer;
 
-	public TimeBasedJoin(long windowSize, Predicate<T1, T2, T3> predicate) {
+	public TimeBasedJoin(String id, long windowSize, Predicate<T1, T2, T3> predicate) {
+		super(id);
 		this.ws = windowSize;
 		this.predicate = predicate;
 
@@ -51,11 +52,9 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 	}
 
 	protected void purge(long ts) {
-		while (in1Tuples.size() > 0
-				&& in1Tuples.peek().getTimestamp() < ts - ws)
+		while (in1Tuples.size() > 0 && in1Tuples.peek().getTimestamp() < ts - ws)
 			in1Tuples.poll();
-		while (in2Tuples.size() > 0
-				&& in2Tuples.peek().getTimestamp() < ts - ws)
+		while (in2Tuples.size() > 0 && in2Tuples.peek().getTimestamp() < ts - ws)
 			in2Tuples.poll();
 	}
 

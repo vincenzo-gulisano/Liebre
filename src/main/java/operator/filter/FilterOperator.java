@@ -29,7 +29,8 @@ public class FilterOperator<T extends Tuple> extends BaseOperator<T, T> {
 
 	protected FilterFunction<T> filter;
 
-	public FilterOperator(FilterFunction<T> filter) {
+	public FilterOperator(String id, FilterFunction<T> filter) {
+		super(id);
 		this.filter = filter;
 	}
 

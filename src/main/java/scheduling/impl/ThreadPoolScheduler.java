@@ -5,15 +5,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import operator.Operator;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
 
 public class ThreadPoolScheduler implements Scheduler {
 
-	private final TaskPool<Runnable> availableTasks;
+	private final TaskPool<Operator<?, ?>> availableTasks;
 	private final List<WorkerThread> workers = new ArrayList<>();
 
-	public ThreadPoolScheduler(int nThreads, long interval, TimeUnit unit, TaskPool<Runnable> availableTasks) {
+	public ThreadPoolScheduler(int nThreads, long interval, TimeUnit unit, TaskPool<Operator<?, ?>> availableTasks) {
 		this.availableTasks = availableTasks;
 		for (int i = 0; i < nThreads; i++) {
 			workers.add(new WorkerThread(availableTasks, interval, unit));
@@ -21,8 +22,8 @@ public class ThreadPoolScheduler implements Scheduler {
 	}
 
 	@Override
-	public void addTasks(Collection<? extends Runnable> tasks) {
-		for (Runnable task : tasks) {
+	public void addTasks(Collection<? extends Operator<?, ?>> tasks) {
+		for (Operator<?, ?> task : tasks) {
 			availableTasks.put(task);
 		}
 	}

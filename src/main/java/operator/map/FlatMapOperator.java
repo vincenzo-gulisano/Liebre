@@ -24,12 +24,12 @@ import java.util.List;
 import common.tuple.Tuple;
 import operator.BaseOperator;
 
-public class FlatMapOperator<T1 extends Tuple, T2 extends Tuple> extends
-		BaseOperator<T1, T2> {
+public class FlatMapOperator<T1 extends Tuple, T2 extends Tuple> extends BaseOperator<T1, T2> {
 
 	private FlatMapFunction<T1, T2> map;
 
-	public FlatMapOperator(FlatMapFunction<T1, T2> map) {
+	public FlatMapOperator(String id, FlatMapFunction<T1, T2> map) {
+		super(id);
 		this.map = map;
 	}
 

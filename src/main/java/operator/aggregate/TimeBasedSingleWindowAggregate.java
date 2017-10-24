@@ -27,8 +27,7 @@ import java.util.TreeMap;
 import common.tuple.RichTuple;
 import operator.BaseOperator;
 
-public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends RichTuple>
-		extends BaseOperator<T1, T2> {
+public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends RichTuple> extends BaseOperator<T1, T2> {
 
 	private long WS;
 	private long WA;
@@ -53,8 +52,8 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 		}
 	}
 
-	public TimeBasedSingleWindowAggregate(long WS, long WA,
-			TimeBasedSingleWindow<T1, T2> aggregateWindow) {
+	public TimeBasedSingleWindowAggregate(String id, long WS, long WA, TimeBasedSingleWindow<T1, T2> aggregateWindow) {
+		super(id);
 		tuples = new LinkedList<T1>();
 		windows = new TreeMap<Long, HashMap<String, TimeBasedSingleWindow<T1, T2>>>();
 		windowsCounters = new TreeMap<Long, HashMap<String, WinCounter>>();
@@ -64,8 +63,7 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 	}
 
 	public long getEarliestWinStartTS(long ts) {
-		return (long) Math.max((Math.floor(ts / WA) - Math.ceil(WS / WA) + 1)
-				* WA, 0.0);
+		return (long) Math.max((Math.floor(ts / WA) - Math.ceil(WS / WA) + 1) * WA, 0.0);
 	}
 
 	public List<T2> processTuple(T1 t) {
@@ -93,8 +91,7 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 			if (earliestWinStartTS < earliestWinStartTSforT) {
 
 				// Produce results for stale windows
-				for (TimeBasedSingleWindow<T1, T2> w : windows.get(
-						earliestWinStartTS).values()) {
+				for (TimeBasedSingleWindow<T1, T2> w : windows.get(earliestWinStartTS).values()) {
 					result.add(w.getAggregatedResult());
 				}
 
@@ -103,17 +100,12 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 					T1 tuple = tuples.peek();
 					if (tuple.getTimestamp() < earliestWinStartTS + WA) {
 
-						windows.get(earliestWinStartTS).get(tuple.getKey())
-								.remove(tuple);
-						windowsCounters.get(earliestWinStartTS)
-								.get(tuple.getKey()).add(-1);
+						windows.get(earliestWinStartTS).get(tuple.getKey()).remove(tuple);
+						windowsCounters.get(earliestWinStartTS).get(tuple.getKey()).add(-1);
 
-						if (windowsCounters.get(earliestWinStartTS)
-								.get(tuple.getKey()).isZero()) {
-							windows.get(earliestWinStartTS).remove(
-									tuple.getKey());
-							windowsCounters.get(earliestWinStartTS).remove(
-									tuple.getKey());
+						if (windowsCounters.get(earliestWinStartTS).get(tuple.getKey()).isZero()) {
+							windows.get(earliestWinStartTS).remove(tuple.getKey());
+							windowsCounters.get(earliestWinStartTS).remove(tuple.getKey());
 						}
 						tuples.pop();
 
@@ -124,18 +116,12 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 
 				// Shift windows
 				if (!windows.containsKey(earliestWinStartTS + WA)) {
-					windows.put(
-							earliestWinStartTS + WA,
-							new HashMap<String, TimeBasedSingleWindow<T1, T2>>());
-					windowsCounters.put(earliestWinStartTS + WA,
-							new HashMap<String, WinCounter>());
+					windows.put(earliestWinStartTS + WA, new HashMap<String, TimeBasedSingleWindow<T1, T2>>());
+					windowsCounters.put(earliestWinStartTS + WA, new HashMap<String, WinCounter>());
 				}
-				windows.get(earliestWinStartTS + WA).putAll(
-						windows.get(earliestWinStartTS));
-				windowsCounters.get(earliestWinStartTS + WA).putAll(
-						windowsCounters.get(earliestWinStartTS));
-				for (TimeBasedSingleWindow<T1, T2> w : windows.get(
-						earliestWinStartTS + WA).values()) {
+				windows.get(earliestWinStartTS + WA).putAll(windows.get(earliestWinStartTS));
+				windowsCounters.get(earliestWinStartTS + WA).putAll(windowsCounters.get(earliestWinStartTS));
+				for (TimeBasedSingleWindow<T1, T2> w : windows.get(earliestWinStartTS + WA).values()) {
 					w.setStartTimestamp(earliestWinStartTS + WA);
 				}
 				windows.remove(earliestWinStartTS);
@@ -147,20 +133,14 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 
 		// Add contribution of this tuple
 		if (!windows.containsKey(earliestWinStartTSforT)) {
-			windows.put(earliestWinStartTSforT,
-					new HashMap<String, TimeBasedSingleWindow<T1, T2>>());
-			windowsCounters.put(earliestWinStartTSforT,
-					new HashMap<String, WinCounter>());
+			windows.put(earliestWinStartTSforT, new HashMap<String, TimeBasedSingleWindow<T1, T2>>());
+			windowsCounters.put(earliestWinStartTSforT, new HashMap<String, WinCounter>());
 		}
 		if (!windows.get(earliestWinStartTSforT).containsKey(t.getKey())) {
-			windows.get(earliestWinStartTSforT).put(t.getKey(),
-					aggregateWindow.factory());
-			windows.get(earliestWinStartTSforT).get(t.getKey())
-					.setKey(t.getKey());
-			windows.get(earliestWinStartTSforT).get(t.getKey())
-					.setStartTimestamp(earliestWinStartTSforT);
-			windowsCounters.get(earliestWinStartTSforT).put(t.getKey(),
-					new WinCounter());
+			windows.get(earliestWinStartTSforT).put(t.getKey(), aggregateWindow.factory());
+			windows.get(earliestWinStartTSforT).get(t.getKey()).setKey(t.getKey());
+			windows.get(earliestWinStartTSforT).get(t.getKey()).setStartTimestamp(earliestWinStartTSforT);
+			windowsCounters.get(earliestWinStartTSforT).put(t.getKey(), new WinCounter());
 		}
 		windows.get(earliestWinStartTSforT).get(t.getKey()).add(t);
 		windowsCounters.get(earliestWinStartTSforT).get(t.getKey()).add(1);

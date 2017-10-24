@@ -23,13 +23,12 @@ import common.ActiveRunnable;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
-import stream.Stream;
 
 public interface Operator<IN extends Tuple, OUT extends Tuple>
 		extends ActiveRunnable, StreamConsumer<IN>, StreamProducer<OUT> {
 
-	public void registerIn(String id, Stream<IN> in);
+	long getPriority();
 
-	public void registerOut(String id, Stream<OUT> out);
+	String getId();
 
 }

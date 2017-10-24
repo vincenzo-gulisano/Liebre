@@ -28,14 +28,12 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 
 	private AvgStat processingTimeStat;
 
-	public RouterStatisticOperator(RouterFunction<T> router, String outputFile) {
-		super(router);
-		this.processingTimeStat = new AvgStat(outputFile, true);
+	public RouterStatisticOperator(String id, RouterFunction<T> router, String outputFile) {
+		this(id, router, outputFile, true);
 	}
 
-	public RouterStatisticOperator(RouterFunction<T> router, String outputFile,
-			boolean autoFlush) {
-		super(router);
+	public RouterStatisticOperator(String id, RouterFunction<T> router, String outputFile, boolean autoFlush) {
+		super(id, router);
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
 

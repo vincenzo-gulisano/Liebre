@@ -135,22 +135,23 @@ public class Query {
 	public <T1 extends RichTuple, T2 extends RichTuple> Operator<T1, T2> addAggregateOperator(String identifier,
 			TimeBasedSingleWindow<T1, T2> window, long WS, long WA, StreamKey<T1> inKey, StreamKey<T2> outKey) {
 
-		return addOperator(identifier, new TimeBasedSingleWindowAggregate<T1, T2>(WS, WA, window), inKey, outKey);
+		return addOperator(identifier, new TimeBasedSingleWindowAggregate<T1, T2>(identifier, WS, WA, window), inKey,
+				outKey);
 	}
 
 	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(String identifier,
 			MapFunction<T1, T2> mapFunction, StreamKey<T1> inKey, StreamKey<T2> outKey) {
-		return addOperator(identifier, new MapOperator<T1, T2>(mapFunction), inKey, outKey);
+		return addOperator(identifier, new MapOperator<T1, T2>(identifier, mapFunction), inKey, outKey);
 	}
 
 	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(String identifier,
 			FlatMapFunction<T1, T2> mapFunction, StreamKey<T1> inKey, StreamKey<T2> outKey) {
-		return addOperator(identifier, new FlatMapOperator<T1, T2>(mapFunction), inKey, outKey);
+		return addOperator(identifier, new FlatMapOperator<T1, T2>(identifier, mapFunction), inKey, outKey);
 	}
 
 	public <T extends Tuple> Operator<T, T> addFilterOperator(String identifier, FilterFunction<T> filterF,
 			StreamKey<T> inKey, StreamKey<T> outKey) {
-		return addOperator(identifier, new FilterOperator<T>(filterF), inKey, outKey);
+		return addOperator(identifier, new FilterOperator<T>(identifier, filterF), inKey, outKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -161,10 +162,10 @@ public class Query {
 		// Notice that the router is a special case which needs a dedicated
 		// statistics operator
 		if (keepStatistics) {
-			router = new RouterStatisticOperator<T>(routerF, statsFolder + File.separator + identifier + ".proc.csv",
-					autoFlush);
+			router = new RouterStatisticOperator<T>(identifier, routerF,
+					statsFolder + File.separator + identifier + ".proc.csv", autoFlush);
 		} else {
-			router = new RouterOperator<T>(routerF);
+			router = new RouterOperator<T>(identifier, routerF);
 		}
 		router.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
 		for (StreamKey<T> outKey : outKeys)
@@ -181,7 +182,7 @@ public class Query {
 		BaseOperator<T, T> union = null;
 		// Notice that the union is a special case. No processing stats are kept
 		// since the union does not process tuples.
-		union = new UnionOperator<T>();
+		union = new UnionOperator<T>(identifier);
 		union.registerOut(outKey.identifier, (Stream<T>) streams.get(outKey));
 		for (StreamKey<T> inKey : insKeys)
 			union.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
@@ -246,10 +247,12 @@ public class Query {
 	public <T1 extends RichTuple, T2 extends RichTuple, T3 extends RichTuple> Operator2In<T1, T2, T3> addJoinOperator(
 			String identifier, Predicate<T1, T2, T3> predicate, long WS, StreamKey<T1> in1Key, StreamKey<T2> in2Key,
 			StreamKey<T3> outKey) {
-		return addOperator2In(identifier, new TimeBasedJoin<T1, T2, T3>(WS, predicate), in1Key, in2Key, outKey);
+		return addOperator2In(identifier, new TimeBasedJoin<T1, T2, T3>(identifier, WS, predicate), in1Key, in2Key,
+				outKey);
 	}
 
 	public void activate() {
+		System.out.println("*** [Query] Activating...");
 		activateTasks(streams.values());
 		activateTasks(sinks.values());
 		for (ActiveRunnable o : getAllOperators()) {
@@ -261,6 +264,7 @@ public class Query {
 	}
 
 	public void deActivate() {
+		System.out.println("*** [Query] Deactivating...");
 		deactivateTasks(sources.values());
 		deactivateTasks(getAllOperators());
 		deactivateTasks(sinks.values());
@@ -292,8 +296,8 @@ public class Query {
 		}
 	}
 
-	private Collection<ActiveRunnable> getAllOperators() {
-		List<ActiveRunnable> allOperators = new ArrayList<>(operators.values());
+	private Collection<Operator<?, ?>> getAllOperators() {
+		List<Operator<?, ?>> allOperators = new ArrayList<>(operators.values());
 		allOperators.addAll(this.operators2in.values());
 		return allOperators;
 	}

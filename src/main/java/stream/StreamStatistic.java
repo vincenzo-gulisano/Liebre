@@ -63,4 +63,9 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 		return true;
 	}
 
+	@Override
+	public long size() {
+		return stream.size();
+	}
+
 }

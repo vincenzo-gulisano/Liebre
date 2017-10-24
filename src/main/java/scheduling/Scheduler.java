@@ -2,6 +2,8 @@ package scheduling;
 
 import java.util.Collection;
 
+import operator.Operator;
+
 /**
  * Scheduler for streaming operators.
  * 
@@ -16,7 +18,7 @@ public interface Scheduler {
 	 * @param tasks
 	 *            The operators to be scheduled
 	 */
-	void addTasks(Collection<? extends Runnable> tasks);
+	void addTasks(Collection<? extends Operator<?, ?>> tasks);
 
 	/**
 	 * Start and schedule the tasks according to the actual scheduler

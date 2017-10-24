@@ -31,8 +31,10 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	protected Stream<IN2> in2;
 	protected Stream<OUT> out;
 	protected boolean active = false;
+	private final String id;
 
-	public BaseOperator2In() {
+	public BaseOperator2In(String id) {
+		this.id = id;
 	}
 
 	@Override
@@ -89,6 +91,23 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 					out.addTuple(t);
 			}
 		}
+	}
+
+	@Override
+	public long getPriority() {
+		long in1Size = in1 != null ? in1.size() : 0;
+		long in2Size = in2 != null ? in2.size() : 0;
+		return Math.max(in1Size, in2Size);
+	}
+
+	@Override
+	public String getId() {
+		return this.id;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("OP [id=%s, priority=%d]", id, getPriority());
 	}
 
 	public abstract List<OUT> processTupleIn1(IN tuple);

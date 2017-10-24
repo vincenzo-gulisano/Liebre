@@ -30,14 +30,12 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
 	private BaseOperator2In<IN, IN2, OUT> operator;
 	private AvgStat processingTimeStat;
 
-	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator,
-			String outputFile) {
-		this.operator = operator;
-		this.processingTimeStat = new AvgStat(outputFile, true);
+	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator, String outputFile) {
+		this(operator, outputFile, true);
 	}
 
-	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator,
-			String outputFile, boolean autoFlush) {
+	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator, String outputFile, boolean autoFlush) {
+		super(operator.getId());
 		this.operator = operator;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}

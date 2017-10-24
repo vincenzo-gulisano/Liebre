@@ -24,19 +24,17 @@ import java.util.List;
 import common.statistic.AvgStat;
 import common.tuple.Tuple;
 
-public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends
-		BaseOperator<IN, OUT> {
+public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends BaseOperator<IN, OUT> {
 
 	private BaseOperator<IN, OUT> operator;
 	private AvgStat processingTimeStat;
 
 	public OperatorStatistic(BaseOperator<IN, OUT> operator, String outputFile) {
-		this.operator = operator;
-		this.processingTimeStat = new AvgStat(outputFile, true);
+		this(operator, outputFile, true);
 	}
 
-	public OperatorStatistic(BaseOperator<IN, OUT> operator, String outputFile,
-			boolean autoFlush) {
+	public OperatorStatistic(BaseOperator<IN, OUT> operator, String outputFile, boolean autoFlush) {
+		super(operator.getId());
 		this.operator = operator;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
