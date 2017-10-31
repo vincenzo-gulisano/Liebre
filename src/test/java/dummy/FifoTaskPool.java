@@ -40,7 +40,7 @@ public class FifoTaskPool implements TaskPool<Operator<?, ?>> {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("*** [PriorityTaskPool]\n");
+		StringBuilder sb = new StringBuilder("*** [FifoTaskPool]\n");
 		sb.append("Executions per operator: ").append(executions.toString()).append("\n");
 		sb.append("Current Operator States: ").append(tasks.toString()).append("\n");
 		return sb.toString();

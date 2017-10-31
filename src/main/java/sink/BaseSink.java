@@ -19,20 +19,39 @@
 
 package sink;
 
+import common.StreamProducer;
 import common.tuple.Tuple;
 import stream.Stream;
+import stream.StreamFactory;
 
-public abstract class BaseSink<T extends Tuple> implements Sink<T> {
+public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
-	protected Stream<T> in;
+	protected Stream<IN> input;
 	protected boolean active = false;
+	protected final String id;
+	protected final StreamFactory streamFactory;
+	protected final SinkFunction<IN> function;
 
-	public BaseSink() {
+	public BaseSink(String id, StreamFactory streamFactory, SinkFunction<IN> function) {
+		this.id = id;
+		this.streamFactory = streamFactory;
+		this.function = function;
 	}
 
 	@Override
-	public void registerIn(String id, Stream<T> in) {
-		this.in = in;
+	public void registerIn(StreamProducer<IN> in) {
+		if (active) {
+			throw new IllegalStateException();
+		}
+		if (!in.getNext().contains(this)) {
+			throw new UnsupportedOperationException("Please use registerOut() to construct query graphs");
+		}
+		this.input = streamFactory.newStream(in.getId(), id);
+	}
+
+	@Override
+	public Stream<IN> getInputStream(String reqId) {
+		return input;
 	}
 
 	@Override
@@ -44,6 +63,9 @@ public abstract class BaseSink<T extends Tuple> implements Sink<T> {
 
 	@Override
 	public void activate() {
+		if (input == null) {
+			throw new IllegalStateException(id);
+		}
 		active = true;
 	}
 
@@ -58,11 +80,18 @@ public abstract class BaseSink<T extends Tuple> implements Sink<T> {
 	}
 
 	public void process() {
-		T t = in.getNextTuple();
+		IN t = getInputStream(id).getNextTuple();
 		if (t != null) {
 			processTuple(t);
 		}
 	}
 
-	public abstract void processTuple(T tuple);
+	@Override
+	public String getId() {
+		return this.id;
+	}
+
+	public void processTuple(IN tuple) {
+		function.processTuple(tuple);
+	}
 }

@@ -21,19 +21,19 @@ package source;
 
 import common.statistic.AvgStat;
 import common.tuple.Tuple;
+import stream.StreamFactory;
 
 public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 
 	private BaseSource<T> source;
 	private AvgStat processingTimeStat;
 
-	public SourceStatistic(BaseSource<T> source, String outputFile) {
-		this.source = source;
-		this.processingTimeStat = new AvgStat(outputFile, true);
+	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile) {
+		this(source, streamFactory, outputFile, true);
 	}
 
-	public SourceStatistic(BaseSource<T> source, String outputFile,
-			boolean autoFlush) {
+	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile, boolean autoFlush) {
+		super(source.getId());
 		this.source = source;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
@@ -49,7 +49,7 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 		T t = this.source.getNextTuple();
 		processingTimeStat.add(System.nanoTime() - start);
 		if (t != null)
-			out.addTuple(t);
+			getOutputStream(getId()).addTuple(t);
 	}
 
 	@Override

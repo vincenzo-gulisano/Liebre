@@ -21,8 +21,8 @@ package operator.map;
 
 import common.tuple.Tuple;
 
-public interface MapFunction<T1 extends Tuple, T2 extends Tuple> {
+public interface MapFunction<IN extends Tuple, OUT extends Tuple> {
 
-	public T2 map(T1 tuple);
+	public OUT map(IN tuple);
 
 }

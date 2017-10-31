@@ -66,7 +66,7 @@ public class TextRouterMap {
 		q.addRouterOperator("router", new RouterFunction<MyTuple>() {
 
 			@Override
-			public List<String> chooseStreams(MyTuple tuple) {
+			public List<String> chooseOperators(MyTuple tuple) {
 				List<String> result = new LinkedList<String>();
 				if (tuple.getKey().equals("28")) {
 					result.add("out1");

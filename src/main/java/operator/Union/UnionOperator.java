@@ -19,39 +19,55 @@
 
 package operator.Union;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import common.StreamProducer;
 import common.tuple.Tuple;
 import operator.BaseOperator;
 import stream.Stream;
+import stream.StreamFactory;
 
-public class UnionOperator<T extends Tuple> extends BaseOperator<T, T> {
+public class UnionOperator<IN extends Tuple> extends BaseOperator<IN, IN> {
 
-	protected HashMap<String, Stream<T>> ins;
-	protected boolean active = false;
+	protected final Map<String, Stream<IN>> inputs = new ConcurrentHashMap<>();
 
-	public UnionOperator(String id) {
-		super(id);
-		ins = new HashMap<String, Stream<T>>();
+	public UnionOperator(String id, StreamFactory streamFactory) {
+		super(id, streamFactory);
 	}
 
-	public void registerIn(String id, Stream<T> in) {
-		this.ins.put(id, in);
+	@Override
+	public void registerIn(StreamProducer<IN> in) {
+		Stream<IN> input = streamFactory.newStream(in.getId(), id);
+		inputs.put(in.getId(), input);
+	}
+
+	@Override
+	public Stream<IN> getInputStream(String reqId) {
+		return inputs.get(reqId);
 	}
 
 	@Override
 	public void process() {
-		for (Stream<T> in : ins.values()) {
-			T inTuple = in.getNextTuple();
+		for (Stream<IN> in : inputs.values()) {
+			IN inTuple = in.getNextTuple();
 			if (inTuple != null) {
-				out.addTuple(inTuple);
+				getOutputStream(getId()).addTuple(inTuple);
 			}
 		}
 	}
 
 	@Override
-	public List<T> processTuple(T tuple) {
+	public void activate() {
+		if (inputs.size() == 0 || next == null) {
+			throw new IllegalStateException(id);
+		}
+		active = true;
+	}
+
+	@Override
+	public List<IN> processTuple(IN tuple) {
 		return null;
 	}
 }

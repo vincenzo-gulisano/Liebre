@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.TimeUnit;
 
-import sink.BaseSink;
+import sink.SinkFunction;
 
 /**
  * Log average latency per second, in milliseconds.
@@ -14,7 +14,7 @@ import sink.BaseSink;
  * @author palivosd
  *
  */
-public class DummyLatencyLogger extends BaseSink<DummyTuple> {
+public class DummyLatencyLogger implements SinkFunction<DummyTuple> {
 
 	private double latencyMeasumentsCount = 0;
 	private double latencySumNanoseconds = 0;
@@ -34,7 +34,7 @@ public class DummyLatencyLogger extends BaseSink<DummyTuple> {
 	}
 
 	@Override
-	public void processTuple(DummyTuple tuple) {
+	public Object processTuple(DummyTuple tuple) {
 		latencyMeasumentsCount++;
 		latencySumNanoseconds += System.nanoTime() - tuple.getTimestamp();
 		while (currentTimeSeconds() - lastUpdateTimeSeconds > 1) {
@@ -43,6 +43,7 @@ public class DummyLatencyLogger extends BaseSink<DummyTuple> {
 			latencySumNanoseconds = 0;
 			lastUpdateTimeSeconds++;
 		}
+		return tuple;
 	}
 
 	private long currentTimeSeconds() {

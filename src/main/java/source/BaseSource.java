@@ -19,17 +19,35 @@
 
 package source;
 
+import java.util.Arrays;
+import java.util.List;
+
+import common.StreamConsumer;
 import common.tuple.Tuple;
 import stream.Stream;
 
 public abstract class BaseSource<T extends Tuple> implements Source<T> {
 
-	protected Stream<T> out;
+	protected StreamConsumer<T> next;
 	protected boolean active = false;
+	protected final String id;
+
+	public BaseSource(String id) {
+		this.id = id;
+	}
 
 	@Override
-	public void registerOut(String id, Stream<T> out) {
-		this.out = out;
+	public void registerOut(StreamConsumer<T> out) {
+		if (active) {
+			throw new IllegalStateException();
+		}
+		this.next = out;
+		out.registerIn(this);
+	}
+
+	@Override
+	public Stream<T> getOutputStream(String reqId) {
+		return next.getInputStream(reqId);
 	}
 
 	@Override
@@ -41,7 +59,15 @@ public abstract class BaseSource<T extends Tuple> implements Source<T> {
 
 	@Override
 	public void activate() {
+		if (next == null) {
+			throw new IllegalStateException(id);
+		}
 		active = true;
+	}
+
+	@Override
+	public List<StreamConsumer<T>> getNext() {
+		return Arrays.asList(this.next);
 	}
 
 	@Override
@@ -57,7 +83,12 @@ public abstract class BaseSource<T extends Tuple> implements Source<T> {
 	public void process() {
 		T t = getNextTuple();
 		if (t != null)
-			out.addTuple(t);
+			getOutputStream(getId()).addTuple(t);
+	}
+
+	@Override
+	public String getId() {
+		return this.id;
 	}
 
 	public abstract T getNextTuple();

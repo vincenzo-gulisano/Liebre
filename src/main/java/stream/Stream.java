@@ -20,9 +20,10 @@
 package stream;
 
 import common.Active;
+import common.NamedEntity;
 import common.tuple.Tuple;
 
-public interface Stream<T extends Tuple> extends Active {
+public interface Stream<T extends Tuple> extends Active, NamedEntity {
 
 	public void addTuple(T tuple);
 

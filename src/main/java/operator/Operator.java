@@ -29,6 +29,4 @@ public interface Operator<IN extends Tuple, OUT extends Tuple>
 
 	long getPriority();
 
-	String getId();
-
 }

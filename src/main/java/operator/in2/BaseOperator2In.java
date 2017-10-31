@@ -19,37 +19,78 @@
 
 package operator.in2;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import common.StreamConsumer;
+import common.StreamProducer;
 import common.tuple.Tuple;
 import stream.Stream;
+import stream.StreamFactory;
 
 public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
 		implements Operator2In<IN, IN2, OUT> {
 
-	protected Stream<IN> in1;
-	protected Stream<IN2> in2;
-	protected Stream<OUT> out;
+	protected StreamConsumer<OUT> next;
+	protected Stream<IN> input1;
+	protected Stream<IN2> input2;
 	protected boolean active = false;
-	private final String id;
+	protected final String id;
 
-	public BaseOperator2In(String id) {
+	protected final StreamFactory streamFactory;
+
+	public BaseOperator2In(String id, StreamFactory streamFactory) {
 		this.id = id;
+		this.streamFactory = streamFactory;
 	}
 
 	@Override
-	public void registerIn(String id, Stream<IN> in) {
-		this.in1 = in;
+	public void registerIn(StreamProducer<IN> in) {
+		if (active) {
+			throw new IllegalStateException();
+		}
+		if (!in.getNext().contains(this)) {
+			throw new UnsupportedOperationException("Please use registerOut() to construct query graphs");
+		}
+		this.input1 = streamFactory.newStream(in.getId(), id);
 	}
 
 	@Override
-	public void registerIn2(String id, Stream<IN2> in) {
-		this.in2 = in;
+	public void registerIn2(StreamProducer<IN2> in) {
+		if (in == null) {
+			return;
+		}
+		if (active) {
+			throw new IllegalStateException();
+		}
+		this.input2 = streamFactory.newStream(in.getId(), id);
 	}
 
 	@Override
-	public void registerOut(String id, Stream<OUT> out) {
-		this.out = out;
+	public Collection<StreamConsumer<OUT>> getNext() {
+		return Arrays.asList(this.next);
+	}
+
+	@Override
+	public Stream<OUT> getOutputStream(String reqId) {
+		return next.getInputStream(reqId);
+	}
+
+	@Override
+	public void registerOut(StreamConsumer<OUT> out) {
+		this.next = out;
+		next.registerIn(this);
+	}
+
+	@Override
+	public Stream<IN> getInputStream(String reqId) {
+		return input1;
+	}
+
+	@Override
+	public Stream<IN2> getInput2Stream(String reqId) {
+		return input2;
 	}
 
 	@Override
@@ -61,6 +102,9 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public void activate() {
+		if (input1 == null || input2 == null || next == null) {
+			throw new IllegalStateException(id);
+		}
 		active = true;
 	}
 
@@ -75,28 +119,28 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	public void process() {
-		IN inTuple1 = in1.getNextTuple();
+		IN inTuple1 = getInputStream(id).getNextTuple();
 		if (inTuple1 != null) {
 			List<OUT> outTuples = processTupleIn1(inTuple1);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
-					out.addTuple(t);
+					getOutputStream(id).addTuple(t);
 			}
 		}
-		IN2 inTuple2 = in2.getNextTuple();
+		IN2 inTuple2 = getInput2Stream(id).getNextTuple();
 		if (inTuple2 != null) {
 			List<OUT> outTuples = processTupleIn2(inTuple2);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
-					out.addTuple(t);
+					getOutputStream(id).addTuple(t);
 			}
 		}
 	}
 
 	@Override
 	public long getPriority() {
-		long in1Size = in1 != null ? in1.size() : 0;
-		long in2Size = in2 != null ? in2.size() : 0;
+		long in1Size = getInputStream(id) != null ? getInputStream(id).size() : 0;
+		long in2Size = getInput2Stream(id) != null ? getInput2Stream(id).size() : 0;
 		return Math.max(in1Size, in2Size);
 	}
 

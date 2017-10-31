@@ -29,8 +29,10 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	private ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
 	private BackOff writerBackOff, readerBackOff;
 	private volatile long tuplesWritten, tuplesRead;
+	protected final String id;
 
-	public ConcurrentLinkedListStream() {
+	public ConcurrentLinkedListStream(String id) {
+		this.id = id;
 		writerBackOff = new BackOff(1, 20, 5);
 		readerBackOff = new BackOff(1, 20, 5);
 		tuplesWritten = 0;
@@ -78,6 +80,11 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	public long size() {
 		// FIXME: Not exact size, race conditions
 		return tuplesWritten - tuplesRead;
+	}
+
+	@Override
+	public String getId() {
+		return this.id;
 	}
 
 }

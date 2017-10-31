@@ -23,18 +23,19 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import operator.BaseOperator;
+import stream.StreamFactory;
 
-public class FlatMapOperator<T1 extends Tuple, T2 extends Tuple> extends BaseOperator<T1, T2> {
+public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator<IN, OUT> {
 
-	private FlatMapFunction<T1, T2> map;
+	private FlatMapFunction<IN, OUT> map;
 
-	public FlatMapOperator(String id, FlatMapFunction<T1, T2> map) {
-		super(id);
+	public FlatMapOperator(String id, StreamFactory streamFactory, FlatMapFunction<IN, OUT> map) {
+		super(id, streamFactory);
 		this.map = map;
 	}
 
 	@Override
-	public List<T2> processTuple(T1 tuple) {
+	public List<OUT> processTuple(IN tuple) {
 		return map.map(tuple);
 	}
 }

@@ -21,12 +21,12 @@ public class WorkerThread extends ActiveThread {
 	public void doRun() {
 		Operator<?, ?> task = availableTasks.getNext(getId());
 		// System.out.format("Thread %d executing %s%n", getId(), task.getId());
-		System.out.format("+ [T%d] %s%n", getId(), task);
+		// System.out.format("+ [T%d] %s%n", getId(), task);
 		long runUntil = System.nanoTime() + unit.toNanos(interval);
 		while (System.nanoTime() < runUntil) {
 			task.run();
 		}
-		System.out.format("- [T%d] %s%n", getId(), task);
+		// System.out.format("- [T%d] %s%n", getId(), task);
 		availableTasks.put(task);
 	}
 

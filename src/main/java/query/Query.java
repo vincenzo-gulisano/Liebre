@@ -29,11 +29,12 @@ import java.util.Map;
 
 import common.Active;
 import common.ActiveRunnable;
+import common.StreamConsumer;
+import common.StreamProducer;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import operator.BaseOperator;
 import operator.Operator;
-import operator.OperatorKey;
 import operator.OperatorStatistic;
 import operator.Union.UnionOperator;
 import operator.aggregate.TimeBasedSingleWindow;
@@ -42,7 +43,6 @@ import operator.filter.FilterFunction;
 import operator.filter.FilterOperator;
 import operator.in2.BaseOperator2In;
 import operator.in2.Operator2In;
-import operator.in2.Operator2InKey;
 import operator.in2.Operator2InStatistic;
 import operator.in2.join.Predicate;
 import operator.in2.join.TimeBasedJoin;
@@ -57,20 +57,17 @@ import scheduling.Scheduler;
 import scheduling.impl.NoopScheduler;
 import sink.BaseSink;
 import sink.Sink;
-import sink.SinkKey;
+import sink.SinkFunction;
 import sink.SinkStatistic;
 import sink.text.TextSink;
 import sink.text.TextSinkFunction;
 import source.BaseSource;
 import source.Source;
-import source.SourceKey;
 import source.SourceStatistic;
 import source.text.TextSource;
 import source.text.TextSourceFunction;
-import stream.ConcurrentLinkedListStream;
 import stream.Stream;
-import stream.StreamKey;
-import stream.StreamStatistic;
+import stream.StreamFactory;
 
 public class Query {
 
@@ -78,14 +75,18 @@ public class Query {
 	private String statsFolder;
 	private boolean autoFlush;
 
-	private final Map<StreamKey<? extends Tuple>, Stream<? extends Tuple>> streams = new HashMap<>();
-	private final Map<OperatorKey<? extends Tuple, ? extends Tuple>, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
-	private final Map<Operator2InKey<? extends Tuple, ? extends Tuple, ? extends Tuple>, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
-	private final Map<SourceKey<? extends Tuple>, Source<? extends Tuple>> sources = new HashMap<>();
-	private final Map<SinkKey<? extends Tuple>, Sink<? extends Tuple>> sinks = new HashMap<>();
+	// TODO: Hashing to ensure uniqueness of streams, sources etc
+	// TODO: Implement toString(), hashcode and equals for all entities
+	// FIXME: Default StreamFactory for all entities to keep backward compatibility
+	private final Map<String, Stream<? extends Tuple>> streams = new HashMap<>();
+	private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
+	private final Map<String, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
+	private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
+	private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
 
 	private final List<Thread> threads = new LinkedList<>();
 	private final Scheduler scheduler;
+	private StreamFactory streamFactory = ConcurrentLinkedListStreamFactory.INSTANCE;
 
 	public Query() {
 		this.scheduler = new NoopScheduler();
@@ -99,156 +100,116 @@ public class Query {
 		keepStatistics = true;
 		this.statsFolder = statisticsFolder;
 		this.autoFlush = autoFlush;
+		// TODO: Constants
+		streamFactory = new ConcurrentLinkedListStreamStatisticFactory(statisticsFolder, "in", "out", autoFlush);
 	}
 
 	public void activateStatistics(String statisticsFolder) {
-		keepStatistics = true;
-		this.statsFolder = statisticsFolder;
-		this.autoFlush = true;
+		activateStatistics(statisticsFolder, true);
 	}
 
-	public <T extends Tuple> StreamKey<T> addStream(String identifier, Class<T> type) {
-		StreamKey<T> key = new StreamKey<>(identifier, type);
-		Stream<T> stream = new ConcurrentLinkedListStream<T>();
+	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(String identifier,
+			BaseOperator<IN, OUT> operator) {
 		if (keepStatistics) {
-			stream = new StreamStatistic<T>(stream, statsFolder + File.separator + identifier + ".in.csv",
-					statsFolder + File.separator + identifier + ".out.csv", autoFlush);
-		}
-		streams.put(key, stream);
-		return key;
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addOperator(String identifier,
-			BaseOperator<T1, T2> operator, StreamKey<T1> inKey, StreamKey<T2> outKey) {
-		OperatorKey<T1, T2> key = new OperatorKey<T1, T2>(identifier, inKey.type, outKey.type);
-		if (keepStatistics) {
-			operator = new OperatorStatistic<T1, T2>(operator, statsFolder + File.separator + identifier + ".proc.csv",
+			operator = new OperatorStatistic<IN, OUT>(operator, statsFolder + File.separator + identifier + ".proc.csv",
 					autoFlush);
 		}
-		operator.registerIn(inKey.identifier, (Stream<T1>) streams.get(inKey));
-		operator.registerOut(outKey.identifier, (Stream<T2>) streams.get(outKey));
-		operators.put(key, operator);
+		operators.put(operator.getId(), operator);
 		return operator;
 	}
 
-	public <T1 extends RichTuple, T2 extends RichTuple> Operator<T1, T2> addAggregateOperator(String identifier,
-			TimeBasedSingleWindow<T1, T2> window, long WS, long WA, StreamKey<T1> inKey, StreamKey<T2> outKey) {
+	public <IN extends RichTuple, OUT extends RichTuple> Operator<IN, OUT> addAggregateOperator(String identifier,
+			TimeBasedSingleWindow<IN, OUT> window, long WS, long WA) {
 
-		return addOperator(identifier, new TimeBasedSingleWindowAggregate<T1, T2>(identifier, WS, WA, window), inKey,
-				outKey);
+		return addOperator(identifier,
+				new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, streamFactory, WS, WA, window));
 	}
 
-	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(String identifier,
-			MapFunction<T1, T2> mapFunction, StreamKey<T1> inKey, StreamKey<T2> outKey) {
-		return addOperator(identifier, new MapOperator<T1, T2>(identifier, mapFunction), inKey, outKey);
+	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
+			MapFunction<IN, OUT> mapFunction) {
+		return addOperator(identifier, new MapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
 	}
 
-	public <T1 extends Tuple, T2 extends Tuple> Operator<T1, T2> addMapOperator(String identifier,
-			FlatMapFunction<T1, T2> mapFunction, StreamKey<T1> inKey, StreamKey<T2> outKey) {
-		return addOperator(identifier, new FlatMapOperator<T1, T2>(identifier, mapFunction), inKey, outKey);
+	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
+			FlatMapFunction<IN, OUT> mapFunction, StreamProducer<IN> inKey, StreamConsumer<OUT> outKey) {
+		return addOperator(identifier, new FlatMapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
 	}
 
-	public <T extends Tuple> Operator<T, T> addFilterOperator(String identifier, FilterFunction<T> filterF,
-			StreamKey<T> inKey, StreamKey<T> outKey) {
-		return addOperator(identifier, new FilterOperator<T>(identifier, filterF), inKey, outKey);
+	public <T extends Tuple> Operator<T, T> addFilterOperator(String identifier, FilterFunction<T> filterF) {
+		return addOperator(identifier, new FilterOperator<T>(identifier, streamFactory, filterF));
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier, RouterFunction<T> routerF,
-			StreamKey<T> inKey, List<StreamKey<T>> outKeys) {
-		OperatorKey<T, T> key = new OperatorKey<T, T>(identifier, inKey.type, outKeys.get(0).type);
+	public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier, RouterFunction<T> routerF) {
 		BaseOperator<T, T> router = null;
 		// Notice that the router is a special case which needs a dedicated
 		// statistics operator
 		if (keepStatistics) {
-			router = new RouterStatisticOperator<T>(identifier, routerF,
+			router = new RouterStatisticOperator<T>(identifier, streamFactory, routerF,
 					statsFolder + File.separator + identifier + ".proc.csv", autoFlush);
 		} else {
-			router = new RouterOperator<T>(identifier, routerF);
+			router = new RouterOperator<T>(identifier, streamFactory, routerF);
 		}
-		router.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
-		for (StreamKey<T> outKey : outKeys)
-			router.registerOut(outKey.identifier, (Stream<T>) streams.get(outKey));
-		operators.put(key, router);
+		operators.put(router.getId(), router);
 		return router;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends Tuple> Operator<T, T> addUnionOperator(String identifier, List<StreamKey<T>> insKeys,
-			StreamKey<T> outKey) {
+	public <T extends Tuple> Operator<T, T> addUnionOperator(String identifier) {
 
-		OperatorKey<T, T> key = new OperatorKey<T, T>(identifier, insKeys.get(0).type, outKey.type);
-		BaseOperator<T, T> union = null;
 		// Notice that the union is a special case. No processing stats are kept
 		// since the union does not process tuples.
-		union = new UnionOperator<T>(identifier);
-		union.registerOut(outKey.identifier, (Stream<T>) streams.get(outKey));
-		for (StreamKey<T> inKey : insKeys)
-			union.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
-		operators.put(key, union);
+		BaseOperator<T, T> union = new UnionOperator<>(identifier, streamFactory);
+		operators.put(union.getId(), union);
 		return union;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends Tuple> SourceKey<T> addSource(String identifier, BaseSource<T> source, StreamKey<T> outKey) {
-		SourceKey<T> key = new SourceKey<T>(identifier, outKey.type);
+	public <T extends Tuple> Source<T> addSource(BaseSource<T> source) {
 		if (keepStatistics) {
-			source = new SourceStatistic<T>(source, statsFolder + File.separator + identifier + ".proc.csv");
+			source = new SourceStatistic<T>(source, streamFactory,
+					statsFolder + File.separator + source.getId() + ".proc.csv");
 		}
-		source.registerOut(identifier, (Stream<T>) streams.get(outKey));
-		sources.put(key, source);
-		return key;
+		sources.put(source.getId(), source);
+		return source;
 	}
 
-	public <T extends Tuple> SourceKey<T> addTextSource(String identifier, String fileName,
-			TextSourceFunction<T> function, StreamKey<T> outKey) {
-		return addSource(identifier, new TextSource<T>(fileName, function), outKey);
+	public <T extends Tuple> Source<T> addTextSource(String id, String fileName, TextSourceFunction<T> function) {
+		return addSource(new TextSource<T>(id, fileName, function));
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends Tuple> SinkKey<T> addSink(String identifier, BaseSink<T> sink, StreamKey<T> streamKey) {
-		SinkKey<T> key = new SinkKey<T>(identifier, streamKey.type);
+	public <T extends Tuple> Sink<T> addSink(BaseSink<T> sink) {
 		if (keepStatistics) {
-			sink = new SinkStatistic<T>(sink, statsFolder + File.separator + identifier + ".proc.csv");
+			sink = new SinkStatistic<T>(sink, statsFolder + File.separator + sink.getId() + ".proc.csv");
 		}
-		sink.registerIn(identifier, (Stream<T>) streams.get(streamKey));
-		sinks.put(key, sink);
-		return key;
+		sinks.put(sink.getId(), sink);
+		return sink;
 	}
 
-	public <T extends Tuple> SinkKey<T> addTextSink(String identifier, String fileName, TextSinkFunction<T> function,
-			StreamKey<T> streamKey) {
-		return addSink(identifier, new TextSink<T>(fileName, function, true), streamKey);
+	public <T extends Tuple> Sink<T> addBaseSink(String id, SinkFunction<T> sinkFunction) {
+		return addSink(new BaseSink<>(id, streamFactory, sinkFunction));
 	}
 
-	public <T extends Tuple> SinkKey<T> addTextSink(String identifier, String fileName, TextSinkFunction<T> function,
-			boolean autoFlush, StreamKey<T> streamKey) {
-		return addSink(identifier, new TextSink<T>(fileName, function, autoFlush), streamKey);
+	public <T extends Tuple> Sink<T> addTextSink(String id, String fileName, TextSinkFunction<T> function,
+			StreamProducer<T> streamKey) {
+		return addSink(new TextSink<T>(id, fileName, function, true));
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T1 extends Tuple, T2 extends Tuple, T3 extends Tuple> Operator2In<T1, T2, T3> addOperator2In(
-			String identifier, BaseOperator2In<T1, T2, T3> operator, StreamKey<T1> in1Key, StreamKey<T2> in2Key,
-			StreamKey<T3> outKey) {
-		Operator2InKey<T1, T2, T3> key = new Operator2InKey<T1, T2, T3>(identifier, in1Key.type, in2Key.type,
-				outKey.type);
+	public <T extends Tuple> Sink<T> addTextSink(String id, String fileName, TextSinkFunction<T> function,
+			boolean autoFlush) {
+		return addSink(new TextSink<T>(id, fileName, function, autoFlush));
+	}
+
+	public <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
+			String identifier, BaseOperator2In<IN, IN2, OUT> operator) {
 		if (keepStatistics) {
-			operator = new Operator2InStatistic<T1, T2, T3>(operator,
+			operator = new Operator2InStatistic<IN, IN2, OUT>(operator,
 					statsFolder + File.separator + identifier + ".proc.csv", autoFlush);
 		}
-		operator.registerIn(in1Key.identifier, (Stream<T1>) streams.get(in1Key));
-		operator.registerIn2(in2Key.identifier, (Stream<T2>) streams.get(in2Key));
-		operator.registerOut(outKey.identifier, (Stream<T3>) streams.get(outKey));
-		operators2in.put(key, operator);
+		operators2in.put(operator.getId(), operator);
 		return operator;
 	}
 
-	public <T1 extends RichTuple, T2 extends RichTuple, T3 extends RichTuple> Operator2In<T1, T2, T3> addJoinOperator(
-			String identifier, Predicate<T1, T2, T3> predicate, long WS, StreamKey<T1> in1Key, StreamKey<T2> in2Key,
-			StreamKey<T3> outKey) {
-		return addOperator2In(identifier, new TimeBasedJoin<T1, T2, T3>(identifier, WS, predicate), in1Key, in2Key,
-				outKey);
+	public <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
+			String identifier, Predicate<IN, IN2, OUT> predicate, long WS) {
+		return addOperator2In(identifier, new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, WS, predicate));
 	}
 
 	public void activate() {

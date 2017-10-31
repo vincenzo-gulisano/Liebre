@@ -19,42 +19,65 @@
 
 package operator.router;
 
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import common.StreamConsumer;
 import common.tuple.Tuple;
 import operator.BaseOperator;
 import stream.Stream;
+import stream.StreamFactory;
 
 public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 
 	protected RouterFunction<T> router;
-	protected HashMap<String, Stream<T>> outs;
+	protected final Map<String, StreamConsumer<T>> outs = new ConcurrentHashMap<>();
 
-	public RouterOperator(String id, RouterFunction<T> router) {
-		super(id);
+	public RouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
+		super(id, streamFactory);
 		this.router = router;
-		outs = new HashMap<String, Stream<T>>();
 	}
 
-	public void registerOut(String id, Stream<T> out) {
-		this.outs.put(id, out);
+	@Override
+	public void registerOut(StreamConsumer<T> out) {
+		this.outs.put(out.getId(), out);
+		out.registerIn(this);
 	}
 
 	@Override
 	public void process() {
-		T inTuple = in.getNextTuple();
+		T inTuple = getInputStream(id).getNextTuple();
 		if (inTuple != null) {
-			List<String> streams = router.chooseStreams(inTuple);
+			List<String> streams = router.chooseOperators(inTuple);
 			if (streams != null)
-				for (String stream : router.chooseStreams(inTuple))
-					outs.get(stream).addTuple(inTuple);
+				for (String operator : router.chooseOperators(inTuple))
+					outs.get(operator).getInputStream(operator).addTuple(inTuple);
 		}
+	}
+
+	@Override
+	public Stream<T> getOutputStream(String reqId) {
+		return outs.get(reqId).getInputStream(reqId);
 	}
 
 	@Override
 	public List<T> processTuple(T tuple) {
 		return null;
+	}
+
+	@Override
+	public void activate() {
+		if (input == null || outs.size() == 0) {
+			throw new IllegalStateException(id);
+		}
+		active = true;
+	}
+
+	@Override
+	public Collection<StreamConsumer<T>> getNext() {
+		return outs.values();
 	}
 
 }

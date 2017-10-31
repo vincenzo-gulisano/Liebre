@@ -19,30 +19,59 @@
 
 package operator;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import common.StreamConsumer;
+import common.StreamProducer;
 import common.tuple.Tuple;
 import stream.Stream;
+import stream.StreamFactory;
 
 public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
-	protected Stream<IN> in;
-	protected Stream<OUT> out;
+	protected Stream<IN> input;
+	protected StreamConsumer<OUT> next;
 	protected boolean active = false;
-	private final String id;
+	protected final String id;
+	protected final StreamFactory streamFactory;
 
-	public BaseOperator(String id) {
+	public BaseOperator(String id, StreamFactory streamFactory) {
 		this.id = id;
+		this.streamFactory = streamFactory;
 	}
 
 	@Override
-	public void registerIn(String id, Stream<IN> in) {
-		this.in = in;
+	public Stream<IN> getInputStream(String reqId) {
+		return input;
 	}
 
 	@Override
-	public void registerOut(String id, Stream<OUT> out) {
-		this.out = out;
+	public Stream<OUT> getOutputStream(String reqId) {
+		return next.getInputStream(reqId);
+	}
+
+	@Override
+	public void registerIn(StreamProducer<IN> in) {
+		if (active) {
+			throw new IllegalStateException();
+		}
+		if (!in.getNext().contains(this)) {
+			throw new UnsupportedOperationException("Please use registerOut() to construct query graphs");
+		}
+		input = streamFactory.newStream(in.getId(), id);
+	}
+
+	@Override
+	public Collection<StreamConsumer<OUT>> getNext() {
+		return Arrays.asList(this.next);
+	}
+
+	@Override
+	public void registerOut(StreamConsumer<OUT> out) {
+		this.next = out;
+		out.registerIn(this);
 	}
 
 	@Override
@@ -54,6 +83,9 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 
 	@Override
 	public void activate() {
+		if (input == null || next == null) {
+			throw new IllegalStateException(id);
+		}
 		active = true;
 	}
 
@@ -67,19 +99,19 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 	}
 
 	public void process() {
-		IN inTuple = in.getNextTuple();
+		IN inTuple = getInputStream(id).getNextTuple();
 		if (inTuple != null) {
 			List<OUT> outTuples = processTuple(inTuple);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
-					out.addTuple(t);
+					getOutputStream(id).addTuple(t);
 			}
 		}
 	}
 
 	@Override
 	public synchronized long getPriority() {
-		return in != null ? in.size() : 0;
+		return getInputStream(getId()) != null ? getInputStream(getId()).size() : 0;
 	}
 
 	@Override

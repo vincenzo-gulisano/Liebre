@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import common.tuple.Tuple;
+import query.ConcurrentLinkedListStreamFactory;
 import sink.BaseSink;
 
 public class TextSink<T extends Tuple> extends BaseSink<T> {
@@ -32,12 +33,10 @@ public class TextSink<T extends Tuple> extends BaseSink<T> {
 	private boolean closed;
 
 	private PrintWriter pw;
-	protected TextSinkFunction<T> function;
 
-	public TextSink(String fileName, TextSinkFunction<T> function,
-			boolean autoFlush) {
+	public TextSink(String id, String fileName, TextSinkFunction<T> function, boolean autoFlush) {
+		super(id, ConcurrentLinkedListStreamFactory.INSTANCE, function);
 		closed = false;
-		this.function = function;
 		try {
 			this.pw = new PrintWriter(new FileWriter(fileName), autoFlush);
 			closed = false;
@@ -67,7 +66,8 @@ public class TextSink<T extends Tuple> extends BaseSink<T> {
 
 	@Override
 	public void processTuple(T tuple) {
-		write(function.convertTupleToLine(tuple));
+		// FIXME: Ugly
+		write(((TextSinkFunction<T>) function).processTuple(tuple));
 	}
 
 }

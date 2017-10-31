@@ -24,20 +24,21 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import operator.BaseOperator;
+import stream.StreamFactory;
 
-public class MapOperator<T1 extends Tuple, T2 extends Tuple> extends BaseOperator<T1, T2> {
+public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator<IN, OUT> {
 
-	private MapFunction<T1, T2> map;
+	private MapFunction<IN, OUT> map;
 
-	public MapOperator(String id, MapFunction<T1, T2> map) {
-		super(id);
+	public MapOperator(String id, StreamFactory streamFactory, MapFunction<IN, OUT> map) {
+		super(id, streamFactory);
 		this.map = map;
 	}
 
 	@Override
-	public List<T2> processTuple(T1 tuple) {
-		List<T2> result = new LinkedList<T2>();
-		T2 t = map.map(tuple);
+	public List<OUT> processTuple(IN tuple) {
+		List<OUT> result = new LinkedList<OUT>();
+		OUT t = map.map(tuple);
 		if (t != null)
 			result.add(t);
 		return result;

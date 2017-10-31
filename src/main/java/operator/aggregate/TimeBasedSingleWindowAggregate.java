@@ -26,6 +26,7 @@ import java.util.TreeMap;
 
 import common.tuple.RichTuple;
 import operator.BaseOperator;
+import stream.StreamFactory;
 
 public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends RichTuple> extends BaseOperator<T1, T2> {
 
@@ -52,8 +53,9 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 		}
 	}
 
-	public TimeBasedSingleWindowAggregate(String id, long WS, long WA, TimeBasedSingleWindow<T1, T2> aggregateWindow) {
-		super(id);
+	public TimeBasedSingleWindowAggregate(String id, StreamFactory streamFactory, long WS, long WA,
+			TimeBasedSingleWindow<T1, T2> aggregateWindow) {
+		super(id, streamFactory);
 		tuples = new LinkedList<T1>();
 		windows = new TreeMap<Long, HashMap<String, TimeBasedSingleWindow<T1, T2>>>();
 		windowsCounters = new TreeMap<Long, HashMap<String, WinCounter>>();

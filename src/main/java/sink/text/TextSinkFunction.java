@@ -20,9 +20,9 @@
 package sink.text;
 
 import common.tuple.Tuple;
+import sink.SinkFunction;
 
-public interface TextSinkFunction<T extends Tuple> {
-
-	public String convertTupleToLine(T tuple);
+public interface TextSinkFunction<T extends Tuple> extends SinkFunction<T> {
+	String processTuple(T tuple);
 
 }

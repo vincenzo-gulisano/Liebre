@@ -24,13 +24,14 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import operator.BaseOperator;
+import stream.StreamFactory;
 
 public class FilterOperator<T extends Tuple> extends BaseOperator<T, T> {
 
 	protected FilterFunction<T> filter;
 
-	public FilterOperator(String id, FilterFunction<T> filter) {
-		super(id);
+	public FilterOperator(String id, StreamFactory streamFactory, FilterFunction<T> filter) {
+		super(id, streamFactory);
 		this.filter = filter;
 	}
 

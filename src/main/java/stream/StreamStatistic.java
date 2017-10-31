@@ -68,4 +68,9 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 		return stream.size();
 	}
 
+	@Override
+	public String getId() {
+		return stream.getId();
+	}
+
 }

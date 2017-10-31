@@ -24,31 +24,32 @@ import java.util.List;
 
 import common.tuple.RichTuple;
 import operator.in2.BaseOperator2In;
+import stream.StreamFactory;
 
-public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extends RichTuple>
-		extends BaseOperator2In<T1, T2, T3> {
+public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple>
+		extends BaseOperator2In<IN, IN2, OUT> {
 
 	private long ws;
 
-	private LinkedList<T1> in1Tuples;
-	private LinkedList<T2> in2Tuples;
+	private LinkedList<IN> in1Tuples;
+	private LinkedList<IN2> in2Tuples;
 
-	Predicate<T1, T2, T3> predicate;
+	Predicate<IN, IN2, OUT> predicate;
 
 	// This is for determinism
-	private LinkedList<T1> in1TuplesBuffer;
-	private LinkedList<T2> in2TuplesBuffer;
+	private LinkedList<IN> in1TuplesBuffer;
+	private LinkedList<IN2> in2TuplesBuffer;
 
-	public TimeBasedJoin(String id, long windowSize, Predicate<T1, T2, T3> predicate) {
-		super(id);
+	public TimeBasedJoin(String id, StreamFactory streamFactory, long windowSize, Predicate<IN, IN2, OUT> predicate) {
+		super(id, streamFactory);
 		this.ws = windowSize;
 		this.predicate = predicate;
 
-		in1Tuples = new LinkedList<T1>();
-		in2Tuples = new LinkedList<T2>();
+		in1Tuples = new LinkedList<IN>();
+		in2Tuples = new LinkedList<IN2>();
 
-		in1TuplesBuffer = new LinkedList<T1>();
-		in2TuplesBuffer = new LinkedList<T2>();
+		in1TuplesBuffer = new LinkedList<IN>();
+		in2TuplesBuffer = new LinkedList<IN2>();
 	}
 
 	protected void purge(long ts) {
@@ -58,21 +59,21 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 			in2Tuples.poll();
 	}
 
-	private List<T3> processReadyTuples() {
+	private List<OUT> processReadyTuples() {
 
-		List<T3> results = new LinkedList<T3>();
+		List<OUT> results = new LinkedList<OUT>();
 
 		while (in1buffered() && in2buffered()) {
 			if (buffer1Peek().getTimestamp() < buffer2Peek().getTimestamp()) {
 
-				T1 tuple = buffer1Poll();
+				IN tuple = buffer1Poll();
 
 				purge(tuple.getTimestamp());
 
 				if (in2Tuples.size() > 0) {
 
-					for (T2 t : in2Tuples) {
-						T3 result = predicate.compare(tuple, t);
+					for (IN2 t : in2Tuples) {
+						OUT result = predicate.compare(tuple, t);
 						if (result != null) {
 							results.add(result);
 						}
@@ -85,14 +86,14 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 
 			} else {
 
-				T2 tuple = buffer2Poll();
+				IN2 tuple = buffer2Poll();
 
 				purge(tuple.getTimestamp());
 
 				if (in1Tuples.size() > 0) {
 
-					for (T1 t : in1Tuples) {
-						T3 result = predicate.compare(t, tuple);
+					for (IN t : in1Tuples) {
+						OUT result = predicate.compare(t, tuple);
 						if (result != null) {
 							results.add(result);
 						}
@@ -111,7 +112,7 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 	}
 
 	@Override
-	public List<T3> processTupleIn1(T1 tuple) {
+	public List<OUT> processTupleIn1(IN tuple) {
 
 		in1buffer(tuple);
 		return processReadyTuples();
@@ -119,7 +120,7 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 	}
 
 	@Override
-	public List<T3> processTupleIn2(T2 tuple) {
+	public List<OUT> processTupleIn2(IN2 tuple) {
 
 		in2buffer(tuple);
 		return processReadyTuples();
@@ -134,27 +135,27 @@ public class TimeBasedJoin<T1 extends RichTuple, T2 extends RichTuple, T3 extend
 		return !in2TuplesBuffer.isEmpty();
 	}
 
-	private void in1buffer(T1 t) {
+	private void in1buffer(IN t) {
 		in1TuplesBuffer.add(t);
 	}
 
-	private void in2buffer(T2 t) {
+	private void in2buffer(IN2 t) {
 		in2TuplesBuffer.add(t);
 	}
 
-	private T1 buffer1Peek() {
+	private IN buffer1Peek() {
 		return in1TuplesBuffer.peek();
 	}
 
-	private T2 buffer2Peek() {
+	private IN2 buffer2Peek() {
 		return in2TuplesBuffer.peek();
 	}
 
-	private T1 buffer1Poll() {
+	private IN buffer1Poll() {
 		return in1TuplesBuffer.poll();
 	}
 
-	private T2 buffer2Poll() {
+	private IN2 buffer2Poll() {
 		return in2TuplesBuffer.poll();
 	}
 

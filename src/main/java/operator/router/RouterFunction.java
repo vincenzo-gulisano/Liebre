@@ -25,6 +25,6 @@ import common.tuple.Tuple;
 
 public interface RouterFunction<T extends Tuple> {
 
-	public List<String> chooseStreams(T tuple);
+	public List<String> chooseOperators(T tuple);
 
 }

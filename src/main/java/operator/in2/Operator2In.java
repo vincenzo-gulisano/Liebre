@@ -19,12 +19,15 @@
 
 package operator.in2;
 
+import common.StreamProducer;
 import common.tuple.Tuple;
 import operator.Operator;
 import stream.Stream;
 
 public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator<IN, OUT> {
 
-	public void registerIn2(String id, Stream<IN2> in);
+	void registerIn2(StreamProducer<IN2> in);
+
+	Stream<IN2> getInput2Stream(String reqId);
 
 }

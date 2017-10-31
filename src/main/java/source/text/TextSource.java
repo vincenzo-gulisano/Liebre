@@ -35,8 +35,8 @@ public class TextSource<T extends Tuple> extends BaseSource<T> {
 	private boolean hasNext;
 	TextSourceFunction<T> function;
 
-	public TextSource(String fileName, TextSourceFunction<T> function) {
-
+	public TextSource(String id, String fileName, TextSourceFunction<T> function) {
+		super(id);
 		this.function = function;
 		this.nextLine = "";
 		this.hasNext = true;
