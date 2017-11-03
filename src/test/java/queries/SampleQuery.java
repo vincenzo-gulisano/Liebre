@@ -17,12 +17,12 @@ import scheduling.Scheduler;
 import scheduling.TaskPool;
 import scheduling.impl.ThreadPoolScheduler;
 import sink.Sink;
-import source.BaseSource;
 import source.Source;
+import source.SourceFunction;
 
 public class SampleQuery {
 
-	private static final long SIMULATION_DURATION_MILLIS = 130000;
+	private static final long SIMULATION_DURATION_MILLIS = 30000;
 
 	private static class Throughput {
 		// Query 1
@@ -53,12 +53,11 @@ public class SampleQuery {
 		}
 	}
 
-	private static class DummySource extends BaseSource<DummyTuple> {
+	private static class DummySourceFunction implements SourceFunction<DummyTuple> {
 
 		private final long sleep;
 
-		public DummySource(String id, long sleep) {
-			super(id);
+		public DummySourceFunction(long sleep) {
 			this.sleep = sleep;
 
 		}
@@ -80,7 +79,7 @@ public class SampleQuery {
 		q.activateStatistics(args[0]);
 
 		// Query Q1
-		Source<DummyTuple> i1 = q.addSource(new DummySource("I1", Throughput.I1));
+		Source<DummyTuple> i1 = q.addBaseSource("I1", new DummySourceFunction(Throughput.I1));
 		Operator<DummyTuple, DummyTuple> A = q.addRouterOperator("A",
 				new DummyRouterFunction(0.9, Throughput.A, Arrays.asList("B", "C")));
 
@@ -97,7 +96,7 @@ public class SampleQuery {
 		C.registerOut(o2);
 
 		// Query Q2
-		Source<DummyTuple> i2 = q.addSource(new DummySource("I2", Throughput.I2));
+		Source<DummyTuple> i2 = q.addBaseSource("I2", new DummySourceFunction(Throughput.I2));
 
 		Operator<DummyTuple, DummyTuple> D = q.addMapOperator("D", new DummyMapFunction(0.9, Throughput.D));
 		Operator<DummyTuple, DummyTuple> E = q.addMapOperator("E", new DummyMapFunction(1, Throughput.E));
@@ -112,8 +111,8 @@ public class SampleQuery {
 
 		// Query Q3
 
-		Source<DummyTuple> i3 = q.addSource(new DummySource("I3", Throughput.I3));
-		Source<DummyTuple> i4 = q.addSource(new DummySource("I4", Throughput.I4));
+		Source<DummyTuple> i3 = q.addBaseSource("I3", new DummySourceFunction(Throughput.I3));
+		Source<DummyTuple> i4 = q.addBaseSource("I4", new DummySourceFunction(Throughput.I4));
 
 		Operator<DummyTuple, DummyTuple> G = q.addMapOperator("G", new DummyMapFunction(0.9, Throughput.G));
 		Operator<DummyTuple, DummyTuple> H = q.addMapOperator("H", new DummyMapFunction(0.9, Throughput.H));
@@ -130,7 +129,7 @@ public class SampleQuery {
 		L.registerOut(o4);
 
 		// Query Q4
-		Source<DummyTuple> i5 = q.addSource(new DummySource("I5", Throughput.I5));
+		Source<DummyTuple> i5 = q.addBaseSource("I5", new DummySourceFunction(Throughput.I5));
 
 		Operator<DummyTuple, DummyTuple> M = q.addMapOperator("M", new DummyMapFunction(0.9, Throughput.M));
 		Operator<DummyTuple, DummyTuple> N = q.addMapOperator("N", new DummyMapFunction(1, Throughput.N));
