@@ -27,6 +27,4 @@ import common.tuple.Tuple;
 public interface Operator<IN extends Tuple, OUT extends Tuple>
 		extends ActiveRunnable, StreamConsumer<IN>, StreamProducer<OUT> {
 
-	long getPriority();
-
 }

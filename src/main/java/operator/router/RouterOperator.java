@@ -19,12 +19,10 @@
 
 package operator.router;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import common.StreamConsumer;
+import common.BoxState.BoxType;
 import common.tuple.Tuple;
 import operator.BaseOperator;
 import stream.Stream;
@@ -33,51 +31,36 @@ import stream.StreamFactory;
 public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 
 	protected RouterFunction<T> router;
-	protected final Map<String, StreamConsumer<T>> outs = new ConcurrentHashMap<>();
 
 	public RouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
-		super(id, streamFactory);
+		super(id, BoxType.ROUTER, streamFactory);
 		this.router = router;
 	}
 
 	@Override
 	public void registerOut(StreamConsumer<T> out) {
-		this.outs.put(out.getId(), out);
-		out.registerIn(this);
+		state.setOutput(out.getId(), out, this);
 	}
 
 	@Override
 	public void process() {
-		T inTuple = getInputStream(id).getNextTuple();
+		T inTuple = getInputStream(getId()).getNextTuple();
 		if (inTuple != null) {
 			List<String> streams = router.chooseOperators(inTuple);
 			if (streams != null)
 				for (String operator : router.chooseOperators(inTuple))
-					outs.get(operator).getInputStream(operator).addTuple(inTuple);
+					state.getOutputStream(operator, this).addTuple(inTuple);
 		}
 	}
 
 	@Override
 	public Stream<T> getOutputStream(String reqId) {
-		return outs.get(reqId).getInputStream(reqId);
+		return state.getOutputStream(reqId, this);
 	}
 
 	@Override
 	public List<T> processTuple(T tuple) {
-		return null;
-	}
-
-	@Override
-	public void activate() {
-		if (input == null || outs.size() == 0) {
-			throw new IllegalStateException(id);
-		}
-		active = true;
-	}
-
-	@Override
-	public Collection<StreamConsumer<T>> getNext() {
-		return outs.values();
+		throw new UnsupportedOperationException();
 	}
 
 }

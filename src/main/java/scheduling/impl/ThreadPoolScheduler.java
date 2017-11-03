@@ -34,7 +34,7 @@ public class ThreadPoolScheduler implements Scheduler {
 			workerThread.activate();
 			workerThread.start();
 		}
-		// FIXME: Observer pattern to detect thread crashes
+		// TODO: Observer pattern to detect thread crashes
 	}
 
 	@Override

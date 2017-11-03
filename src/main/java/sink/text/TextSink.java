@@ -60,13 +60,12 @@ public class TextSink<T extends Tuple> extends BaseSink<T> {
 	}
 
 	public void deActivate() {
-		active = false;
+		super.deActivate();
 		close();
 	}
 
 	@Override
 	public void processTuple(T tuple) {
-		// FIXME: Ugly
 		write(((TextSinkFunction<T>) function).processTuple(tuple));
 	}
 

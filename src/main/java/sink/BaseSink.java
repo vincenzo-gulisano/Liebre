@@ -19,6 +19,10 @@
 
 package sink;
 
+import java.util.Collection;
+
+import common.BoxState;
+import common.BoxState.BoxType;
 import common.StreamProducer;
 import common.tuple.Tuple;
 import stream.Stream;
@@ -26,61 +30,49 @@ import stream.StreamFactory;
 
 public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
-	protected Stream<IN> input;
-	protected boolean active = false;
-	protected final String id;
-	protected final StreamFactory streamFactory;
+	protected final BoxState<IN, Tuple> state;
 	protected final SinkFunction<IN> function;
+	private final String INPUT_KEY = "INPUT";
 
 	public BaseSink(String id, StreamFactory streamFactory, SinkFunction<IN> function) {
-		this.id = id;
-		this.streamFactory = streamFactory;
+		state = new BoxState<>(id, BoxType.SINK, streamFactory);
 		this.function = function;
 	}
 
 	@Override
 	public void registerIn(StreamProducer<IN> in) {
-		if (active) {
-			throw new IllegalStateException();
-		}
-		if (!in.getNext().contains(this)) {
-			throw new UnsupportedOperationException("Please use registerOut() to construct query graphs");
-		}
-		this.input = streamFactory.newStream(in.getId(), id);
+		state.setInput(INPUT_KEY, in, this);
 	}
 
 	@Override
 	public Stream<IN> getInputStream(String reqId) {
-		return input;
+		return state.getInputStream(INPUT_KEY);
 	}
 
 	@Override
 	public void run() {
-		while (active) {
+		while (state.isEnabled()) {
 			process();
 		}
 	}
 
 	@Override
 	public void activate() {
-		if (input == null) {
-			throw new IllegalStateException(id);
-		}
-		active = true;
+		state.enable();
 	}
 
 	@Override
 	public void deActivate() {
-		active = false;
+		state.disable();
 	}
 
 	@Override
 	public boolean isActive() {
-		return active;
+		return state.isEnabled();
 	}
 
 	public void process() {
-		IN t = getInputStream(id).getNextTuple();
+		IN t = getInputStream(getId()).getNextTuple();
 		if (t != null) {
 			processTuple(t);
 		}
@@ -88,7 +80,12 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
 	@Override
 	public String getId() {
-		return this.id;
+		return state.getId();
+	}
+
+	@Override
+	public Collection<StreamProducer<? extends Tuple>> getPrevious() {
+		return state.getPrevious();
 	}
 
 	public void processTuple(IN tuple) {

@@ -43,7 +43,7 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 	@Override
 	public void deActivate() {
 		processingTimeStat.close();
-		active = false;
+		state.disable();
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 			processingTimeStat.add(System.nanoTime() - start);
 			if (operators != null)
 				for (String operator : operators)
-					outs.get(operator).getInputStream(operator).addTuple(inTuple);
+					state.getOutputStream(operator, this).addTuple(inTuple);
 		}
 	}
 

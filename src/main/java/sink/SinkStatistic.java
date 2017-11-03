@@ -32,7 +32,7 @@ public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 	}
 
 	public SinkStatistic(BaseSink<T> sink, String outputFile, boolean autoFlush) {
-		super(sink.id, sink.streamFactory, sink.function);
+		super(sink.getId(), sink.state.getStreamFactory(), sink.function);
 		this.sink = sink;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}

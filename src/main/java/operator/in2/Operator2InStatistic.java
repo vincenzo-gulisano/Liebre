@@ -35,7 +35,7 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
 	}
 
 	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator, String outputFile, boolean autoFlush) {
-		super(operator.id, operator.streamFactory);
+		super(operator.getId(), operator.state.getStreamFactory());
 		this.operator = operator;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
@@ -43,28 +43,28 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
 	@Override
 	public void deActivate() {
 		processingTimeStat.close();
-		active = false;
+		super.deActivate();
 	}
 
 	public void process() {
-		IN inTuple1 = getInputStream(id).getNextTuple();
+		IN inTuple1 = getInputStream(getId()).getNextTuple();
 		if (inTuple1 != null) {
 			long start = System.nanoTime();
 			List<OUT> outTuples = this.operator.processTupleIn1(inTuple1);
 			processingTimeStat.add(System.nanoTime() - start);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
-					getOutputStream(id).addTuple(t);
+					getOutputStream(getId()).addTuple(t);
 			}
 		}
-		IN2 inTuple2 = getInput2Stream(id).getNextTuple();
+		IN2 inTuple2 = getInput2Stream(getId()).getNextTuple();
 		if (inTuple2 != null) {
 			long start = System.nanoTime();
 			List<OUT> outTuples = this.operator.processTupleIn2(inTuple2);
 			processingTimeStat.add(System.nanoTime() - start);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
-					getOutputStream(id).addTuple(t);
+					getOutputStream(getId()).addTuple(t);
 			}
 		}
 	}

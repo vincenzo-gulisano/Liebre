@@ -23,13 +23,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import common.BoxState.BoxType;
 import common.tuple.Tuple;
 import common.util.Util;
 import operator.BaseOperator;
+import operator.Operator;
+import query.ConcurrentLinkedListStreamFactory;
 import query.Query;
-import sink.BaseSink;
+import sink.Sink;
+import sink.SinkFunction;
 import source.BaseSource;
-import stream.StreamKey;
+import source.Source;
 
 public class SimpleQuery {
 	public static void main(String[] args) {
@@ -49,35 +53,36 @@ public class SimpleQuery {
 		Query q = new Query();
 
 		q.activateStatistics(args[0]);
-
-		StreamKey<MyTuple> inKey = q.addStream("in", MyTuple.class);
-		StreamKey<MyTuple> outKey = q.addStream("out", MyTuple.class);
-
-		q.addSource("inSource", new BaseSource<MyTuple>() {
-			Random r = new Random();
+		Source<MyTuple> source = q.addSource(new BaseSource<MyTuple>("I1") {
+			private final Random r = new Random();
 
 			@Override
 			public MyTuple getNextTuple() {
 				Util.sleep(50);
 				return new MyTuple(System.currentTimeMillis(), r.nextInt(5), r.nextInt(100));
 			}
-		}, inKey);
+		});
 
-		q.addOperator("multiply", new BaseOperator<MyTuple, MyTuple>("M") {
-			@Override
-			public List<MyTuple> processTuple(MyTuple tuple) {
-				List<MyTuple> result = new LinkedList<MyTuple>();
-				result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
-				return result;
-			}
-		}, inKey, outKey);
+		Operator<MyTuple, MyTuple> multiply = q.addOperator(
+				new BaseOperator<MyTuple, MyTuple>("M", BoxType.OPERATOR, ConcurrentLinkedListStreamFactory.INSTANCE) {
+					@Override
+					public List<MyTuple> processTuple(MyTuple tuple) {
+						List<MyTuple> result = new LinkedList<MyTuple>();
+						result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
+						return result;
+					}
+				});
 
-		q.addSink("outSink", new BaseSink<MyTuple>() {
+		Sink<MyTuple> sink = q.addBaseSink("O1", new SinkFunction<MyTuple>() {
+
 			@Override
-			public void processTuple(MyTuple tuple) {
+			public Object processTuple(MyTuple tuple) {
 				System.out.println(tuple.timestamp + "," + tuple.key + "," + tuple.value);
+				return null;
 			}
-		}, outKey);
+		});
+		source.registerOut(multiply);
+		multiply.registerOut(sink);
 
 		q.activate();
 		Util.sleep(30000);

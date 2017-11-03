@@ -41,7 +41,7 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 	@Override
 	public void deActivate() {
 		processingTimeStat.close();
-		active = false;
+		super.deActivate();
 	}
 
 	public void process() {

@@ -19,65 +19,59 @@
 
 package source;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
+import common.BoxState;
+import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.tuple.Tuple;
 import stream.Stream;
 
+//FIXME: refactor like baseSink
 public abstract class BaseSource<T extends Tuple> implements Source<T> {
 
-	protected StreamConsumer<T> next;
-	protected boolean active = false;
-	protected final String id;
+	protected final BoxState<Tuple, T> state;
+	private final String OUTPUT_KEY = "OUTPUT";
 
 	public BaseSource(String id) {
-		this.id = id;
+		state = new BoxState<>(id, BoxType.SOURCE, null);
 	}
 
 	@Override
 	public void registerOut(StreamConsumer<T> out) {
-		if (active) {
-			throw new IllegalStateException();
-		}
-		this.next = out;
-		out.registerIn(this);
+		state.setOutput(OUTPUT_KEY, out, this);
 	}
 
 	@Override
 	public Stream<T> getOutputStream(String reqId) {
-		return next.getInputStream(reqId);
+		return state.getOutputStream(OUTPUT_KEY, this);
 	}
 
 	@Override
 	public void run() {
-		while (active) {
+		while (state.isEnabled()) {
 			process();
 		}
 	}
 
 	@Override
 	public void activate() {
-		if (next == null) {
-			throw new IllegalStateException(id);
-		}
-		active = true;
+		state.enable();
 	}
 
 	@Override
-	public List<StreamConsumer<T>> getNext() {
-		return Arrays.asList(this.next);
+	public Collection<StreamConsumer<T>> getNext() {
+		return state.getNext();
 	}
 
 	@Override
 	public void deActivate() {
-		active = false;
+		state.disable();
 	}
 
 	@Override
 	public boolean isActive() {
-		return active;
+		return state.isEnabled();
 	}
 
 	public void process() {
@@ -88,7 +82,7 @@ public abstract class BaseSource<T extends Tuple> implements Source<T> {
 
 	@Override
 	public String getId() {
-		return this.id;
+		return state.getId();
 	}
 
 	public abstract T getNextTuple();

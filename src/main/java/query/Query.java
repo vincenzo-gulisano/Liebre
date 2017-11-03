@@ -108,11 +108,10 @@ public class Query {
 		activateStatistics(statisticsFolder, true);
 	}
 
-	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(String identifier,
-			BaseOperator<IN, OUT> operator) {
+	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(BaseOperator<IN, OUT> operator) {
 		if (keepStatistics) {
-			operator = new OperatorStatistic<IN, OUT>(operator, statsFolder + File.separator + identifier + ".proc.csv",
-					autoFlush);
+			operator = new OperatorStatistic<IN, OUT>(operator,
+					statsFolder + File.separator + operator.getId() + ".proc.csv", autoFlush);
 		}
 		operators.put(operator.getId(), operator);
 		return operator;
@@ -121,22 +120,21 @@ public class Query {
 	public <IN extends RichTuple, OUT extends RichTuple> Operator<IN, OUT> addAggregateOperator(String identifier,
 			TimeBasedSingleWindow<IN, OUT> window, long WS, long WA) {
 
-		return addOperator(identifier,
-				new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, streamFactory, WS, WA, window));
+		return addOperator(new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, streamFactory, WS, WA, window));
 	}
 
 	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
 			MapFunction<IN, OUT> mapFunction) {
-		return addOperator(identifier, new MapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
+		return addOperator(new MapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
 	}
 
 	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
 			FlatMapFunction<IN, OUT> mapFunction, StreamProducer<IN> inKey, StreamConsumer<OUT> outKey) {
-		return addOperator(identifier, new FlatMapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
+		return addOperator(new FlatMapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
 	}
 
 	public <T extends Tuple> Operator<T, T> addFilterOperator(String identifier, FilterFunction<T> filterF) {
-		return addOperator(identifier, new FilterOperator<T>(identifier, streamFactory, filterF));
+		return addOperator(new FilterOperator<T>(identifier, streamFactory, filterF));
 	}
 
 	public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier, RouterFunction<T> routerF) {

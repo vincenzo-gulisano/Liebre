@@ -34,7 +34,7 @@ public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends Base
 	}
 
 	public OperatorStatistic(BaseOperator<IN, OUT> operator, String outputFile, boolean autoFlush) {
-		super(operator.id, operator.streamFactory);
+		super(operator.getId(), operator.state.getStreamFactory());
 		this.operator = operator;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
@@ -42,18 +42,18 @@ public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends Base
 	@Override
 	public void deActivate() {
 		processingTimeStat.close();
-		active = false;
+		super.deActivate();
 	}
 
 	public void process() {
-		IN inTuple = getInputStream(id).getNextTuple();
+		IN inTuple = getInputStream(getId()).getNextTuple();
 		if (inTuple != null) {
 			long start = System.nanoTime();
 			List<OUT> outTuples = this.operator.processTuple(inTuple);
 			processingTimeStat.add(System.nanoTime() - start);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
-					getOutputStream(id).addTuple(t);
+					getOutputStream(getId()).addTuple(t);
 			}
 		}
 

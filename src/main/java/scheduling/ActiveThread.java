@@ -8,7 +8,7 @@ import common.Active;
  * @author palivosd
  *
  */
-// TODO: Use interrupt mechanism instead of this.
+// FIXME: Use interrupt mechanism instead of this.
 public abstract class ActiveThread extends Thread implements Active {
 
 	private boolean active;

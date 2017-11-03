@@ -8,7 +8,7 @@ import java.io.Reader;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-// TODO: Refactor/Rewrite
+// TODO: Delete 
 public class Report {
 	public static void reportOutput(final String metricName, String units, String path) {
 		final File dir = new File(path);

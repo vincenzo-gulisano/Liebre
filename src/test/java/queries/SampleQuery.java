@@ -22,7 +22,7 @@ import source.Source;
 
 public class SampleQuery {
 
-	private static final long SIMULATION_DURATION_MILLIS = 30000;
+	private static final long SIMULATION_DURATION_MILLIS = 130000;
 
 	private static class Throughput {
 		// Query 1
@@ -47,7 +47,7 @@ public class SampleQuery {
 		// Query 4
 		static final long I5 = 35;
 		static final long M = 50;
-		static final long N = 450;
+		static final long N = 150;
 
 		private Throughput() {
 		}
@@ -73,14 +73,13 @@ public class SampleQuery {
 	public static void main(String[] args) {
 
 		TaskPool<Operator<?, ?>> pool = new FifoTaskPool();
-		Scheduler scheduler = new ThreadPoolScheduler(5, 100, TimeUnit.MILLISECONDS, pool);
+		Scheduler scheduler = new ThreadPoolScheduler(8, 200, TimeUnit.MILLISECONDS, pool);
 		Query q = new Query(scheduler);
 
 		// This to store all statistics in the given folder
 		q.activateStatistics(args[0]);
 
 		// Query Q1
-		// TODO: Forbid user from calling registerIn
 		Source<DummyTuple> i1 = q.addSource(new DummySource("I1", Throughput.I1));
 		Operator<DummyTuple, DummyTuple> A = q.addRouterOperator("A",
 				new DummyRouterFunction(0.9, Throughput.A, Arrays.asList("B", "C")));

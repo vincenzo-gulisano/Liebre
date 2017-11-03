@@ -19,10 +19,11 @@
 
 package operator.in2;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import common.BoxState;
+import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
@@ -32,126 +33,105 @@ import stream.StreamFactory;
 public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
 		implements Operator2In<IN, IN2, OUT> {
 
-	protected StreamConsumer<OUT> next;
-	protected Stream<IN> input1;
-	protected Stream<IN2> input2;
-	protected boolean active = false;
-	protected final String id;
-
-	protected final StreamFactory streamFactory;
+	protected final BoxState<Tuple, OUT> state;
+	private final String INPUT1_KEY = "INPUT1";
+	private final String INPUT2_KEY = "INPUT2";
+	private final String OUTPUT_KEY = "OUTPUT";
 
 	public BaseOperator2In(String id, StreamFactory streamFactory) {
-		this.id = id;
-		this.streamFactory = streamFactory;
+		state = new BoxState<>(id, BoxType.OPERATOR2IN, streamFactory);
 	}
 
 	@Override
 	public void registerIn(StreamProducer<IN> in) {
-		if (active) {
-			throw new IllegalStateException();
-		}
-		if (!in.getNext().contains(this)) {
-			throw new UnsupportedOperationException("Please use registerOut() to construct query graphs");
-		}
-		this.input1 = streamFactory.newStream(in.getId(), id);
+		state.setInput(INPUT1_KEY, (StreamProducer<Tuple>) in, this);
 	}
 
 	@Override
 	public void registerIn2(StreamProducer<IN2> in) {
-		if (in == null) {
-			return;
-		}
-		if (active) {
-			throw new IllegalStateException();
-		}
-		this.input2 = streamFactory.newStream(in.getId(), id);
+		state.setInput(INPUT2_KEY, (StreamProducer<Tuple>) in, this);
 	}
 
 	@Override
 	public Collection<StreamConsumer<OUT>> getNext() {
-		return Arrays.asList(this.next);
+		return state.getNext();
+	}
+
+	@Override
+	public Collection<StreamProducer<? extends Tuple>> getPrevious() {
+		return state.getPrevious();
 	}
 
 	@Override
 	public Stream<OUT> getOutputStream(String reqId) {
-		return next.getInputStream(reqId);
+		return state.getOutputStream(OUTPUT_KEY, this);
 	}
 
 	@Override
 	public void registerOut(StreamConsumer<OUT> out) {
-		this.next = out;
-		next.registerIn(this);
+		state.setOutput(OUTPUT_KEY, out, this);
 	}
 
 	@Override
 	public Stream<IN> getInputStream(String reqId) {
-		return input1;
+		return (Stream<IN>) state.getInputStream(INPUT1_KEY);
 	}
 
 	@Override
 	public Stream<IN2> getInput2Stream(String reqId) {
-		return input2;
+		return (Stream<IN2>) state.getInputStream(INPUT2_KEY);
 	}
 
 	@Override
 	public void run() {
-		if (active) {
+		if (state.isEnabled()) {
 			process();
 		}
 	}
 
 	@Override
 	public void activate() {
-		if (input1 == null || input2 == null || next == null) {
-			throw new IllegalStateException(id);
-		}
-		active = true;
+		// FIXME: Should check if both inputs are set
+		state.enable();
 	}
 
 	@Override
 	public void deActivate() {
-		active = false;
+		state.disable();
 	}
 
 	@Override
 	public boolean isActive() {
-		return active;
+		return state.isEnabled();
 	}
 
 	public void process() {
-		IN inTuple1 = getInputStream(id).getNextTuple();
+		IN inTuple1 = getInputStream(getId()).getNextTuple();
 		if (inTuple1 != null) {
 			List<OUT> outTuples = processTupleIn1(inTuple1);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
-					getOutputStream(id).addTuple(t);
+					getOutputStream(getId()).addTuple(t);
 			}
 		}
-		IN2 inTuple2 = getInput2Stream(id).getNextTuple();
+		IN2 inTuple2 = getInput2Stream(getId()).getNextTuple();
 		if (inTuple2 != null) {
 			List<OUT> outTuples = processTupleIn2(inTuple2);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
-					getOutputStream(id).addTuple(t);
+					getOutputStream(getId()).addTuple(t);
 			}
 		}
 	}
 
 	@Override
-	public long getPriority() {
-		long in1Size = getInputStream(id) != null ? getInputStream(id).size() : 0;
-		long in2Size = getInput2Stream(id) != null ? getInput2Stream(id).size() : 0;
-		return Math.max(in1Size, in2Size);
-	}
-
-	@Override
 	public String getId() {
-		return this.id;
+		return state.getId();
 	}
 
 	@Override
 	public String toString() {
-		return String.format("OP [id=%s, priority=%d]", id, getPriority());
+		return String.format("OP-%s", getId());
 	}
 
 	public abstract List<OUT> processTupleIn1(IN tuple);
