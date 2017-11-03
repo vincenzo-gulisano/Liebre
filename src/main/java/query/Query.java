@@ -29,8 +29,6 @@ import java.util.Map;
 
 import common.Active;
 import common.ActiveRunnable;
-import common.StreamConsumer;
-import common.StreamProducer;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import operator.BaseOperator;
@@ -63,9 +61,8 @@ import sink.text.TextSink;
 import sink.text.TextSinkFunction;
 import source.BaseSource;
 import source.Source;
+import source.SourceFunction;
 import source.SourceStatistic;
-import source.text.TextSource;
-import source.text.TextSourceFunction;
 import stream.Stream;
 import stream.StreamFactory;
 
@@ -118,9 +115,9 @@ public class Query {
 	}
 
 	public <IN extends RichTuple, OUT extends RichTuple> Operator<IN, OUT> addAggregateOperator(String identifier,
-			TimeBasedSingleWindow<IN, OUT> window, long WS, long WA) {
+			TimeBasedSingleWindow<IN, OUT> window, long windowSize, long windowSlide) {
 
-		return addOperator(new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, streamFactory, WS, WA, window));
+		return addOperator(new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, streamFactory, windowSize, windowSlide, window));
 	}
 
 	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
@@ -129,7 +126,7 @@ public class Query {
 	}
 
 	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
-			FlatMapFunction<IN, OUT> mapFunction, StreamProducer<IN> inKey, StreamConsumer<OUT> outKey) {
+			FlatMapFunction<IN, OUT> mapFunction) {
 		return addOperator(new FlatMapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
 	}
 
@@ -169,8 +166,8 @@ public class Query {
 		return source;
 	}
 
-	public <T extends Tuple> Source<T> addTextSource(String id, String fileName, TextSourceFunction<T> function) {
-		return addSource(new TextSource<T>(id, fileName, function));
+	public <T extends Tuple> Source<T> addBaseSource(String id, SourceFunction<T> function) {
+		return addSource(new BaseSource<>(id, function));
 	}
 
 	public <T extends Tuple> Sink<T> addSink(BaseSink<T> sink) {
@@ -185,8 +182,7 @@ public class Query {
 		return addSink(new BaseSink<>(id, streamFactory, sinkFunction));
 	}
 
-	public <T extends Tuple> Sink<T> addTextSink(String id, String fileName, TextSinkFunction<T> function,
-			StreamProducer<T> streamKey) {
+	public <T extends Tuple> Sink<T> addTextSink(String id, String fileName, TextSinkFunction<T> function) {
 		return addSink(new TextSink<T>(id, fileName, function, true));
 	}
 

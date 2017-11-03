@@ -32,8 +32,8 @@ import query.ConcurrentLinkedListStreamFactory;
 import query.Query;
 import sink.Sink;
 import sink.SinkFunction;
-import source.BaseSource;
 import source.Source;
+import source.SourceFunction;
 
 public class SimpleQuery {
 	public static void main(String[] args) {
@@ -51,9 +51,8 @@ public class SimpleQuery {
 		}
 
 		Query q = new Query();
-
 		q.activateStatistics(args[0]);
-		Source<MyTuple> source = q.addSource(new BaseSource<MyTuple>("I1") {
+		Source<MyTuple> source = q.addBaseSource("I1", new SourceFunction<MyTuple>() {
 			private final Random r = new Random();
 
 			@Override

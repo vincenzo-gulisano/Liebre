@@ -19,98 +19,107 @@
 
 package example;
 
+import java.io.File;
+
 import common.tuple.BaseRichTuple;
 import common.util.Util;
+import operator.Operator;
 import operator.aggregate.BaseTimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindow;
 import query.Query;
+import sink.Sink;
 import sink.text.TextSinkFunction;
-import source.text.TextSourceFunction;
-import stream.StreamKey;
+import source.Source;
+import source.TextSourceFunction;
 
 public class TextAggregate {
+
+	private static class InputTuple extends BaseRichTuple {
+		public int value;
+
+		public InputTuple(long timestamp, int key, int value) {
+			super(timestamp, key + "");
+			this.value = value;
+		}
+	}
+
+	private static class OutputTuple extends BaseRichTuple {
+		public int count;
+		public double average;
+
+		public OutputTuple(long timestamp, int key, int count, double average) {
+			super(timestamp, key + "");
+			this.count = count;
+			this.average = average;
+		}
+	}
+
+	private static class AverageWindow extends BaseTimeBasedSingleWindow<InputTuple, OutputTuple> {
+
+		private double count = 0;
+		private double sum = 0;
+
+		@Override
+		public void add(InputTuple t) {
+			count++;
+			sum += t.value;
+		}
+
+		@Override
+		public void remove(InputTuple t) {
+			count--;
+			sum -= t.value;
+		}
+
+		@Override
+		public OutputTuple getAggregatedResult() {
+			double average = count > 0 ? sum / count : 0;
+			return new OutputTuple(startTimestamp, Integer.valueOf(key), (int) count, average);
+		}
+
+		@Override
+		public TimeBasedSingleWindow<InputTuple, OutputTuple> factory() {
+			return new AverageWindow();
+		}
+
+	}
+
 	public static void main(String[] args) {
-
-		class InputTuple extends BaseRichTuple {
-			public int value;
-
-			public InputTuple(long timestamp, int key, int value) {
-				super(timestamp, key + "");
-				this.value = value;
-			}
-		}
-
-		class OutputTuple extends BaseRichTuple {
-			public int count;
-			public double average;
-
-			public OutputTuple(long timestamp, int key, int count,
-					double average) {
-				super(timestamp, key + "");
-				this.count = count;
-				this.average = average;
-			}
-		}
+		final String reportFolder = args[0];
+		final String inputFile = args[1];
+		final String outputFile = reportFolder + File.separator + "TextAggregate.out.csv";
+		final long WINDOW_SIZE = 100;
+		final long WINDOW_SLIDE = 20;
 
 		Query q = new Query();
 
-		q.activateStatistics(args[0]);
+		q.activateStatistics(reportFolder);
 
-		StreamKey<InputTuple> inKey = q.addStream("in", InputTuple.class);
-		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
-
-		q.addTextSource("inSource", args[1],
-				new TextSourceFunction<InputTuple>() {
-					@Override
-					public InputTuple getNext(String line) {
-						String[] tokens = line.split(",");
-						return new InputTuple(Long.valueOf(tokens[0]), Integer
-								.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
-					}
-				}, inKey);
-
-		class Win extends BaseTimeBasedSingleWindow<InputTuple, OutputTuple> {
-
-			private double count = 0;
-			private double sum = 0;
+		Source<InputTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<InputTuple>(inputFile) {
 
 			@Override
-			public void add(InputTuple t) {
-				count++;
-				sum += t.value;
+			protected InputTuple getNext(String line) {
+				String[] tokens = line.split(",");
+				return new InputTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
 			}
+		});
 
-			@Override
-			public void remove(InputTuple t) {
-				count--;
-				sum -= t.value;
-			}
-
-			@Override
-			public OutputTuple getAggregatedResult() {
-				double average = count > 0 ? sum / count : 0;
-				return new OutputTuple(startTimestamp, Integer.valueOf(key),
-						(int) count, average);
-			}
-
-			@Override
-			public TimeBasedSingleWindow<InputTuple, OutputTuple> factory() {
-				return new Win();
-			}
-
-		}
 		;
 
-		q.addAggregateOperator("aggOp", new Win(), 4 * 7 * 24 * 3600,
-				7 * 24 * 3600, inKey, outKey);
+		Operator<InputTuple, OutputTuple> aggregate = q.addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE,
+				WINDOW_SLIDE);
 
-		q.addTextSink("outSink", args[2], new TextSinkFunction<OutputTuple>() {
+		Sink<OutputTuple> o1 = q.addTextSink("o1", outputFile, new TextSinkFunction<OutputTuple>() {
+
 			@Override
-			public String convertTupleToLine(OutputTuple tuple) {
-				return tuple.getTimestamp() + "," + tuple.getKey() + ","
-						+ tuple.count + "," + tuple.average;
+			public String processTuple(OutputTuple tuple) {
+				return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.count + "," + tuple.average;
 			}
-		}, outKey);
+
+		});
+
+		i1.registerOut(aggregate);
+		aggregate.registerOut(o1);
 
 		q.activate();
 		Util.sleep(30000);

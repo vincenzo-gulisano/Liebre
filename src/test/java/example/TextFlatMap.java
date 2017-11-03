@@ -19,50 +19,55 @@
 
 package example;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
 import common.tuple.Tuple;
 import common.util.Util;
+import operator.Operator;
 import operator.map.FlatMapFunction;
 import query.Query;
+import sink.Sink;
 import sink.text.TextSinkFunction;
-import source.text.TextSourceFunction;
-import stream.StreamKey;
+import source.Source;
+import source.TextSourceFunction;
 
 public class TextFlatMap {
+	private static class MyTuple implements Tuple {
+		public long timestamp;
+		public int key;
+		public int value;
+
+		public MyTuple(long timestamp, int key, int value) {
+			this.timestamp = timestamp;
+			this.key = key;
+			this.value = value;
+		}
+	}
+
 	public static void main(String[] args) {
 
-		class MyTuple implements Tuple {
-			public long timestamp;
-			public int key;
-			public int value;
-
-			public MyTuple(long timestamp, int key, int value) {
-				this.timestamp = timestamp;
-				this.key = key;
-				this.value = value;
-			}
-		}
+		final String reportFolder = args[0];
+		final String inputFile = args[1];
+		final String outputFile = reportFolder + File.separator + "TextFlatMap.out.csv";
 
 		Query q = new Query();
 
-		q.activateStatistics(args[0]);
+		q.activateStatistics(reportFolder);
+		Source<MyTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<MyTuple>(inputFile) {
 
-		StreamKey<MyTuple> inKey = q.addStream("in", MyTuple.class);
-		StreamKey<MyTuple> outKey = q.addStream("out", MyTuple.class);
-
-		q.addTextSource("inSource", args[1], new TextSourceFunction<MyTuple>() {
 			@Override
-			public MyTuple getNext(String line) {
+			protected MyTuple getNext(String line) {
 				Util.sleep(100);
 				String[] tokens = line.split(",");
-				return new MyTuple(Long.valueOf(tokens[0]), Integer
-						.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+				return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
 			}
-		}, inKey);
+		});
 
-		q.addMapOperator("multiply", new FlatMapFunction<MyTuple, MyTuple>() {
+		;
+
+		Operator<MyTuple, MyTuple> multiply = q.addMapOperator("multiply", new FlatMapFunction<MyTuple, MyTuple>() {
 			@Override
 			public List<MyTuple> map(MyTuple tuple) {
 				List<MyTuple> result = new LinkedList<MyTuple>();
@@ -71,18 +76,24 @@ public class TextFlatMap {
 				result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 4));
 				return result;
 			}
-		}, inKey, outKey);
-		
-		q.addTextSink("outSink", args[2], new TextSinkFunction<MyTuple>() {
+		});
+
+		Sink<MyTuple> o1 = q.addTextSink("o1", outputFile, new TextSinkFunction<MyTuple>() {
+
 			@Override
-			public String convertTupleToLine(MyTuple tuple) {
+			public String processTuple(MyTuple tuple) {
 				return tuple.timestamp + "," + tuple.key + "," + tuple.value;
 			}
-		}, outKey);
+
+		});
+
+		i1.registerOut(multiply);
+		multiply.registerOut(o1);
 
 		q.activate();
 		Util.sleep(30000);
 		q.deActivate();
 
 	}
+
 }

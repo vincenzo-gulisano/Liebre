@@ -25,7 +25,7 @@ import common.tuple.Tuple;
 import common.util.Util;
 import query.Query;
 import sink.text.TextSinkFunction;
-import source.text.TextSourceFunction;
+import source.TextSourceFunction;
 import stream.StreamKey;
 
 public class TextUnion {

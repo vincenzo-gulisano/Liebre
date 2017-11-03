@@ -47,18 +47,6 @@ public class TextSink<T extends Tuple> extends BaseSink<T> {
 		}
 	}
 
-	public void write(String s) {
-		pw.println(s);
-	}
-
-	public void close() {
-		if (!closed) {
-			pw.flush();
-			pw.close();
-			closed = true;
-		}
-	}
-
 	public void deActivate() {
 		super.deActivate();
 		close();
@@ -67,6 +55,18 @@ public class TextSink<T extends Tuple> extends BaseSink<T> {
 	@Override
 	public void processTuple(T tuple) {
 		write(((TextSinkFunction<T>) function).processTuple(tuple));
+	}
+
+	private void write(String s) {
+		pw.println(s);
+	}
+
+	private void close() {
+		if (!closed) {
+			pw.flush();
+			pw.close();
+			closed = true;
+		}
 	}
 
 }

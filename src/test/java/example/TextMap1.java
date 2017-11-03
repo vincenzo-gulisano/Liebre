@@ -24,7 +24,7 @@ import common.util.Util;
 import operator.map.MapFunction;
 import query.Query;
 import sink.text.TextSinkFunction;
-import source.text.TextSourceFunction;
+import source.TextSourceFunction;
 import stream.StreamKey;
 
 public class TextMap1 {

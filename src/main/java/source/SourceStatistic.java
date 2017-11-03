@@ -33,7 +33,7 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 	}
 
 	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile, boolean autoFlush) {
-		super(source.getId());
+		super(source.getId(), source.function);
 		this.source = source;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
@@ -46,14 +46,10 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 
 	public void process() {
 		long start = System.nanoTime();
-		T t = this.source.getNextTuple();
+		T t = this.function.getNextTuple();
 		processingTimeStat.add(System.nanoTime() - start);
 		if (t != null)
 			getOutputStream(getId()).addTuple(t);
 	}
 
-	@Override
-	public T getNextTuple() {
-		return null;
-	}
 }

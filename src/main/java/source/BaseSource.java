@@ -27,14 +27,15 @@ import common.StreamConsumer;
 import common.tuple.Tuple;
 import stream.Stream;
 
-//FIXME: refactor like baseSink
-public abstract class BaseSource<T extends Tuple> implements Source<T> {
+public class BaseSource<T extends Tuple> implements Source<T> {
 
 	protected final BoxState<Tuple, T> state;
 	private final String OUTPUT_KEY = "OUTPUT";
+	protected final SourceFunction<T> function;
 
-	public BaseSource(String id) {
+	public BaseSource(String id, SourceFunction function) {
 		state = new BoxState<>(id, BoxType.SOURCE, null);
+		this.function = function;
 	}
 
 	@Override
@@ -75,7 +76,7 @@ public abstract class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	public void process() {
-		T t = getNextTuple();
+		T t = function.getNextTuple();
 		if (t != null)
 			getOutputStream(getId()).addTuple(t);
 	}
@@ -84,6 +85,4 @@ public abstract class BaseSource<T extends Tuple> implements Source<T> {
 	public String getId() {
 		return state.getId();
 	}
-
-	public abstract T getNextTuple();
 }

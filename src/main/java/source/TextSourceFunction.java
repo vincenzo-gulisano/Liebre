@@ -17,7 +17,7 @@
  *
  */
 
-package source.text;
+package source;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -26,18 +26,14 @@ import java.io.IOException;
 
 import common.tuple.Tuple;
 import common.util.Util;
-import source.BaseSource;
 
-public class TextSource<T extends Tuple> extends BaseSource<T> {
+public abstract class TextSourceFunction<T extends Tuple> implements SourceFunction<T> {
 
 	private BufferedReader br;
 	private String nextLine;
 	private boolean hasNext;
-	TextSourceFunction<T> function;
 
-	public TextSource(String id, String fileName, TextSourceFunction<T> function) {
-		super(id);
-		this.function = function;
+	public TextSourceFunction(String fileName) {
 		this.nextLine = "";
 		this.hasNext = true;
 		try {
@@ -48,29 +44,32 @@ public class TextSource<T extends Tuple> extends BaseSource<T> {
 	}
 
 	public boolean hasNext() {
-		if (hasNext)
+		if (hasNext) {
 			try {
 				if ((nextLine = br.readLine()) == null) {
 					br.close();
 					hasNext = false;
-					deActivate();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		else {
+		} else {
 			// Prevent spinning
 			Util.sleep(1000);
 		}
 		return hasNext;
 	}
 
+	@Override
 	public T getNextTuple() {
-		if (hasNext())
-			return function.getNext(nextLine);
-		else
+		if (hasNext()) {
+			return getNext(nextLine);
+		} else {
 			return null;
+		}
 	}
+
+	protected abstract T getNext(String line);
 
 	public void close() {
 		if (hasNext) {

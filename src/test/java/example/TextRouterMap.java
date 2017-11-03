@@ -27,7 +27,7 @@ import common.util.Util;
 import operator.router.RouterFunction;
 import query.Query;
 import sink.text.TextSinkFunction;
-import source.text.TextSourceFunction;
+import source.TextSourceFunction;
 import stream.StreamKey;
 
 public class TextRouterMap {
