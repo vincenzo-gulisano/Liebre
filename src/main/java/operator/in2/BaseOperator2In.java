@@ -21,6 +21,7 @@ package operator.in2;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import common.BoxState;
 import common.BoxState.BoxType;
@@ -43,11 +44,17 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 		state = new BoxState<>(id, BoxType.OPERATOR2IN, streamFactory);
 	}
 
+	public abstract List<OUT> processTupleIn1(IN tuple);
+
+	public abstract List<OUT> processTupleIn2(IN2 tuple);
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public void registerIn(StreamProducer<IN> in) {
 		state.setInput(INPUT1_KEY, (StreamProducer<Tuple>) in, this);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void registerIn2(StreamProducer<IN2> in) {
 		state.setInput(INPUT2_KEY, (StreamProducer<Tuple>) in, this);
@@ -69,15 +76,17 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
-	public void registerOut(StreamConsumer<OUT> out) {
+	public void addOutput(StreamConsumer<OUT> out) {
 		state.setOutput(OUTPUT_KEY, out, this);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Stream<IN> getInputStream(String reqId) {
 		return (Stream<IN>) state.getInputStream(INPUT1_KEY);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Stream<IN2> getInput2Stream(String reqId) {
 		return (Stream<IN2>) state.getInputStream(INPUT2_KEY);
@@ -91,18 +100,18 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
-	public void activate() {
+	public void enable() {
 		// FIXME: Should check if both inputs are set
 		state.enable();
 	}
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		state.disable();
 	}
 
 	@Override
-	public boolean isActive() {
+	public boolean isEnabled() {
 		return state.isEnabled();
 	}
 
@@ -137,10 +146,27 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public String toString() {
-		return String.format("OP-%s", getId());
+		return getId();
 	}
 
-	public abstract List<OUT> processTupleIn1(IN tuple);
+	@Override
+	public int hashCode() {
+		return Objects.hash(state);
+	}
 
-	public abstract List<OUT> processTupleIn2(IN2 tuple);
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof BaseOperator2In)) {
+			// Give the other object a chance to check equality. Useful in the case of
+			// adapters
+			return obj.equals(this);
+		}
+		BaseOperator2In<?, ?, ?> other = (BaseOperator2In<?, ?, ?>) obj;
+		return Objects.equals(state, other.state);
+	}
+
 }

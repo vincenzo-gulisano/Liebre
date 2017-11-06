@@ -41,7 +41,7 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 	}
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		processingTimeStat.close();
 		state.disable();
 	}

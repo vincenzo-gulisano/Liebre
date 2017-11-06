@@ -38,9 +38,9 @@ public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 	}
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		processingTimeStat.close();
-		super.deActivate();
+		super.disable();
 	}
 
 	public void process() {

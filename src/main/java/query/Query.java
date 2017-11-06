@@ -102,6 +102,7 @@ public class Query {
 	}
 
 	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(BaseOperator<IN, OUT> operator) {
+		checkIfExists(operator.getId(), "Operator", operators);
 		if (keepStatistics) {
 			operator = new OperatorStatistic<IN, OUT>(operator,
 					statsFolder + File.separator + operator.getId() + ".proc.csv", autoFlush);
@@ -132,6 +133,7 @@ public class Query {
 	}
 
 	public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier, RouterFunction<T> routerF) {
+		checkIfExists(identifier, "Operator", operators);
 		BaseOperator<T, T> router = null;
 		// Notice that the router is a special case which needs a dedicated
 		// statistics operator
@@ -146,7 +148,7 @@ public class Query {
 	}
 
 	public <T extends Tuple> Operator<T, T> addUnionOperator(String identifier) {
-
+		checkIfExists(identifier, "Operator", operators);
 		// Notice that the union is a special case. No processing stats are kept
 		// since the union does not process tuples.
 		BaseOperator<T, T> union = new UnionOperator<>(identifier, streamFactory);
@@ -155,6 +157,7 @@ public class Query {
 	}
 
 	public <T extends Tuple> Source<T> addSource(BaseSource<T> source) {
+		checkIfExists(source.getId(), "Source", sources);
 		if (keepStatistics) {
 			source = new SourceStatistic<T>(source, streamFactory,
 					statsFolder + File.separator + source.getId() + ".proc.csv");
@@ -168,6 +171,7 @@ public class Query {
 	}
 
 	public <T extends Tuple> Sink<T> addSink(BaseSink<T> sink) {
+		checkIfExists(sink.getId(), "Sink", sinks);
 		if (keepStatistics) {
 			sink = new SinkStatistic<T>(sink, statsFolder + File.separator + sink.getId() + ".proc.csv");
 		}
@@ -181,6 +185,7 @@ public class Query {
 
 	public <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
 			String identifier, BaseOperator2In<IN, IN2, OUT> operator) {
+		checkIfExists(identifier, "Operator", operators2in);
 		if (keepStatistics) {
 			operator = new Operator2InStatistic<IN, IN2, OUT>(operator,
 					statsFolder + File.separator + identifier + ".proc.csv", autoFlush);
@@ -199,7 +204,7 @@ public class Query {
 		System.out.println("*** [Query] Activating...");
 		activateTasks(sinks.values());
 		for (ActiveRunnable o : getAllOperators()) {
-			o.activate();
+			o.enable();
 		}
 		scheduler.addTasks(getAllOperators());
 		scheduler.startTasks();
@@ -223,7 +228,7 @@ public class Query {
 
 	private void activateTasks(Collection<? extends Active> tasks) {
 		for (Active task : tasks) {
-			task.activate();
+			task.enable();
 			if (task instanceof Runnable) {
 				Thread t = new Thread((Runnable) task);
 				t.start();
@@ -234,7 +239,13 @@ public class Query {
 
 	private void deactivateTasks(Collection<? extends Active> tasks) {
 		for (Active task : tasks) {
-			task.deActivate();
+			task.disable();
+		}
+	}
+
+	private void checkIfExists(String id, String type, Map<?, ?> map) {
+		if (map.containsKey(id)) {
+			throw new IllegalArgumentException(String.format("%s with id [%s] already exists in query!", type, id));
 		}
 	}
 

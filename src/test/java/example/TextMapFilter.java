@@ -87,9 +87,9 @@ public class TextMapFilter {
 			}
 		});
 
-		i1.registerOut(multiply);
-		multiply.registerOut(filter);
-		filter.registerOut(o1);
+		i1.addOutput(multiply);
+		multiply.addOutput(filter);
+		filter.addOutput(o1);
 		q.activate();
 		Util.sleep(20000);
 		q.deActivate();

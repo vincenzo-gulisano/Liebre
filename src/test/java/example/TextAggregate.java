@@ -118,8 +118,8 @@ public class TextAggregate {
 
 		});
 
-		i1.registerOut(aggregate);
-		aggregate.registerOut(o1);
+		i1.addOutput(aggregate);
+		aggregate.addOutput(o1);
 
 		q.activate();
 		Util.sleep(30000);

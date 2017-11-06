@@ -96,8 +96,8 @@ public class TextMap2 {
 			}
 		});
 
-		i1.registerOut(transform);
-		transform.registerOut(o1);
+		i1.addOutput(transform);
+		transform.addOutput(o1);
 		q.activate();
 		Util.sleep(40000);
 		q.deActivate();

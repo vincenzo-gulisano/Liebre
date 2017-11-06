@@ -44,7 +44,7 @@ public class NoopScheduler implements Scheduler {
 		for (Runnable operator : operators) {
 			OneToOneWorkerThread thread = new OneToOneWorkerThread(operator);
 			threads.add(thread);
-			thread.activate();
+			thread.enable();
 			thread.start();
 		}
 	}
@@ -53,7 +53,7 @@ public class NoopScheduler implements Scheduler {
 	public void stopTasks() {
 		for (OneToOneWorkerThread thread : threads) {
 			try {
-				thread.deActivate();
+				thread.disable();
 				thread.join();
 			} catch (InterruptedException e) {
 				// TODO: Better exception handling

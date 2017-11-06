@@ -39,7 +39,7 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public void registerOut(StreamConsumer<T> out) {
+	public void addOutput(StreamConsumer<T> out) {
 		state.setOutput(OUTPUT_KEY, out, this);
 	}
 
@@ -56,9 +56,9 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public void activate() {
+	public void enable() {
 		state.enable();
-		function.activate();
+		function.enable();
 	}
 
 	@Override
@@ -67,13 +67,13 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		state.disable();
-		function.deActivate();
+		function.disable();
 	}
 
 	@Override
-	public boolean isActive() {
+	public boolean isEnabled() {
 		return state.isEnabled();
 	}
 
@@ -87,4 +87,30 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	public String getId() {
 		return state.getId();
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((state == null) ? 0 : state.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof BaseSource))
+			return false;
+		BaseSource<?> other = (BaseSource<?>) obj;
+		if (state == null) {
+			if (other.state != null)
+				return false;
+		} else if (!state.equals(other.state))
+			return false;
+		return true;
+	}
+
 }

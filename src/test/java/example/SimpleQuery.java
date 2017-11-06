@@ -80,8 +80,8 @@ public class SimpleQuery {
 				System.out.println(tuple.timestamp + "," + tuple.key + "," + tuple.value);
 			}
 		});
-		source.registerOut(multiply);
-		multiply.registerOut(sink);
+		source.addOutput(multiply);
+		multiply.addOutput(sink);
 
 		q.activate();
 		Util.sleep(30000);

@@ -73,8 +73,10 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		if (!type.checkState(this)) {
 			throw new IllegalStateException(id);
 		}
+		for (Stream<?> input : inputs.values()) {
+			input.enable();
+		}
 		this.enabled = true;
-
 	}
 
 	public boolean isEnabled() {
@@ -82,6 +84,9 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public void disable() {
+		for (Stream<?> input : inputs.values()) {
+			input.disable();
+		}
 		this.enabled = false;
 	}
 
@@ -98,7 +103,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		}
 		if (!in.getNext().contains(caller)) {
 			System.err.println(
-					"WARNING: It seems that you might be explicitly registering inputs. Please use registerOut instead!");
+					"WARNING: It seems that you might be explicitly registering inputs. Please use addOutput() instead!");
 			// throw new UnsupportedOperationException("Please use registerOut() to
 			// construct query graphs");
 		}
@@ -120,7 +125,8 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public Stream<OUT> getOutputStream(String key, StreamProducer<OUT> caller) {
-		// Both IDs needed in case we have a router -> union/join connection
+		// The IDs of both ends of the stream are needed in case we have a router ->
+		// union/join connection
 		return next.get(key).getInputStream(caller.getId());
 	}
 
@@ -134,6 +140,61 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	public Collection<StreamProducer<? extends Tuple>> getPrevious() {
 		return previous;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (enabled ? 1231 : 1237);
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((inputs == null) ? 0 : inputs.hashCode());
+		result = prime * result + ((next == null) ? 0 : next.hashCode());
+		result = prime * result + ((previous == null) ? 0 : previous.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BoxState<?, ?> other = (BoxState<?, ?>) obj;
+		if (enabled != other.enabled)
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (inputs == null) {
+			if (other.inputs != null)
+				return false;
+		} else if (!inputs.equals(other.inputs))
+			return false;
+		if (next == null) {
+			if (other.next != null)
+				return false;
+		} else if (!next.equals(other.next))
+			return false;
+		if (previous == null) {
+			if (other.previous != null)
+				return false;
+		} else if (!previous.equals(other.previous))
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "BoxState [id=" + id + ", enabled=" + enabled + ", inputs=" + inputs + ", previous=" + previous
+				+ ", next=" + next + ", type=" + type + "]";
 	}
 
 }

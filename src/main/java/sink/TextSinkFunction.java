@@ -46,7 +46,7 @@ public abstract class TextSinkFunction<T extends Tuple> implements SinkFunction<
 	}
 
 	public final void processTuple(T tuple) {
-		if (!isActive()) {
+		if (!isEnabled()) {
 			throw new IllegalStateException("Output stream is closed");
 		}
 		pw.println(processTupleToText(tuple));
@@ -54,13 +54,13 @@ public abstract class TextSinkFunction<T extends Tuple> implements SinkFunction<
 	}
 
 	@Override
-	public boolean isActive() {
+	public boolean isEnabled() {
 		return !closed;
 	}
 
 	protected abstract String processTupleToText(T tuple);
 
-	public void deActivate() {
+	public void disable() {
 		if (!closed) {
 			pw.flush();
 			pw.close();

@@ -93,9 +93,9 @@ public class TextRouterMap {
 			}
 		});
 
-		i1.registerOut(router);
-		router.registerOut(o1);
-		router.registerOut(o2);
+		i1.addOutput(router);
+		router.addOutput(o1);
+		router.addOutput(o2);
 
 		q.activate();
 		Util.sleep(5000);

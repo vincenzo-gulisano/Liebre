@@ -2,14 +2,14 @@ package common;
 
 //FIXME: Rename to enable/disable
 public interface Active {
-	default public void activate() {
+	default public void enable() {
 	}
 
-	default public boolean isActive() {
+	default public boolean isEnabled() {
 		return true;
 	}
 
-	default public void deActivate() {
+	default public void disable() {
 
 	}
 }

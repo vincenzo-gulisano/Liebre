@@ -113,9 +113,9 @@ public class TextJoin {
 			}
 		});
 
-		i1.registerOut(join);
-		i2.registerOut(join);
-		join.registerOut(o1);
+		i1.addOutput(join);
+		i2.addOutput(join);
+		join.addOutput(o1);
 
 		q.activate();
 		Util.sleep(30000);

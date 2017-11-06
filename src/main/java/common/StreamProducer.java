@@ -7,10 +7,10 @@ import operator.in2.Operator2In;
 import stream.Stream;
 
 public interface StreamProducer<OUT extends Tuple> extends NamedEntity {
-	void registerOut(StreamConsumer<OUT> out);
+	void addOutput(StreamConsumer<OUT> out);
 
-	default void registerOut(Operator2In<?, OUT, ?> out) {
-		registerOut(out.secondInputView());
+	default void addOutput(Operator2In<?, OUT, ?> out) {
+		addOutput(out.secondInputView());
 	}
 
 	Collection<StreamConsumer<OUT>> getNext();

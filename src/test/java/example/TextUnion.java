@@ -65,7 +65,7 @@ public class TextUnion {
 			}
 		});
 
-		Source<MyTuple> i2 = q.addBaseSource("i2", new TextSourceFunction<MyTuple>(inputFile2) {
+		Source<MyTuple> i2 = q.addBaseSource("i1", new TextSourceFunction<MyTuple>(inputFile2) {
 
 			@Override
 			protected MyTuple getNext(String line) {
@@ -86,9 +86,9 @@ public class TextUnion {
 			}
 		});
 
-		i1.registerOut(union);
-		i2.registerOut(union);
-		union.registerOut(o1);
+		i1.addOutput(union);
+		i2.addOutput(union);
+		union.addOutput(o1);
 
 		q.activate();
 		Util.sleep(40000);

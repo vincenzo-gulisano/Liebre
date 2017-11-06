@@ -31,7 +31,7 @@ public class ThreadPoolScheduler implements Scheduler {
 	@Override
 	public void startTasks() {
 		for (WorkerThread workerThread : workers) {
-			workerThread.activate();
+			workerThread.enable();
 			workerThread.start();
 		}
 		// TODO: Observer pattern to detect thread crashes
@@ -41,7 +41,7 @@ public class ThreadPoolScheduler implements Scheduler {
 	public void stopTasks() {
 		for (WorkerThread workerThread : workers) {
 			try {
-				workerThread.deActivate();
+				workerThread.disable();
 				workerThread.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();

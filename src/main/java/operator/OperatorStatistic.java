@@ -40,9 +40,9 @@ public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends Base
 	}
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		processingTimeStat.close();
-		super.deActivate();
+		super.disable();
 	}
 
 	public void process() {

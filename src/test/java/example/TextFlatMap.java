@@ -87,8 +87,8 @@ public class TextFlatMap {
 
 		});
 
-		i1.registerOut(multiply);
-		multiply.registerOut(o1);
+		i1.addOutput(multiply);
+		multiply.addOutput(o1);
 
 		q.activate();
 		Util.sleep(30000);

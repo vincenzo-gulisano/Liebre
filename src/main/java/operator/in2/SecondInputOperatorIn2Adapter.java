@@ -42,8 +42,8 @@ class SecondInputOperatorIn2Adapter<IN extends Tuple, OUT extends Tuple> impleme
 	}
 
 	@Override
-	public void registerOut(StreamConsumer<OUT> out) {
-		operator.registerOut(out);
+	public void addOutput(StreamConsumer<OUT> out) {
+		operator.addOutput(out);
 	}
 
 	@Override
@@ -54,6 +54,19 @@ class SecondInputOperatorIn2Adapter<IN extends Tuple, OUT extends Tuple> impleme
 	@Override
 	public Stream<OUT> getOutputStream(String requestorId) {
 		return operator.getOutputStream(requestorId);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((operator == null) ? 0 : operator.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return this.operator.equals(obj);
 	}
 
 }

@@ -89,11 +89,11 @@ public class SampleQuery {
 		Sink<DummyTuple> o2 = q.addBaseSink("O2", new DummyLatencyLogger(args[0] + File.separator + "O2.latency.csv"));
 
 		// TODO: Chaining
-		i1.registerOut(A);
-		A.registerOut(B);
-		A.registerOut(C);
-		B.registerOut(o1);
-		C.registerOut(o2);
+		i1.addOutput(A);
+		A.addOutput(B);
+		A.addOutput(C);
+		B.addOutput(o1);
+		C.addOutput(o2);
 
 		// Query Q2
 		Source<DummyTuple> i2 = q.addBaseSource("I2", new DummySourceFunction(Throughput.I2));
@@ -104,10 +104,10 @@ public class SampleQuery {
 
 		Sink<DummyTuple> o3 = q.addBaseSink("O3", new DummyLatencyLogger(args[0] + File.separator + "O3.latency.csv"));
 
-		i2.registerOut(D);
-		D.registerOut(E);
-		E.registerOut(F);
-		F.registerOut(o3);
+		i2.addOutput(D);
+		D.addOutput(E);
+		E.addOutput(F);
+		F.addOutput(o3);
 
 		// Query Q3
 
@@ -121,12 +121,12 @@ public class SampleQuery {
 
 		Sink<DummyTuple> o4 = q.addBaseSink("O4", new DummyLatencyLogger(args[0] + File.separator + "O4.latency.csv"));
 
-		i3.registerOut(G);
-		i4.registerOut(H);
-		G.registerOut(I);
-		H.registerOut(I);
-		I.registerOut(L);
-		L.registerOut(o4);
+		i3.addOutput(G);
+		i4.addOutput(H);
+		G.addOutput(I);
+		H.addOutput(I);
+		I.addOutput(L);
+		L.addOutput(o4);
 
 		// Query Q4
 		Source<DummyTuple> i5 = q.addBaseSource("I5", new DummySourceFunction(Throughput.I5));
@@ -136,9 +136,9 @@ public class SampleQuery {
 
 		Sink<DummyTuple> o5 = q.addBaseSink("O5", new DummyLatencyLogger(args[0] + File.separator + "O5.latency.csv"));
 
-		i5.registerOut(M);
-		M.registerOut(N);
-		N.registerOut(o5);
+		i5.addOutput(M);
+		M.addOutput(N);
+		N.addOutput(o5);
 
 		// Start queries and let run for a time
 		q.activate();

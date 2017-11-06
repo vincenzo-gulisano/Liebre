@@ -52,9 +52,14 @@ public class BackOff {
 		if (currentRetries < retries) {
 			currentRetries++;
 			if (currentRetries == retries)
-				currentLimit = (currentLimit / 2 >= min) ? currentLimit / 2
-						: min;
+				currentLimit = (currentLimit / 2 >= min) ? currentLimit / 2 : min;
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "BackOff [min=" + min + ", max=" + max + ", retries=" + retries + ", currentLimit=" + currentLimit
+				+ ", currentRetries=" + currentRetries + "]";
 	}
 
 }

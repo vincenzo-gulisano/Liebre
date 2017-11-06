@@ -70,7 +70,7 @@ public abstract class TextSourceFunction<T extends Tuple> implements SourceFunct
 	protected abstract T getNext(String line);
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		if (hasNext) {
 			try {
 				br.close();

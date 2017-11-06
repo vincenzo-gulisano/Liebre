@@ -25,7 +25,6 @@ import stream.StreamFactory;
 
 public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 
-	private BaseSource<T> source;
 	private AvgStat processingTimeStat;
 
 	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile) {
@@ -34,14 +33,13 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 
 	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile, boolean autoFlush) {
 		super(source.getId(), source.function);
-		this.source = source;
 		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
 	}
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		processingTimeStat.close();
-		super.deActivate();
+		super.disable();
 	}
 
 	public void process() {

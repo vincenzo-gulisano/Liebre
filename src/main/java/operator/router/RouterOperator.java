@@ -38,7 +38,7 @@ public class RouterOperator<T extends Tuple> extends BaseOperator<T, T> {
 	}
 
 	@Override
-	public void registerOut(StreamConsumer<T> out) {
+	public void addOutput(StreamConsumer<T> out) {
 		state.setOutput(out.getId(), out, this);
 	}
 

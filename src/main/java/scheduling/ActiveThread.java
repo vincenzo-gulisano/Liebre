@@ -23,17 +23,17 @@ public abstract class ActiveThread extends Thread implements Active {
 	protected abstract void doRun();
 
 	@Override
-	public void activate() {
+	public void enable() {
 		this.active = true;
 	}
 
 	@Override
-	public boolean isActive() {
+	public boolean isEnabled() {
 		return this.active;
 	}
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		this.active = false;
 	}
 

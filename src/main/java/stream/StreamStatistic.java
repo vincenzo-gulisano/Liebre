@@ -49,15 +49,9 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 	}
 
 	@Override
-	public void deActivate() {
-		// FIXME: Call when deactivating box
+	public void disable() {
 		inRate.close();
 		outRate.close();
-	}
-
-	@Override
-	public boolean isActive() {
-		return true;
 	}
 
 	@Override

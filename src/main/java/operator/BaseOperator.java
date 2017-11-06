@@ -21,6 +21,7 @@ package operator;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import common.BoxState;
 import common.BoxState.BoxType;
@@ -70,7 +71,7 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 	}
 
 	@Override
-	public void registerOut(StreamConsumer<OUT> out) {
+	public void addOutput(StreamConsumer<OUT> out) {
 		state.setOutput(OUTPUT_KEY, out, this);
 	}
 
@@ -82,16 +83,16 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 	}
 
 	@Override
-	public void activate() {
+	public void enable() {
 		state.enable();
 	}
 
 	@Override
-	public void deActivate() {
+	public void disable() {
 		state.disable();
 	}
 
-	public boolean isActive() {
+	public boolean isEnabled() {
 		return state.isEnabled();
 	}
 
@@ -115,6 +116,26 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 
 	@Override
 	public String toString() {
-		return String.format("OP-%s", getId());
+		return getId();
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(state);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!(obj instanceof BaseOperator)) {
+			// In case we have an adapter
+			return obj.equals(this);
+		}
+		BaseOperator<?, ?> other = (BaseOperator<?, ?>) obj;
+		return Objects.equals(state, other.state);
+	}
+
 }
