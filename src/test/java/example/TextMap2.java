@@ -19,79 +19,85 @@
 
 package example;
 
+import java.io.File;
+
 import common.tuple.Tuple;
 import common.util.Util;
+import operator.Operator;
 import operator.map.MapFunction;
 import query.Query;
-import sink.text.TextSinkFunction;
+import sink.Sink;
+import sink.TextSinkFunction;
+import source.Source;
 import source.TextSourceFunction;
-import stream.StreamKey;
 
 public class TextMap2 {
+
+	private static class InputTuple implements Tuple {
+		public long timestamp;
+		public int key;
+		public int value;
+
+		public InputTuple(long timestamp, int key, int value) {
+			this.timestamp = timestamp;
+			this.key = key;
+			this.value = value;
+		}
+	}
+
+	private static class OutputTuple implements Tuple {
+		public long timestamp;
+		public int key;
+		public int valueA;
+		public int valueB;
+		public int valueC;
+
+		public OutputTuple(InputTuple t) {
+			this.timestamp = t.timestamp;
+			this.key = t.key;
+			this.valueA = t.value * 2;
+			this.valueB = t.value / 2;
+			this.valueC = t.value + 10;
+		}
+	}
+
 	public static void main(String[] args) {
-
-		class InputTuple implements Tuple {
-			public long timestamp;
-			public int key;
-			public int value;
-
-			public InputTuple(long timestamp, int key, int value) {
-				this.timestamp = timestamp;
-				this.key = key;
-				this.value = value;
-			}
-		}
-
-		class OutputTuple implements Tuple {
-			public long timestamp;
-			public int key;
-			public int valueA;
-			public int valueB;
-			public int valueC;
-
-			public OutputTuple(InputTuple t) {
-				this.timestamp = t.timestamp;
-				this.key = t.key;
-				this.valueA = t.value * 2;
-				this.valueB = t.value / 2;
-				this.valueC = t.value + 10;
-			}
-		}
-
+		final String reportFolder = args[0];
+		final String inputFile = args[1];
+		final String outputFile = reportFolder + File.separator + "TextMap2.out.csv";
 		Query q = new Query();
 
-		q.activateStatistics(args[0]);
+		q.activateStatistics(reportFolder);
+		Source<InputTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<InputTuple>(inputFile) {
 
-		StreamKey<InputTuple> inKey = q.addStream("in", InputTuple.class);
-		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
+			@Override
+			protected InputTuple getNext(String line) {
+				Util.sleep(100);
+				String[] tokens = line.split(",");
+				return new InputTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+			}
+		});
 
-		q.addTextSource("inSource", args[1],
-				new TextSourceFunction<InputTuple>() {
-					@Override
-					public InputTuple getNext(String line) {
-						Util.sleep(50);
-						String[] tokens = line.split(",");
-						return new InputTuple(Long.valueOf(tokens[0]), Integer
-								.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
-					}
-				}, inKey);
+		;
 
-		q.addMapOperator("transform",
+		Operator<InputTuple, OutputTuple> transform = q.addMapOperator("transform",
 				new MapFunction<InputTuple, OutputTuple>() {
 					@Override
 					public OutputTuple map(InputTuple tuple) {
 						return new OutputTuple(tuple);
 					}
-				}, inKey, outKey);
+				});
 
-		q.addTextSink("outSink", args[2], new TextSinkFunction<OutputTuple>() {
+		Sink<OutputTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<OutputTuple>(outputFile) {
+
 			@Override
-			public String convertTupleToLine(OutputTuple tuple) {
-				return tuple.timestamp + "," + tuple.key + "," + tuple.valueA
-						+ "," + tuple.valueB + "," + tuple.valueC;
+			public String processTupleToText(OutputTuple tuple) {
+				return tuple.timestamp + "," + tuple.key + "," + tuple.valueA + "," + tuple.valueB + "," + tuple.valueC;
 			}
-		}, outKey);
+		});
 
+		i1.registerOut(transform);
+		transform.registerOut(o1);
 		q.activate();
 		Util.sleep(40000);
 		q.deActivate();

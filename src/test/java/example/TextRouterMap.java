@@ -19,79 +19,83 @@
 
 package example;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
 import common.tuple.BaseRichTuple;
 import common.util.Util;
+import operator.Operator;
 import operator.router.RouterFunction;
 import query.Query;
-import sink.text.TextSinkFunction;
+import sink.Sink;
+import sink.TextSinkFunction;
+import source.Source;
 import source.TextSourceFunction;
-import stream.StreamKey;
 
 public class TextRouterMap {
+	private static class MyTuple extends BaseRichTuple {
+		public int value;
+
+		public MyTuple(long timestamp, String key, int value) {
+			super(timestamp, key);
+			this.value = value;
+		}
+	}
+
 	public static void main(String[] args) {
 
-		class MyTuple extends BaseRichTuple {
-			public int value;
-
-			public MyTuple(long timestamp, String key, int value) {
-				super(timestamp, key);
-				this.value = value;
-			}
-		}
-
+		final String reportFolder = args[0];
+		final String inputFile = args[1];
+		final String outputFile1 = reportFolder + File.separator + "TextRouterMap_Out1.out.csv";
+		final String outputFile2 = reportFolder + File.separator + "TextRouterMap_Out2.out.csv";
 		Query q = new Query();
 
-		q.activateStatistics(args[0]);
+		q.activateStatistics(reportFolder);
+		Source<MyTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<MyTuple>(inputFile) {
 
-		StreamKey<MyTuple> inKey = q.addStream("in", MyTuple.class);
-		StreamKey<MyTuple> outKey1 = q.addStream("out1", MyTuple.class);
-		StreamKey<MyTuple> outKey2 = q.addStream("out2", MyTuple.class);
-
-		q.addTextSource("inSource", args[1], new TextSourceFunction<MyTuple>() {
 			@Override
-			public MyTuple getNext(String line) {
-				Util.sleep(5);
+			protected MyTuple getNext(String line) {
+				Util.sleep(15);
 				String[] tokens = line.split(",");
-				return new MyTuple(Long.valueOf(tokens[0]), tokens[1], Integer
-						.valueOf(tokens[2]));
+				return new MyTuple(Long.valueOf(tokens[0]), tokens[1], Integer.valueOf(tokens[2]));
 			}
-		}, inKey);
+		});
 
-		LinkedList<StreamKey<MyTuple>> outs = new LinkedList<StreamKey<MyTuple>>();
-		outs.add(outKey1);
-		outs.add(outKey2);
-		q.addRouterOperator("router", new RouterFunction<MyTuple>() {
+		Operator<MyTuple, MyTuple> router = q.addRouterOperator("router", new RouterFunction<MyTuple>() {
 
 			@Override
 			public List<String> chooseOperators(MyTuple tuple) {
 				List<String> result = new LinkedList<String>();
-				if (tuple.getKey().equals("28")) {
-					result.add("out1");
-				} else if (tuple.getKey().equals("29")) {
-					result.add("out2");
+				int key = Integer.valueOf(tuple.getKey());
+				if (key < 5) {
+					result.add("o1");
+				}
+				if (key > 4) {
+					result.add("o2");
 				}
 				return result;
 			}
-		}, inKey, outs);
+		});
 
-		q.addTextSink("outSink1", args[2], new TextSinkFunction<MyTuple>() {
-			@Override
-			public String convertTupleToLine(MyTuple tuple) {
-				return tuple.getTimestamp() + "," + tuple.getKey() + ","
-						+ tuple.value;
-			}
-		}, outKey1);
+		Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile1) {
 
-		q.addTextSink("outSink2", args[3], new TextSinkFunction<MyTuple>() {
 			@Override
-			public String convertTupleToLine(MyTuple tuple) {
-				return tuple.getTimestamp() + "," + tuple.getKey() + ","
-						+ tuple.value;
+			public String processTupleToText(MyTuple tuple) {
+				return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.value;
 			}
-		}, outKey2);
+		});
+		Sink<MyTuple> o2 = q.addBaseSink("o2", new TextSinkFunction<MyTuple>(outputFile2) {
+
+			@Override
+			public String processTupleToText(MyTuple tuple) {
+				return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.value;
+			}
+		});
+
+		i1.registerOut(router);
+		router.registerOut(o1);
+		router.registerOut(o2);
 
 		q.activate();
 		Util.sleep(5000);

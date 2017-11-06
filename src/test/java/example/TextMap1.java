@@ -19,59 +19,70 @@
 
 package example;
 
+import java.io.File;
+
 import common.tuple.Tuple;
 import common.util.Util;
+import operator.Operator;
 import operator.map.MapFunction;
 import query.Query;
-import sink.text.TextSinkFunction;
+import sink.Sink;
+import sink.TextSinkFunction;
+import source.Source;
 import source.TextSourceFunction;
-import stream.StreamKey;
 
 public class TextMap1 {
+
+	private static class MyTuple implements Tuple {
+		public long timestamp;
+		public int key;
+		public int value;
+
+		public MyTuple(long timestamp, int key, int value) {
+			this.timestamp = timestamp;
+			this.key = key;
+			this.value = value;
+		}
+	}
+
 	public static void main(String[] args) {
 
-		class MyTuple implements Tuple {
-			public long timestamp;
-			public int key;
-			public int value;
-
-			public MyTuple(long timestamp, int key, int value) {
-				this.timestamp = timestamp;
-				this.key = key;
-				this.value = value;
-			}
-		}
-
+		final String reportFolder = args[0];
+		final String inputFile = args[1];
+		final String outputFile = reportFolder + File.separator + "TextMap1.out.csv";
 		Query q = new Query();
 
-		q.activateStatistics(args[0]);
+		q.activateStatistics(reportFolder);
+		Source<MyTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<MyTuple>(inputFile) {
 
-		StreamKey<MyTuple> inKey = q.addStream("in", MyTuple.class);
-		StreamKey<MyTuple> outKey = q.addStream("out", MyTuple.class);
-
-		q.addTextSource("inSource", args[1], new TextSourceFunction<MyTuple>() {
 			@Override
-			public MyTuple getNext(String line) {
+			protected MyTuple getNext(String line) {
 				Util.sleep(100);
 				String[] tokens = line.split(",");
-				return new MyTuple(Long.valueOf(tokens[0]), Integer
-						.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+				return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
 			}
-		}, inKey);
+		});
 
-		q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
+		;
+
+		Operator<MyTuple, MyTuple> multiply = q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
 			@Override
 			public MyTuple map(MyTuple tuple) {
 				return new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2);
 			}
-		}, inKey, outKey);
+		});
 
-		q.addTextSink("outSink", args[2], new TextSinkFunction<MyTuple>() {
+		Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile) {
+
 			@Override
-			public String convertTupleToLine(MyTuple tuple) {
+			public String processTupleToText(MyTuple tuple) {
 				return tuple.timestamp + "," + tuple.key + "," + tuple.value;
 			}
-		}, outKey);
+
+		});
+
+		i1.registerOut(multiply);
+		multiply.registerOut(o1);
 
 		q.activate();
 		Util.sleep(30000);

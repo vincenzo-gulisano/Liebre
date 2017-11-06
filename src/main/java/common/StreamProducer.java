@@ -3,10 +3,15 @@ package common;
 import java.util.Collection;
 
 import common.tuple.Tuple;
+import operator.in2.Operator2In;
 import stream.Stream;
 
 public interface StreamProducer<OUT extends Tuple> extends NamedEntity {
 	void registerOut(StreamConsumer<OUT> out);
+
+	default void registerOut(Operator2In<?, OUT, ?> out) {
+		registerOut(out.secondInputView());
+	}
 
 	Collection<StreamConsumer<OUT>> getNext();
 
@@ -22,6 +27,6 @@ public interface StreamProducer<OUT extends Tuple> extends NamedEntity {
 	 *            the stream to return it correctly.
 	 * @return The output {@link Stream} of this {@link StreamProducer}.
 	 */
-	Stream<OUT> getOutputStream(String reqId);
+	Stream<OUT> getOutputStream(String requestorId);
 
 }

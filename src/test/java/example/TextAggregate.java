@@ -28,7 +28,7 @@ import operator.aggregate.BaseTimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindow;
 import query.Query;
 import sink.Sink;
-import sink.text.TextSinkFunction;
+import sink.TextSinkFunction;
 import source.Source;
 import source.TextSourceFunction;
 
@@ -109,10 +109,10 @@ public class TextAggregate {
 		Operator<InputTuple, OutputTuple> aggregate = q.addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE,
 				WINDOW_SLIDE);
 
-		Sink<OutputTuple> o1 = q.addTextSink("o1", outputFile, new TextSinkFunction<OutputTuple>() {
+		Sink<OutputTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<OutputTuple>(outputFile) {
 
 			@Override
-			public String processTuple(OutputTuple tuple) {
+			public String processTupleToText(OutputTuple tuple) {
 				return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.count + "," + tuple.average;
 			}
 

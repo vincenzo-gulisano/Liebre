@@ -36,22 +36,23 @@ import source.Source;
 import source.SourceFunction;
 
 public class SimpleQuery {
-	public static void main(String[] args) {
+	private static class MyTuple implements Tuple {
+		public long timestamp;
+		public int key;
+		public int value;
 
-		class MyTuple implements Tuple {
-			public long timestamp;
-			public int key;
-			public int value;
-
-			public MyTuple(long timestamp, int key, int value) {
-				this.timestamp = timestamp;
-				this.key = key;
-				this.value = value;
-			}
+		public MyTuple(long timestamp, int key, int value) {
+			this.timestamp = timestamp;
+			this.key = key;
+			this.value = value;
 		}
+	}
+
+	public static void main(String[] args) {
+		final String reportFolder = args[0];
 
 		Query q = new Query();
-		q.activateStatistics(args[0]);
+		q.activateStatistics(reportFolder);
 		Source<MyTuple> source = q.addBaseSource("I1", new SourceFunction<MyTuple>() {
 			private final Random r = new Random();
 
@@ -75,9 +76,8 @@ public class SimpleQuery {
 		Sink<MyTuple> sink = q.addBaseSink("O1", new SinkFunction<MyTuple>() {
 
 			@Override
-			public Object processTuple(MyTuple tuple) {
+			public void processTuple(MyTuple tuple) {
 				System.out.println(tuple.timestamp + "," + tuple.key + "," + tuple.value);
-				return null;
 			}
 		});
 		source.registerOut(multiply);

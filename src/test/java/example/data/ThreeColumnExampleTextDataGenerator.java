@@ -12,16 +12,16 @@ import java.util.Random;
  */
 public class ThreeColumnExampleTextDataGenerator extends ExampleTextDataGenerator {
 	private final Random rand = new Random();
+	private static final String OUTPUT_FILE = "report/dummy_data2.csv";
 
 	public static void main(String[] args) throws Exception {
 		ExampleTextDataGenerator generator = new ThreeColumnExampleTextDataGenerator();
-		generator.generate(args[0]);
+		generator.generate(OUTPUT_FILE);
 	}
 
 	@Override
 	protected List<String> getNextRecord() {
-		return Arrays.asList(String.valueOf(System.currentTimeMillis()), String.valueOf(rand.nextInt(5)),
-				String.valueOf(rand.nextInt(100)));
+		return Arrays.asList(String.valueOf(System.currentTimeMillis()), "2", String.valueOf(rand.nextInt(100)));
 	}
 
 	@Override

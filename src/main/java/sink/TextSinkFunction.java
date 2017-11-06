@@ -17,7 +17,7 @@
  *
  */
 
-package sink.text;
+package sink;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -25,20 +25,18 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import common.tuple.Tuple;
-import query.ConcurrentLinkedListStreamFactory;
-import sink.BaseSink;
 
-public class TextSink<T extends Tuple> extends BaseSink<T> {
-
+public abstract class TextSinkFunction<T extends Tuple> implements SinkFunction<T> {
 	private boolean closed;
-
 	private PrintWriter pw;
 
-	public TextSink(String id, String fileName, TextSinkFunction<T> function, boolean autoFlush) {
-		super(id, ConcurrentLinkedListStreamFactory.INSTANCE, function);
-		closed = false;
+	protected TextSinkFunction(String filename) {
+		this(filename, true);
+	}
+
+	protected TextSinkFunction(String filename, boolean autoflush) {
 		try {
-			this.pw = new PrintWriter(new FileWriter(fileName), autoFlush);
+			this.pw = new PrintWriter(new FileWriter(filename), autoflush);
 			closed = false;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -47,21 +45,22 @@ public class TextSink<T extends Tuple> extends BaseSink<T> {
 		}
 	}
 
-	public void deActivate() {
-		super.deActivate();
-		close();
+	public final void processTuple(T tuple) {
+		if (!isActive()) {
+			throw new IllegalStateException("Output stream is closed");
+		}
+		pw.println(processTupleToText(tuple));
+
 	}
 
 	@Override
-	public void processTuple(T tuple) {
-		write(((TextSinkFunction<T>) function).processTuple(tuple));
+	public boolean isActive() {
+		return !closed;
 	}
 
-	private void write(String s) {
-		pw.println(s);
-	}
+	protected abstract String processTupleToText(T tuple);
 
-	private void close() {
+	public void deActivate() {
 		if (!closed) {
 			pw.flush();
 			pw.close();

@@ -34,7 +34,7 @@ public class DummyLatencyLogger implements SinkFunction<DummyTuple> {
 	}
 
 	@Override
-	public Object processTuple(DummyTuple tuple) {
+	public void processTuple(DummyTuple tuple) {
 		latencyMeasumentsCount++;
 		latencySumNanoseconds += System.nanoTime() - tuple.getTimestamp();
 		while (currentTimeSeconds() - lastUpdateTimeSeconds > 1) {
@@ -43,7 +43,6 @@ public class DummyLatencyLogger implements SinkFunction<DummyTuple> {
 			latencySumNanoseconds = 0;
 			lastUpdateTimeSeconds++;
 		}
-		return tuple;
 	}
 
 	private long currentTimeSeconds() {

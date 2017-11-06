@@ -19,71 +19,76 @@
 
 package example;
 
-import java.util.LinkedList;
+import java.io.File;
 
 import common.tuple.Tuple;
 import common.util.Util;
+import operator.Operator;
 import query.Query;
-import sink.text.TextSinkFunction;
+import sink.Sink;
+import sink.TextSinkFunction;
+import source.Source;
 import source.TextSourceFunction;
-import stream.StreamKey;
 
 public class TextUnion {
+
+	private static class MyTuple implements Tuple {
+		public long timestamp;
+		public int key;
+		public int value;
+
+		public MyTuple(long timestamp, int key, int value) {
+			this.timestamp = timestamp;
+			this.key = key;
+			this.value = value;
+		}
+	}
+
 	public static void main(String[] args) {
 
-		class InputTuple implements Tuple {
-			public long timestamp;
-			public int key;
-			public int value;
-
-			public InputTuple(long timestamp, int key, int value) {
-				this.timestamp = timestamp;
-				this.key = key;
-				this.value = value;
-			}
-		}
+		final String reportFolder = args[0];
+		final String inputFile1 = args[1];
+		final String inputFile2 = args[2];
+		final String outputFile = reportFolder + File.separator + "TextUnion.out.csv";
 
 		Query q = new Query();
 
-		q.activateStatistics(args[0]);
+		q.activateStatistics(reportFolder);
 
-		StreamKey<InputTuple> inKey1 = q.addStream("in1", InputTuple.class);
-		StreamKey<InputTuple> inKey2 = q.addStream("in2", InputTuple.class);
-		StreamKey<InputTuple> outKey = q.addStream("out", InputTuple.class);
+		Source<MyTuple> i1 = q.addBaseSource("i1", new TextSourceFunction<MyTuple>(inputFile1) {
 
-		q.addTextSource("inSource1", args[1],
-				new TextSourceFunction<InputTuple>() {
-					@Override
-					public InputTuple getNext(String line) {
-						Util.sleep(50);
-						String[] tokens = line.split(",");
-						return new InputTuple(Long.valueOf(tokens[0]), Integer
-								.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
-					}
-				}, inKey1);
-
-		q.addTextSource("inSource2", args[2],
-				new TextSourceFunction<InputTuple>() {
-					@Override
-					public InputTuple getNext(String line) {
-						Util.sleep(50);
-						String[] tokens = line.split(",");
-						return new InputTuple(Long.valueOf(tokens[0]), Integer
-								.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
-					}
-				}, inKey2);
-
-		LinkedList<StreamKey<InputTuple>> ins = new LinkedList<StreamKey<InputTuple>>();
-		ins.add(inKey1);
-		ins.add(inKey2);
-		q.addUnionOperator("union", ins, outKey);
-
-		q.addTextSink("outSink", args[3], new TextSinkFunction<InputTuple>() {
 			@Override
-			public String convertTupleToLine(InputTuple tuple) {
-				return tuple.timestamp + "," + tuple.key + "," + tuple.value;
+			protected MyTuple getNext(String line) {
+				Util.sleep(50);
+				String[] tokens = line.split(",");
+				return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
 			}
-		}, outKey);
+		});
+
+		Source<MyTuple> i2 = q.addBaseSource("i2", new TextSourceFunction<MyTuple>(inputFile2) {
+
+			@Override
+			protected MyTuple getNext(String line) {
+				Util.sleep(50);
+				String[] tokens = line.split(",");
+				return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+			}
+		});
+
+		Operator<MyTuple, MyTuple> union = q.addUnionOperator("union");
+
+		Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile) {
+
+			@Override
+			protected String processTupleToText(MyTuple tuple) {
+				return tuple.timestamp + "," + tuple.key + "," + tuple.value;
+
+			}
+		});
+
+		i1.registerOut(union);
+		i2.registerOut(union);
+		union.registerOut(o1);
 
 		q.activate();
 		Util.sleep(40000);

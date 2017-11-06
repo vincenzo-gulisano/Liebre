@@ -97,7 +97,10 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 			throw new IllegalStateException("Cannot register input while running");
 		}
 		if (!in.getNext().contains(caller)) {
-			throw new UnsupportedOperationException("Please use registerOut() to construct query graphs");
+			System.err.println(
+					"WARNING: It seems that you might be explicitly registering inputs. Please use registerOut instead!");
+			// throw new UnsupportedOperationException("Please use registerOut() to
+			// construct query graphs");
 		}
 		inputs.put(key, factory.newStream(in.getId(), id));
 		previous.add(in);
@@ -117,7 +120,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public Stream<OUT> getOutputStream(String key, StreamProducer<OUT> caller) {
-		// Both IDs needed in case we have a router -> union connection
+		// Both IDs needed in case we have a router -> union/join connection
 		return next.get(key).getInputStream(caller.getId());
 	}
 

@@ -23,89 +23,80 @@ import java.util.Random;
 
 import common.tuple.BaseRichTuple;
 import common.util.Util;
+import operator.in2.Operator2In;
 import operator.in2.join.Predicate;
 import query.Query;
-import sink.BaseSink;
-import source.BaseSource;
-import stream.StreamKey;
+import sink.Sink;
+import sink.SinkFunction;
+import source.Source;
+import source.SourceFunction;
 
 public class TextJoin {
+
+	private static class InputTuple1 extends BaseRichTuple {
+
+		public int a;
+
+		public InputTuple1(long timestamp, int a) {
+			super(timestamp, "");
+			this.a = a;
+		}
+
+	}
+
+	private static class InputTuple2 extends BaseRichTuple {
+
+		public int b;
+
+		public InputTuple2(long timestamp, int b) {
+			super(timestamp, "");
+			this.b = b;
+		}
+
+	}
+
+	private static class OutputTuple extends BaseRichTuple {
+
+		public InputTuple1 t1;
+		public InputTuple2 t2;
+
+		public OutputTuple(long timestamp, InputTuple1 t1, InputTuple2 t2) {
+			super(timestamp, "");
+			this.t1 = t1;
+			this.t2 = t2;
+		}
+
+	}
+
 	public static void main(String[] args) {
 
-		class InputTuple1 extends BaseRichTuple {
-
-			public int a;
-
-			public InputTuple1(long timestamp, int a) {
-				super(timestamp, "");
-				this.a = a;
-			}
-
-		}
-
-		class InputTuple2 extends BaseRichTuple {
-
-			public int b;
-
-			public InputTuple2(long timestamp, int b) {
-				super(timestamp, "");
-				this.b = b;
-			}
-
-		}
-
-		class OutputTuple extends BaseRichTuple {
-
-			public InputTuple1 t1;
-			public InputTuple2 t2;
-
-			public OutputTuple(long timestamp, InputTuple1 t1, InputTuple2 t2) {
-				super(timestamp, "");
-				this.t1 = t1;
-				this.t2 = t2;
-			}
-
-		}
+		final String reportFolder = args[0];
 
 		Query q = new Query();
 
-		q.activateStatistics(args[0]);
+		q.activateStatistics(reportFolder);
 
-		StreamKey<InputTuple1> in1Key = q.addStream("in1", InputTuple1.class);
-		StreamKey<InputTuple2> in2Key = q.addStream("in2", InputTuple2.class);
-		StreamKey<OutputTuple> outKey = q.addStream("out", OutputTuple.class);
-
-		q.addSource("inSource1", new BaseSource<InputTuple1>() {
-			Random r = new Random();
+		Source<InputTuple1> i1 = q.addBaseSource("i1", new SourceFunction<InputTuple1>() {
+			private final Random r = new Random();
 
 			@Override
 			public InputTuple1 getNextTuple() {
-				try {
-					Thread.sleep(1100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				return new InputTuple1(System.currentTimeMillis(), r
-						.nextInt(10));
+				Util.sleep(1100);
+				return new InputTuple1(System.currentTimeMillis(), r.nextInt(10));
 			}
-		}, in1Key);
+		});
 
-		q.addSource("inSource2", new BaseSource<InputTuple2>() {
-			Random r = new Random();
+		Source<InputTuple2> i2 = q.addBaseSource("i2", new SourceFunction<InputTuple2>() {
+			private final Random r = new Random();
 
 			@Override
 			public InputTuple2 getNextTuple() {
-				try {
-					Thread.sleep(800);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				return new InputTuple2(System.currentTimeMillis(), r
-						.nextInt(20));
+				Util.sleep(1100);
+				return new InputTuple2(System.currentTimeMillis(), r.nextInt(20));
 			}
-		}, in2Key);
+		});
 
-		q.addJoinOperator("join",
+		Operator2In<InputTuple1, InputTuple2, OutputTuple> join = q.addJoinOperator("join",
 				new Predicate<InputTuple1, InputTuple2, OutputTuple>() {
 					@Override
 					public OutputTuple compare(InputTuple1 t1, InputTuple2 t2) {
@@ -113,14 +104,18 @@ public class TextJoin {
 							return new OutputTuple(t1.getTimestamp(), t1, t2);
 						return null;
 					}
-				}, 10000, in1Key, in2Key, outKey);
+				}, 10000);
 
-		q.addSink("outSink", new BaseSink<OutputTuple>() {
+		Sink<OutputTuple> o1 = q.addBaseSink("o1", new SinkFunction<OutputTuple>() {
 			@Override
 			public void processTuple(OutputTuple tuple) {
 				System.out.println(tuple.t1.a + " <--> " + tuple.t2.b);
 			}
-		}, outKey);
+		});
+
+		i1.registerOut(join);
+		i2.registerOut(join);
+		join.registerOut(o1);
 
 		q.activate();
 		Util.sleep(30000);

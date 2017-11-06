@@ -29,7 +29,7 @@ import operator.Operator;
 import operator.map.FlatMapFunction;
 import query.Query;
 import sink.Sink;
-import sink.text.TextSinkFunction;
+import sink.TextSinkFunction;
 import source.Source;
 import source.TextSourceFunction;
 
@@ -78,10 +78,10 @@ public class TextFlatMap {
 			}
 		});
 
-		Sink<MyTuple> o1 = q.addTextSink("o1", outputFile, new TextSinkFunction<MyTuple>() {
+		Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile) {
 
 			@Override
-			public String processTuple(MyTuple tuple) {
+			public String processTupleToText(MyTuple tuple) {
 				return tuple.timestamp + "," + tuple.key + "," + tuple.value;
 			}
 

@@ -57,13 +57,10 @@ import sink.BaseSink;
 import sink.Sink;
 import sink.SinkFunction;
 import sink.SinkStatistic;
-import sink.text.TextSink;
-import sink.text.TextSinkFunction;
 import source.BaseSource;
 import source.Source;
 import source.SourceFunction;
 import source.SourceStatistic;
-import stream.Stream;
 import stream.StreamFactory;
 
 public class Query {
@@ -72,10 +69,9 @@ public class Query {
 	private String statsFolder;
 	private boolean autoFlush;
 
-	// TODO: Hashing to ensure uniqueness of streams, sources etc
-	// TODO: Implement toString(), hashcode and equals for all entities
-	// FIXME: Default StreamFactory for all entities to keep backward compatibility
-	private final Map<String, Stream<? extends Tuple>> streams = new HashMap<>();
+	// FIXME: Hashing to ensure uniqueness of streams, sources etc
+	// FIXME: Implement toString(), hashcode and equals for all entities
+	// FIXME: Check that box id does not exist when inserting, otherwise error
 	private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
 	private final Map<String, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
 	private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
@@ -117,7 +113,8 @@ public class Query {
 	public <IN extends RichTuple, OUT extends RichTuple> Operator<IN, OUT> addAggregateOperator(String identifier,
 			TimeBasedSingleWindow<IN, OUT> window, long windowSize, long windowSlide) {
 
-		return addOperator(new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, streamFactory, windowSize, windowSlide, window));
+		return addOperator(new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, streamFactory, windowSize,
+				windowSlide, window));
 	}
 
 	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
@@ -182,15 +179,6 @@ public class Query {
 		return addSink(new BaseSink<>(id, streamFactory, sinkFunction));
 	}
 
-	public <T extends Tuple> Sink<T> addTextSink(String id, String fileName, TextSinkFunction<T> function) {
-		return addSink(new TextSink<T>(id, fileName, function, true));
-	}
-
-	public <T extends Tuple> Sink<T> addTextSink(String id, String fileName, TextSinkFunction<T> function,
-			boolean autoFlush) {
-		return addSink(new TextSink<T>(id, fileName, function, autoFlush));
-	}
-
 	public <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
 			String identifier, BaseOperator2In<IN, IN2, OUT> operator) {
 		if (keepStatistics) {
@@ -202,13 +190,13 @@ public class Query {
 	}
 
 	public <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
-			String identifier, Predicate<IN, IN2, OUT> predicate, long WS) {
-		return addOperator2In(identifier, new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, WS, predicate));
+			String identifier, Predicate<IN, IN2, OUT> predicate, long windowSize) {
+		return addOperator2In(identifier,
+				new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, windowSize, predicate));
 	}
 
 	public void activate() {
 		System.out.println("*** [Query] Activating...");
-		activateTasks(streams.values());
 		activateTasks(sinks.values());
 		for (ActiveRunnable o : getAllOperators()) {
 			o.activate();
@@ -231,7 +219,6 @@ public class Query {
 				e.printStackTrace();
 			}
 		}
-		deactivateTasks(streams.values());
 	}
 
 	private void activateTasks(Collection<? extends Active> tasks) {

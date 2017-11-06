@@ -62,21 +62,6 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	}
 
 	@Override
-	public void activate() {
-
-	}
-
-	@Override
-	public void deActivate() {
-
-	}
-
-	@Override
-	public boolean isActive() {
-		return true;
-	}
-
-	@Override
 	public long size() {
 		// FIXME: Not exact size, race conditions
 		return tuplesWritten - tuplesRead;

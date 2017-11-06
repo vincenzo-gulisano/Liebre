@@ -27,6 +27,7 @@ import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import operator.Operator;
 import stream.Stream;
 import stream.StreamFactory;
 
@@ -103,6 +104,11 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	@Override
 	public boolean isActive() {
 		return state.isEnabled();
+	}
+
+	@Override
+	public Operator<IN2, OUT> secondInputView() {
+		return new SecondInputOperatorIn2Adapter<>(this);
 	}
 
 	public void process() {

@@ -33,7 +33,7 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	private final String OUTPUT_KEY = "OUTPUT";
 	protected final SourceFunction<T> function;
 
-	public BaseSource(String id, SourceFunction function) {
+	public BaseSource(String id, SourceFunction<T> function) {
 		state = new BoxState<>(id, BoxType.SOURCE, null);
 		this.function = function;
 	}
@@ -58,6 +58,7 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	@Override
 	public void activate() {
 		state.enable();
+		function.activate();
 	}
 
 	@Override
@@ -68,6 +69,7 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	@Override
 	public void deActivate() {
 		state.disable();
+		function.deActivate();
 	}
 
 	@Override

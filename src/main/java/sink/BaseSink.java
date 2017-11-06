@@ -59,11 +59,13 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	@Override
 	public void activate() {
 		state.enable();
+		function.activate();
 	}
 
 	@Override
 	public void deActivate() {
 		state.disable();
+		function.deActivate();
 	}
 
 	@Override

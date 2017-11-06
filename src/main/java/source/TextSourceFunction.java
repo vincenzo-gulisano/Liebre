@@ -30,12 +30,10 @@ import common.util.Util;
 public abstract class TextSourceFunction<T extends Tuple> implements SourceFunction<T> {
 
 	private BufferedReader br;
-	private String nextLine;
-	private boolean hasNext;
+	private String nextLine = "";
+	private boolean hasNext = true;
 
 	public TextSourceFunction(String fileName) {
-		this.nextLine = "";
-		this.hasNext = true;
 		try {
 			this.br = new BufferedReader(new FileReader(fileName));
 		} catch (FileNotFoundException e) {
@@ -71,7 +69,8 @@ public abstract class TextSourceFunction<T extends Tuple> implements SourceFunct
 
 	protected abstract T getNext(String line);
 
-	public void close() {
+	@Override
+	public void deActivate() {
 		if (hasNext) {
 			try {
 				br.close();
