@@ -24,7 +24,7 @@ public class ThreadPoolScheduler implements Scheduler {
 	@Override
 	public void addTasks(Collection<? extends Operator<?, ?>> tasks) {
 		for (Operator<?, ?> task : tasks) {
-			availableTasks.put(task);
+			availableTasks.register(task);
 		}
 	}
 
@@ -34,6 +34,7 @@ public class ThreadPoolScheduler implements Scheduler {
 			workerThread.enable();
 			workerThread.start();
 		}
+		availableTasks.enable();
 		// TODO: Observer pattern to detect thread crashes
 	}
 
@@ -48,6 +49,7 @@ public class ThreadPoolScheduler implements Scheduler {
 				Thread.currentThread().interrupt();
 			}
 		}
+		availableTasks.disable();
 	}
 
 }

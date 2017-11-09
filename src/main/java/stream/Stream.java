@@ -29,5 +29,7 @@ public interface Stream<T extends Tuple> extends Active, NamedEntity {
 
 	public T getNextTuple();
 
+	public T peek();
+
 	public long size();
 }

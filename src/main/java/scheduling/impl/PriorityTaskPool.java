@@ -1,0 +1,126 @@
+package scheduling.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.atomic.LongAdder;
+
+import common.StreamConsumer;
+import common.StreamProducer;
+import operator.Operator;
+import operator.PriorityMetric;
+import operator.QueueSizePriorityMetric;
+import scheduling.TaskPool;
+import source.Source;
+
+public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
+	private static final long FIRST_UPDATE_INTERVAL_MS = 40;
+	private final PriorityMetric metric;
+	private PriorityBlockingQueue<Operator<?, ?>> tasks;
+
+	private final ConcurrentHashMap<String, LongAdder> calls = new ConcurrentHashMap<>();
+	private final ExecutorService service = Executors.newFixedThreadPool(1);
+
+	private final List<Operator<?, ?>> firstOperators = new ArrayList<>();
+	private volatile boolean enabled;
+	private final Runnable updateFirst = new Runnable() {
+
+		@Override
+		public void run() {
+			for (Operator<?, ?> first : firstOperators) {
+				if (tasks.remove(first)) {
+					tasks.offer(first);
+				}
+			}
+			try {
+				Thread.sleep(FIRST_UPDATE_INTERVAL_MS);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if (isEnabled()) {
+				service.submit(this);
+			}
+		}
+	};
+
+	public PriorityTaskPool(PriorityMetric metric) {
+		this.metric = metric;
+		tasks = new PriorityBlockingQueue<>(1, metric.comparator());
+	}
+
+	@Override
+	public void register(Operator<?, ?> task) {
+		calls.computeIfAbsent(task.getId(), k -> new LongAdder());
+		for (StreamProducer<?> previous : task.getPrevious()) {
+			if (previous instanceof Source) {
+				firstOperators.add(task);
+				break;
+			}
+		}
+		put(task);
+	}
+
+	@Override
+	public Operator<?, ?> getNext(long threadId) {
+		Operator<?, ?> task = takeTask();
+		calls.get(task.getId()).increment();
+		return task;
+	}
+
+	@Override
+	public void put(Operator<?, ?> task) {
+		tasks.offer(task);
+		for (StreamConsumer<?> next : task.getNext()) {
+			if (next instanceof Operator && tasks.remove(next)) {
+				tasks.offer((Operator<?, ?>) next);
+			}
+		}
+	}
+
+	private Operator<?, ?> takeTask() {
+		try {
+			Operator<?, ?> task = tasks.take();
+			return task;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new IllegalStateException();
+		}
+	}
+
+	@Override
+	public void enable() {
+		enabled = true;
+		service.submit(updateFirst);
+	}
+
+	@Override
+	public void disable() {
+		enabled = false;
+		service.shutdown();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("*** [PriorityTaskPool] Execution Report:\n");
+		sb.append("Executions per operator: ").append(calls.toString()).append("\n");
+		sb.append("Final States: \n");
+		while (!tasks.isEmpty()) {
+			Operator<?, ?> task = tasks.poll();
+			sb.append(task.toString()).append(": ").append(metric.getPriority(task))
+					.append(" " + QueueSizePriorityMetric.INSTANCE.getPriority(task)).append("\n");
+		}
+		sb.append("\n");
+		return sb.toString();
+	}
+
+}

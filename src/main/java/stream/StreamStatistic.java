@@ -49,7 +49,13 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 	}
 
 	@Override
+	public T peek() {
+		return stream.peek();
+	}
+
+	@Override
 	public void disable() {
+		stream.disable();
 		inRate.close();
 		outRate.close();
 	}

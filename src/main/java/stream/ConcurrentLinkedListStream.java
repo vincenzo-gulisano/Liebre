@@ -29,6 +29,7 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	private ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
 	private BackOff writerBackOff, readerBackOff;
 	private volatile long tuplesWritten, tuplesRead;
+	private volatile long emptyReadTries = 0;
 	protected final String id;
 
 	public ConcurrentLinkedListStream(String id) {
@@ -52,13 +53,25 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	@Override
 	public T getNextTuple() {
 		T nextTuple = stream.poll();
-		if (nextTuple == null)
+		if (nextTuple == null) {
+			emptyReadTries++;
 			readerBackOff.backoff();
-		else {
+		} else {
 			readerBackOff.relax();
 			tuplesRead++;
 		}
 		return nextTuple;
+	}
+
+	@Override
+	public void disable() {
+		System.out.println(getId() + " empty stream read tries = " + emptyReadTries);
+		Stream.super.disable();
+	}
+
+	@Override
+	public T peek() {
+		return stream.peek();
 	}
 
 	@Override

@@ -11,7 +11,7 @@ import common.Active;
 // FIXME: Use interrupt mechanism instead of this.
 public abstract class ActiveThread extends Thread implements Active {
 
-	private boolean active;
+	private volatile boolean active;
 
 	@Override
 	public void run() {

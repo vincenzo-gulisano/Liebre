@@ -8,21 +8,23 @@ import common.util.Util;
 import dummy.DummyLatencyLogger;
 import dummy.DummyMapFunction;
 import dummy.DummyRouterFunction;
+import dummy.DummySourceFunction;
 import dummy.DummyTuple;
-import dummy.FifoTaskPool;
 import operator.Operator;
+import operator.PriorityMetric;
+import operator.StimulousPriorityMetric;
 import query.Query;
-import reports.Report;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
+import scheduling.impl.PriorityTaskPool;
 import scheduling.impl.ThreadPoolScheduler;
 import sink.Sink;
 import source.Source;
-import source.SourceFunction;
 
 public class SampleQuery {
 
-	private static final long SIMULATION_DURATION_MILLIS = 30000;
+	private static final long SIMULATION_DURATION_MILLIS = 4 * 60 * 1000;
+	private static final PriorityMetric metric = StimulousPriorityMetric.INSTANCE;
 
 	private static class Throughput {
 		// Query 1
@@ -42,37 +44,21 @@ public class SampleQuery {
 		static final long I4 = 75;
 		static final long G = 40;
 		static final long H = 40;
-		static final long L = 200;
+		static final long L = 20;
 
 		// Query 4
 		static final long I5 = 35;
-		static final long M = 50;
-		static final long N = 150;
+		static final long M = 20;
+		static final long N = 10;
 
 		private Throughput() {
 		}
 	}
 
-	private static class DummySourceFunction implements SourceFunction<DummyTuple> {
-
-		private final long sleep;
-
-		public DummySourceFunction(long sleep) {
-			this.sleep = sleep;
-
-		}
-
-		@Override
-		public DummyTuple getNextTuple() {
-			Util.sleep(sleep);
-			return new DummyTuple(System.nanoTime());
-		}
-	}
-
 	public static void main(String[] args) {
 
-		TaskPool<Operator<?, ?>> pool = new FifoTaskPool();
-		Scheduler scheduler = new ThreadPoolScheduler(8, 200, TimeUnit.MILLISECONDS, pool);
+		TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(metric);
+		Scheduler scheduler = new ThreadPoolScheduler(8, 40, TimeUnit.MILLISECONDS, pool);
 		Query q = new Query(scheduler);
 
 		// This to store all statistics in the given folder
@@ -141,12 +127,11 @@ public class SampleQuery {
 		N.addOutput(o5);
 
 		// Start queries and let run for a time
+		System.out.println("Available Processors: " + Runtime.getRuntime().availableProcessors());
 		q.activate();
 		Util.sleep(SIMULATION_DURATION_MILLIS);
 		q.deActivate();
 
-		// Report basic measurements
-		Report.reportOutput("latency", "ms", args[0]);
 		System.out.println(pool.toString());
 	}
 
