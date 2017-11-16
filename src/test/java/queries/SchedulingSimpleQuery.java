@@ -38,7 +38,7 @@ public class SchedulingSimpleQuery {
 	}
 
 	public static void main(String[] args) {
-		TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(metric);
+		TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(metric, 100);
 		Scheduler scheduler = new ThreadPoolScheduler(1, 100, TimeUnit.MILLISECONDS, pool);
 		Query q = new Query(scheduler);
 

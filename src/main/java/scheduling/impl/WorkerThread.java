@@ -10,6 +10,7 @@ public class WorkerThread extends ActiveThread {
 	private final TaskPool<Operator<?, ?>> availableTasks;
 	private long interval;
 	private final TimeUnit unit;
+
 	private long runs;
 	private long totalSchedulingCost;
 
@@ -24,10 +25,9 @@ public class WorkerThread extends ActiveThread {
 		runs++;
 		long schedulingStart = System.nanoTime();
 		Operator<?, ?> task = availableTasks.getNext(getId());
-		// System.out.format("Thread %d executing %s%n", getId(), task.getId());
 		// System.out.format("+ [T%d] %s%n", getId(), task);
 		long runUntil = System.nanoTime() + unit.toNanos(interval);
-		while (System.nanoTime() < runUntil) {
+		while (System.nanoTime() < runUntil && task.hasInput()) {
 			task.run();
 		}
 		// System.out.format("- [T%d] %s%n", getId(), task);

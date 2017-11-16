@@ -142,6 +142,15 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return previous;
 	}
 
+	public boolean hasInput() {
+		for (Stream<?> in : inputs.values()) {
+			if (in.peek() != null) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

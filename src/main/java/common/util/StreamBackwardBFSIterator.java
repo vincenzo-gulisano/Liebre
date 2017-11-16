@@ -8,6 +8,7 @@ import common.StreamConsumer;
 import common.StreamProducer;
 import operator.Operator;
 
+//FIXME: Better semantics, this now only works for operators
 public class StreamBackwardBFSIterator implements Iterator<Operator<?, ?>> {
 	private final Queue<StreamConsumer<?>> queue = new LinkedList<>();
 

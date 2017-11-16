@@ -70,4 +70,9 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 		return stream.getId();
 	}
 
+	@Override
+	public String toString() {
+		return "StreamStatistic [stream=" + stream + "]";
+	}
+
 }

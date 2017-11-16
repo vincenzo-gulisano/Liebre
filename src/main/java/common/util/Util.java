@@ -31,4 +31,10 @@ public class Util {
 		}
 	}
 
+	public static void busySleep(long millis) {
+		long endTime = System.currentTimeMillis() + millis;
+		while (System.currentTimeMillis() < endTime)
+			;
+	}
+
 }

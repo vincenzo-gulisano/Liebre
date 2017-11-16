@@ -29,7 +29,7 @@ public class DummyRouterFunction implements RouterFunction<DummyTuple> {
 	}
 
 	public List<String> chooseOperators(DummyTuple arg0) {
-		Util.sleep(sleepMillis);
+		Util.busySleep(sleepMillis);
 		if (rand.nextDouble() < selectivity) {
 			return chosenOperators;
 		}

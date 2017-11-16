@@ -26,7 +26,7 @@ public class DummyMapFunction implements MapFunction<DummyTuple, DummyTuple> {
 	}
 
 	public DummyTuple map(DummyTuple arg0) {
-		Util.sleep(sleepMillis);
+		Util.busySleep(sleepMillis);
 		if (rand.nextDouble() < selectivity) {
 			return arg0;
 		}

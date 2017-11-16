@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.LongAdder;
 
 import common.StreamConsumer;
 import common.StreamProducer;
+import common.util.Util;
 import operator.Operator;
 import operator.PriorityMetric;
 import operator.QueueSizePriorityMetric;
@@ -17,9 +18,9 @@ import scheduling.TaskPool;
 import source.Source;
 
 public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
-	private static final long FIRST_UPDATE_INTERVAL_MS = 40;
+	private final long firstUpdateInterval;
 	private final PriorityMetric metric;
-	private PriorityBlockingQueue<Operator<?, ?>> tasks;
+	private final PriorityBlockingQueue<Operator<?, ?>> tasks;
 
 	private final ConcurrentHashMap<String, LongAdder> calls = new ConcurrentHashMap<>();
 	private final ExecutorService service = Executors.newFixedThreadPool(1);
@@ -35,19 +36,15 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 					tasks.offer(first);
 				}
 			}
-			try {
-				Thread.sleep(FIRST_UPDATE_INTERVAL_MS);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Util.sleep(firstUpdateInterval);
 			if (isEnabled()) {
 				service.submit(this);
 			}
 		}
 	};
 
-	public PriorityTaskPool(PriorityMetric metric) {
+	public PriorityTaskPool(PriorityMetric metric, long firstUpdateInterval) {
+		this.firstUpdateInterval = firstUpdateInterval;
 		this.metric = metric;
 		tasks = new PriorityBlockingQueue<>(1, metric.comparator());
 	}
@@ -114,8 +111,8 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 		StringBuilder sb = new StringBuilder("*** [PriorityTaskPool] Execution Report:\n");
 		sb.append("Executions per operator: ").append(calls.toString()).append("\n");
 		sb.append("Final States: \n");
-		while (!tasks.isEmpty()) {
-			Operator<?, ?> task = tasks.poll();
+		Operator<?, ?>[] tasksView = tasks.toArray(new Operator<?, ?>[0]);
+		for (Operator<?, ?> task : tasksView) {
 			sb.append(task.toString()).append(": ").append(metric.getPriority(task))
 					.append(" " + QueueSizePriorityMetric.INSTANCE.getPriority(task)).append("\n");
 		}

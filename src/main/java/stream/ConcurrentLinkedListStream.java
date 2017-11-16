@@ -26,10 +26,9 @@ import common.util.BackOff;
 
 public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
-	private ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
+	protected ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
 	private BackOff writerBackOff, readerBackOff;
-	private volatile long tuplesWritten, tuplesRead;
-	private volatile long emptyReadTries = 0;
+	protected volatile long tuplesWritten, tuplesRead;
 	protected final String id;
 
 	public ConcurrentLinkedListStream(String id) {
@@ -54,7 +53,6 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	public T getNextTuple() {
 		T nextTuple = stream.poll();
 		if (nextTuple == null) {
-			emptyReadTries++;
 			readerBackOff.backoff();
 		} else {
 			readerBackOff.relax();
@@ -65,7 +63,6 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public void disable() {
-		System.out.println(getId() + " empty stream read tries = " + emptyReadTries);
 		Stream.super.disable();
 	}
 
@@ -112,9 +109,8 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public String toString() {
-		return "ConcurrentLinkedListStream [id=" + id + ", stream=" + stream + ", tuplesWritten=" + tuplesWritten
-				+ ", tuplesRead=" + tuplesRead + ", writerBackOff=" + writerBackOff + ", readerBackOff=" + readerBackOff
-				+ "]";
+		return "ConcurrentLinkedListStream [id=" + id + ", tuplesWritten=" + tuplesWritten + ", tuplesRead="
+				+ tuplesRead + ", writerBackOff=" + writerBackOff + ", readerBackOff=" + readerBackOff + "]";
 	}
 
 }
