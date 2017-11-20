@@ -57,6 +57,11 @@ class SecondInputOperatorIn2Adapter<IN extends Tuple, OUT extends Tuple> impleme
 	}
 
 	@Override
+	public boolean hasInput() {
+		return operator.hasInput();
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

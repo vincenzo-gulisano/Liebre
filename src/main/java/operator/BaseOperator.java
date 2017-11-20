@@ -83,6 +83,11 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 	}
 
 	@Override
+	public boolean hasInput() {
+		return state.hasInput();
+	}
+
+	@Override
 	public void enable() {
 		state.enable();
 	}

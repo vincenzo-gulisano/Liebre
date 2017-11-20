@@ -101,7 +101,6 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public void enable() {
-		// FIXME: Should check if both inputs are set
 		state.enable();
 	}
 
@@ -142,6 +141,11 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	@Override
 	public String getId() {
 		return state.getId();
+	}
+
+	@Override
+	public boolean hasInput() {
+		return state.hasInput();
 	}
 
 	@Override

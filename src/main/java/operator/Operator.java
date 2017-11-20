@@ -27,8 +27,14 @@ import common.tuple.Tuple;
 public interface Operator<IN extends Tuple, OUT extends Tuple>
 		extends ActiveRunnable, StreamConsumer<IN>, StreamProducer<OUT> {
 
-	// FIXME: Implement in all subclasses
-	default boolean hasInput() {
-		return true;
-	}
+	/**
+	 * Heuristic that indicates that the operator has some input in one or more of
+	 * its input streams. Might not always be accurate in the case of operators with
+	 * multiple input streams.
+	 * 
+	 * @return {@code true} if the operator has some tuples available on at least
+	 *         one of its input streams.
+	 */
+	boolean hasInput();
+
 }

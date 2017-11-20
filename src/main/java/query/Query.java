@@ -69,9 +69,6 @@ public class Query {
 	private String statsFolder;
 	private boolean autoFlush;
 
-	// FIXME: Hashing to ensure uniqueness of streams, sources etc
-	// FIXME: Implement toString(), hashcode and equals for all entities
-	// FIXME: Check that box id does not exist when inserting, otherwise error
 	private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
 	private final Map<String, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
 	private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
@@ -80,6 +77,9 @@ public class Query {
 	private final List<Thread> threads = new LinkedList<>();
 	private final Scheduler scheduler;
 	private StreamFactory streamFactory = ConcurrentLinkedListStreamFactory.INSTANCE;
+
+	private static final String STREAM_IN_FILE_EXTENSION = "in";
+	private static final String STREAM_OUT_FILE_EXTENION = "out";
 
 	public Query() {
 		this.scheduler = new NoopScheduler();
@@ -93,8 +93,8 @@ public class Query {
 		keepStatistics = true;
 		this.statsFolder = statisticsFolder;
 		this.autoFlush = autoFlush;
-		// TODO: Constants
-		streamFactory = new ConcurrentLinkedListStreamStatisticFactory(statisticsFolder, "in", "out", autoFlush);
+		streamFactory = new ConcurrentLinkedListStreamStatisticFactory(statisticsFolder, STREAM_IN_FILE_EXTENSION,
+				STREAM_OUT_FILE_EXTENION, autoFlush);
 	}
 
 	public void activateStatistics(String statisticsFolder) {

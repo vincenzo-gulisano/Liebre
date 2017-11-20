@@ -56,7 +56,6 @@ public class NoopScheduler implements Scheduler {
 				thread.disable();
 				thread.join();
 			} catch (InterruptedException e) {
-				// TODO: Better exception handling
 				e.printStackTrace();
 			}
 		}

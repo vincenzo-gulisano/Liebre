@@ -132,7 +132,6 @@ public class SampleQuery {
 	private static final int N_THREADS = 8;
 
 	public static void main(String[] args) {
-		// FIXME: Add hasInput() to all operators, not just baseOperator!!!!!
 		TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(metric, SCHEDULING_INTERVAL);
 		Scheduler scheduler = new ThreadPoolScheduler(N_THREADS, SCHEDULING_INTERVAL, TimeUnit.MILLISECONDS, pool);
 		Query q = new Query(scheduler);
@@ -152,7 +151,6 @@ public class SampleQuery {
 		Sink<DummyTuple> o1 = q.addBaseSink("O1", new DummyLatencyLogger(args[0] + File.separator + "O1.latency.csv"));
 		Sink<DummyTuple> o2 = q.addBaseSink("O2", new DummyLatencyLogger(args[0] + File.separator + "O2.latency.csv"));
 
-		// TODO: Chaining
 		i1.addOutput(A);
 		A.addOutput(B);
 		A.addOutput(C);
