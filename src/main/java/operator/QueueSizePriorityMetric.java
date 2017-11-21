@@ -33,4 +33,9 @@ public enum QueueSizePriorityMetric implements PriorityMetric {
 		return comparator;
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName();
+	}
+
 }

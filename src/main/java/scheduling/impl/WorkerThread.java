@@ -11,9 +11,6 @@ public class WorkerThread extends ActiveThread {
 	private long interval;
 	private final TimeUnit unit;
 
-	private long runs;
-	private long totalSchedulingCost;
-
 	public WorkerThread(TaskPool<Operator<?, ?>> availableTasks, long interval, TimeUnit unit) {
 		this.availableTasks = availableTasks;
 		this.interval = interval;
@@ -22,8 +19,6 @@ public class WorkerThread extends ActiveThread {
 
 	@Override
 	public void doRun() {
-		runs++;
-		long schedulingStart = System.nanoTime();
 		Operator<?, ?> task = availableTasks.getNext(getId());
 		// System.out.format("+ [T%d] %s%n", getId(), task);
 		long runUntil = System.nanoTime() + unit.toNanos(interval);
@@ -32,15 +27,6 @@ public class WorkerThread extends ActiveThread {
 		}
 		// System.out.format("- [T%d] %s%n", getId(), task);
 		availableTasks.put(task);
-		long schedulingEnd = System.nanoTime();
-		totalSchedulingCost += schedulingEnd - schedulingStart - unit.toNanos(interval);
-	}
-
-	@Override
-	public void disable() {
-		System.out.println("Thread " + getId() + " average scheduling cost = "
-				+ TimeUnit.NANOSECONDS.toMillis(totalSchedulingCost / runs) + "ms");
-		super.disable();
 	}
 
 }

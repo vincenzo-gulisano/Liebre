@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import common.NamedEntity;
-import common.util.PropertyLoader;
 import common.util.Util;
 import dummy.DummyLatencyLogger;
 import dummy.DummyMapFunction;
@@ -18,10 +17,9 @@ import dummy.DummyRouterFunction;
 import dummy.DummySourceFunction;
 import dummy.DummyTuple;
 import operator.Operator;
-import operator.PriorityMetric;
-import operator.QueueSizePriorityMetric;
 import operator.in2.Operator2In;
 import query.Query;
+import query.QueryConfiguration;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
 import scheduling.impl.PriorityTaskPool;
@@ -130,30 +128,32 @@ public class SampleQuery {
 		}
 	};
 
-	// Test configuration
 	private static final String PROPERTY_FILENAME = "liebre.properties";
-
-	private static final String SIMULATION_DURATION_MINUTES_KEY = "liebre.queries.sample.query.simulation.duration.minutes";
-	private static final String SCHEDULING_INTERVAL_KEY = "liebre.queries.sample.query.scheduling.interval.millis";
-	private static final String NUMBER_THREADS_KEY = "liebre.queries.sample.query.number.threads";
-
-	private static final PriorityMetric metric = QueueSizePriorityMetric.INSTANCE;
 
 	public static void main(String[] args) {
 
-		PropertyLoader properties = new PropertyLoader(PROPERTY_FILENAME, SampleQuery.class);
-		final long simulationDuration = TimeUnit.MINUTES
-				.toMillis(Long.valueOf(properties.get(SIMULATION_DURATION_MINUTES_KEY)));
-		final int threadsNumber = Integer.valueOf(properties.get(NUMBER_THREADS_KEY));
-		final long schedulingInterval = Long.valueOf(properties.get(SCHEDULING_INTERVAL_KEY));
+		if (args.length != 2) {
+			throw new IllegalArgumentException(
+					"Program requires two arguments: output folder, simulation duration (minutes)");
+		}
+		// Configuration Init
+		final String statisticsFolder = args[0];
+		final long queryDurationMillis = TimeUnit.MINUTES.toMillis(Long.parseLong(args[1]));
+		final QueryConfiguration config = new QueryConfiguration(PROPERTY_FILENAME, SampleQuery.class);
 
-		// Create Query
-		TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(metric, schedulingInterval);
-		Scheduler scheduler = new ThreadPoolScheduler(threadsNumber, schedulingInterval, TimeUnit.MILLISECONDS, pool);
-		Query q = new Query(scheduler);
+		// Query creation
+		Query q;
+		if (config.isSchedulingEnabled()) { // If scheduling enabled, configure
+			TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(config.getPriorityMetric(),
+					config.getHelperThreadsNumber(), config.getHelperThreadInterval());
+			Scheduler scheduler = new ThreadPoolScheduler(config.getThreadsNumber(), config.getSchedulingInterval(),
+					TimeUnit.MILLISECONDS, pool);
+			q = new Query(scheduler);
+		} else { // Otherwise, no scheduler
+			q = new Query();
+		}
 
-		// This to store all statistics in the given folder
-		q.activateStatistics(args[0]);
+		q.activateStatistics(statisticsFolder);
 
 		// Query Q1
 		Source<DummyTuple> i1 = q.addBaseSource("I1", new DummySourceFunction(ProcessingRate.I1));
@@ -164,8 +164,10 @@ public class SampleQuery {
 				new DummyMapFunction(Selectivity.B, ProcessingRate.B));
 		Operator<DummyTuple, DummyTuple> C = q.addMapOperator("C",
 				new DummyMapFunction(Selectivity.C, ProcessingRate.C));
-		Sink<DummyTuple> o1 = q.addBaseSink("O1", new DummyLatencyLogger(args[0] + File.separator + "O1.latency.csv"));
-		Sink<DummyTuple> o2 = q.addBaseSink("O2", new DummyLatencyLogger(args[0] + File.separator + "O2.latency.csv"));
+		Sink<DummyTuple> o1 = q.addBaseSink("O1",
+				new DummyLatencyLogger(statisticsFolder + File.separator + "O1.latency.csv"));
+		Sink<DummyTuple> o2 = q.addBaseSink("O2",
+				new DummyLatencyLogger(statisticsFolder + File.separator + "O2.latency.csv"));
 
 		i1.addOutput(A);
 		A.addOutput(B);
@@ -183,7 +185,8 @@ public class SampleQuery {
 		Operator<DummyTuple, DummyTuple> F = q.addMapOperator("F",
 				new DummyMapFunction(Selectivity.F, ProcessingRate.F));
 
-		Sink<DummyTuple> o3 = q.addBaseSink("O3", new DummyLatencyLogger(args[0] + File.separator + "O3.latency.csv"));
+		Sink<DummyTuple> o3 = q.addBaseSink("O3",
+				new DummyLatencyLogger(statisticsFolder + File.separator + "O3.latency.csv"));
 
 		i2.addOutput(D);
 		D.addOutput(E);
@@ -203,7 +206,8 @@ public class SampleQuery {
 		Operator<DummyTuple, DummyTuple> L = q.addMapOperator("L",
 				new DummyMapFunction(Selectivity.L, ProcessingRate.L));
 
-		Sink<DummyTuple> o4 = q.addBaseSink("O4", new DummyLatencyLogger(args[0] + File.separator + "O4.latency.csv"));
+		Sink<DummyTuple> o4 = q.addBaseSink("O4",
+				new DummyLatencyLogger(statisticsFolder + File.separator + "O4.latency.csv"));
 
 		i3.addOutput(G);
 		i4.addOutput(H);
@@ -220,21 +224,24 @@ public class SampleQuery {
 		Operator<DummyTuple, DummyTuple> N = q.addMapOperator("N",
 				new DummyMapFunction(Selectivity.N, ProcessingRate.N));
 
-		Sink<DummyTuple> o5 = q.addBaseSink("O5", new DummyLatencyLogger(args[0] + File.separator + "O5.latency.csv"));
+		Sink<DummyTuple> o5 = q.addBaseSink("O5",
+				new DummyLatencyLogger(statisticsFolder + File.separator + "O5.latency.csv"));
 
 		i5.addOutput(M);
 		M.addOutput(N);
 		N.addOutput(o5);
 
-		System.out
-				.println("*** Required Capacity = " + requiredThreads(Arrays.asList(A, B, C, D, E, F, G, H, L, M, N)));
+		System.out.format("*** Required Capacity = %.1f threads%n",
+				requiredThreads(Arrays.asList(A, B, C, D, E, F, G, H, L, M, N)));
+		System.out.format("*** Starting sample query with configuration: %s%n", config);
+		System.out.format("*** Statistics folder: %s/%s%n", System.getProperty("user.dir"), statisticsFolder);
+		System.out.format("*** Duration: %s minutes%n", args[1]);
 
 		// Start queries and let run for some time
 		q.activate();
-		Util.sleep(simulationDuration);
+		Util.sleep(queryDurationMillis);
 		q.deActivate();
 
-		System.out.println(pool.toString());
 	}
 
 	private static double requiredThreads(List<Operator<?, ?>> operators) {
@@ -259,9 +266,6 @@ public class SampleQuery {
 			}
 			double inputRate = op instanceof Operator2In ? Collections.min(inputRates) : Collections.max(inputRates);
 			total += capacity * inputRate;
-			System.out.println(op + " capacity = " + capacity);
-			System.out.println(op + " inputRate = " + (1 / inputRate));
-			System.out.println(op + " total = " + capacity * inputRate);
 		}
 		return total;
 	}

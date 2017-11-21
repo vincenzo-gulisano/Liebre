@@ -224,6 +224,7 @@ public class Query {
 				e.printStackTrace();
 			}
 		}
+		System.out.println("*** [Query] Done!");
 	}
 
 	private void activateTasks(Collection<? extends Active> tasks) {

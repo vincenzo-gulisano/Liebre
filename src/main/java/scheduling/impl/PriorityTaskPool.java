@@ -23,7 +23,7 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 	private final PriorityBlockingQueue<Operator<?, ?>> tasks;
 
 	private final ConcurrentHashMap<String, LongAdder> calls = new ConcurrentHashMap<>();
-	private final ExecutorService service = Executors.newFixedThreadPool(1);
+	private final ExecutorService service;
 
 	private final List<Operator<?, ?>> firstOperators = new ArrayList<>();
 	private volatile boolean enabled;
@@ -43,10 +43,11 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 		}
 	};
 
-	public PriorityTaskPool(PriorityMetric metric, long firstUpdateInterval) {
+	public PriorityTaskPool(PriorityMetric metric, int numberHeperThreads, long firstUpdateInterval) {
 		this.firstUpdateInterval = firstUpdateInterval;
 		this.metric = metric;
 		tasks = new PriorityBlockingQueue<>(1, metric.comparator());
+		service = Executors.newFixedThreadPool(numberHeperThreads);
 	}
 
 	@Override

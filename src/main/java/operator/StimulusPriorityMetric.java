@@ -39,4 +39,9 @@ public enum StimulusPriorityMetric implements PriorityMetric {
 		return comparator;
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName();
+	}
+
 }
