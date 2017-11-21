@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import common.NamedEntity;
+import common.util.PropertyLoader;
 import common.util.Util;
 import dummy.DummyLatencyLogger;
 import dummy.DummyMapFunction;
@@ -84,6 +85,8 @@ public class SampleQuery {
 	}
 
 	private static final Map<String, Double> sMap = new HashMap<String, Double>() {
+		private static final long serialVersionUID = 1L;
+
 		{
 			put("I1", 1.0);
 			put("I2", 1.0);
@@ -105,6 +108,8 @@ public class SampleQuery {
 	};
 
 	private static final Map<String, Long> rMap = new HashMap<String, Long>() {
+		private static final long serialVersionUID = 1L;
+
 		{
 			put("I1", ProcessingRate.I1);
 			put("I2", ProcessingRate.I2);
@@ -126,14 +131,25 @@ public class SampleQuery {
 	};
 
 	// Test configuration
-	private static final long SIMULATION_DURATION_MILLIS = TimeUnit.MINUTES.toMillis(1);
+	private static final String PROPERTY_FILENAME = "liebre.properties";
+
+	private static final String SIMULATION_DURATION_MINUTES_KEY = "liebre.queries.sample.query.simulation.duration.minutes";
+	private static final String SCHEDULING_INTERVAL_KEY = "liebre.queries.sample.query.scheduling.interval.millis";
+	private static final String NUMBER_THREADS_KEY = "liebre.queries.sample.query.number.threads";
+
 	private static final PriorityMetric metric = QueueSizePriorityMetric.INSTANCE;
-	private static final long SCHEDULING_INTERVAL = 100;
-	private static final int N_THREADS = 8;
 
 	public static void main(String[] args) {
-		TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(metric, SCHEDULING_INTERVAL);
-		Scheduler scheduler = new ThreadPoolScheduler(N_THREADS, SCHEDULING_INTERVAL, TimeUnit.MILLISECONDS, pool);
+
+		PropertyLoader properties = new PropertyLoader(PROPERTY_FILENAME, SampleQuery.class);
+		final long simulationDuration = TimeUnit.MINUTES
+				.toMillis(Long.valueOf(properties.get(SIMULATION_DURATION_MINUTES_KEY)));
+		final int threadsNumber = Integer.valueOf(properties.get(NUMBER_THREADS_KEY));
+		final long schedulingInterval = Long.valueOf(properties.get(SCHEDULING_INTERVAL_KEY));
+
+		// Create Query
+		TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(metric, schedulingInterval);
+		Scheduler scheduler = new ThreadPoolScheduler(threadsNumber, schedulingInterval, TimeUnit.MILLISECONDS, pool);
 		Query q = new Query(scheduler);
 
 		// This to store all statistics in the given folder
@@ -215,7 +231,7 @@ public class SampleQuery {
 
 		// Start queries and let run for some time
 		q.activate();
-		Util.sleep(SIMULATION_DURATION_MILLIS);
+		Util.sleep(simulationDuration);
 		q.deActivate();
 
 		System.out.println(pool.toString());

@@ -79,7 +79,14 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 	}
 
 	private Operator<?, ?> takeTask() {
-		return tasks.remove();
+		try {
+			Operator<?, ?> task = tasks.take();
+			return task;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new IllegalStateException();
+		}
 	}
 
 	@Override
