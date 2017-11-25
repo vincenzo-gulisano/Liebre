@@ -19,58 +19,44 @@
 
 package common.statistic;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-public class AvgStat {
+public class AverageStatistic extends AbstractCummulativeStatistic<Long> {
 
 	private long sum;
 	private long count;
+	private long prevSec;
 
-	PrintWriter out;
+	public AverageStatistic(String outputFile, boolean autoFlush) {
+		super(outputFile, autoFlush);
+	}
 
-	long prevSec;
+	@Override
+	public void append(Long v) {
+		writePreviousAverages();
+		sum += v;
+		count++;
+	}
 
-	public AvgStat(String outputFile, boolean autoFlush) {
+	@Override
+	public void enable() {
 		this.sum = 0;
 		this.count = 0;
-
-		FileWriter outFile;
-		try {
-			outFile = new FileWriter(outputFile);
-			out = new PrintWriter(outFile, autoFlush);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		prevSec = System.currentTimeMillis() / 1000;
+		prevSec = currentTimeSeconds();
 
 	}
 
-	public void add(long v) {
+	public void disable() {
+		writePreviousAverages();
+		super.disable();
+	}
 
-		long thisSec = System.currentTimeMillis() / 1000;
+	private void writePreviousAverages() {
+		long thisSec = currentTimeSeconds();
 		while (prevSec < thisSec) {
-			out.println(prevSec + "," + (count != 0 ? sum / count : -1));
+			long average = (count != 0 ? sum / count : -1);
+			writeCommaSeparatedValues(prevSec, average);
 			sum = 0;
 			count = 0;
 			prevSec++;
 		}
-
-		sum += v;
-		count++;
-
 	}
-
-	public void close() {
-		long thisSec = System.currentTimeMillis() / 1000;
-		while (prevSec <= thisSec) {
-			out.println(prevSec + "," + (count != 0 ? sum / count : -1));
-			count = 0;
-			prevSec++;
-		}
-		out.close();
-	}
-
 }

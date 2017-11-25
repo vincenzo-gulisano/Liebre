@@ -19,24 +19,24 @@
 
 package stream;
 
-import common.statistic.CountStat;
+import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 
 public class StreamStatistic<T extends Tuple> implements Stream<T> {
 
 	private Stream<T> stream;
-	private CountStat inRate;
-	private CountStat outRate;
+	private CountStatistic inRate;
+	private CountStatistic outRate;
 
 	public StreamStatistic(Stream<T> stream, String inRateFile, String outRateFile, boolean autoFlush) {
 		this.stream = stream;
-		inRate = new CountStat(inRateFile, autoFlush);
-		outRate = new CountStat(outRateFile, autoFlush);
+		inRate = new CountStatistic(inRateFile, autoFlush);
+		outRate = new CountStatistic(outRateFile, autoFlush);
 	}
 
 	@Override
 	public void addTuple(T tuple) {
-		inRate.increase(1);
+		inRate.append(1L);
 		stream.addTuple(tuple);
 	}
 
@@ -44,7 +44,7 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 	public T getNextTuple() {
 		T out = stream.getNextTuple();
 		if (out != null)
-			outRate.increase(1);
+			outRate.append(1L);
 		return out;
 	}
 
@@ -54,10 +54,16 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 	}
 
 	@Override
+	public void enable() {
+		inRate.enable();
+		outRate.enable();
+	}
+
+	@Override
 	public void disable() {
 		stream.disable();
-		inRate.close();
-		outRate.close();
+		inRate.disable();
+		outRate.disable();
 	}
 
 	@Override

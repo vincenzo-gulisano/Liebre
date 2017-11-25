@@ -19,13 +19,13 @@
 
 package sink;
 
-import common.statistic.AvgStat;
+import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
 
 public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 
 	private BaseSink<T> sink;
-	private AvgStat processingTimeStat;
+	private AverageStatistic processingTimeStat;
 
 	public SinkStatistic(BaseSink<T> sink, String outputFile) {
 		this(sink, outputFile, true);
@@ -34,12 +34,18 @@ public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 	public SinkStatistic(BaseSink<T> sink, String outputFile, boolean autoFlush) {
 		super(sink.getId(), sink.state.getStreamFactory(), sink.function);
 		this.sink = sink;
-		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
+		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
+	}
+
+	@Override
+	public void enable() {
+		processingTimeStat.enable();
+		super.enable();
 	}
 
 	@Override
 	public void disable() {
-		processingTimeStat.close();
+		processingTimeStat.disable();
 		super.disable();
 	}
 
@@ -48,7 +54,7 @@ public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 		if (t != null) {
 			long start = System.nanoTime();
 			this.sink.processTuple(t);
-			processingTimeStat.add(System.nanoTime() - start);
+			processingTimeStat.append(System.nanoTime() - start);
 		}
 	}
 

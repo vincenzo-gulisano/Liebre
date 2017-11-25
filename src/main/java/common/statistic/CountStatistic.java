@@ -19,49 +19,37 @@
 
 package common.statistic;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-public class CountStat {
+public class CountStatistic extends AbstractCummulativeStatistic<Long> {
 	private long count;
-
-	PrintWriter out;
-
 	long prevSec;
 
-	public CountStat(String outputFile, boolean autoFlush) {
-		this.count = 0;
-
-		FileWriter outFile;
-		try {
-			outFile = new FileWriter(outputFile);
-			out = new PrintWriter(outFile, autoFlush);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		prevSec = System.currentTimeMillis() / 1000;
-
+	public CountStatistic(String outputFile, boolean autoFlush) {
+		super(outputFile, autoFlush);
 	}
 
-	public void increase(long v) {
-		long thisSec = System.currentTimeMillis() / 1000;
-		while (prevSec < thisSec) {
-			out.println(prevSec + "," + count);
-			count = 0;
-			prevSec++;
-		}
+	@Override
+	public void append(Long v) {
+		writePreviousCounts();
 		count += v;
 	}
 
-	public void close() {
-		long thisSec = System.currentTimeMillis() / 1000;
-		while (prevSec <= thisSec) {
-			out.println(prevSec + "," + count);
+	@Override
+	public void enable() {
+		this.count = 0;
+		this.prevSec = currentTimeSeconds();
+	}
+
+	public void disable() {
+		writePreviousCounts();
+		super.disable();
+	}
+
+	private void writePreviousCounts() {
+		long thisSec = currentTimeSeconds();
+		while (prevSec < thisSec) {
+			writeCommaSeparatedValues(prevSec, count);
 			count = 0;
 			prevSec++;
 		}
-		out.close();
 	}
 }

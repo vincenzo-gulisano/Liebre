@@ -21,13 +21,15 @@ package operator;
 
 import java.util.List;
 
-import common.statistic.AvgStat;
+import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
 
+//FIXME: this is a really bad mix of composition and inheritance
+// This class should only implement operator
 public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends BaseOperator<IN, OUT> {
 
 	private BaseOperator<IN, OUT> operator;
-	private AvgStat processingTimeStat;
+	private AverageStatistic processingTimeStat;
 
 	public OperatorStatistic(BaseOperator<IN, OUT> operator, String outputFile) {
 		this(operator, outputFile, true);
@@ -36,31 +38,27 @@ public class OperatorStatistic<IN extends Tuple, OUT extends Tuple> extends Base
 	public OperatorStatistic(BaseOperator<IN, OUT> operator, String outputFile, boolean autoFlush) {
 		super(operator.getId(), operator.state.getStreamFactory());
 		this.operator = operator;
-		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
+		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
+	}
+
+	@Override
+	public void enable() {
+		processingTimeStat.enable();
+		super.enable();
 	}
 
 	@Override
 	public void disable() {
-		processingTimeStat.close();
+		processingTimeStat.disable();
 		super.disable();
-	}
-
-	public void process() {
-		IN inTuple = getInputStream(getId()).getNextTuple();
-		if (inTuple != null) {
-			long start = System.nanoTime();
-			List<OUT> outTuples = this.operator.processTuple(inTuple);
-			processingTimeStat.add(System.nanoTime() - start);
-			if (outTuples != null) {
-				for (OUT t : outTuples)
-					getOutputStream(getId()).addTuple(t);
-			}
-		}
-
 	}
 
 	@Override
 	public List<OUT> processTuple(IN tuple) {
-		return null;
+		long start = System.nanoTime();
+		List<OUT> outTuples = this.operator.processTuple(tuple);
+		processingTimeStat.append(System.nanoTime() - start);
+		return outTuples;
 	}
+
 }

@@ -19,13 +19,13 @@
 
 package source;
 
-import common.statistic.AvgStat;
+import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
 import stream.StreamFactory;
 
 public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 
-	private AvgStat processingTimeStat;
+	private AverageStatistic processingTimeStat;
 
 	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile) {
 		this(source, streamFactory, outputFile, true);
@@ -33,19 +33,25 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 
 	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile, boolean autoFlush) {
 		super(source.getId(), source.function);
-		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
+		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
+	}
+
+	@Override
+	public void enable() {
+		processingTimeStat.enable();
+		super.enable();
 	}
 
 	@Override
 	public void disable() {
-		processingTimeStat.close();
+		processingTimeStat.disable();
 		super.disable();
 	}
 
 	public void process() {
 		long start = System.nanoTime();
 		T t = this.function.getNextTuple();
-		processingTimeStat.add(System.nanoTime() - start);
+		processingTimeStat.append(System.nanoTime() - start);
 		if (t != null)
 			getOutputStream(getId()).addTuple(t);
 	}

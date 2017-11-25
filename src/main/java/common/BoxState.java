@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 import common.tuple.Tuple;
 import stream.Stream;
@@ -63,10 +64,20 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	private final BoxType type;
 
+	private long inTuples;
+	private long outTuples;
+	private long startTimeNanos;
+
 	public BoxState(String id, BoxType type, StreamFactory streamFactory) {
 		this.id = id;
 		this.type = type;
 		this.factory = streamFactory;
+	}
+
+	public void restart() {
+		this.inTuples = 0;
+		this.outTuples = 0;
+		this.startTimeNanos = System.nanoTime();
 	}
 
 	public void enable() {
@@ -122,6 +133,28 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	public Collection<StreamConsumer<OUT>> getNext() {
 		return next.values();
+	}
+
+	public IN readTuple(String key) {
+		IN tuple = getInputStream(key).getNextTuple();
+		if (tuple != null) {
+			inTuples++;
+		}
+		return tuple;
+	}
+
+	public void writeTuple(OUT tuple, String key, StreamProducer<OUT> caller) {
+		outTuples++;
+		getOutputStream(key, caller).addTuple(tuple);
+	}
+
+	public double getThroughput() {
+		long timeDiff = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
+		return timeDiff / (double) inTuples;
+	}
+
+	public double getSelectivity() {
+		return outTuples / (double) inTuples;
 	}
 
 	public Stream<OUT> getOutputStream(String key, StreamProducer<OUT> caller) {

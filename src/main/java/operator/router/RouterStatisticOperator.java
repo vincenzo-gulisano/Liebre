@@ -21,13 +21,13 @@ package operator.router;
 
 import java.util.List;
 
-import common.statistic.AvgStat;
+import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
 import stream.StreamFactory;
 
 public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> {
 
-	private AvgStat processingTimeStat;
+	private AverageStatistic processingTimeStat;
 
 	public RouterStatisticOperator(String id, StreamFactory streamFactory, RouterFunction<T> router,
 			String outputFile) {
@@ -37,12 +37,18 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 	public RouterStatisticOperator(String id, StreamFactory streamFactory, RouterFunction<T> router, String outputFile,
 			boolean autoFlush) {
 		super(id, streamFactory, router);
-		this.processingTimeStat = new AvgStat(outputFile, autoFlush);
+		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
+	}
+
+	@Override
+	public void enable() {
+		processingTimeStat.enable();
+		super.enable();
 	}
 
 	@Override
 	public void disable() {
-		processingTimeStat.close();
+		processingTimeStat.disable();
 		state.disable();
 	}
 
@@ -52,7 +58,7 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 		if (inTuple != null) {
 			long start = System.nanoTime();
 			List<String> operators = router.chooseOperators(inTuple);
-			processingTimeStat.add(System.nanoTime() - start);
+			processingTimeStat.append(System.nanoTime() - start);
 			if (operators != null)
 				for (String operator : operators)
 					state.getOutputStream(operator, this).addTuple(inTuple);
