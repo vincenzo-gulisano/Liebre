@@ -24,5 +24,5 @@ import common.StreamProducer;
 import common.tuple.Tuple;
 
 public interface Source<T extends Tuple> extends ActiveRunnable, StreamProducer<T> {
-
+	T getNextTuple();
 }

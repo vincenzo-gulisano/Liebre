@@ -23,16 +23,16 @@ import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
 import stream.StreamFactory;
 
-public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
+public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 
 	private AverageStatistic processingTimeStat;
 
-	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile) {
+	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFile) {
 		this(source, streamFactory, outputFile, true);
 	}
 
-	public SourceStatistic(BaseSource<T> source, StreamFactory streamFactory, String outputFile, boolean autoFlush) {
-		super(source.getId(), source.function);
+	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFile, boolean autoFlush) {
+		super(source);
 		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
 	}
 
@@ -44,16 +44,16 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 
 	@Override
 	public void disable() {
-		processingTimeStat.disable();
 		super.disable();
+		processingTimeStat.disable();
 	}
 
-	public void process() {
+	@Override
+	public T getNextTuple() {
 		long start = System.nanoTime();
-		T t = this.function.getNextTuple();
+		T tuple = super.getNextTuple();
 		processingTimeStat.append(System.nanoTime() - start);
-		if (t != null)
-			getOutputStream(getId()).addTuple(t);
+		return tuple;
 	}
 
 }

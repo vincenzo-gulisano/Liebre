@@ -19,16 +19,16 @@
 
 package operator.Union;
 
-import java.util.List;
-
 import common.BoxState.BoxType;
+import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
-import operator.BaseOperator;
+import operator.AbstractOperator;
 import stream.Stream;
 import stream.StreamFactory;
 
-public class UnionOperator<IN extends Tuple> extends BaseOperator<IN, IN> {
+public class UnionOperator<IN extends Tuple> extends AbstractOperator<IN, IN> {
+	private static final String OUTPUT_KEY = "OUTPUT";
 
 	public UnionOperator(String id, StreamFactory streamFactory) {
 		super(id, BoxType.UNION, streamFactory);
@@ -45,7 +45,7 @@ public class UnionOperator<IN extends Tuple> extends BaseOperator<IN, IN> {
 	}
 
 	@Override
-	public void process() {
+	public final void process() {
 		for (Stream<IN> in : state.getInputs()) {
 			IN inTuple = in.getNextTuple();
 			if (inTuple != null) {
@@ -55,7 +55,13 @@ public class UnionOperator<IN extends Tuple> extends BaseOperator<IN, IN> {
 	}
 
 	@Override
-	public List<IN> processTuple(IN tuple) {
-		throw new UnsupportedOperationException();
+	public void addOutput(StreamConsumer<IN> out) {
+		state.setOutput(OUTPUT_KEY, out, this);
 	}
+
+	@Override
+	public Stream<IN> getOutputStream(String requestorId) {
+		return state.getOutputStream(OUTPUT_KEY, this);
+	}
+
 }

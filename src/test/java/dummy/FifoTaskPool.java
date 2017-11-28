@@ -46,4 +46,19 @@ public class FifoTaskPool implements TaskPool<Operator<?, ?>> {
 		return sb.toString();
 	}
 
+	@Override
+	public void enable() {
+
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
+
+	@Override
+	public void disable() {
+
+	}
+
 }

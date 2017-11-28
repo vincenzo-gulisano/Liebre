@@ -19,14 +19,19 @@
 
 package operator.in2;
 
+import java.util.List;
+
 import common.StreamProducer;
 import common.tuple.Tuple;
 import operator.Operator;
+import operator.Operator1In;
 import stream.Stream;
 
-public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator<IN, OUT> {
+public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator1In<IN, OUT> {
 
 	void registerIn2(StreamProducer<IN2> in);
+
+	List<OUT> processTupleIn2(IN2 tuple);
 
 	Stream<IN2> getInput2Stream(String reqId);
 

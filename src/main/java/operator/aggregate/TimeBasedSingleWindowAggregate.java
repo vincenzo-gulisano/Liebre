@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.TreeMap;
 
 import common.tuple.RichTuple;
-import operator.BaseOperator;
+import operator.BaseOperator1In;
 import stream.StreamFactory;
 
-public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends RichTuple> extends BaseOperator<T1, T2> {
+public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends RichTuple> extends BaseOperator1In<T1, T2> {
 
 	private long WS;
 	private long WA;
@@ -68,7 +68,7 @@ public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends Ric
 		return (long) Math.max((Math.floor(ts / WA) - Math.ceil(WS / WA) + 1) * WA, 0.0);
 	}
 
-	public List<T2> processTuple(T1 t) {
+	public List<T2> processTupleIn1(T1 t) {
 
 		List<T2> result = new LinkedList<T2>();
 

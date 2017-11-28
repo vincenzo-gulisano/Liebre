@@ -8,11 +8,11 @@ import common.tuple.Tuple;
 import operator.Operator;
 import stream.Stream;
 
-class SecondInputOperatorIn2Adapter<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
+class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
 	private final Operator2In<?, IN, OUT> operator;
 
-	public SecondInputOperatorIn2Adapter(Operator2In<?, IN, OUT> operator) {
+	public SecondInputOperator2InAdapter(Operator2In<?, IN, OUT> operator) {
 		this.operator = operator;
 	}
 
@@ -72,6 +72,21 @@ class SecondInputOperatorIn2Adapter<IN extends Tuple, OUT extends Tuple> impleme
 	@Override
 	public boolean equals(Object obj) {
 		return this.operator.equals(obj);
+	}
+
+	@Override
+	public void enable() {
+		operator.enable();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return operator.isEnabled();
+	}
+
+	@Override
+	public void disable() {
+		operator.disable();
 	}
 
 }

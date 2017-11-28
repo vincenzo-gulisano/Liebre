@@ -36,5 +36,4 @@ public interface Operator<IN extends Tuple, OUT extends Tuple>
 	 *         one of its input streams.
 	 */
 	boolean hasInput();
-
 }

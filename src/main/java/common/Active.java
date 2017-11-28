@@ -1,14 +1,9 @@
 package common;
 
 public interface Active {
-	default public void enable() {
-	}
+	void enable();
 
-	default public boolean isEnabled() {
-		return true;
-	}
+	boolean isEnabled();
 
-	default public void disable() {
-
-	}
+	void disable();
 }

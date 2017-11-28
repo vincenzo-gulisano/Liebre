@@ -30,8 +30,8 @@ import stream.StreamFactory;
 
 public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
-	protected final BoxState<IN, Tuple> state;
-	protected final SinkFunction<IN> function;
+	private final BoxState<IN, Tuple> state;
+	private final SinkFunction<IN> function;
 	private final String INPUT_KEY = "INPUT";
 
 	public BaseSink(String id, StreamFactory streamFactory, SinkFunction<IN> function) {
@@ -73,7 +73,7 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 		return state.isEnabled();
 	}
 
-	public void process() {
+	public final void process() {
 		IN t = getInputStream(getId()).getNextTuple();
 		if (t != null) {
 			processTuple(t);

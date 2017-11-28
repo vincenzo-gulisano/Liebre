@@ -25,18 +25,16 @@ import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
 
 public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
-		extends BaseOperator2In<IN, IN2, OUT> {
+		extends Operator2InDecorator<IN, IN2, OUT> {
 
-	private BaseOperator2In<IN, IN2, OUT> operator;
 	private AverageStatistic processingTimeStat;
 
-	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator, String outputFile) {
+	public Operator2InStatistic(Operator2In<IN, IN2, OUT> operator, String outputFile) {
 		this(operator, outputFile, true);
 	}
 
-	public Operator2InStatistic(BaseOperator2In<IN, IN2, OUT> operator, String outputFile, boolean autoFlush) {
-		super(operator.getId(), operator.state.getStreamFactory());
-		this.operator = operator;
+	public Operator2InStatistic(Operator2In<IN, IN2, OUT> operator, String outputFile, boolean autoFlush) {
+		super(operator);
 		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
 	}
 
@@ -48,14 +46,14 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
 
 	@Override
 	public void disable() {
-		processingTimeStat.disable();
 		super.disable();
+		processingTimeStat.disable();
 	}
 
 	@Override
 	public List<OUT> processTupleIn1(IN tuple) {
 		long start = System.nanoTime();
-		List<OUT> outTuples = this.operator.processTupleIn1(tuple);
+		List<OUT> outTuples = super.processTupleIn1(tuple);
 		processingTimeStat.append(System.nanoTime() - start);
 		return outTuples;
 	}
@@ -63,7 +61,7 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
 	@Override
 	public List<OUT> processTupleIn2(IN2 tuple) {
 		long start = System.nanoTime();
-		List<OUT> outTuples = this.operator.processTupleIn2(tuple);
+		List<OUT> outTuples = super.processTupleIn2(tuple);
 		processingTimeStat.append(System.nanoTime() - start);
 		return outTuples;
 	}

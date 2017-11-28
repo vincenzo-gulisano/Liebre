@@ -29,9 +29,9 @@ import stream.Stream;
 
 public class BaseSource<T extends Tuple> implements Source<T> {
 
-	protected final BoxState<Tuple, T> state;
+	private final BoxState<Tuple, T> state;
 	private final String OUTPUT_KEY = "OUTPUT";
-	protected final SourceFunction<T> function;
+	private final SourceFunction<T> function;
 
 	public BaseSource(String id, SourceFunction<T> function) {
 		state = new BoxState<>(id, BoxType.SOURCE, null);
@@ -77,15 +77,26 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 		return state.isEnabled();
 	}
 
-	public void process() {
-		T t = function.getNextTuple();
-		if (t != null)
+	public final void process() {
+		T t = getNextTuple();
+		if (t != null) {
 			getOutputStream(getId()).addTuple(t);
+		}
+	}
+
+	@Override
+	public T getNextTuple() {
+		return function.getNextTuple();
 	}
 
 	@Override
 	public String getId() {
 		return state.getId();
+	}
+
+	@Override
+	public String toString() {
+		return getId();
 	}
 
 	@Override

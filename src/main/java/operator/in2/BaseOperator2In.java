@@ -35,7 +35,7 @@ import stream.StreamFactory;
 public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
 		implements Operator2In<IN, IN2, OUT> {
 
-	protected final BoxState<Tuple, OUT> state;
+	private final BoxState<Tuple, OUT> state;
 	private final String INPUT1_KEY = "INPUT1";
 	private final String INPUT2_KEY = "INPUT2";
 	private final String OUTPUT_KEY = "OUTPUT";
@@ -43,10 +43,6 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	public BaseOperator2In(String id, StreamFactory streamFactory) {
 		state = new BoxState<>(id, BoxType.OPERATOR2IN, streamFactory);
 	}
-
-	public abstract List<OUT> processTupleIn1(IN tuple);
-
-	public abstract List<OUT> processTupleIn2(IN2 tuple);
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -116,7 +112,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public Operator<IN2, OUT> secondInputView() {
-		return new SecondInputOperatorIn2Adapter<>(this);
+		return new SecondInputOperator2InAdapter<>(this);
 	}
 
 	public void process() {

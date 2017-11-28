@@ -31,15 +31,14 @@ import common.Active;
 import common.ActiveRunnable;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
-import operator.BaseOperator;
 import operator.Operator;
-import operator.OperatorStatistic;
+import operator.Operator1In;
+import operator.Operator1InStatistic;
 import operator.Union.UnionOperator;
 import operator.aggregate.TimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindowAggregate;
 import operator.filter.FilterFunction;
 import operator.filter.FilterOperator;
-import operator.in2.BaseOperator2In;
 import operator.in2.Operator2In;
 import operator.in2.Operator2InStatistic;
 import operator.in2.join.Predicate;
@@ -48,9 +47,10 @@ import operator.map.FlatMapFunction;
 import operator.map.FlatMapOperator;
 import operator.map.MapFunction;
 import operator.map.MapOperator;
+import operator.router.BaseRouterOperator;
 import operator.router.RouterFunction;
 import operator.router.RouterOperator;
-import operator.router.RouterStatisticOperator;
+import operator.router.RouterOperatorStatistic;
 import scheduling.Scheduler;
 import scheduling.impl.NoopScheduler;
 import sink.BaseSink;
@@ -101,14 +101,15 @@ public class Query {
 		activateStatistics(statisticsFolder, true);
 	}
 
-	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(BaseOperator<IN, OUT> operator) {
+	public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(Operator1In<IN, OUT> operator) {
 		checkIfExists(operator.getId(), "Operator", operators);
+		Operator<IN, OUT> op = operator;
 		if (keepStatistics) {
-			operator = new OperatorStatistic<IN, OUT>(operator,
+			op = new Operator1InStatistic<IN, OUT>(operator,
 					statsFolder + File.separator + operator.getId() + ".proc.csv", autoFlush);
 		}
-		operators.put(operator.getId(), operator);
-		return operator;
+		operators.put(op.getId(), op);
+		return op;
 	}
 
 	public <IN extends RichTuple, OUT extends RichTuple> Operator<IN, OUT> addAggregateOperator(String identifier,
@@ -134,14 +135,12 @@ public class Query {
 
 	public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier, RouterFunction<T> routerF) {
 		checkIfExists(identifier, "Operator", operators);
-		BaseOperator<T, T> router = null;
+		RouterOperator<T> router = new BaseRouterOperator<T>(identifier, streamFactory, routerF);
 		// Notice that the router is a special case which needs a dedicated
 		// statistics operator
 		if (keepStatistics) {
-			router = new RouterStatisticOperator<T>(identifier, streamFactory, routerF,
-					statsFolder + File.separator + identifier + ".proc.csv", autoFlush);
-		} else {
-			router = new RouterOperator<T>(identifier, streamFactory, routerF);
+			router = new RouterOperatorStatistic<T>(router, statsFolder + File.separator + identifier + ".proc.csv",
+					autoFlush);
 		}
 		operators.put(router.getId(), router);
 		return router;
@@ -151,32 +150,33 @@ public class Query {
 		checkIfExists(identifier, "Operator", operators);
 		// Notice that the union is a special case. No processing stats are kept
 		// since the union does not process tuples.
-		BaseOperator<T, T> union = new UnionOperator<>(identifier, streamFactory);
+		Operator<T, T> union = new UnionOperator<>(identifier, streamFactory);
 		operators.put(union.getId(), union);
 		return union;
 	}
 
-	public <T extends Tuple> Source<T> addSource(BaseSource<T> source) {
+	public <T extends Tuple> Source<T> addSource(Source<T> source) {
 		checkIfExists(source.getId(), "Source", sources);
+		Source<T> s = source;
 		if (keepStatistics) {
-			source = new SourceStatistic<T>(source, streamFactory,
-					statsFolder + File.separator + source.getId() + ".proc.csv");
+			s = new SourceStatistic<T>(s, streamFactory, statsFolder + File.separator + source.getId() + ".proc.csv");
 		}
-		sources.put(source.getId(), source);
-		return source;
+		sources.put(s.getId(), s);
+		return s;
 	}
 
 	public <T extends Tuple> Source<T> addBaseSource(String id, SourceFunction<T> function) {
 		return addSource(new BaseSource<>(id, function));
 	}
 
-	public <T extends Tuple> Sink<T> addSink(BaseSink<T> sink) {
+	public <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
 		checkIfExists(sink.getId(), "Sink", sinks);
+		Sink<T> s = sink;
 		if (keepStatistics) {
-			sink = new SinkStatistic<T>(sink, statsFolder + File.separator + sink.getId() + ".proc.csv");
+			s = new SinkStatistic<T>(sink, statsFolder + File.separator + sink.getId() + ".proc.csv");
 		}
-		sinks.put(sink.getId(), sink);
-		return sink;
+		sinks.put(s.getId(), s);
+		return s;
 	}
 
 	public <T extends Tuple> Sink<T> addBaseSink(String id, SinkFunction<T> sinkFunction) {
@@ -184,24 +184,27 @@ public class Query {
 	}
 
 	public <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
-			String identifier, BaseOperator2In<IN, IN2, OUT> operator) {
-		checkIfExists(identifier, "Operator", operators2in);
+			Operator2In<IN, IN2, OUT> operator) {
+		checkIfExists(operator.getId(), "Operator", operators2in);
+		Operator2In<IN, IN2, OUT> op = operator;
 		if (keepStatistics) {
-			operator = new Operator2InStatistic<IN, IN2, OUT>(operator,
-					statsFolder + File.separator + identifier + ".proc.csv", autoFlush);
+			op = new Operator2InStatistic<IN, IN2, OUT>(operator,
+					statsFolder + File.separator + operator.getId() + ".proc.csv", autoFlush);
 		}
-		operators2in.put(operator.getId(), operator);
-		return operator;
+		operators2in.put(op.getId(), op);
+		return op;
 	}
 
 	public <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
 			String identifier, Predicate<IN, IN2, OUT> predicate, long windowSize) {
-		return addOperator2In(identifier,
-				new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, windowSize, predicate));
+		return addOperator2In(new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, windowSize, predicate));
 	}
 
 	public void activate() {
 		System.out.println("*** [Query] Activating...");
+		System.out.println("*** [Query] Sinks: " + sinks.values());
+		System.out.println("*** [Query] Operators: " + getAllOperators());
+		System.out.println("*** [Query] Sources: " + sources.values());
 		activateTasks(sinks.values());
 		for (ActiveRunnable o : getAllOperators()) {
 			o.enable();

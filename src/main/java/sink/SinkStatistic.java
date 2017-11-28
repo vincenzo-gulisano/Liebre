@@ -22,18 +22,16 @@ package sink;
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
 
-public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
+public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
-	private BaseSink<T> sink;
 	private AverageStatistic processingTimeStat;
 
-	public SinkStatistic(BaseSink<T> sink, String outputFile) {
+	public SinkStatistic(Sink<T> sink, String outputFile) {
 		this(sink, outputFile, true);
 	}
 
-	public SinkStatistic(BaseSink<T> sink, String outputFile, boolean autoFlush) {
-		super(sink.getId(), sink.state.getStreamFactory(), sink.function);
-		this.sink = sink;
+	public SinkStatistic(Sink<T> sink, String outputFile, boolean autoFlush) {
+		super(sink);
 		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
 	}
 
@@ -45,21 +43,14 @@ public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 
 	@Override
 	public void disable() {
-		processingTimeStat.disable();
 		super.disable();
-	}
-
-	public void process() {
-		T t = getInputStream(getId()).getNextTuple();
-		if (t != null) {
-			long start = System.nanoTime();
-			this.sink.processTuple(t);
-			processingTimeStat.append(System.nanoTime() - start);
-		}
+		processingTimeStat.disable();
 	}
 
 	@Override
 	public void processTuple(T tuple) {
-		throw new UnsupportedOperationException();
+		long start = System.nanoTime();
+		super.processTuple(tuple);
+		processingTimeStat.append(System.nanoTime() - start);
 	}
 }

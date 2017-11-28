@@ -23,10 +23,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import common.tuple.Tuple;
-import operator.BaseOperator;
+import operator.BaseOperator1In;
 import stream.StreamFactory;
 
-public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator<IN, OUT> {
+public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator1In<IN, OUT> {
 
 	private MapFunction<IN, OUT> map;
 
@@ -36,7 +36,7 @@ public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperat
 	}
 
 	@Override
-	public List<OUT> processTuple(IN tuple) {
+	public List<OUT> processTupleIn1(IN tuple) {
 		List<OUT> result = new LinkedList<OUT>();
 		OUT t = map.map(tuple);
 		if (t != null)

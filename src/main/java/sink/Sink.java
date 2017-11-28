@@ -23,6 +23,6 @@ import common.ActiveRunnable;
 import common.StreamConsumer;
 import common.tuple.Tuple;
 
-public interface Sink<T extends Tuple> extends ActiveRunnable, StreamConsumer<T> {
-
+public interface Sink<IN extends Tuple> extends ActiveRunnable, StreamConsumer<IN> {
+	void processTuple(IN tuple);
 }

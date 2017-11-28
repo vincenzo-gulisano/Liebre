@@ -22,10 +22,10 @@ package operator.map;
 import java.util.List;
 
 import common.tuple.Tuple;
-import operator.BaseOperator;
+import operator.BaseOperator1In;
 import stream.StreamFactory;
 
-public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator<IN, OUT> {
+public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator1In<IN, OUT> {
 
 	private FlatMapFunction<IN, OUT> map;
 
@@ -35,7 +35,7 @@ public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOp
 	}
 
 	@Override
-	public List<OUT> processTuple(IN tuple) {
+	public List<OUT> processTupleIn1(IN tuple) {
 		return map.map(tuple);
 	}
 }

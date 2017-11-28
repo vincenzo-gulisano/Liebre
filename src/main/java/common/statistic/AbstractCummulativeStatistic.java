@@ -10,6 +10,7 @@ import common.Active;
 public abstract class AbstractCummulativeStatistic<T extends Number> implements Active {
 
 	private final PrintWriter out;
+	private volatile boolean enabled;
 
 	public AbstractCummulativeStatistic(String outputFile, boolean autoFlush) {
 		try {
@@ -39,8 +40,19 @@ public abstract class AbstractCummulativeStatistic<T extends Number> implements 
 	}
 
 	@Override
+	public void enable() {
+		this.enabled = true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
 	public void disable() {
 		out.close();
+		this.enabled = false;
 	}
 
 	public abstract void append(T value);

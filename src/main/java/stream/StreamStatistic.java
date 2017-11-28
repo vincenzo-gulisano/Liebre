@@ -22,14 +22,13 @@ package stream;
 import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 
-public class StreamStatistic<T extends Tuple> implements Stream<T> {
+public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
 
-	private Stream<T> stream;
 	private CountStatistic inRate;
 	private CountStatistic outRate;
 
 	public StreamStatistic(Stream<T> stream, String inRateFile, String outRateFile, boolean autoFlush) {
-		this.stream = stream;
+		super(stream);
 		inRate = new CountStatistic(inRateFile, autoFlush);
 		outRate = new CountStatistic(outRateFile, autoFlush);
 	}
@@ -37,48 +36,30 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 	@Override
 	public void addTuple(T tuple) {
 		inRate.append(1L);
-		stream.addTuple(tuple);
+		super.addTuple(tuple);
 	}
 
 	@Override
 	public T getNextTuple() {
-		T out = stream.getNextTuple();
-		if (out != null)
+		T out = super.getNextTuple();
+		if (out != null) {
 			outRate.append(1L);
+		}
 		return out;
-	}
-
-	@Override
-	public T peek() {
-		return stream.peek();
 	}
 
 	@Override
 	public void enable() {
 		inRate.enable();
 		outRate.enable();
+		super.enable();
 	}
 
 	@Override
 	public void disable() {
-		stream.disable();
+		super.disable();
 		inRate.disable();
 		outRate.disable();
-	}
-
-	@Override
-	public long size() {
-		return stream.size();
-	}
-
-	@Override
-	public String getId() {
-		return stream.getId();
-	}
-
-	@Override
-	public String toString() {
-		return "StreamStatistic [stream=" + stream + "]";
 	}
 
 }

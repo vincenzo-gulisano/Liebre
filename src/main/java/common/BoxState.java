@@ -1,5 +1,6 @@
 package common;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -105,21 +106,27 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return id;
 	}
 
-	public void setInput(String key, StreamProducer<IN> in, Object caller) {
+	public void setInput(String key, StreamProducer<IN> in, NamedEntity caller) {
 		if (factory == null) {
 			throw new IllegalStateException("This entity cannot have inputs. Factory == null");
 		}
 		if (enabled) {
 			throw new IllegalStateException("Cannot register input while running");
 		}
-		if (!in.getNext().contains(caller)) {
+		if (!nextIsSet(in, caller)) {
 			System.err.println(
-					"WARNING: It seems that you might be explicitly registering inputs. Please use addOutput() instead!");
-			// throw new UnsupportedOperationException("Please use registerOut() to
-			// construct query graphs");
+					"WARNING: It seems that you are explicitly registering inputs. Please use addOutput() instead!");
 		}
 		inputs.put(key, factory.newStream(in.getId(), id));
 		previous.add(in);
+	}
+
+	private boolean nextIsSet(StreamProducer<IN> prev, NamedEntity current) {
+		List<String> nextIds = new ArrayList<>();
+		for (NamedEntity next : prev.getNext()) {
+			nextIds.add(next.getId());
+		}
+		return nextIds.contains(current.getId());
 	}
 
 	public Stream<IN> getInputStream(String key) {

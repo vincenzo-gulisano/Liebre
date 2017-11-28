@@ -23,10 +23,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import common.tuple.Tuple;
-import operator.BaseOperator;
+import operator.BaseOperator1In;
 import stream.StreamFactory;
 
-public class FilterOperator<T extends Tuple> extends BaseOperator<T, T> {
+public class FilterOperator<T extends Tuple> extends BaseOperator1In<T, T> {
 
 	protected FilterFunction<T> filter;
 
@@ -36,7 +36,7 @@ public class FilterOperator<T extends Tuple> extends BaseOperator<T, T> {
 	}
 
 	@Override
-	public List<T> processTuple(T tuple) {
+	public List<T> processTupleIn1(T tuple) {
 		List<T> result = new LinkedList<T>();
 		if (filter.forward(tuple))
 			result.add(tuple);

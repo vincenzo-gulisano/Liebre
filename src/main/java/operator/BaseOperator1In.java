@@ -19,11 +19,8 @@
 
 package operator;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
-import common.BoxState;
 import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
@@ -31,17 +28,17 @@ import common.tuple.Tuple;
 import stream.Stream;
 import stream.StreamFactory;
 
-public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
+public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> extends AbstractOperator<IN, OUT>
+		implements Operator1In<IN, OUT> {
 
-	protected final BoxState<IN, OUT> state;
 	private final String INPUT_KEY = "INPUT";
 	private final String OUTPUT_KEY = "OUTPUT";
 
-	protected BaseOperator(String id, BoxType type, StreamFactory streamFactory) {
-		state = new BoxState<>(id, type, streamFactory);
+	protected BaseOperator1In(String id, BoxType type, StreamFactory streamFactory) {
+		super(id, type, streamFactory);
 	}
 
-	public BaseOperator(String id, StreamFactory streamFactory) {
+	public BaseOperator1In(String id, StreamFactory streamFactory) {
 		this(id, BoxType.OPERATOR, streamFactory);
 	}
 
@@ -61,86 +58,20 @@ public abstract class BaseOperator<IN extends Tuple, OUT extends Tuple> implemen
 	}
 
 	@Override
-	public Collection<StreamConsumer<OUT>> getNext() {
-		return state.getNext();
-	}
-
-	@Override
-	public Collection<StreamProducer<?>> getPrevious() {
-		return state.getPrevious();
-	}
-
-	@Override
 	public void addOutput(StreamConsumer<OUT> out) {
 		state.setOutput(OUTPUT_KEY, out, this);
 	}
 
 	@Override
-	public void run() {
-		if (state.isEnabled()) {
-			process();
-		}
-	}
-
-	@Override
-	public boolean hasInput() {
-		return state.hasInput();
-	}
-
-	@Override
-	public void enable() {
-		state.enable();
-	}
-
-	@Override
-	public void disable() {
-		state.disable();
-	}
-
-	public boolean isEnabled() {
-		return state.isEnabled();
-	}
-
-	public void process() {
+	public final void process() {
 		IN inTuple = getInputStream(getId()).getNextTuple();
 		if (inTuple != null) {
-			List<OUT> outTuples = processTuple(inTuple);
+			List<OUT> outTuples = processTupleIn1(inTuple);
 			if (outTuples != null) {
 				for (OUT t : outTuples)
 					getOutputStream(getId()).addTuple(t);
 			}
 		}
-	}
-
-	@Override
-	public String getId() {
-		return state.getId();
-	}
-
-	public abstract List<OUT> processTuple(IN tuple);
-
-	@Override
-	public String toString() {
-		return getId();
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(state);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof BaseOperator)) {
-			// In case we have an adapter
-			return obj.equals(this);
-		}
-		BaseOperator<?, ?> other = (BaseOperator<?, ?>) obj;
-		return Objects.equals(state, other.state);
 	}
 
 }

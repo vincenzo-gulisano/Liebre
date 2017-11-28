@@ -26,10 +26,10 @@ import common.util.BackOff;
 
 public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
-	protected ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
+	private ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
 	private BackOff writerBackOff, readerBackOff;
-	protected volatile long tuplesWritten, tuplesRead;
-	protected final String id;
+	private volatile long tuplesWritten, tuplesRead;
+	private final String id;
 
 	public ConcurrentLinkedListStream(String id) {
 		this.id = id;
@@ -62,8 +62,17 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	}
 
 	@Override
+	public void enable() {
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
+
+	@Override
 	public void disable() {
-		Stream.super.disable();
+
 	}
 
 	@Override

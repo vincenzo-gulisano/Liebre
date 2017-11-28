@@ -26,7 +26,7 @@ import java.util.Random;
 import common.BoxState.BoxType;
 import common.tuple.Tuple;
 import common.util.Util;
-import operator.BaseOperator;
+import operator.BaseOperator1In;
 import operator.Operator;
 import query.ConcurrentLinkedListStreamFactory;
 import query.Query;
@@ -63,15 +63,15 @@ public class SimpleQuery {
 			}
 		});
 
-		Operator<MyTuple, MyTuple> multiply = q.addOperator(
-				new BaseOperator<MyTuple, MyTuple>("M", BoxType.OPERATOR, ConcurrentLinkedListStreamFactory.INSTANCE) {
-					@Override
-					public List<MyTuple> processTuple(MyTuple tuple) {
-						List<MyTuple> result = new LinkedList<MyTuple>();
-						result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
-						return result;
-					}
-				});
+		Operator<MyTuple, MyTuple> multiply = q.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", BoxType.OPERATOR,
+				ConcurrentLinkedListStreamFactory.INSTANCE) {
+			@Override
+			public List<MyTuple> processTupleIn1(MyTuple tuple) {
+				List<MyTuple> result = new LinkedList<MyTuple>();
+				result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
+				return result;
+			}
+		});
 
 		Sink<MyTuple> sink = q.addBaseSink("O1", new SinkFunction<MyTuple>() {
 

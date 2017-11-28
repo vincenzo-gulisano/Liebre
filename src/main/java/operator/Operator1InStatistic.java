@@ -17,26 +17,23 @@
  *
  */
 
-package operator.router;
+package operator;
 
 import java.util.List;
 
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
-import stream.StreamFactory;
 
-public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> {
+public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends OperatorDecorator<IN, OUT> {
 
 	private AverageStatistic processingTimeStat;
 
-	public RouterStatisticOperator(String id, StreamFactory streamFactory, RouterFunction<T> router,
-			String outputFile) {
-		this(id, streamFactory, router, outputFile, true);
+	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFile) {
+		this(operator, outputFile, true);
 	}
 
-	public RouterStatisticOperator(String id, StreamFactory streamFactory, RouterFunction<T> router, String outputFile,
-			boolean autoFlush) {
-		super(id, streamFactory, router);
+	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFile, boolean autoFlush) {
+		super(operator);
 		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
 	}
 
@@ -48,21 +45,16 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 
 	@Override
 	public void disable() {
+		super.disable();
 		processingTimeStat.disable();
-		state.disable();
 	}
 
 	@Override
-	public void process() {
-		T inTuple = getInputStream(getId()).getNextTuple();
-		if (inTuple != null) {
-			long start = System.nanoTime();
-			List<String> operators = router.chooseOperators(inTuple);
-			processingTimeStat.append(System.nanoTime() - start);
-			if (operators != null)
-				for (String operator : operators)
-					state.getOutputStream(operator, this).addTuple(inTuple);
-		}
+	public List<OUT> processTupleIn1(IN tuple) {
+		long start = System.nanoTime();
+		List<OUT> outTuples = super.processTupleIn1(tuple);
+		processingTimeStat.append(System.nanoTime() - start);
+		return outTuples;
 	}
 
 }
