@@ -24,8 +24,8 @@ import common.tuple.Tuple;
 
 public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
 
-	private CountStatistic inRate;
-	private CountStatistic outRate;
+	private final CountStatistic inRate;
+	private final CountStatistic outRate;
 
 	public StreamStatistic(Stream<T> stream, String inRateFile, String outRateFile, boolean autoFlush) {
 		super(stream);

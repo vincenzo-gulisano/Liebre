@@ -26,7 +26,7 @@ import common.tuple.Tuple;
 
 public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDecorator<T> {
 
-	private AverageStatistic processingTimeStat;
+	private final AverageStatistic processingTimeStat;
 
 	public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFile, boolean autoFlush) {
 		super(decorated);

@@ -22,7 +22,7 @@ package operator.map;
 import java.util.List;
 
 import common.tuple.Tuple;
-import operator.BaseOperator1In;
+import operator.in1.BaseOperator1In;
 import stream.StreamFactory;
 
 public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator1In<IN, OUT> {

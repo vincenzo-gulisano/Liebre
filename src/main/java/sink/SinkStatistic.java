@@ -24,7 +24,7 @@ import common.tuple.Tuple;
 
 public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
-	private AverageStatistic processingTimeStat;
+	private final AverageStatistic processingTimeStat;
 
 	public SinkStatistic(Sink<T> sink, String outputFile) {
 		this(sink, outputFile, true);

@@ -24,7 +24,7 @@ import java.util.List;
 import common.StreamProducer;
 import common.tuple.Tuple;
 import operator.Operator;
-import operator.Operator1In;
+import operator.in1.Operator1In;
 import stream.Stream;
 
 public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator1In<IN, OUT> {

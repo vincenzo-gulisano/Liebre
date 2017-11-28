@@ -17,7 +17,7 @@
  *
  */
 
-package operator;
+package operator.in1;
 
 import java.util.List;
 
@@ -25,6 +25,7 @@ import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import operator.AbstractOperator;
 import stream.Stream;
 import stream.StreamFactory;
 

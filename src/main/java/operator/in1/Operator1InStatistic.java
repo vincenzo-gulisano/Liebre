@@ -17,16 +17,16 @@
  *
  */
 
-package operator;
+package operator.in1;
 
 import java.util.List;
 
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
 
-public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends OperatorDecorator<IN, OUT> {
+public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends Operator1InDecorator<IN, OUT> {
 
-	private AverageStatistic processingTimeStat;
+	private final AverageStatistic processingTimeStat;
 
 	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFile) {
 		this(operator, outputFile, true);

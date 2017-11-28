@@ -25,7 +25,7 @@ import stream.StreamFactory;
 
 public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 
-	private AverageStatistic processingTimeStat;
+	private final AverageStatistic processingTimeStat;
 
 	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFile) {
 		this(source, streamFactory, outputFile, true);

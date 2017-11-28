@@ -27,7 +27,7 @@ import common.tuple.Tuple;
 public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
 		extends Operator2InDecorator<IN, IN2, OUT> {
 
-	private AverageStatistic processingTimeStat;
+	private final AverageStatistic processingTimeStat;
 
 	public Operator2InStatistic(Operator2In<IN, IN2, OUT> operator, String outputFile) {
 		this(operator, outputFile, true);

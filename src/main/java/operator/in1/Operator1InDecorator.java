@@ -1,4 +1,4 @@
-package operator;
+package operator.in1;
 
 import java.util.Collection;
 import java.util.List;
@@ -8,11 +8,11 @@ import common.StreamProducer;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class OperatorDecorator<IN extends Tuple, OUT extends Tuple> implements Operator1In<IN, OUT> {
+public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implements Operator1In<IN, OUT> {
 
 	private final Operator1In<IN, OUT> decorated;
 
-	public OperatorDecorator(Operator1In<IN, OUT> decorated) {
+	public Operator1InDecorator(Operator1In<IN, OUT> decorated) {
 		this.decorated = decorated;
 	}
 

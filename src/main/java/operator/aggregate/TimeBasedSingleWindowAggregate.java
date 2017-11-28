@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 import common.tuple.RichTuple;
-import operator.BaseOperator1In;
+import operator.in1.BaseOperator1In;
 import stream.StreamFactory;
 
 public class TimeBasedSingleWindowAggregate<T1 extends RichTuple, T2 extends RichTuple> extends BaseOperator1In<T1, T2> {
