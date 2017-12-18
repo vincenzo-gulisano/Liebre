@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import common.util.PropertyLoader;
+import operator.CombinedPriorityMetric;
 import operator.PriorityMetric;
 import operator.QueueSizePriorityMetric;
 import operator.StimulusPriorityMetric;
@@ -17,7 +18,7 @@ public class QueryConfiguration {
 	private static final String PRIORITY_METRIC_KEY = "liebre.scheduling.metric.name";
 
 	private final List<PriorityMetric> availableMetrics = Arrays.asList(QueueSizePriorityMetric.INSTANCE,
-			StimulusPriorityMetric.INSTANCE);
+			StimulusPriorityMetric.INSTANCE, CombinedPriorityMetric.INSTANCE);
 
 	private final boolean schedulingEnabled;
 	private final int threadsNumber;

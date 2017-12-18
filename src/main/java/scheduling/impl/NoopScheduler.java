@@ -30,6 +30,7 @@ public class NoopScheduler implements Scheduler {
 		@Override
 		public void doRun() {
 			task.run();
+
 		}
 
 	}

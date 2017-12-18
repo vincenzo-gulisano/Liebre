@@ -23,12 +23,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import common.Active;
 import common.ActiveRunnable;
+import common.NamedEntity;
+import common.StreamProducer;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import operator.Operator;
@@ -61,6 +65,7 @@ import source.BaseSource;
 import source.Source;
 import source.SourceFunction;
 import source.SourceStatistic;
+import stream.Stream;
 import stream.StreamFactory;
 
 public class Query {
@@ -146,11 +151,11 @@ public class Query {
 		return router;
 	}
 
-	public <T extends Tuple> Operator<T, T> addUnionOperator(String identifier) {
+	public <T extends Tuple> UnionOperator<T> addUnionOperator(String identifier) {
 		checkIfExists(identifier, "Operator", operators);
 		// Notice that the union is a special case. No processing stats are kept
 		// since the union does not process tuples.
-		Operator<T, T> union = new UnionOperator<>(identifier, streamFactory);
+		UnionOperator<T> union = new UnionOperator<>(identifier, streamFactory);
 		operators.put(union.getId(), union);
 		return union;
 	}
@@ -202,9 +207,10 @@ public class Query {
 
 	public void activate() {
 		System.out.println("*** [Query] Activating...");
-		System.out.println("*** [Query] Sinks: " + sinks.values());
-		System.out.println("*** [Query] Operators: " + getAllOperators());
-		System.out.println("*** [Query] Sources: " + sources.values());
+		System.out.println("*** [Query] Sinks: " + collectionToFormattedString(sinks.values()));
+		System.out.println("*** [Query] Operators: " + collectionToFormattedString(getAllOperators()));
+		System.out.println("*** [Query] Sources: " + collectionToFormattedString(sources.values()));
+		System.out.println("*** [Query] Streams: " + collectionToFormattedString(getAllStreams()));
 		activateTasks(sinks.values());
 		for (ActiveRunnable o : getAllOperators()) {
 			o.enable();
@@ -212,6 +218,28 @@ public class Query {
 		scheduler.addTasks(getAllOperators());
 		scheduler.startTasks();
 		activateTasks(sources.values());
+	}
+
+	// FIXME: Temporary, remove
+	private String collectionToFormattedString(Collection<?> lst) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		for (Object elem : lst) {
+			sb.append("'").append(((NamedEntity) elem).getId()).append("',");
+		}
+		sb.deleteCharAt(sb.length() - 1);
+		sb.append("]");
+		return sb.toString();
+	}
+
+	private Set<Stream<?>> getAllStreams() {
+		Set<Stream<?>> streams = new HashSet<>();
+		for (Operator<?, ?> op : getAllOperators()) {
+			for (StreamProducer<?> prev : op.getPrevious()) {
+				streams.add(prev.getOutputStream(op.getId()));
+			}
+		}
+		return streams;
 	}
 
 	public void deActivate() {

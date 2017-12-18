@@ -50,16 +50,16 @@ public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
 
 	@Override
 	public void enable() {
+		super.enable();
 		inRate.enable();
 		outRate.enable();
-		super.enable();
 	}
 
 	@Override
 	public void disable() {
-		super.disable();
 		inRate.disable();
 		outRate.disable();
+		super.disable();
 	}
 
 }

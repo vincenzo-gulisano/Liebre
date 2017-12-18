@@ -30,11 +30,11 @@ public class ThreadPoolScheduler implements Scheduler {
 
 	@Override
 	public void startTasks() {
+		availableTasks.enable();
 		for (WorkerThread workerThread : workers) {
 			workerThread.enable();
 			workerThread.start();
 		}
-		availableTasks.enable();
 		// TODO: Observer pattern to detect thread crashes
 	}
 

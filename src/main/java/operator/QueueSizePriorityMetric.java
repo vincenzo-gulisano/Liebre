@@ -12,7 +12,7 @@ public enum QueueSizePriorityMetric implements PriorityMetric {
 
 		@Override
 		public int compare(Operator<?, ?> o1, Operator<?, ?> o2) {
-			return -Double.compare(getPriority(o1), getPriority(o2));
+			return compare(o1, o2);
 		}
 
 	};
@@ -36,6 +36,11 @@ public enum QueueSizePriorityMetric implements PriorityMetric {
 	@Override
 	public String toString() {
 		return getClass().getSimpleName();
+	}
+
+	@Override
+	public int comparePriorities(double p1, double p2) {
+		return -Double.compare(p1, p2);
 	}
 
 }

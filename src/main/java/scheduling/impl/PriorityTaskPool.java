@@ -20,7 +20,7 @@ import source.Source;
 public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 	private final long firstUpdateInterval;
 	private final PriorityMetric metric;
-	private final PriorityBlockingQueue<Operator<?, ?>> tasks;
+	private final PriorityBlockingQueue<OperatorPriority> tasks;
 
 	private final ConcurrentHashMap<String, LongAdder> calls = new ConcurrentHashMap<>();
 	private final ExecutorService service;
@@ -32,9 +32,7 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 		@Override
 		public void run() {
 			for (Operator<?, ?> first : firstOperators) {
-				if (tasks.remove(first)) {
-					tasks.offer(first);
-				}
+				updateOperator(first);
 			}
 			Util.sleep(firstUpdateInterval);
 			if (isEnabled()) {
@@ -46,13 +44,12 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 	public PriorityTaskPool(PriorityMetric metric, int numberHeperThreads, long firstUpdateInterval) {
 		this.firstUpdateInterval = firstUpdateInterval;
 		this.metric = metric;
-		tasks = new PriorityBlockingQueue<>(1, metric.comparator());
+		tasks = new PriorityBlockingQueue<>();
 		service = Executors.newFixedThreadPool(numberHeperThreads);
 	}
 
 	@Override
 	public void register(Operator<?, ?> task) {
-		calls.computeIfAbsent(task.getId(), k -> new LongAdder());
 		for (StreamProducer<?> previous : task.getPrevious()) {
 			if (previous instanceof Source) {
 				firstOperators.add(task);
@@ -65,27 +62,35 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 	@Override
 	public Operator<?, ?> getNext(long threadId) {
 		Operator<?, ?> task = takeTask();
-		calls.get(task.getId()).increment();
+		calls.computeIfAbsent(task.getId(), k -> new LongAdder()).increment();;
 		return task;
 	}
 
 	@Override
 	public void put(Operator<?, ?> task) {
-		tasks.offer(task);
+		tasks.offer(new OperatorPriority(task, metric));
 		for (StreamConsumer<?> next : task.getNext()) {
-			if (next instanceof Operator && tasks.remove(next)) {
-				tasks.offer((Operator<?, ?>) next);
-			}
+			updateOperator(next);
 		}
 	}
 
 	private Operator<?, ?> takeTask() {
 		try {
-			Operator<?, ?> task = tasks.take();
+			Operator<?, ?> task = tasks.take().getOperator();
 			return task;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			throw new IllegalStateException();
+		}
+	}
+
+	private void updateOperator(Object obj) {
+		if (obj instanceof Operator == false) {
+			return;
+		}
+		Operator<?, ?> op = (Operator<?, ?>) obj;
+		if (tasks.remove(OperatorPriority.empty(op))) {
+			tasks.offer(new OperatorPriority(op, metric));
 		}
 	}
 

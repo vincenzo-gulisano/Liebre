@@ -1,8 +1,5 @@
 package operator;
 
-import java.util.Comparator;
-import java.util.concurrent.TimeUnit;
-
 import common.StreamProducer;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
@@ -10,14 +7,6 @@ import stream.Stream;
 
 public enum StimulusPriorityMetric implements PriorityMetric {
 	INSTANCE;
-	private final Comparator<Operator<?, ?>> comparator = new Comparator<Operator<?, ?>>() {
-
-		@Override
-		public int compare(Operator<?, ?> o1, Operator<?, ?> o2) {
-			return -Double.compare(getPriority(o1), getPriority(o2));
-		}
-
-	};
 
 	@Override
 	public double getPriority(Operator<?, ?> operator) {
@@ -31,12 +20,12 @@ public enum StimulusPriorityMetric implements PriorityMetric {
 				diff = Math.max(System.nanoTime() - ts, diff);
 			}
 		}
-		return TimeUnit.NANOSECONDS.toMillis(diff);
+		return diff;
 	}
 
 	@Override
-	public Comparator<Operator<?, ?>> comparator() {
-		return comparator;
+	public int comparePriorities(double p1, double p2) {
+		return -Double.compare(p1, p2);
 	}
 
 	@Override

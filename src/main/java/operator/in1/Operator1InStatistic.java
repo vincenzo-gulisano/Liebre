@@ -39,14 +39,14 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends O
 
 	@Override
 	public void enable() {
-		processingTimeStat.enable();
 		super.enable();
+		processingTimeStat.enable();
 	}
 
 	@Override
 	public void disable() {
-		super.disable();
 		processingTimeStat.disable();
+		super.disable();
 	}
 
 	@Override

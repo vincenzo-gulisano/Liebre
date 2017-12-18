@@ -22,7 +22,7 @@ import query.Query;
 import query.QueryConfiguration;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
-import scheduling.impl.PriorityTaskPool;
+import scheduling.impl.PriorityTaskPool2;
 import scheduling.impl.ThreadPoolScheduler;
 import sink.Sink;
 import source.Source;
@@ -134,18 +134,21 @@ public class SampleQuery {
 
 		if (args.length != 2) {
 			throw new IllegalArgumentException(
-					"Program requires two arguments: output folder, simulation duration (minutes)");
+					"Program requires two arguments: output folder, simulation duration (seconds)");
 		}
 		// Configuration Init
 		final String statisticsFolder = args[0];
-		final long queryDurationMillis = TimeUnit.MINUTES.toMillis(Long.parseLong(args[1]));
+		final long queryDurationMillis = TimeUnit.SECONDS.toMillis(Long.parseLong(args[1]));
 		final QueryConfiguration config = new QueryConfiguration(PROPERTY_FILENAME, SampleQuery.class);
 
 		// Query creation
 		Query q;
 		if (config.isSchedulingEnabled()) { // If scheduling enabled, configure
-			TaskPool<Operator<?, ?>> pool = new PriorityTaskPool(config.getPriorityMetric(),
-					config.getHelperThreadsNumber(), config.getHelperThreadInterval());
+			// TaskPool<Operator<?, ?>> pool = new
+			// PriorityTaskPool(config.getPriorityMetric(),
+			// config.getHelperThreadsNumber(), config.getHelperThreadInterval());
+			TaskPool<Operator<?, ?>> pool = new PriorityTaskPool2(config.getPriorityMetric());
+
 			Scheduler scheduler = new ThreadPoolScheduler(config.getThreadsNumber(), config.getSchedulingInterval(),
 					TimeUnit.MILLISECONDS, pool);
 			q = new Query(scheduler);
@@ -235,7 +238,7 @@ public class SampleQuery {
 				requiredThreads(Arrays.asList(A, B, C, D, E, F, G, H, L, M, N)));
 		System.out.format("*** Starting sample query with configuration: %s%n", config);
 		System.out.format("*** Statistics folder: %s/%s%n", System.getProperty("user.dir"), statisticsFolder);
-		System.out.format("*** Duration: %s minutes%n", args[1]);
+		System.out.format("*** Duration: %s seconds%n", args[1]);
 
 		// Start queries and let run for some time
 		q.activate();
