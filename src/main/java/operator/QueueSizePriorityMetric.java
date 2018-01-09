@@ -20,7 +20,7 @@ public enum QueueSizePriorityMetric implements PriorityMetric {
 	@Override
 	public double getPriority(Operator<?, ?> operator) {
 		Collection<StreamProducer<?>> previous = operator.getPrevious();
-		double priority = 0;
+		double priority = 1.0;
 		for (StreamProducer<?> prev : previous) {
 			Stream<?> input = prev.getOutputStream(operator.getId());
 			priority += input.size();

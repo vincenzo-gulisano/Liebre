@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class PropertyLoader {
+public class PropertyFileLoader {
 
 	private final Properties properties = new Properties();
 	private static final String ERROR_TEMPLATE = "Failed to read properties from file: %s";
 
-	public PropertyLoader(String filename, Class<?> clazz) {
+	public PropertyFileLoader(String filename, Class<?> clazz) {
 		InputStream in = null;
 		try {
 			in = clazz.getClassLoader().getResourceAsStream(filename);
