@@ -43,6 +43,7 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 		state.disable();
 	}
 
+	@Override
 	public boolean isEnabled() {
 		return state.isEnabled();
 	}

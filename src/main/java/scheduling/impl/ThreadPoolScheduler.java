@@ -14,10 +14,10 @@ public class ThreadPoolScheduler implements Scheduler {
 	private final TaskPool<Operator<?, ?>> availableTasks;
 	private final List<WorkerThread> workers = new ArrayList<>();
 
-	public ThreadPoolScheduler(int nThreads, long interval, TimeUnit unit, TaskPool<Operator<?, ?>> availableTasks) {
+	public ThreadPoolScheduler(int nThreads, long quantum, TimeUnit unit, TaskPool<Operator<?, ?>> availableTasks) {
 		this.availableTasks = availableTasks;
 		for (int i = 0; i < nThreads; i++) {
-			workers.add(new WorkerThread(availableTasks, interval, unit));
+			workers.add(new WorkerThread(availableTasks, quantum, unit));
 		}
 	}
 

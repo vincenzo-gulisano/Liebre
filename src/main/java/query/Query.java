@@ -19,7 +19,6 @@
 
 package query;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -110,8 +109,7 @@ public class Query {
 		checkIfExists(operator.getId(), "Operator", operators);
 		Operator<IN, OUT> op = operator;
 		if (keepStatistics) {
-			op = new Operator1InStatistic<IN, OUT>(operator,
-					statsFolder + File.separator + operator.getId() + ".proc.csv", autoFlush);
+			op = new Operator1InStatistic<IN, OUT>(operator, statsFolder, autoFlush);
 		}
 		operators.put(op.getId(), op);
 		return op;
@@ -144,8 +142,7 @@ public class Query {
 		// Notice that the router is a special case which needs a dedicated
 		// statistics operator
 		if (keepStatistics) {
-			router = new RouterOperatorStatistic<T>(router, statsFolder + File.separator + identifier + ".proc.csv",
-					autoFlush);
+			router = new RouterOperatorStatistic<T>(router, statsFolder, autoFlush);
 		}
 		operators.put(router.getId(), router);
 		return router;
@@ -164,7 +161,7 @@ public class Query {
 		checkIfExists(source.getId(), "Source", sources);
 		Source<T> s = source;
 		if (keepStatistics) {
-			s = new SourceStatistic<T>(s, streamFactory, statsFolder + File.separator + source.getId() + ".proc.csv");
+			s = new SourceStatistic<T>(s, streamFactory, statsFolder);
 		}
 		sources.put(s.getId(), s);
 		return s;
@@ -178,7 +175,7 @@ public class Query {
 		checkIfExists(sink.getId(), "Sink", sinks);
 		Sink<T> s = sink;
 		if (keepStatistics) {
-			s = new SinkStatistic<T>(sink, statsFolder + File.separator + sink.getId() + ".proc.csv");
+			s = new SinkStatistic<T>(sink, statsFolder);
 		}
 		sinks.put(s.getId(), s);
 		return s;
@@ -193,8 +190,7 @@ public class Query {
 		checkIfExists(operator.getId(), "Operator", operators2in);
 		Operator2In<IN, IN2, OUT> op = operator;
 		if (keepStatistics) {
-			op = new Operator2InStatistic<IN, IN2, OUT>(operator,
-					statsFolder + File.separator + operator.getId() + ".proc.csv", autoFlush);
+			op = new Operator2InStatistic<IN, IN2, OUT>(operator, statsFolder, autoFlush);
 		}
 		operators2in.put(op.getId(), op);
 		return op;

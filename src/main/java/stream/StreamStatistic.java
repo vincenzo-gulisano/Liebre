@@ -21,16 +21,17 @@ package stream;
 
 import common.statistic.CountStatistic;
 import common.tuple.Tuple;
+import common.util.StatisticFilename;
 
 public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
 
 	private final CountStatistic inRate;
 	private final CountStatistic outRate;
 
-	public StreamStatistic(Stream<T> stream, String inRateFile, String outRateFile, boolean autoFlush) {
+	public StreamStatistic(Stream<T> stream, String outputFolder, boolean autoFlush) {
 		super(stream);
-		inRate = new CountStatistic(inRateFile, autoFlush);
-		outRate = new CountStatistic(outRateFile, autoFlush);
+		inRate = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, stream, "in"), autoFlush);
+		outRate = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, stream, "out"), autoFlush);
 	}
 
 	@Override

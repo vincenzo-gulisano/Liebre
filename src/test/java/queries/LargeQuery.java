@@ -1,9 +1,6 @@
 package queries;
 
 import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -133,30 +130,34 @@ public class LargeQuery {
 		System.out.format("*** Slow sinks = %d%n", slowSinksNumber);
 		System.out.format("*** Duration: %s seconds%n", args[1]);
 
-		ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-		assert threadMXBean.isThreadCpuTimeSupported();
-		assert threadMXBean.isCurrentThreadCpuTimeSupported();
-
-		threadMXBean.setThreadContentionMonitoringEnabled(true);
-		threadMXBean.setThreadCpuTimeEnabled(true);
-		assert threadMXBean.isThreadCpuTimeEnabled();
+		// ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+		// assert threadMXBean.isThreadCpuTimeSupported();
+		// assert threadMXBean.isCurrentThreadCpuTimeSupported();
+		//
+		// threadMXBean.setThreadContentionMonitoringEnabled(true);
+		// threadMXBean.setThreadCpuTimeEnabled(true);
+		// assert threadMXBean.isThreadCpuTimeEnabled();
 
 		// Start queries and let run for some time
 		q.activate();
 
 		Util.sleep(queryDurationMillis);
 
-		ThreadInfo[] threadInfo = threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds());
-		for (ThreadInfo threadInfo2 : threadInfo) {
-			long blockedTime = threadInfo2.getBlockedTime();
-			long waitedTime = threadInfo2.getWaitedTime();
-			long cpuTime = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getThreadCpuTime(threadInfo2.getThreadId()));
-			long userTime = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getThreadUserTime(threadInfo2.getThreadId()));
-
-			String msg = String.format("[%s] CPU %d ms | USER: %d ms | WAIT %d ms | BLOCKED: %d ms",
-					threadInfo2.getThreadName(), cpuTime, userTime, waitedTime, blockedTime);
-			System.out.println(msg);
-		}
+		// ThreadInfo[] threadInfo =
+		// threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds());
+		// for (ThreadInfo threadInfo2 : threadInfo) {
+		// long blockedTime = threadInfo2.getBlockedTime();
+		// long waitedTime = threadInfo2.getWaitedTime();
+		// long cpuTime =
+		// TimeUnit.NANOSECONDS.toMillis(threadMXBean.getThreadCpuTime(threadInfo2.getThreadId()));
+		// long userTime =
+		// TimeUnit.NANOSECONDS.toMillis(threadMXBean.getThreadUserTime(threadInfo2.getThreadId()));
+		//
+		// String msg = String.format("[%s] CPU %d ms | USER: %d ms | WAIT %d ms |
+		// BLOCKED: %d ms",
+		// threadInfo2.getThreadName(), cpuTime, userTime, waitedTime, blockedTime);
+		// System.out.println(msg);
+		// }
 
 		q.deActivate();
 

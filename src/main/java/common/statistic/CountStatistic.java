@@ -28,7 +28,7 @@ public class CountStatistic extends AbstractCummulativeStatistic<Long> {
 	}
 
 	@Override
-	public void append(Long v) {
+	protected void doAppend(Long v) {
 		writePreviousCounts();
 		count += v;
 	}
@@ -37,6 +37,7 @@ public class CountStatistic extends AbstractCummulativeStatistic<Long> {
 	public void enable() {
 		this.count = 0;
 		this.prevSec = currentTimeSeconds();
+		super.enable();
 	}
 
 	public void disable() {

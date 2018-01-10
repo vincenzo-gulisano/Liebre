@@ -21,18 +21,20 @@ package sink;
 
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
+import common.util.StatisticFilename;
 
 public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
 	private final AverageStatistic processingTimeStat;
 
-	public SinkStatistic(Sink<T> sink, String outputFile) {
-		this(sink, outputFile, true);
+	public SinkStatistic(Sink<T> sink, String outputFolder) {
+		this(sink, outputFolder, true);
 	}
 
-	public SinkStatistic(Sink<T> sink, String outputFile, boolean autoFlush) {
+	public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
 		super(sink);
-		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
+		this.processingTimeStat = new AverageStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "proc"),
+				autoFlush);
 	}
 
 	@Override

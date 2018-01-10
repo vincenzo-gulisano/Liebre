@@ -1,7 +1,5 @@
 package query;
 
-import java.io.File;
-
 import common.tuple.Tuple;
 import stream.Stream;
 import stream.StreamFactory;
@@ -25,12 +23,7 @@ public class ConcurrentLinkedListStreamStatisticFactory implements StreamFactory
 	@Override
 	public <T extends Tuple> Stream<T> newStream(String fromId, String toId) {
 		Stream<T> stream = ConcurrentLinkedListStreamFactory.INSTANCE.newStream(fromId, toId);
-		String inRateFile = getFileName(folder, stream.getId(), inRateExension);
-		String outRateFile = getFileName(folder, stream.getId(), outRateExtension);
-		return new StreamStatistic<>(stream, inRateFile, outRateFile, autoFlush);
+		return new StreamStatistic<>(stream, folder, autoFlush);
 	}
 
-	private static String getFileName(String folder, String baseName, String extension) {
-		return folder + File.separator + baseName + "." + extension + ".csv";
-	}
 }

@@ -26,6 +26,9 @@ public class DummyMapFunction implements MapFunction<DummyTuple, DummyTuple> {
 	}
 
 	public DummyTuple map(DummyTuple arg0) {
+		if (arg0 == null) {
+			throw new IllegalArgumentException("Null input!");
+		}
 		Util.busySleep(sleepMillis);
 		if (rand.nextDouble() < selectivity) {
 			return arg0;

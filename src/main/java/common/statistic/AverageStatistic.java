@@ -30,7 +30,7 @@ public class AverageStatistic extends AbstractCummulativeStatistic<Long> {
 	}
 
 	@Override
-	public void append(Long v) {
+	protected void doAppend(Long v) {
 		writePreviousAverages();
 		sum += v;
 		count++;
@@ -41,6 +41,7 @@ public class AverageStatistic extends AbstractCummulativeStatistic<Long> {
 		this.sum = 0;
 		this.count = 0;
 		prevSec = currentTimeSeconds();
+		super.enable();
 
 	}
 

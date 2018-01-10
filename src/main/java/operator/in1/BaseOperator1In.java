@@ -66,5 +66,4 @@ public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> exten
 	public void run() {
 		processCommand.run();
 	}
-
 }

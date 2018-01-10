@@ -20,31 +20,39 @@
 package source;
 
 import common.statistic.AverageStatistic;
+import common.statistic.CountStatistic;
 import common.tuple.Tuple;
+import common.util.StatisticFilename;
 import stream.StreamFactory;
 
 public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 
 	private final AverageStatistic processingTimeStat;
+	private final CountStatistic executionsStat;
 
-	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFile) {
-		this(source, streamFactory, outputFile, true);
+	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFolder) {
+		this(source, streamFactory, outputFolder, true);
 	}
 
-	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFile, boolean autoFlush) {
+	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFolder, boolean autoFlush) {
 		super(source);
-		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
+		this.processingTimeStat = new AverageStatistic(StatisticFilename.INSTANCE.get(outputFolder, source, "proc"),
+				autoFlush);
+		this.executionsStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, source, "runs"),
+				autoFlush);
 	}
 
 	@Override
 	public void enable() {
 		super.enable();
 		processingTimeStat.enable();
+		executionsStat.enable();
 	}
 
 	@Override
 	public void disable() {
 		processingTimeStat.disable();
+		executionsStat.disable();
 		super.disable();
 	}
 
@@ -53,6 +61,7 @@ public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 		long start = System.nanoTime();
 		T tuple = super.getNextTuple();
 		processingTimeStat.append(System.nanoTime() - start);
+		executionsStat.append(1L);
 		return tuple;
 	}
 

@@ -22,30 +22,38 @@ package operator.router;
 import java.util.List;
 
 import common.statistic.AverageStatistic;
+import common.statistic.CountStatistic;
 import common.tuple.Tuple;
+import common.util.StatisticFilename;
 
 public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDecorator<T> {
 
 	private final AverageStatistic processingTimeStat;
+	private final CountStatistic executionsStat;
 
-	public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFile, boolean autoFlush) {
+	public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFolder, boolean autoFlush) {
 		super(decorated);
-		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
+		this.processingTimeStat = new AverageStatistic(StatisticFilename.INSTANCE.get(outputFolder, decorated, "proc"),
+				autoFlush);
+		this.executionsStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, decorated, "runs"),
+				autoFlush);
 	}
 
-	public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFile) {
-		this(decorated, outputFile, true);
+	public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFolder) {
+		this(decorated, outputFolder, true);
 	}
 
 	@Override
 	public void enable() {
 		super.enable();
 		processingTimeStat.enable();
+		executionsStat.enable();
 	}
 
 	@Override
 	public void disable() {
 		processingTimeStat.disable();
+		executionsStat.disable();
 		super.disable();
 	}
 
@@ -54,6 +62,7 @@ public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDeco
 		long start = System.nanoTime();
 		List<String> operators = super.chooseOperators(tuple);
 		processingTimeStat.append(System.nanoTime() - start);
+		executionsStat.append(1L);
 		return operators;
 	}
 

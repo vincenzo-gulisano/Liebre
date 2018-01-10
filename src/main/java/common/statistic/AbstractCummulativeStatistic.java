@@ -23,6 +23,9 @@ public abstract class AbstractCummulativeStatistic<T extends Number> implements 
 	}
 
 	protected void writeCommaSeparatedValues(Object... values) {
+		if (!isEnabled()) {
+			throw new IllegalStateException("Please enable the statistic before using it!");
+		}
 		StringBuilder sb = new StringBuilder();
 		for (Object value : values) {
 			sb.append(value).append(",");
@@ -32,6 +35,9 @@ public abstract class AbstractCummulativeStatistic<T extends Number> implements 
 	}
 
 	protected void writeLine(String line) {
+		if (!isEnabled()) {
+			throw new IllegalStateException("Please enable the statistic before using it!");
+		}
 		out.println(line);
 	}
 
@@ -46,7 +52,7 @@ public abstract class AbstractCummulativeStatistic<T extends Number> implements 
 
 	@Override
 	public boolean isEnabled() {
-		return enabled;
+		return this.enabled;
 	}
 
 	@Override
@@ -55,5 +61,13 @@ public abstract class AbstractCummulativeStatistic<T extends Number> implements 
 		this.enabled = false;
 	}
 
-	public abstract void append(T value);
+	public final void append(T value) {
+		if (!isEnabled()) {
+			System.err.println("[WARN] Ignoring append, statistic is disabled");
+			return;
+		}
+		doAppend(value);
+	}
+
+	protected abstract void doAppend(T value);
 }
