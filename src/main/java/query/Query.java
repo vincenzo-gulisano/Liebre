@@ -243,10 +243,13 @@ public class Query {
 	}
 
 	public void deActivate() {
-		System.out.println("*** [Query] Deactivating...");
-		deactivateTasks(sources.values());
-		deactivateTasks(getAllOperators());
+		System.out.println("*** [Query] Deactivating sinks...");
 		deactivateTasks(sinks.values());
+		System.out.println("*** [Query] Deactivating operators...");
+		deactivateTasks(getAllOperators());
+		System.out.println("*** [Query] Deactivating sources...");
+		deactivateTasks(sources.values());
+		System.out.println("*** [Query] Waiting for threads to terminate...");
 		scheduler.stopTasks();
 		for (Thread t : threads) {
 			try {

@@ -127,4 +127,20 @@ public class AliasMethod {
 		while (!large.isEmpty())
 			probability[large.removeLast()] = 1.0;
 	}
+
+	/**
+	 * Samples a value from the underlying distribution.
+	 *
+	 * @return A random value sampled from the underlying distribution.
+	 */
+	public int next() {
+		/* Generate a fair die roll to determine which column to inspect. */
+		int column = random.nextInt(probability.length);
+
+		/* Generate a biased coin toss to determine which option to pick. */
+		boolean coinToss = random.nextDouble() < probability[column];
+
+		/* Based on the outcome, return either the column or its alias. */
+		return coinToss ? column : alias[column];
+	}
 }

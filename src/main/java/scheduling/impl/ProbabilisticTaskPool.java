@@ -6,9 +6,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import common.util.AliasMethod;
 import operator.Operator;
 import operator.PriorityMetric;
-import queries.ProbabilityTest.AliasMethod;
 import scheduling.TaskPool;
 
 public class ProbabilisticTaskPool implements TaskPool<Operator<?, ?>> {

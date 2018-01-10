@@ -64,6 +64,7 @@ public class WorkerThread extends ActiveThread {
 	@Override
 	public void disable() {
 		super.disable();
+		// FIXME: Remove hardcoded output!
 		System.out.format("T%d Scheduling Average = %3.2f ns%n", getId(), time / (double) runs);
 		try {
 			CSVPrinter printer = new CSVPrinter(new FileWriter(String.format("report/T%d.exec.csv", getId())),
