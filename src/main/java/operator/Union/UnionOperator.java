@@ -45,6 +45,13 @@ public class UnionOperator<IN extends Tuple> extends AbstractOperator<IN, IN> {
 	}
 
 	@Override
+	public void run() {
+		if (isEnabled()) {
+			process();
+		}
+	}
+
+	// FIXME: Convert to command like the other operators
 	public final void process() {
 		for (Stream<IN> in : state.getInputs()) {
 			IN inTuple = in.getNextTuple();

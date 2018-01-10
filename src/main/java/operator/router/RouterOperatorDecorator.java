@@ -11,6 +11,7 @@ import stream.Stream;
 public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<T> {
 
 	private final RouterOperator<T> decorated;
+	private final ProcessCommandRouter<T> processingCommand = new ProcessCommandRouter<>(this);
 
 	public RouterOperatorDecorator(RouterOperator<T> decorated) {
 		this.decorated = decorated;
@@ -23,7 +24,7 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 
 	@Override
 	public void run() {
-		decorated.run();
+		processingCommand.run();
 	}
 
 	@Override

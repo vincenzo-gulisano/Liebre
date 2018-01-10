@@ -95,7 +95,7 @@ public class Query {
 	}
 
 	public void activateStatistics(String statisticsFolder, boolean autoFlush) {
-		keepStatistics = true;
+		this.keepStatistics = true;
 		this.statsFolder = statisticsFolder;
 		this.autoFlush = autoFlush;
 		streamFactory = new ConcurrentLinkedListStreamStatisticFactory(statisticsFolder, STREAM_IN_FILE_EXTENSION,

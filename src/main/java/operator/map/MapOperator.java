@@ -43,4 +43,5 @@ public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperat
 			result.add(t);
 		return result;
 	}
+
 }

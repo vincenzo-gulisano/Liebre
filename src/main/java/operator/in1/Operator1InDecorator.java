@@ -1,5 +1,7 @@
 package operator.in1;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
@@ -8,9 +10,11 @@ import common.StreamProducer;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implements Operator1In<IN, OUT> {
+public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple>
+		implements Operator1In<IN, OUT>, InvocationHandler {
 
 	private final Operator1In<IN, OUT> decorated;
+	private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(this);
 
 	public Operator1InDecorator(Operator1In<IN, OUT> decorated) {
 		this.decorated = decorated;
@@ -18,7 +22,7 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 
 	@Override
 	public void run() {
-		decorated.run();
+		processCommand.run();
 	}
 
 	@Override
@@ -85,6 +89,23 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 	@Override
 	public void disable() {
 		decorated.disable();
+	}
+
+	@Override
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		Method m = findMethod(decorated.getClass(), method);
+		if (m == null) {
+			throw new NullPointerException("Found no method " + method + " in delegate: " + decorated);
+		}
+		return m.invoke(decorated, args);
+	}
+
+	private static Method findMethod(Class<?> clazz, Method method) throws Throwable {
+		try {
+			return clazz.getDeclaredMethod(method.getName(), method.getParameterTypes());
+		} catch (NoSuchMethodException e) {
+			return null;
+		}
 	}
 
 }

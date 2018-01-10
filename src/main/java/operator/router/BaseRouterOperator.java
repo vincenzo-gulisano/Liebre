@@ -33,6 +33,7 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 
 	protected RouterFunction<T> router;
 	private static final String INPUT_KEY = "INPUT";
+	private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
 
 	public BaseRouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
 		super(id, BoxType.ROUTER, streamFactory);
@@ -42,17 +43,6 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 	@Override
 	public void addOutput(StreamConsumer<T> out) {
 		state.setOutput(out.getId(), out, this);
-	}
-
-	@Override
-	public final void process() {
-		T inTuple = getInputStream(getId()).getNextTuple();
-		if (inTuple != null) {
-			List<String> streams = router.chooseOperators(inTuple);
-			if (streams != null)
-				for (String operator : streams)
-					state.getOutputStream(operator, this).addTuple(inTuple);
-		}
 	}
 
 	@Override
@@ -73,6 +63,11 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 	@Override
 	public Stream<T> getInputStream(String requestorId) {
 		return state.getInputStream(INPUT_KEY);
+	}
+
+	@Override
+	public void run() {
+		processCommand.run();
 	}
 
 }

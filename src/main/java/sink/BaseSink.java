@@ -33,6 +33,7 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	private final BoxState<IN, Tuple> state;
 	private final SinkFunction<IN> function;
 	private final String INPUT_KEY = "INPUT";
+	private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
 
 	public BaseSink(String id, StreamFactory streamFactory, SinkFunction<IN> function) {
 		state = new BoxState<>(id, BoxType.SINK, streamFactory);
@@ -51,9 +52,7 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
 	@Override
 	public void run() {
-		while (state.isEnabled()) {
-			process();
-		}
+		processCommand.run();
 	}
 
 	@Override
@@ -71,13 +70,6 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	@Override
 	public boolean isEnabled() {
 		return state.isEnabled();
-	}
-
-	public final void process() {
-		IN t = getInputStream(getId()).getNextTuple();
-		if (t != null) {
-			processTuple(t);
-		}
 	}
 
 	@Override

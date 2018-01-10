@@ -22,11 +22,13 @@ package operator.in1;
 import java.util.List;
 
 import common.statistic.AverageStatistic;
+import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 
 public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends Operator1InDecorator<IN, OUT> {
 
 	private final AverageStatistic processingTimeStat;
+	private final CountStatistic executionsStat;
 
 	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFile) {
 		this(operator, outputFile, true);
@@ -35,17 +37,21 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends O
 	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFile, boolean autoFlush) {
 		super(operator);
 		this.processingTimeStat = new AverageStatistic(outputFile, autoFlush);
+		// FIXME: Remove hardcoded string!
+		this.executionsStat = new CountStatistic(outputFile + ".runs", autoFlush);
 	}
 
 	@Override
 	public void enable() {
 		super.enable();
 		processingTimeStat.enable();
+		executionsStat.enable();
 	}
 
 	@Override
 	public void disable() {
 		processingTimeStat.disable();
+		executionsStat.disable();
 		super.disable();
 	}
 
@@ -54,6 +60,7 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends O
 		long start = System.nanoTime();
 		List<OUT> outTuples = super.processTupleIn1(tuple);
 		processingTimeStat.append(System.nanoTime() - start);
+		executionsStat.append(1L);
 		return outTuples;
 	}
 

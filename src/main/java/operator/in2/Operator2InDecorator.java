@@ -13,6 +13,7 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 		implements Operator2In<IN, IN2, OUT> {
 
 	private final Operator2In<IN, IN2, OUT> decorated;
+	private final ProcessCommand2In<IN, IN2, OUT> processingCommand = new ProcessCommand2In<>(this);
 
 	public Operator2InDecorator(Operator2In<IN, IN2, OUT> decorated) {
 		this.decorated = decorated;
@@ -30,7 +31,7 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 
 	@Override
 	public void run() {
-		decorated.run();
+		processingCommand.run();
 	}
 
 	@Override

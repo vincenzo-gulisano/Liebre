@@ -19,8 +19,6 @@
 
 package operator.in1;
 
-import java.util.List;
-
 import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
@@ -34,6 +32,7 @@ public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> exten
 
 	private final String INPUT_KEY = "INPUT";
 	private final String OUTPUT_KEY = "OUTPUT";
+	private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(this);
 
 	protected BaseOperator1In(String id, BoxType type, StreamFactory streamFactory) {
 		super(id, type, streamFactory);
@@ -64,15 +63,8 @@ public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> exten
 	}
 
 	@Override
-	public final void process() {
-		IN inTuple = getInputStream(getId()).getNextTuple();
-		if (inTuple != null) {
-			List<OUT> outTuples = processTupleIn1(inTuple);
-			if (outTuples != null) {
-				for (OUT t : outTuples)
-					getOutputStream(getId()).addTuple(t);
-			}
-		}
+	public void run() {
+		processCommand.run();
 	}
 
 }

@@ -9,6 +9,7 @@ import stream.Stream;
 public class SourceDecorator<T extends Tuple> implements Source<T> {
 
 	private final Source<T> decorated;
+	private final ProcessCommandSource<T> processCommand = new ProcessCommandSource<>(this);
 
 	public SourceDecorator(Source<T> decorated) {
 		this.decorated = decorated;
@@ -31,7 +32,7 @@ public class SourceDecorator<T extends Tuple> implements Source<T> {
 
 	@Override
 	public void run() {
-		decorated.run();
+		processCommand.run();
 	}
 
 	@Override

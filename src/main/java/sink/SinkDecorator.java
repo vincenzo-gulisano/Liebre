@@ -9,6 +9,7 @@ import stream.Stream;
 public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 
 	private final Sink<IN> decorated;
+	private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
 
 	public SinkDecorator(Sink<IN> decorated) {
 		this.decorated = decorated;
@@ -31,7 +32,7 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 
 	@Override
 	public void run() {
-		decorated.run();
+		processCommand.run();
 	}
 
 	@Override

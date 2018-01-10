@@ -32,6 +32,7 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	private final BoxState<Tuple, T> state;
 	private final String OUTPUT_KEY = "OUTPUT";
 	private final SourceFunction<T> function;
+	private final ProcessCommandSource<T> processCommand = new ProcessCommandSource<>(this);
 
 	public BaseSource(String id, SourceFunction<T> function) {
 		state = new BoxState<>(id, BoxType.SOURCE, null);
@@ -50,9 +51,7 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 
 	@Override
 	public void run() {
-		while (state.isEnabled()) {
-			process();
-		}
+		processCommand.run();
 	}
 
 	@Override
@@ -75,13 +74,6 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	@Override
 	public boolean isEnabled() {
 		return state.isEnabled();
-	}
-
-	public final void process() {
-		T t = getNextTuple();
-		if (t != null) {
-			getOutputStream(getId()).addTuple(t);
-		}
 	}
 
 	@Override

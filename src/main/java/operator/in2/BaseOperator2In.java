@@ -20,7 +20,6 @@
 package operator.in2;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 import common.BoxState;
@@ -39,6 +38,8 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	private final String INPUT1_KEY = "INPUT1";
 	private final String INPUT2_KEY = "INPUT2";
 	private final String OUTPUT_KEY = "OUTPUT";
+
+	private final ProcessCommand2In<IN, IN2, OUT> processCommand = new ProcessCommand2In<>(this);
 
 	public BaseOperator2In(String id, StreamFactory streamFactory) {
 		state = new BoxState<>(id, BoxType.OPERATOR2IN, streamFactory);
@@ -90,9 +91,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public void run() {
-		if (state.isEnabled()) {
-			process();
-		}
+		processCommand.run();
 	}
 
 	@Override
@@ -113,25 +112,6 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	@Override
 	public Operator<IN2, OUT> secondInputView() {
 		return new SecondInputOperator2InAdapter<>(this);
-	}
-
-	public void process() {
-		IN inTuple1 = getInputStream(getId()).getNextTuple();
-		if (inTuple1 != null) {
-			List<OUT> outTuples = processTupleIn1(inTuple1);
-			if (outTuples != null) {
-				for (OUT t : outTuples)
-					getOutputStream(getId()).addTuple(t);
-			}
-		}
-		IN2 inTuple2 = getInput2Stream(getId()).getNextTuple();
-		if (inTuple2 != null) {
-			List<OUT> outTuples = processTupleIn2(inTuple2);
-			if (outTuples != null) {
-				for (OUT t : outTuples)
-					getOutputStream(getId()).addTuple(t);
-			}
-		}
 	}
 
 	@Override

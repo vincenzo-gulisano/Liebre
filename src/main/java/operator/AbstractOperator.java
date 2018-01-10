@@ -18,8 +18,6 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 		state = new BoxState<>(id, type, streamFactory);
 	}
 
-	public abstract void process();
-
 	@Override
 	public Collection<StreamConsumer<OUT>> getNext() {
 		return state.getNext();
@@ -28,13 +26,6 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	@Override
 	public Collection<StreamProducer<?>> getPrevious() {
 		return state.getPrevious();
-	}
-
-	@Override
-	public void run() {
-		if (state.isEnabled()) {
-			process();
-		}
 	}
 
 	@Override
