@@ -8,15 +8,10 @@ import stream.StreamStatistic;
 public class ConcurrentLinkedListStreamStatisticFactory implements StreamFactory {
 
 	private final String folder;
-	private final String inRateExension;
-	private final String outRateExtension;
 	private final boolean autoFlush;
 
-	public ConcurrentLinkedListStreamStatisticFactory(String folder, String inRateExtension, String outRateExtension,
-			boolean autoFlush) {
+	public ConcurrentLinkedListStreamStatisticFactory(String folder, boolean autoFlush) {
 		this.folder = folder;
-		this.inRateExension = inRateExtension;
-		this.outRateExtension = outRateExtension;
 		this.autoFlush = autoFlush;
 	}
 

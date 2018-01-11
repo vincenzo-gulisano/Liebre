@@ -82,9 +82,6 @@ public class Query {
 	private final Scheduler scheduler;
 	private StreamFactory streamFactory = ConcurrentLinkedListStreamFactory.INSTANCE;
 
-	private static final String STREAM_IN_FILE_EXTENSION = "in";
-	private static final String STREAM_OUT_FILE_EXTENION = "out";
-
 	public Query() {
 		this.scheduler = new NoopScheduler();
 	}
@@ -97,8 +94,7 @@ public class Query {
 		this.keepStatistics = true;
 		this.statsFolder = statisticsFolder;
 		this.autoFlush = autoFlush;
-		streamFactory = new ConcurrentLinkedListStreamStatisticFactory(statisticsFolder, STREAM_IN_FILE_EXTENSION,
-				STREAM_OUT_FILE_EXTENION, autoFlush);
+		streamFactory = new ConcurrentLinkedListStreamStatisticFactory(statisticsFolder, autoFlush);
 	}
 
 	public void activateStatistics(String statisticsFolder) {

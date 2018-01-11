@@ -17,7 +17,7 @@ import query.Query;
 import query.QueryConfiguration;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
-import scheduling.impl.PriorityTaskPool2;
+import scheduling.impl.ProbabilisticTaskPool;
 import scheduling.impl.ThreadPoolScheduler;
 import sink.Sink;
 import sink.SinkFunction;
@@ -211,7 +211,8 @@ public class ActivePeriod {
 		// Query creation
 		Query q;
 		if (config.isSchedulingEnabled()) { // If scheduling enabled, configure
-			TaskPool<Operator<?, ?>> pool = new PriorityTaskPool2(config.getPriorityMetric());
+			TaskPool<Operator<?, ?>> pool = new ProbabilisticTaskPool(config.getPriorityMetric(),
+					config.getThreadsNumber(), config.getPriorityScalingFactor());
 			Scheduler scheduler = new ThreadPoolScheduler(config.getThreadsNumber(), config.getSchedulingInterval(),
 					TimeUnit.MILLISECONDS, pool);
 			q = new Query(scheduler);

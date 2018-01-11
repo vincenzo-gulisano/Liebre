@@ -18,11 +18,11 @@ public class PriorityTaskPool2 implements TaskPool<Operator<?, ?>> {
 	private final AtomicReference<List<OperatorPriority>> priorities = new AtomicReference<>(new ArrayList<>());
 	private final AtomicLong ctr = new AtomicLong(0);
 	private volatile int nTasks = 0;
-	// FIXME: VARIALBE!
-	private final long N_THREADS = 7;
+	private final long nThreads;
 
-	public PriorityTaskPool2(PriorityMetric metric) {
+	public PriorityTaskPool2(PriorityMetric metric, int nThreads) {
 		this.metric = metric;
+		this.nThreads = nThreads;
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class PriorityTaskPool2 implements TaskPool<Operator<?, ?>> {
 			}
 			Collections.sort(newPriorities);
 			priorities.set(newPriorities);
-			ctr.set((threadId + 1) % N_THREADS);
+			ctr.set((threadId + 1) % nThreads);
 			// System.out.println("Set ctr to " + ((threadId + 1) % N_THREADS));
 		}
 		List<OperatorPriority> currentPriorities = priorities.get();

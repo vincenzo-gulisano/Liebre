@@ -147,7 +147,8 @@ public class SampleQuery {
 			// TaskPool<Operator<?, ?>> pool = new
 			// PriorityTaskPool(config.getPriorityMetric(),
 			// config.getHelperThreadsNumber(), config.getHelperThreadInterval());
-			TaskPool<Operator<?, ?>> pool = new PriorityTaskPool2(config.getPriorityMetric());
+			TaskPool<Operator<?, ?>> pool = new PriorityTaskPool2(config.getPriorityMetric(),
+					config.getThreadsNumber());
 
 			Scheduler scheduler = new ThreadPoolScheduler(config.getThreadsNumber(), config.getSchedulingInterval(),
 					TimeUnit.MILLISECONDS, pool);
@@ -168,9 +169,9 @@ public class SampleQuery {
 		Operator<DummyTuple, DummyTuple> C = q.addMapOperator("C",
 				new DummyMapFunction(Selectivity.C, ProcessingRate.C));
 		Sink<DummyTuple> o1 = q.addBaseSink("O1",
-				new DummyLatencyLogger(statisticsFolder + File.separator + "O1.latency.csv"));
+				new DummyLatencyLogger(statisticsFolder + File.separator + "SINK_" + "O1.latency.csv"));
 		Sink<DummyTuple> o2 = q.addBaseSink("O2",
-				new DummyLatencyLogger(statisticsFolder + File.separator + "O2.latency.csv"));
+				new DummyLatencyLogger(statisticsFolder + File.separator + "SINK_" + "O2.latency.csv"));
 
 		i1.addOutput(A);
 		A.addOutput(B);
@@ -189,7 +190,7 @@ public class SampleQuery {
 				new DummyMapFunction(Selectivity.F, ProcessingRate.F));
 
 		Sink<DummyTuple> o3 = q.addBaseSink("O3",
-				new DummyLatencyLogger(statisticsFolder + File.separator + "O3.latency.csv"));
+				new DummyLatencyLogger(statisticsFolder + File.separator + "SINK_" + "O3.latency.csv"));
 
 		i2.addOutput(D);
 		D.addOutput(E);
@@ -210,7 +211,7 @@ public class SampleQuery {
 				new DummyMapFunction(Selectivity.L, ProcessingRate.L));
 
 		Sink<DummyTuple> o4 = q.addBaseSink("O4",
-				new DummyLatencyLogger(statisticsFolder + File.separator + "O4.latency.csv"));
+				new DummyLatencyLogger(statisticsFolder + File.separator + "SINK_" + "O4.latency.csv"));
 
 		i3.addOutput(G);
 		i4.addOutput(H);
@@ -228,7 +229,7 @@ public class SampleQuery {
 				new DummyMapFunction(Selectivity.N, ProcessingRate.N));
 
 		Sink<DummyTuple> o5 = q.addBaseSink("O5",
-				new DummyLatencyLogger(statisticsFolder + File.separator + "O5.latency.csv"));
+				new DummyLatencyLogger(statisticsFolder + File.separator + "SINK_" + "O5.latency.csv"));
 
 		i5.addOutput(M);
 		M.addOutput(N);
