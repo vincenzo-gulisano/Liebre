@@ -77,6 +77,7 @@ public class ProbabilisticTaskPool implements TaskPool<Operator<?, ?>> {
 	}
 
 	private void updatePriorities() {
+		// FIXME: Shared array, do not create it each time
 		List<Double> probabilities = new ArrayList<>();
 		double prioritySum = 0;
 		for (Operator<?, ?> operator : operators) {

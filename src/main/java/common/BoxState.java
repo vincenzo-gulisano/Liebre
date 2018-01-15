@@ -99,7 +99,6 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		for (Stream<?> input : inputs.values()) {
 			input.disable();
 		}
-		System.out.println("Disabling " + getId());
 		this.enabled = false;
 	}
 
