@@ -19,7 +19,6 @@
 
 package source;
 
-import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
@@ -27,7 +26,7 @@ import stream.StreamFactory;
 
 public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 
-	private final AverageStatistic processingTimeStat;
+	private final CountStatistic processingTimeStat;
 	private final CountStatistic executionsStat;
 
 	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFolder) {
@@ -36,7 +35,7 @@ public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 
 	public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFolder, boolean autoFlush) {
 		super(source);
-		this.processingTimeStat = new AverageStatistic(StatisticFilename.INSTANCE.get(outputFolder, source, "proc"),
+		this.processingTimeStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, source, "proc"),
 				autoFlush);
 		this.executionsStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, source, "runs"),
 				autoFlush);

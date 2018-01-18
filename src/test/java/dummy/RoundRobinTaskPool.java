@@ -14,7 +14,7 @@ import scheduling.TaskPool;
  * @author palivosd
  *
  */
-public class FifoTaskPool implements TaskPool<Operator<?, ?>> {
+public class RoundRobinTaskPool implements TaskPool<Operator<?, ?>> {
 
 	private final LinkedBlockingQueue<Operator<?, ?>> tasks = new LinkedBlockingQueue<>();
 	private final ConcurrentHashMap<String, LongAdder> executions = new ConcurrentHashMap<>();

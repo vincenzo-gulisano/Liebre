@@ -19,13 +19,14 @@
 
 package sink;
 
-import common.statistic.AverageStatistic;
+import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 
 public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
-	private final AverageStatistic processingTimeStat;
+	private final CountStatistic processingTimeStat;
+	private final CountStatistic executionsStat;
 
 	public SinkStatistic(Sink<T> sink, String outputFolder) {
 		this(sink, outputFolder, true);
@@ -33,19 +34,22 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
 	public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
 		super(sink);
-		this.processingTimeStat = new AverageStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "proc"),
+		this.processingTimeStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "proc"),
 				autoFlush);
+		this.executionsStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "runs"), autoFlush);
 	}
 
 	@Override
 	public void enable() {
 		super.enable();
 		processingTimeStat.enable();
+		executionsStat.enable();
 	}
 
 	@Override
 	public void disable() {
 		processingTimeStat.disable();
+		executionsStat.disable();
 		super.disable();
 	}
 
@@ -54,5 +58,6 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 		long start = System.nanoTime();
 		super.processTuple(tuple);
 		processingTimeStat.append(System.nanoTime() - start);
+		executionsStat.append(1L);
 	}
 }

@@ -1,76 +1,46 @@
 package common.util;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Random;
 
 //FIXME: Cite author
-public class AliasMethod {
+public class FastAliasMethod {
 	/* The random number generator used to sample from the distribution. */
 	private final Random random;
 
 	/* The probability and alias tables. */
 	private final int[] alias;
 	private final double[] probability;
+	private final double average;
+	private boolean enabled;
+	private final Deque<Integer> small = new ArrayDeque<Integer>();
+	private final Deque<Integer> large = new ArrayDeque<Integer>();
 
-	/**
-	 * Constructs a new AliasMethod to sample from a discrete distribution and hand
-	 * back outcomes based on the probability distribution.
-	 * <p>
-	 * Given as input a list of probabilities corresponding to outcomes 0, 1, ..., n
-	 * - 1, this constructor creates the probability and alias tables needed to
-	 * efficiently sample from this distribution.
-	 *
-	 * @param probabilities
-	 *            The list of probabilities.
-	 */
-	public AliasMethod(List<Double> probabilities) {
-		this(probabilities, new Random());
+	public FastAliasMethod(int N, Random random) {
+		if (N <= 0 || random == null) {
+			throw new IllegalArgumentException();
+		}
+		this.alias = new int[N];
+		this.probability = new double[N];
+		this.average = 1.0 / N;
+		this.random = random;
 	}
 
 	/**
-	 * Constructs a new AliasMethod to sample from a discrete distribution and hand
-	 * back outcomes based on the probability distribution.
-	 * <p>
-	 * Given as input a list of probabilities corresponding to outcomes 0, 1, ..., n
-	 * - 1, along with the random number generator that should be used as the
-	 * underlying generator, this constructor creates the probability and alias
-	 * tables needed to efficiently sample from this distribution.
-	 *
+	 * Initialize the Alias method. For efficiency reasons, the probabilities list
+	 * provided will be altered. If you do not want this, provide a copy of the list
+	 * instead.
+	 * 
 	 * @param probabilities
-	 *            The list of probabilities.
-	 * @param random
-	 *            The random number generator
 	 */
-	public AliasMethod(List<Double> probabilities, Random random) {
-		/* Begin by doing basic structural checks on the inputs. */
-		if (probabilities == null || random == null)
-			throw new NullPointerException();
-		if (probabilities.size() == 0)
-			throw new IllegalArgumentException("Probability vector must be nonempty.");
-
-		/* Allocate space for the probability and alias tables. */
-		probability = new double[probabilities.size()];
-		alias = new int[probabilities.size()];
-
-		/* Store the underlying generator. */
-		this.random = random;
-
-		/* Compute the average probability and cache it for later use. */
-		final double average = 1.0 / probabilities.size();
-
-		/*
-		 * Make a copy of the probabilities list, since we will be making changes to it.
-		 */
-		// FIXME: Optimize
-		probabilities = new ArrayList<Double>(probabilities);
-
-		/* Create two stacks to act as worklists as we populate the tables. */
-		Deque<Integer> small = new ArrayDeque<Integer>();
-		Deque<Integer> large = new ArrayDeque<Integer>();
-
+	public void init(List<Double> probabilities) {
+		if (probabilities.size() != probability.length) {
+			throw new IllegalArgumentException(String.format(
+					"The Alias method has been initialized with size %d but got an list of size %d instead",
+					alias.length, probabilities.size()));
+		}
 		/* Populate the stacks with the input probabilities. */
 		for (int i = 0; i < probabilities.size(); ++i) {
 			/*
@@ -111,8 +81,7 @@ public class AliasMethod {
 			 * If the new probability is less than the average, add it into the small list;
 			 * otherwise add it to the large list.
 			 */
-			// FIXME: Optimize
-			if (probabilities.get(more) >= 1.0 / probabilities.size())
+			if (probabilities.get(more) >= average)
 				large.add(more);
 			else
 				small.add(more);
@@ -128,6 +97,7 @@ public class AliasMethod {
 			probability[small.removeLast()] = 1.0;
 		while (!large.isEmpty())
 			probability[large.removeLast()] = 1.0;
+		enabled = true;
 	}
 
 	/**
@@ -136,6 +106,9 @@ public class AliasMethod {
 	 * @return A random value sampled from the underlying distribution.
 	 */
 	public int next() {
+		if (!enabled) {
+			throw new IllegalStateException("Call init() first!");
+		}
 		/* Generate a fair die roll to determine which column to inspect. */
 		int column = random.nextInt(probability.length);
 

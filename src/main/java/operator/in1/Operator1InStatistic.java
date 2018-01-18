@@ -21,14 +21,13 @@ package operator.in1;
 
 import java.util.List;
 
-import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 
 public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends Operator1InDecorator<IN, OUT> {
 
-	private final AverageStatistic processingTimeStat;
+	private final CountStatistic processingTimeStat;
 	private final CountStatistic executionsStat;
 
 	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder) {
@@ -37,7 +36,7 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends O
 
 	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder, boolean autoFlush) {
 		super(operator);
-		this.processingTimeStat = new AverageStatistic(StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"),
+		this.processingTimeStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"),
 				autoFlush);
 		this.executionsStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, operator, "runs"),
 				autoFlush);

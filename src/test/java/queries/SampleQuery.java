@@ -16,13 +16,16 @@ import dummy.DummyMapFunction;
 import dummy.DummyRouterFunction;
 import dummy.DummySourceFunction;
 import dummy.DummyTuple;
+import dummy.RoundRobinTaskPool;
 import operator.Operator;
 import operator.in2.Operator2In;
 import query.Query;
 import query.QueryConfiguration;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
+import scheduling.impl.PriorityTaskPool;
 import scheduling.impl.PriorityTaskPool2;
+import scheduling.impl.ProbabilisticTaskPool;
 import scheduling.impl.ThreadPoolScheduler;
 import sink.Sink;
 import source.Source;
@@ -142,14 +145,27 @@ public class SampleQuery {
 		final QueryConfiguration config = new QueryConfiguration(PROPERTY_FILENAME, SampleQuery.class);
 
 		// Query creation
-		Query q;
+		final Query q;
+		final TaskPool<Operator<?, ?>> pool;
 		if (config.isSchedulingEnabled()) { // If scheduling enabled, configure
-			// TaskPool<Operator<?, ?>> pool = new
-			// PriorityTaskPool(config.getPriorityMetric(),
-			// config.getHelperThreadsNumber(), config.getHelperThreadInterval());
-			TaskPool<Operator<?, ?>> pool = new PriorityTaskPool2(config.getPriorityMetric(),
-					config.getThreadsNumber());
-
+			switch (config.getTaskPoolType()) {
+			case 0:
+				pool = new RoundRobinTaskPool();
+				break;
+			case 1:
+				pool = new PriorityTaskPool(config.getPriorityMetric(), config.getHelperThreadsNumber(),
+						config.getHelperThreadInterval());
+				break;
+			case 2:
+				pool = new PriorityTaskPool2(config.getPriorityMetric(), config.getThreadsNumber());
+				break;
+			case 3:
+				pool = new ProbabilisticTaskPool(config.getPriorityMetric(), config.getThreadsNumber(),
+						config.getPriorityScalingFactor(), statisticsFolder);
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown TaskPool type!");
+			}
 			Scheduler scheduler = new ThreadPoolScheduler(config.getThreadsNumber(), config.getSchedulingInterval(),
 					TimeUnit.MILLISECONDS, pool);
 			q = new Query(scheduler);

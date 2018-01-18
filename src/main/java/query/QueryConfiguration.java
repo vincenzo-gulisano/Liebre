@@ -18,6 +18,7 @@ public class QueryConfiguration {
 	private static final String PRIORITY_METRIC_KEY = "liebre.scheduling.metric.name";
 	private static final String TASK_POOL_TYPE = "liebre.scheduling.task.pool.type";
 	private static final String PRIORITY_SCALING_FACTOR = "liebre.scheduling.priority.scaling";
+	private static final String TASK_POOL_STATISTICS = "liebre.scheduling.task.pool.statistics";
 
 	private final List<PriorityMetric> availableMetrics = Arrays.asList(QueueSizePriorityMetric.INSTANCE,
 			StimulusPriorityMetric.INSTANCE, CombinedPriorityMetric.INSTANCE);
@@ -30,6 +31,7 @@ public class QueryConfiguration {
 	private final PriorityMetric priorityMetric;
 	private final int taskPoolType;
 	private final int priorityScalingFactor;
+	private final boolean taskPoolStatisticsEnabled;
 
 	private final PropertyFileLoader properties;
 
@@ -44,6 +46,7 @@ public class QueryConfiguration {
 		this.priorityScalingFactor = Integer.parseInt(getProperty(PRIORITY_SCALING_FACTOR));
 		String priorityMetricName = getProperty(PRIORITY_METRIC_KEY);
 		this.priorityMetric = getObjectByName(priorityMetricName, availableMetrics);
+		this.taskPoolStatisticsEnabled = Boolean.parseBoolean(getProperty(TASK_POOL_STATISTICS));
 	}
 
 	private <T> T getObjectByName(String name, List<T> availableObjects) {
@@ -100,6 +103,10 @@ public class QueryConfiguration {
 		return priorityScalingFactor;
 	}
 
+	public boolean isTaskPoolStatisticsEnabled() {
+		return taskPoolStatisticsEnabled;
+	}
+
 	public PriorityMetric getPriorityMetric() {
 		return priorityMetric;
 	}
@@ -109,7 +116,8 @@ public class QueryConfiguration {
 		return "QueryConfiguration [schedulingEnabled=" + schedulingEnabled + ", threadsNumber=" + threadsNumber
 				+ ", schedulingInterval=" + schedulingInterval + ", helperThreadsNumber=" + helperThreadsNumber
 				+ ", helperThreadInterval=" + helperThreadInterval + ", priorityMetric=" + priorityMetric
-				+ ", taskPoolType=" + taskPoolType + ", priorityScalingFactor=" + priorityScalingFactor + "]";
+				+ ", taskPoolType=" + taskPoolType + ", priorityScalingFactor=" + priorityScalingFactor
+				+ ", taskPoolStatisticsEnabled=" + taskPoolStatisticsEnabled + "]";
 	}
 
 }

@@ -212,7 +212,7 @@ public class ActivePeriod {
 		Query q;
 		if (config.isSchedulingEnabled()) { // If scheduling enabled, configure
 			TaskPool<Operator<?, ?>> pool = new ProbabilisticTaskPool(config.getPriorityMetric(),
-					config.getThreadsNumber(), config.getPriorityScalingFactor());
+					config.getThreadsNumber(), config.getPriorityScalingFactor(), statisticsFolder);
 			Scheduler scheduler = new ThreadPoolScheduler(config.getThreadsNumber(), config.getSchedulingInterval(),
 					TimeUnit.MILLISECONDS, pool);
 			q = new Query(scheduler);

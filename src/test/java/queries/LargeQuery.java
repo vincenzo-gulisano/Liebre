@@ -79,7 +79,7 @@ public class LargeQuery {
 				break;
 			case 3:
 				pool = new ProbabilisticTaskPool(config.getPriorityMetric(), config.getThreadsNumber(),
-						config.getPriorityScalingFactor());
+						config.getPriorityScalingFactor(), statisticsFolder);
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown TaskPool type!");

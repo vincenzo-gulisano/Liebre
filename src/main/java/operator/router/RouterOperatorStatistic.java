@@ -21,19 +21,18 @@ package operator.router;
 
 import java.util.List;
 
-import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 
 public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDecorator<T> {
 
-	private final AverageStatistic processingTimeStat;
+	private final CountStatistic processingTimeStat;
 	private final CountStatistic executionsStat;
 
 	public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFolder, boolean autoFlush) {
 		super(decorated);
-		this.processingTimeStat = new AverageStatistic(StatisticFilename.INSTANCE.get(outputFolder, decorated, "proc"),
+		this.processingTimeStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, decorated, "proc"),
 				autoFlush);
 		this.executionsStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, decorated, "runs"),
 				autoFlush);
