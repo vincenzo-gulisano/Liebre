@@ -19,11 +19,9 @@
 
 package common.util;
 
-import java.util.Random;
-
 public class Util {
 
-	public static volatile long LOOPS_PER_MILLI = 10000;
+	public static volatile long LOOPS_PER_MILLI = 100000;
 
 	public static void sleep(long millis) {
 		try {
@@ -36,10 +34,9 @@ public class Util {
 	}
 
 	public static long busySleep(long millis) {
-		Random r = new Random();
-		int dummy = 0;
+		long dummy = 0;
 		for (long i = 0; i < millis * LOOPS_PER_MILLI; i++) {
-			dummy = r.nextInt();
+			dummy = (dummy + System.currentTimeMillis()) % millis;
 		}
 		return dummy;
 	}

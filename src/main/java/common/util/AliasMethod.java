@@ -111,8 +111,7 @@ public class AliasMethod {
 			 * If the new probability is less than the average, add it into the small list;
 			 * otherwise add it to the large list.
 			 */
-			// FIXME: Optimize
-			if (probabilities.get(more) >= 1.0 / probabilities.size())
+			if (probabilities.get(more) >= average)
 				large.add(more);
 			else
 				small.add(more);
