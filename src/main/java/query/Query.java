@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,7 +53,9 @@ import operator.router.BaseRouterOperator;
 import operator.router.RouterFunction;
 import operator.router.RouterOperator;
 import operator.router.RouterOperatorStatistic;
+import scheduling.ActiveThread;
 import scheduling.Scheduler;
+import scheduling.impl.BasicWorkerThread;
 import scheduling.impl.NoopScheduler;
 import sink.BaseSink;
 import sink.Sink;
@@ -78,7 +79,7 @@ public class Query {
 	private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
 	private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
 
-	private final List<Thread> threads = new LinkedList<>();
+	private final List<ActiveThread> threads = new ArrayList<>();
 	private final Scheduler scheduler;
 	private StreamFactory streamFactory = ConcurrentLinkedListStreamFactory.INSTANCE;
 
@@ -94,7 +95,7 @@ public class Query {
 		this.keepStatistics = true;
 		this.statsFolder = statisticsFolder;
 		this.autoFlush = autoFlush;
-		streamFactory = new ConcurrentLinkedListStreamStatisticFactory(statisticsFolder, autoFlush);
+		streamFactory = new StreamStatisticFactory(streamFactory, statisticsFolder, autoFlush);
 	}
 
 	public void activateStatistics(String statisticsFolder) {
@@ -243,11 +244,13 @@ public class Query {
 		deactivateTasks(sources.values());
 		System.out.println("*** [Query] Waiting for threads to terminate...");
 		scheduler.stopTasks();
-		for (Thread t : threads) {
+		for (ActiveThread t : threads) {
 			try {
+				t.disable();
 				t.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+				Thread.currentThread().interrupt();
 			}
 		}
 		System.out.println("*** [Query] Done!");
@@ -257,7 +260,7 @@ public class Query {
 		for (Active task : tasks) {
 			task.enable();
 			if (task instanceof Runnable) {
-				Thread t = new Thread((Runnable) task);
+				ActiveThread t = new BasicWorkerThread((Runnable) task);
 				t.start();
 				threads.add(t);
 			}

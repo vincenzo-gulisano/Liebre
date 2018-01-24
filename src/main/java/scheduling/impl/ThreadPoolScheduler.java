@@ -12,12 +12,12 @@ import scheduling.TaskPool;
 public class ThreadPoolScheduler implements Scheduler {
 
 	private final TaskPool<Operator<?, ?>> availableTasks;
-	private final List<WorkerThread> workers = new ArrayList<>();
+	private final List<PoolWorkerThread> workers = new ArrayList<>();
 
 	public ThreadPoolScheduler(int nThreads, long quantum, TimeUnit unit, TaskPool<Operator<?, ?>> availableTasks) {
 		this.availableTasks = availableTasks;
 		for (int i = 0; i < nThreads; i++) {
-			workers.add(new WorkerThread(availableTasks, quantum, unit));
+			workers.add(new PoolWorkerThread(availableTasks, quantum, unit));
 		}
 	}
 
@@ -31,7 +31,7 @@ public class ThreadPoolScheduler implements Scheduler {
 	@Override
 	public void startTasks() {
 		availableTasks.enable();
-		for (WorkerThread workerThread : workers) {
+		for (PoolWorkerThread workerThread : workers) {
 			workerThread.enable();
 			workerThread.start();
 		}
@@ -40,7 +40,7 @@ public class ThreadPoolScheduler implements Scheduler {
 
 	@Override
 	public void stopTasks() {
-		for (WorkerThread workerThread : workers) {
+		for (PoolWorkerThread workerThread : workers) {
 			try {
 				workerThread.disable();
 				workerThread.join();

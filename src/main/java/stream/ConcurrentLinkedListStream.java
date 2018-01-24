@@ -26,24 +26,28 @@ import common.util.BackOff;
 
 public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
+	private static final long WRITER_BACKOFF_LIMIT = 50;
+	private static final long WRITER_RELAX_LIMIT = 25;
+
 	private ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
-	private BackOff writerBackOff, readerBackOff;
+	private final BackOff writerBackOff, readerBackOff;
 	private volatile long tuplesWritten, tuplesRead;
 	private final String id;
 
 	public ConcurrentLinkedListStream(String id) {
 		this.id = id;
-		writerBackOff = new BackOff(1, 20, 5);
-		readerBackOff = new BackOff(1, 20, 5);
+		writerBackOff = BackOff.newDecreasing(10, 1000, 5);
+		readerBackOff = BackOff.newDecreasing(1, 20, 5);
 		tuplesWritten = 0;
 		tuplesRead = 0;
 	}
 
 	@Override
 	public void addTuple(T tuple) {
-		if (tuplesWritten - tuplesRead > 10000)
+		// FIXME: Do nothing if disabled
+		if (size() > WRITER_BACKOFF_LIMIT)
 			writerBackOff.backoff();
-		else if (tuplesWritten - tuplesRead < 1000)
+		else if (size() < WRITER_RELAX_LIMIT)
 			writerBackOff.relax();
 		stream.add(tuple);
 		tuplesWritten++;
@@ -51,6 +55,7 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public T getNextTuple() {
+		// FIXME: Do nothing if disabled
 		T nextTuple = stream.poll();
 		if (nextTuple == null) {
 			readerBackOff.backoff();

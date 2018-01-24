@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 
 import operator.Operator;
-import scheduling.ActiveThread;
 import scheduling.Scheduler;
 
 /**
@@ -17,23 +16,7 @@ import scheduling.Scheduler;
  */
 public class NoopScheduler implements Scheduler {
 	private final List<Runnable> operators = new ArrayList<>();
-	private final List<OneToOneWorkerThread> threads = new ArrayList<>();
-
-	private static class OneToOneWorkerThread extends ActiveThread {
-
-		private final Runnable task;
-
-		public OneToOneWorkerThread(Runnable task) {
-			this.task = task;
-		}
-
-		@Override
-		public void doRun() {
-			task.run();
-
-		}
-
-	}
+	private final List<BasicWorkerThread> threads = new ArrayList<>();
 
 	@Override
 	public void addTasks(Collection<? extends Operator<?, ?>> tasks) {
@@ -43,7 +26,7 @@ public class NoopScheduler implements Scheduler {
 	@Override
 	public void startTasks() {
 		for (Runnable operator : operators) {
-			OneToOneWorkerThread thread = new OneToOneWorkerThread(operator);
+			BasicWorkerThread thread = new BasicWorkerThread(operator);
 			threads.add(thread);
 			thread.enable();
 			thread.start();
@@ -52,7 +35,7 @@ public class NoopScheduler implements Scheduler {
 
 	@Override
 	public void stopTasks() {
-		for (OneToOneWorkerThread thread : threads) {
+		for (BasicWorkerThread thread : threads) {
 			try {
 				thread.disable();
 				thread.join();

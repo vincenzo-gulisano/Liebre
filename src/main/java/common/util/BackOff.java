@@ -23,17 +23,24 @@ import java.util.Random;
 
 public class BackOff {
 
+	private final Random rand = new Random();
 	final int min, max, retries;
-	int currentLimit, currentRetries;
-	Random rand;
+	int currentRetries, currentLimit;
 
-	public BackOff(int min, int max, int retries) {
+	public static BackOff newIncreasing(int min, int max, int retries) {
+		return new BackOff(min, max, min, retries, retries);
+	}
+
+	public static BackOff newDecreasing(int min, int max, int retries) {
+		return new BackOff(min, max, max, retries, 0);
+	}
+
+	protected BackOff(int min, int max, int currentLimit, int retries, int currentRetries) {
 		this.min = min;
 		this.max = max;
 		this.retries = retries;
-		rand = new Random();
-		currentLimit = min;
-		currentRetries = retries;
+		this.currentLimit = currentLimit;
+		this.currentRetries = currentRetries;
 	}
 
 	public void backoff() {
@@ -51,8 +58,10 @@ public class BackOff {
 	public void relax() {
 		if (currentRetries < retries) {
 			currentRetries++;
-			if (currentRetries == retries)
+			if (currentRetries == retries) {
 				currentLimit = (currentLimit / 2 >= min) ? currentLimit / 2 : min;
+				currentRetries = 0;
+			}
 		}
 	}
 

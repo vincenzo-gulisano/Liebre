@@ -3,10 +3,13 @@ package scheduling.impl;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -24,7 +27,8 @@ public class ProbabilisticTaskPool implements TaskPool<Operator<?, ?>> {
 	private final PriorityMetric metric;
 	private final int nThreads;
 	private final AtomicLong ctr = new AtomicLong(0);
-	private ConcurrentHashMap<String, Boolean> available = new ConcurrentHashMap<>();
+	private volatile Map<String, Integer> operatorIndex;
+	private AtomicReferenceArray<Boolean> available;
 	private boolean enabled;
 
 	private final int priorityScalingFactor;
@@ -41,8 +45,8 @@ public class ProbabilisticTaskPool implements TaskPool<Operator<?, ?>> {
 		this.metric = metric;
 		this.nThreads = nThreads;
 		this.priorityScalingFactor = priorityScalingFactor;
+		// TODO: Refactor/remove
 		if (statisticsFolder != null) {
-			// TODO: Refactor/remove
 			try {
 				csv = new CSVPrinter(
 						new FileWriter(StatisticFilename.INSTANCE.get(statisticsFolder, "taskPool", "prio")),
@@ -67,6 +71,15 @@ public class ProbabilisticTaskPool implements TaskPool<Operator<?, ?>> {
 				throw new IllegalStateException(e);
 			}
 		}
+		// Initialize locks and operator index
+		available = new AtomicReferenceArray<>(operators.size());
+		Map<String, Integer> opIdx = new HashMap<>();
+		for (int i = 0; i < operators.size(); i++) {
+			opIdx.put(operators.get(i).getId(), i);
+			available.set(i, true);
+		}
+		operatorIndex = Collections.unmodifiableMap(opIdx);
+		// Initialize priorities
 		updatePriorities(1);
 		this.enabled = true;
 	}
@@ -94,7 +107,6 @@ public class ProbabilisticTaskPool implements TaskPool<Operator<?, ?>> {
 			throw new IllegalStateException("Cannot add operators in an enabled TaskPool!");
 		}
 		operators.add(task);
-		available.put(task.getId(), true);
 	}
 
 	@Override
@@ -106,16 +118,16 @@ public class ProbabilisticTaskPool implements TaskPool<Operator<?, ?>> {
 		AliasMethod alias = sampler.get();
 		while (true) {
 			int k = alias.next();
-			Operator<?, ?> chosenOperator = operators.get(k);
-			if (available.replace(chosenOperator.getId(), true, false)) {
-				return chosenOperator;
+			if (available.compareAndSet(k, true, false)) {
+				return operators.get(k);
 			}
 		}
 	}
 
 	@Override
 	public void put(Operator<?, ?> task) {
-		available.put(task.getId(), true);
+		int taskIndex = operatorIndex.get(task.getId());
+		available.set(taskIndex, true);
 
 	}
 
