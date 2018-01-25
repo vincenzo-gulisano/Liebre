@@ -31,5 +31,7 @@ public interface Stream<T extends Tuple> extends Active, NamedEntity {
 
 	public T peek();
 
+	public long remainingCapacity();
+
 	public long size();
 }

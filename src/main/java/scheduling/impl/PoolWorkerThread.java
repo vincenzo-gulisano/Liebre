@@ -33,7 +33,7 @@ public class PoolWorkerThread extends ActiveThread {
 		runs++;
 		// System.out.format("+ [T%d] %s%n", getId(), task);
 		long runUntil = System.nanoTime() + unit.toNanos(quantum);
-		while (System.nanoTime() < runUntil && task.hasInput()) {
+		while (System.nanoTime() < runUntil && task.hasInput() && task.hasOutput()) {
 			task.run();
 		}
 		start = System.nanoTime();

@@ -87,8 +87,12 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public long size() {
-		// Returns the approximate size of the stream
 		return tuplesWritten - tuplesRead;
+	}
+
+	@Override
+	public long remainingCapacity() {
+		return Long.MAX_VALUE;
 	}
 
 	@Override

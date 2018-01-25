@@ -1,21 +1,12 @@
 package operator;
 
 import java.util.Collection;
-import java.util.Comparator;
 
 import common.StreamProducer;
 import stream.Stream;
 
 public enum QueueSizePriorityMetric implements PriorityMetric {
 	INSTANCE;
-	private final Comparator<Operator<?, ?>> comparator = new Comparator<Operator<?, ?>>() {
-
-		@Override
-		public int compare(Operator<?, ?> o1, Operator<?, ?> o2) {
-			return compare(o1, o2);
-		}
-
-	};
 
 	@Override
 	public double getPriority(Operator<?, ?> operator) {
@@ -26,11 +17,6 @@ public enum QueueSizePriorityMetric implements PriorityMetric {
 			priority += input.size();
 		}
 		return priority;
-	}
-
-	@Override
-	public Comparator<Operator<?, ?>> comparator() {
-		return comparator;
 	}
 
 	@Override

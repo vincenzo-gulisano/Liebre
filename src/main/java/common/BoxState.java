@@ -170,10 +170,6 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return next.get(destId).getInputStream(src.getId());
 	}
 
-	private Stream<OUT> getOutputStream(String srcId, String destId) {
-		return next.get(destId).getInputStream(srcId);
-	}
-
 	public StreamFactory getStreamFactory() {
 		return this.factory;
 	}
@@ -197,8 +193,8 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	public boolean hasOutput() {
 		for (StreamConsumer<OUT> out : next.values()) {
-			Stream<OUT> output = getOutputStream(getId(), out.getId());
-			if (output.size() == 0) {
+			Stream<OUT> output = out.getInputStream(getId());
+			if (output.remainingCapacity() == 0) {
 				return false;
 			}
 		}

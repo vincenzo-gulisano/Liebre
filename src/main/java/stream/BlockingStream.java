@@ -7,10 +7,10 @@ import common.tuple.Tuple;
 
 public class BlockingStream<T extends Tuple> implements Stream<T> {
 
-	private static final int QUEUE_LIMIT = 100;
+	private static final int CAPACITY = 100;
 
 	private final String id;
-	private BlockingQueue<T> stream = new ArrayBlockingQueue<T>(QUEUE_LIMIT);
+	private BlockingQueue<T> stream = new ArrayBlockingQueue<T>(CAPACITY);
 	private volatile long tuplesWritten, tuplesRead;
 	private volatile boolean enabled;
 
@@ -73,6 +73,11 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 	@Override
 	public long size() {
 		return tuplesWritten - tuplesRead;
+	}
+
+	@Override
+	public long remainingCapacity() {
+		return CAPACITY - size();
 	}
 
 	@Override
