@@ -63,6 +63,11 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 	}
 
 	@Override
+	public boolean hasOutput() {
+		return decorated.hasOutput();
+	}
+
+	@Override
 	public String toString() {
 		return decorated.toString();
 	}

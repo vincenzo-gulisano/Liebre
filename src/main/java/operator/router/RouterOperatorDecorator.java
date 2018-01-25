@@ -23,6 +23,11 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 	}
 
 	@Override
+	public boolean hasOutput() {
+		return decorated.hasOutput();
+	}
+
+	@Override
 	public void run() {
 		processingCommand.run();
 	}

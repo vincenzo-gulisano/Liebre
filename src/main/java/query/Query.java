@@ -81,7 +81,7 @@ public class Query {
 
 	private final List<ActiveThread> threads = new ArrayList<>();
 	private final Scheduler scheduler;
-	private StreamFactory streamFactory = ConcurrentLinkedListStreamFactory.INSTANCE;
+	private StreamFactory streamFactory = BlockingStreamFactory.INSTANCE;
 
 	public Query() {
 		this.scheduler = new NoopScheduler();

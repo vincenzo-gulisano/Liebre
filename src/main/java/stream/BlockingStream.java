@@ -72,7 +72,6 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public long size() {
-		// Returns the approximate size of the stream
 		return tuplesWritten - tuplesRead;
 	}
 

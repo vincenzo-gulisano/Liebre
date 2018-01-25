@@ -34,6 +34,11 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	}
 
 	@Override
+	public boolean hasOutput() {
+		return state.hasOutput();
+	}
+
+	@Override
 	public void enable() {
 		state.enable();
 	}

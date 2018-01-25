@@ -164,10 +164,14 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return outTuples / (double) inTuples;
 	}
 
-	public Stream<OUT> getOutputStream(String key, StreamProducer<OUT> caller) {
+	public Stream<OUT> getOutputStream(String destId, StreamProducer<OUT> src) {
 		// The IDs of both ends of the stream are needed in case we have a router ->
 		// union/join connection
-		return next.get(key).getInputStream(caller.getId());
+		return next.get(destId).getInputStream(src.getId());
+	}
+
+	private Stream<OUT> getOutputStream(String srcId, String destId) {
+		return next.get(destId).getInputStream(srcId);
 	}
 
 	public StreamFactory getStreamFactory() {
@@ -184,11 +188,21 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	public boolean hasInput() {
 		for (Stream<?> in : inputs.values()) {
-			if (in.peek() != null) {
-				return true;
+			if (in.peek() == null) {
+				return false;
 			}
 		}
-		return false;
+		return true;
+	}
+
+	public boolean hasOutput() {
+		for (StreamConsumer<OUT> out : next.values()) {
+			Stream<OUT> output = getOutputStream(getId(), out.getId());
+			if (output.size() == 0) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

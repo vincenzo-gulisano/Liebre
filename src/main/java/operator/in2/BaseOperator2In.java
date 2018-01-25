@@ -125,6 +125,11 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
+	public boolean hasOutput() {
+		return state.hasOutput();
+	}
+
+	@Override
 	public String toString() {
 		return getId();
 	}
