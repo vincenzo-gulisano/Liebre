@@ -1,6 +1,7 @@
 package scheduling;
 
 import common.Active;
+import common.util.StopJvmUncaughtExceptionHandler;
 
 /**
  * Thread that can be stopped on demand.
@@ -9,6 +10,10 @@ import common.Active;
  *
  */
 public abstract class ActiveThread extends Thread implements Active {
+
+	public ActiveThread() {
+		setDefaultUncaughtExceptionHandler(StopJvmUncaughtExceptionHandler.INSTANCE);
+	}
 
 	@Override
 	public void run() {
