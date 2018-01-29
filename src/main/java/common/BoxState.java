@@ -2,10 +2,10 @@ package common;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 import common.tuple.Tuple;
@@ -59,10 +59,15 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	private final StreamFactory factory;
 	private volatile boolean enabled;
 
-	// FIXME: Unmodifiable objects instead of concurrent
-	private final Map<String, Stream<IN>> inputs = new ConcurrentHashMap<>();
-	private final List<StreamProducer<? extends Tuple>> previous = new CopyOnWriteArrayList<>();
-	private final Map<String, StreamConsumer<OUT>> next = new ConcurrentHashMap<>();
+	// Temporary data structures until init
+	private final Map<String, Stream<IN>> tempInputs = new HashMap<>();
+	private final List<StreamProducer<? extends Tuple>> tempPrevious = new ArrayList<>();
+	private final Map<String, StreamConsumer<OUT>> tempNext = new HashMap<>();
+
+	// Unmodifiable thread-safe objects
+	private volatile Map<String, Stream<IN>> inputs = tempInputs;
+	private volatile List<StreamProducer<? extends Tuple>> previous = tempPrevious;
+	private volatile Map<String, StreamConsumer<OUT>> next = tempNext;
 
 	private final BoxType type;
 
@@ -86,6 +91,10 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		if (!type.checkState(this)) {
 			throw new IllegalStateException(id);
 		}
+		// Initialize thread safe objects
+		this.inputs = Collections.unmodifiableMap(tempInputs);
+		this.next = Collections.unmodifiableMap(tempNext);
+		this.previous = Collections.unmodifiableList(tempPrevious);
 		for (Stream<?> input : inputs.values()) {
 			input.enable();
 		}
@@ -118,8 +127,8 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 			System.err.println(
 					"WARNING: It seems that you are explicitly registering inputs. Please use addOutput() instead!");
 		}
-		inputs.put(key, factory.newStream(in.getId(), id));
-		previous.add(in);
+		tempInputs.put(key, factory.newStream(in.getId(), id));
+		tempPrevious.add(in);
 	}
 
 	private boolean nextIsSet(StreamProducer<IN> prev, NamedEntity current) {
@@ -135,7 +144,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public void setOutput(String key, StreamConsumer<OUT> out, StreamProducer<OUT> caller) {
-		next.put(key, out);
+		tempNext.put(key, out);
 		out.registerIn(caller);
 	}
 
@@ -206,11 +215,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (enabled ? 1231 : 1237);
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((inputs == null) ? 0 : inputs.hashCode());
-		result = prime * result + ((next == null) ? 0 : next.hashCode());
-		result = prime * result + ((previous == null) ? 0 : previous.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -221,30 +226,13 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof BoxState))
 			return false;
 		BoxState<?, ?> other = (BoxState<?, ?>) obj;
-		if (enabled != other.enabled)
-			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
-			return false;
-		if (inputs == null) {
-			if (other.inputs != null)
-				return false;
-		} else if (!inputs.equals(other.inputs))
-			return false;
-		if (next == null) {
-			if (other.next != null)
-				return false;
-		} else if (!next.equals(other.next))
-			return false;
-		if (previous == null) {
-			if (other.previous != null)
-				return false;
-		} else if (!previous.equals(other.previous))
 			return false;
 		if (type != other.type)
 			return false;
