@@ -26,21 +26,25 @@ public class PoolWorkerThread extends ActiveThread {
 
 	@Override
 	public void doRun() {
-		long start = System.nanoTime();
-		long schedulingTime = 0;
+		// long start = System.nanoTime();
+		// long schedulingTime = 0;
 		Operator<?, ?> task = availableTasks.getNext(index);
-		schedulingTime += System.nanoTime() - start;
-		runs++;
+		if (task == null) {
+			System.err.format("[WARN] %s was not given an operator to execute. Ignoring...%n", this);
+			return;
+		}
+		// schedulingTime += System.nanoTime() - start;
+		// runs++;
 		// System.out.format("+ [T%d] %s%n", getId(), task);
 		long runUntil = System.nanoTime() + unit.toNanos(quantum);
 		while (System.nanoTime() < runUntil && task.hasInput() && task.hasOutput()) {
 			task.run();
 		}
-		start = System.nanoTime();
+		// start = System.nanoTime();
 		// System.out.format("- [T%d] %s%n", getId(), task);
 		availableTasks.put(task);
-		schedulingTime += System.nanoTime() - start;
-		time += schedulingTime;
+		// schedulingTime += System.nanoTime() - start;
+		// time += schedulingTime;
 	}
 
 	@Override
