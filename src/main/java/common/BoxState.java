@@ -59,6 +59,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	private final StreamFactory factory;
 	private volatile boolean enabled;
 
+	// FIXME: Unmodifiable objects instead of concurrent
 	private final Map<String, Stream<IN>> inputs = new ConcurrentHashMap<>();
 	private final List<StreamProducer<? extends Tuple>> previous = new CopyOnWriteArrayList<>();
 	private final Map<String, StreamConsumer<OUT>> next = new ConcurrentHashMap<>();

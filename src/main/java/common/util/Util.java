@@ -27,8 +27,7 @@ public class Util {
 		try {
 			Thread.sleep(millis);
 		} catch (InterruptedException e) {
-			// TODO: Just print that sleep was interrupted and who the caller was
-			e.printStackTrace();
+			System.out.format("[WARN] Sleep interrupted: %s%n", e.getStackTrace()[2]);
 			// Restore interruption status for thread
 			Thread.currentThread().interrupt();
 		}
