@@ -50,7 +50,8 @@ public class PoolWorkerThread extends ActiveThread {
 	@Override
 	public void disable() {
 		super.disable();
-		System.out.format("T%d Scheduling Average = %3.2f ns%n", getId(), time / (double) runs);
+		// System.out.format("T%d Scheduling Average = %3.2f ns%n", getId(), time /
+		// (double) runs);
 	}
 
 }

@@ -175,16 +175,9 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public Stream<OUT> getOutputStream(String destId, StreamProducer<OUT> src) {
-		try {
-			// The IDs of both ends of the stream are needed in case we have a router ->
-			// union/join connection
-			return next.get(destId).getInputStream(src.getId());
-		} catch (Exception exception) {
-			System.err.format("getOutputStream FAILED for destId=%s, src=%s%n", destId, src);
-			System.err.println(this);
-			exception.printStackTrace();
-			throw exception;
-		}
+		// The IDs of both ends of the stream are needed in case we have a router ->
+		// union/join connection
+		return next.get(destId).getInputStream(src.getId());
 	}
 
 	public StreamFactory getStreamFactory() {
