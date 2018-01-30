@@ -2,10 +2,10 @@ package common;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 import common.tuple.Tuple;
@@ -59,15 +59,9 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	private final StreamFactory factory;
 	private volatile boolean enabled;
 
-	// Temporary data structures until init
-	private final Map<String, Stream<IN>> tempInputs = new HashMap<>();
-	private final List<StreamProducer<? extends Tuple>> tempPrevious = new ArrayList<>();
-	private final Map<String, StreamConsumer<OUT>> tempNext = new HashMap<>();
-
-	// Unmodifiable thread-safe objects
-	private volatile Map<String, Stream<IN>> inputs = tempInputs;
-	private volatile List<StreamProducer<? extends Tuple>> previous = tempPrevious;
-	private volatile Map<String, StreamConsumer<OUT>> next = tempNext;
+	private final Map<String, Stream<IN>> inputs = new ConcurrentHashMap<>();
+	private final List<StreamProducer<? extends Tuple>> previous = new CopyOnWriteArrayList<>();
+	private final Map<String, StreamConsumer<OUT>> next = new ConcurrentHashMap<>();
 
 	private final BoxType type;
 
@@ -91,10 +85,6 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		if (!type.checkState(this)) {
 			throw new IllegalStateException(id);
 		}
-		// Initialize thread safe objects
-		this.inputs = Collections.unmodifiableMap(tempInputs);
-		this.next = Collections.unmodifiableMap(tempNext);
-		this.previous = Collections.unmodifiableList(tempPrevious);
 		for (Stream<?> input : inputs.values()) {
 			input.enable();
 		}
@@ -127,8 +117,8 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 			System.err.println(
 					"WARNING: It seems that you are explicitly registering inputs. Please use addOutput() instead!");
 		}
-		tempInputs.put(key, factory.newStream(in.getId(), id));
-		tempPrevious.add(in);
+		inputs.put(key, factory.newStream(in.getId(), id));
+		previous.add(in);
 	}
 
 	private boolean nextIsSet(StreamProducer<IN> prev, NamedEntity current) {
@@ -144,7 +134,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public void setOutput(String key, StreamConsumer<OUT> out, StreamProducer<OUT> caller) {
-		tempNext.put(key, out);
+		next.put(key, out);
 		out.registerIn(caller);
 	}
 
