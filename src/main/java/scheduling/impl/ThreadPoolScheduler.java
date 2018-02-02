@@ -17,6 +17,8 @@ public class ThreadPoolScheduler implements Scheduler {
 	private int nTasks;
 	private final long quantum;
 	private final TimeUnit timeUnit;
+	private String statsFolder;
+	private String executionId;
 
 	public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit, TaskPool<Operator<?, ?>> availableTasks) {
 		this.availableTasks = availableTasks;
@@ -37,9 +39,12 @@ public class ThreadPoolScheduler implements Scheduler {
 	public void startTasks() {
 		availableTasks.enable();
 		int nThreads = Math.min(maxThreads, nTasks);
-		System.out.format("[%s] Starting %d worker threads%n", getClass().getSimpleName(), nThreads);
+		System.out.format("*** [%s] Starting %d worker threads%n", getClass().getSimpleName(), nThreads);
 		for (int i = 0; i < nThreads; i++) {
-			workers.add(new PoolWorkerThread(availableTasks, quantum, timeUnit));
+			PoolWorkerThread worker = statsFolder != null
+					? new PoolWorkerThreadStatistic(availableTasks, quantum, timeUnit, statsFolder, executionId)
+					: new PoolWorkerThread(availableTasks, quantum, timeUnit);
+			workers.add(worker);
 		}
 		for (PoolWorkerThread workerThread : workers) {
 			workerThread.enable();
@@ -61,6 +66,12 @@ public class ThreadPoolScheduler implements Scheduler {
 		}
 		workers.clear();
 		availableTasks.disable();
+	}
+
+	@Override
+	public void activateStatistics(String folder, String executionId) {
+		this.statsFolder = folder;
+		this.executionId = executionId;
 	}
 
 }

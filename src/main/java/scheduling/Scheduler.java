@@ -30,4 +30,14 @@ public interface Scheduler {
 	 * Stop the running tasks.
 	 */
 	void stopTasks();
+
+	/**
+	 * Activate statistics for this scheduler instance
+	 * 
+	 * @param folder
+	 *            The folder to save the statistics to
+	 * @param executionId
+	 *            The ID of the execution
+	 */
+	void activateStatistics(String folder, String executionId);
 }

@@ -4,6 +4,7 @@ import java.io.File;
 
 import common.NamedEntity;
 import operator.Operator;
+import scheduling.ActiveThread;
 import sink.Sink;
 import source.Source;
 import stream.Stream;
@@ -12,6 +13,11 @@ public enum StatisticFilename {
 	INSTANCE;
 	public String get(String folder, NamedEntity entity, String type) {
 		String name = getPrefix(entity) + entity.getId();
+		return get(folder, name, type);
+	}
+
+	public String get(String folder, ActiveThread thread, String type) {
+		String name = getPrefix(thread) + thread.getId();
 		return get(folder, name, type);
 	}
 
@@ -25,7 +31,7 @@ public enum StatisticFilename {
 		return sb.toString();
 	}
 
-	private String getPrefix(NamedEntity entity) {
+	private String getPrefix(Object entity) {
 		if (entity instanceof Operator) {
 			return "OPERATOR_";
 		} else if (entity instanceof Source) {
@@ -34,6 +40,8 @@ public enum StatisticFilename {
 			return "SINK_";
 		} else if (entity instanceof Stream) {
 			return "STREAM_";
+		} else if (entity instanceof Thread) {
+			return "THREAD_";
 		} else {
 			return "";
 		}

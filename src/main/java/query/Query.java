@@ -96,6 +96,15 @@ public class Query {
 		this.statsFolder = statisticsFolder;
 		this.autoFlush = autoFlush;
 		streamFactory = new StreamStatisticFactory(streamFactory, statisticsFolder, autoFlush);
+		this.scheduler.activateStatistics(statisticsFolder, "");
+	}
+
+	public void activateStatistics(String statisticsFolder, String executionId, boolean autoFlush) {
+		this.keepStatistics = true;
+		this.statsFolder = statisticsFolder;
+		this.autoFlush = autoFlush;
+		streamFactory = new StreamStatisticFactory(streamFactory, statisticsFolder, autoFlush);
+		this.scheduler.activateStatistics(statisticsFolder, executionId);
 	}
 
 	public void activateStatistics(String statisticsFolder) {

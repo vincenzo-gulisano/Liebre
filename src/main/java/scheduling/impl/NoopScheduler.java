@@ -46,4 +46,9 @@ public class NoopScheduler implements Scheduler {
 		}
 	}
 
+	@Override
+	public void activateStatistics(String folder, String executionId) {
+		System.out.format("*** [%s] No statistics available%n", getClass().getSimpleName());
+	}
+
 }
