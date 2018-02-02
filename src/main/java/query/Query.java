@@ -107,6 +107,10 @@ public class Query {
 		this.scheduler.activateStatistics(statisticsFolder, executionId);
 	}
 
+	public void activateSchedulingStatistics(String statisticsFolder, String executionId) {
+		this.scheduler.activateStatistics(statisticsFolder, executionId);
+	}
+
 	public void activateStatistics(String statisticsFolder) {
 		activateStatistics(statisticsFolder, true);
 	}
