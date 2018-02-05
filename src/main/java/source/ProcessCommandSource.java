@@ -18,7 +18,9 @@ public class ProcessCommandSource<T extends Tuple> implements Runnable {
 
 	public final void process() {
 		T t = source.getNextTuple();
+		source.onScheduled();
 		if (t != null) {
+			source.onRun();
 			source.getOutputStream(source.getId()).addTuple(t);
 		}
 	}

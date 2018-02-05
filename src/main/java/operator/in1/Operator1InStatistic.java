@@ -27,8 +27,10 @@ import common.util.StatisticFilename;
 
 public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends Operator1InDecorator<IN, OUT> {
 
-	private final CountStatistic processingTimeStat;
-	private final CountStatistic executionsStat;
+	private final CountStatistic processingTimeStatistic;
+	private final CountStatistic processedTuplesStatistic;
+	private final CountStatistic timesScheduledStatistic;
+	private final CountStatistic timesRunStatistic;
 
 	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder) {
 		this(operator, outputFolder, true);
@@ -36,32 +38,52 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends O
 
 	public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder, boolean autoFlush) {
 		super(operator);
-		this.processingTimeStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"),
-				autoFlush);
-		this.executionsStat = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, operator, "runs"),
+		this.processingTimeStatistic = new CountStatistic(
+				StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
+		this.processedTuplesStatistic = new CountStatistic(
+				StatisticFilename.INSTANCE.get(outputFolder, operator, "tuples"), autoFlush);
+		this.timesScheduledStatistic = new CountStatistic(
+				StatisticFilename.INSTANCE.get(outputFolder, operator, "sched"), autoFlush);
+		this.timesRunStatistic = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, operator, "runs"),
 				autoFlush);
 	}
 
 	@Override
 	public void enable() {
 		super.enable();
-		processingTimeStat.enable();
-		executionsStat.enable();
+		processingTimeStatistic.enable();
+		timesScheduledStatistic.enable();
+		timesRunStatistic.enable();
+		processedTuplesStatistic.enable();
 	}
 
 	@Override
 	public void disable() {
-		processingTimeStat.disable();
-		executionsStat.disable();
+		processingTimeStatistic.disable();
+		processedTuplesStatistic.disable();
+		timesScheduledStatistic.disable();
+		timesRunStatistic.disable();
 		super.disable();
+	}
+
+	@Override
+	public void onScheduled() {
+		timesScheduledStatistic.append(1L);
+		super.onScheduled();
+	}
+
+	@Override
+	public void onRun() {
+		timesRunStatistic.append(1L);
+		super.onRun();
 	}
 
 	@Override
 	public List<OUT> processTupleIn1(IN tuple) {
 		long start = System.nanoTime();
 		List<OUT> outTuples = super.processTupleIn1(tuple);
-		processingTimeStat.append(System.nanoTime() - start);
-		executionsStat.append(1L);
+		processingTimeStatistic.append(System.nanoTime() - start);
+		processedTuplesStatistic.append(1L);
 		return outTuples;
 	}
 

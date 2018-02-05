@@ -11,18 +11,18 @@ import scheduling.TaskPool;
 public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	private final AverageStatistic schedulingTimeStatistic;
 	private final AverageStatistic actualQuantumStatistic;
-	private final CountStatistic executionTimesStatistic;
-	private final CountStatistic emptyExecutionsStatistic;
+	private final CountStatistic timesScheduledStatistic;
+	private final CountStatistic timesRunStatistic;
 
 	public PoolWorkerThreadStatistic(TaskPool<Operator<?, ?>> availableTasks, long quantum, TimeUnit unit,
 			String statsFolder, String executionId) {
 		super(availableTasks, quantum, unit);
 		schedulingTimeStatistic = new AverageStatistic(
+				StatisticFilename.INSTANCE.get(statsFolder, threadId(executionId), "schedtime"), true);
+		timesScheduledStatistic = new CountStatistic(
 				StatisticFilename.INSTANCE.get(statsFolder, threadId(executionId), "sched"), true);
-		executionTimesStatistic = new CountStatistic(
+		timesRunStatistic = new CountStatistic(
 				StatisticFilename.INSTANCE.get(statsFolder, threadId(executionId), "runs"), true);
-		emptyExecutionsStatistic = new CountStatistic(
-				StatisticFilename.INSTANCE.get(statsFolder, threadId(executionId), "noop"), true);
 		actualQuantumStatistic = new AverageStatistic(
 				StatisticFilename.INSTANCE.get(statsFolder, threadId(executionId), "quantum"), true);
 	}
@@ -39,8 +39,8 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	@Override
 	public void enable() {
 		schedulingTimeStatistic.enable();
-		executionTimesStatistic.enable();
-		emptyExecutionsStatistic.enable();
+		timesScheduledStatistic.enable();
+		timesRunStatistic.enable();
 		actualQuantumStatistic.enable();
 		super.enable();
 	}
@@ -48,8 +48,8 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	@Override
 	public void disable() {
 		schedulingTimeStatistic.disable();
-		executionTimesStatistic.disable();
-		emptyExecutionsStatistic.disable();
+		timesScheduledStatistic.disable();
+		timesRunStatistic.disable();
 		actualQuantumStatistic.disable();
 		super.disable();
 	}
@@ -59,17 +59,19 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 		long start = System.nanoTime();
 		Operator<?, ?> task = super.getTask();
 		schedulingTimeStatistic.append(System.nanoTime() - start);
-		executionTimesStatistic.append(1L);
-		if (task != null && (!task.hasInput() || !task.hasOutput()))
-			emptyExecutionsStatistic.append(1L);
+		timesScheduledStatistic.append(1L);
 		return task;
 	}
 
 	@Override
-	protected void executeTask(Operator<?, ?> task) {
+	protected boolean executeTask(Operator<?, ?> task) {
 		long start = System.nanoTime();
-		super.executeTask(task);
+		boolean executed = super.executeTask(task);
 		actualQuantumStatistic.append(System.nanoTime() - start);
+		if (executed) {
+			timesRunStatistic.append(1L);
+		}
+		return executed;
 	}
 
 	@Override

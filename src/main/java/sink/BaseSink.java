@@ -86,8 +86,12 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 		function.processTuple(tuple);
 	}
 
-	public BoxState<IN, Tuple> getState() {
-		return state;
+	@Override
+	public void onScheduled() {
+	}
+
+	@Override
+	public void onRun() {
 	}
 
 	@Override

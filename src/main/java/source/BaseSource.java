@@ -87,6 +87,14 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
+	public void onScheduled() {
+	}
+
+	@Override
+	public void onRun() {
+	}
+
+	@Override
 	public String toString() {
 		return getId();
 	}

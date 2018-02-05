@@ -61,6 +61,16 @@ public class SourceDecorator<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
+	public void onScheduled() {
+		decorated.onScheduled();
+	}
+
+	@Override
+	public void onRun() {
+		decorated.onRun();
+	}
+
+	@Override
 	public String toString() {
 		return decorated.toString();
 	}

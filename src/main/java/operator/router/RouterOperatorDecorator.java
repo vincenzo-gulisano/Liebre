@@ -92,4 +92,14 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 		decorated.disable();
 	}
 
+	@Override
+	public void onScheduled() {
+		decorated.onScheduled();
+	}
+
+	@Override
+	public void onRun() {
+		decorated.onRun();
+	}
+
 }

@@ -14,8 +14,10 @@ public class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
 
 	@Override
 	public final void process() {
+		operator.onScheduled();
 		IN inTuple = operator.getInputStream(operator.getId()).getNextTuple();
 		if (inTuple != null) {
+			operator.onRun();
 			List<OUT> outTuples = operator.processTupleIn1(inTuple);
 			if (outTuples != null) {
 				for (OUT t : outTuples)

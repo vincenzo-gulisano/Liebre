@@ -80,7 +80,6 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 	@Override
 	public void enable() {
 		decorated.enable();
-
 	}
 
 	@Override
@@ -91,6 +90,16 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 	@Override
 	public void disable() {
 		decorated.disable();
+	}
+
+	@Override
+	public void onScheduled() {
+		decorated.onScheduled();
+	}
+
+	@Override
+	public void onRun() {
+		decorated.onRun();
 	}
 
 }

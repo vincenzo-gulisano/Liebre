@@ -94,4 +94,14 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
 		operator.disable();
 	}
 
+	@Override
+	public void onRun() {
+		operator.onRun();
+	}
+
+	@Override
+	public void onScheduled() {
+		operator.onScheduled();
+	}
+
 }

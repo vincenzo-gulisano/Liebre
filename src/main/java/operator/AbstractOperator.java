@@ -69,6 +69,15 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	}
 
 	@Override
+	public void onScheduled() {
+
+	}
+
+	@Override
+	public void onRun() {
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;

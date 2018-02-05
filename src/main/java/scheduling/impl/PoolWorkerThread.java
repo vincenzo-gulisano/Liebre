@@ -37,11 +37,14 @@ public class PoolWorkerThread extends ActiveThread {
 		return availableTasks.getNext(index);
 	}
 
-	protected void executeTask(Operator<?, ?> task) {
+	protected boolean executeTask(Operator<?, ?> task) {
+		boolean executed = false;
 		long runUntil = System.nanoTime() + unit.toNanos(quantum);
 		while (System.nanoTime() < runUntil && task.hasInput() && task.hasOutput()) {
 			task.run();
+			executed = true;
 		}
+		return executed;
 	}
 
 	protected void putTask(Operator<?, ?> task) {
