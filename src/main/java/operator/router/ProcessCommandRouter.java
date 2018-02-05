@@ -14,9 +14,7 @@ public class ProcessCommandRouter<T extends Tuple> extends AbstractProcessComman
 	@Override
 	public final void process() {
 		T inTuple = operator.getInputStream(operator.getId()).getNextTuple();
-		operator.onScheduled();
 		if (inTuple != null) {
-			operator.onRun();
 			List<String> streams = operator.chooseOperators(inTuple);
 			if (streams != null)
 				for (String op : streams)

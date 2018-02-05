@@ -20,9 +20,7 @@ public class ProcessCommandSink<T extends Tuple> implements Runnable {
 
 	public final void process() {
 		T t = sink.getInputStream(sink.getId()).getNextTuple();
-		sink.onScheduled();
 		if (t != null) {
-			sink.onRun();
 			sink.processTuple(t);
 		}
 	}

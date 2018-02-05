@@ -10,17 +10,17 @@ public enum StimulusPriorityMetric implements PriorityMetric {
 
 	@Override
 	public double getPriority(Operator<?, ?> operator) {
-		long diff = 0;
+		long latency = 0;
 		// FIXME: Give a better interface for this
 		for (StreamProducer<?> prev : operator.getPrevious()) {
 			Stream<?> input = prev.getOutputStream(operator.getId());
 			Tuple t = input.peek();
 			if (t instanceof RichTuple) {
 				long ts = ((RichTuple) t).getTimestamp();
-				diff = Math.max(System.nanoTime() - ts, diff);
+				latency = Math.max(System.nanoTime() - ts, latency);
 			}
 		}
-		return diff;
+		return 1 + latency;
 	}
 
 	@Override
