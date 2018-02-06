@@ -212,10 +212,10 @@ public class Query {
 
 	public void activate() {
 		System.out.println("*** [Query] Activating...");
-		System.out.println("*** [Query] Sinks: " + sinks.size());
-		System.out.println("*** [Query] Operators: " + operators.size() + operators2in.size());
-		System.out.println("*** [Query] Sources: " + sources.size());
-		System.out.println("*** [Query] Streams: " + getAllStreams().size());
+		System.out.format("*** [Query] Sinks: %d%n", sinks.size());
+		System.out.format("*** [Query] Operators: %d%n", operators.size() + operators2in.size());
+		System.out.format("*** [Query] Sources: %d%n", sources.size());
+		System.out.format("*** [Query] Streams: %d%n", getAllStreams().size());
 		activateTasks(sinks.values());
 		for (ActiveRunnable o : getAllOperators()) {
 			o.enable();
