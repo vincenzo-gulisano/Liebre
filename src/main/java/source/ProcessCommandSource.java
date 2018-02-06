@@ -11,7 +11,7 @@ public class ProcessCommandSource<T extends Tuple> implements Runnable {
 
 	@Override
 	public void run() {
-		while (source.isEnabled()) {
+		if (source.isEnabled()) {
 			process();
 		}
 	}

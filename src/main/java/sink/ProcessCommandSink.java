@@ -12,7 +12,7 @@ public class ProcessCommandSink<T extends Tuple> implements Runnable {
 
 	@Override
 	public void run() {
-		while (sink.isEnabled()) {
+		if (sink.isEnabled()) {
 			process();
 		}
 

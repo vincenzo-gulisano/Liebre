@@ -46,6 +46,11 @@ public class SourceDecorator<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
+	public boolean hasOutput() {
+		return decorated.hasOutput();
+	}
+
+	@Override
 	public Stream<T> getOutputStream(String requestorId) {
 		return decorated.getOutputStream(requestorId);
 	}

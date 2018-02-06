@@ -50,6 +50,11 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
+	public boolean hasOutput() {
+		return state.hasOutput();
+	}
+
+	@Override
 	public void run() {
 		processCommand.run();
 	}

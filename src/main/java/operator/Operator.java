@@ -26,23 +26,4 @@ import common.tuple.Tuple;
 
 public interface Operator<IN extends Tuple, OUT extends Tuple>
 		extends ActiveRunnable, StreamConsumer<IN>, StreamProducer<OUT> {
-
-	/**
-	 * Heuristic that indicates that the operator has some input <b>all</b> its
-	 * input streams. Might not always be accurate in the case of operators with
-	 * multiple input streams.
-	 * 
-	 * @return {@code true} if the operator has some tuples available on all its
-	 *         input streams.
-	 */
-	boolean hasInput();
-
-	/**
-	 * Heuristic that indicates if the operator can write tuples to all its output
-	 * streams.
-	 * 
-	 * @return {@code true} if the operator can write tuples to all its output
-	 *         streams
-	 */
-	boolean hasOutput();
 }

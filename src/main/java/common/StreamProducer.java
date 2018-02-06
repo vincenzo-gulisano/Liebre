@@ -29,4 +29,13 @@ public interface StreamProducer<OUT extends Tuple> extends NamedEntity {
 	 */
 	Stream<OUT> getOutputStream(String requestorId);
 
+	/**
+	 * Heuristic that indicates if the {@link StreamProducer} can write tuples to
+	 * all its output streams.
+	 * 
+	 * @return {@code true} if the operator can write tuples to all its output
+	 *         streams
+	 */
+	boolean hasOutput();
+
 }

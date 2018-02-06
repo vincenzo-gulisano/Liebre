@@ -2,10 +2,10 @@ package scheduling.impl;
 
 import java.util.concurrent.TimeUnit;
 
+import common.ActiveRunnable;
 import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticFilename;
-import operator.Operator;
 import scheduling.TaskPool;
 
 public class PoolWorkerThreadStatistic extends PoolWorkerThread {
@@ -14,7 +14,7 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	private final CountStatistic timesScheduledStatistic;
 	private final CountStatistic timesRunStatistic;
 
-	public PoolWorkerThreadStatistic(TaskPool<Operator<?, ?>> availableTasks, long quantum, TimeUnit unit,
+	public PoolWorkerThreadStatistic(TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit,
 			String statsFolder, String executionId) {
 		super(availableTasks, quantum, unit);
 		schedulingTimeStatistic = new AverageStatistic(
@@ -55,15 +55,15 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	}
 
 	@Override
-	protected Operator<?, ?> getTask() {
+	protected ActiveRunnable getTask() {
 		long start = System.nanoTime();
-		Operator<?, ?> task = super.getTask();
+		ActiveRunnable task = super.getTask();
 		schedulingTimeStatistic.append(System.nanoTime() - start);
 		return task;
 	}
 
 	@Override
-	protected boolean executeTask(Operator<?, ?> task) {
+	protected boolean executeTask(ActiveRunnable task) {
 		// Measure scheduled statistic
 		timesScheduledStatistic.append(1L);
 		task.onScheduled();
@@ -80,7 +80,7 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	}
 
 	@Override
-	protected void putTask(Operator<?, ?> task) {
+	protected void putTask(ActiveRunnable task) {
 		long start = System.nanoTime();
 		super.putTask(task);
 		schedulingTimeStatistic.append(System.nanoTime() - start);

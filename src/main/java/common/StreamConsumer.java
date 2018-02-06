@@ -24,4 +24,14 @@ public interface StreamConsumer<IN extends Tuple> extends NamedEntity {
 	 */
 	Stream<IN> getInputStream(String requestorId);
 
+	/**
+	 * Heuristic that indicates that the {@link StreamConsumer} has some input
+	 * <b>all</b> its input streams. Might not always be accurate in the case of
+	 * operators with multiple input streams.
+	 * 
+	 * @return {@code true} if the operator has some tuples available on all its
+	 *         input streams.
+	 */
+	boolean hasInput();
+
 }

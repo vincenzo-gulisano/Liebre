@@ -12,9 +12,9 @@ import common.StreamConsumer;
 import common.StreamProducer;
 import common.util.Util;
 import operator.Operator;
-import operator.PriorityMetric;
-import operator.QueueSizePriorityMetric;
 import scheduling.TaskPool;
+import scheduling.priority.PriorityMetric;
+import scheduling.priority.QueueSizePriorityMetric;
 import source.Source;
 
 public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {

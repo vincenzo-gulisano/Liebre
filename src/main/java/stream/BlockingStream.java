@@ -7,7 +7,7 @@ import common.tuple.Tuple;
 
 public class BlockingStream<T extends Tuple> implements Stream<T> {
 
-	private static final int CAPACITY = 100;
+	private static final int CAPACITY = 10000;
 
 	private final String id;
 	private BlockingQueue<T> stream = new ArrayBlockingQueue<T>(CAPACITY);

@@ -5,13 +5,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import operator.Operator;
+import common.ActiveRunnable;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
 
 public class ThreadPoolScheduler implements Scheduler {
 
-	private final TaskPool<Operator<?, ?>> availableTasks;
+	private final TaskPool<ActiveRunnable> availableTasks;
 	private final List<PoolWorkerThread> workers = new ArrayList<>();
 	private final int maxThreads;
 	private int nTasks;
@@ -20,7 +20,7 @@ public class ThreadPoolScheduler implements Scheduler {
 	private String statsFolder;
 	private String executionId;
 
-	public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit, TaskPool<Operator<?, ?>> availableTasks) {
+	public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit, TaskPool<ActiveRunnable> availableTasks) {
 		this.availableTasks = availableTasks;
 		this.maxThreads = maxThreads;
 		this.quantum = quantum;
@@ -28,8 +28,8 @@ public class ThreadPoolScheduler implements Scheduler {
 	}
 
 	@Override
-	public void addTasks(Collection<? extends Operator<?, ?>> tasks) {
-		for (Operator<?, ?> task : tasks) {
+	public void addTasks(Collection<? extends ActiveRunnable> tasks) {
+		for (ActiveRunnable task : tasks) {
 			availableTasks.register(task);
 		}
 		nTasks += tasks.size();
@@ -37,7 +37,9 @@ public class ThreadPoolScheduler implements Scheduler {
 
 	@Override
 	public void startTasks() {
-		availableTasks.enable();
+		if (!isEnabled()) {
+			throw new IllegalStateException();
+		}
 		int nThreads = Math.min(maxThreads, nTasks);
 		System.out.format("*** [%s] Starting %d worker threads%n", getClass().getSimpleName(), nThreads);
 		for (int i = 0; i < nThreads; i++) {
@@ -55,6 +57,9 @@ public class ThreadPoolScheduler implements Scheduler {
 
 	@Override
 	public void stopTasks() {
+		if (isEnabled()) {
+			throw new IllegalStateException();
+		}
 		for (PoolWorkerThread workerThread : workers) {
 			try {
 				workerThread.disable();
@@ -65,13 +70,28 @@ public class ThreadPoolScheduler implements Scheduler {
 			}
 		}
 		workers.clear();
-		availableTasks.disable();
 	}
 
 	@Override
 	public void activateStatistics(String folder, String executionId) {
 		this.statsFolder = folder;
 		this.executionId = executionId;
+	}
+
+	@Override
+	public void enable() {
+		availableTasks.enable();
+
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return availableTasks.isEnabled();
+	}
+
+	@Override
+	public void disable() {
+		availableTasks.disable();
 	}
 
 }

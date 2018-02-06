@@ -4,11 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import common.util.PropertyFileLoader;
-import operator.BlockingQueuePriorityMetric;
-import operator.CombinedPriorityMetric;
-import operator.PriorityMetric;
-import operator.QueueSizePriorityMetric;
-import operator.StimulusPriorityMetric;
+import scheduling.priority.BlockingQueuePriorityMetric;
+import scheduling.priority.PriorityMetric;
+import scheduling.priority.QueueSizePriorityMetric;
+import scheduling.priority.StimulusPriorityMetric;
 
 public class QueryConfiguration {
 	private static final String SCHEDULING_ENABLED_KEY = "liebre.scheduling.enabled";
@@ -21,7 +20,7 @@ public class QueryConfiguration {
 	private static final String PRIORITY_SCALING_FACTOR = "liebre.scheduling.priority.scaling";
 
 	private final List<PriorityMetric> availableMetrics = Arrays.asList(QueueSizePriorityMetric.INSTANCE,
-			StimulusPriorityMetric.INSTANCE, CombinedPriorityMetric.INSTANCE, BlockingQueuePriorityMetric.INSTANCE);
+			StimulusPriorityMetric.INSTANCE, BlockingQueuePriorityMetric.INSTANCE);
 
 	private final boolean schedulingEnabled;
 	private final int threadsNumber;

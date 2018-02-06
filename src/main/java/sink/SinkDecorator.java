@@ -46,6 +46,11 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 	}
 
 	@Override
+	public boolean hasInput() {
+		return decorated.hasInput();
+	}
+
+	@Override
 	public Stream<IN> getInputStream(String requestorId) {
 		return decorated.getInputStream(requestorId);
 	}

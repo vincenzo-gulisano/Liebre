@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import operator.Operator;
+import common.ActiveRunnable;
 import scheduling.Scheduler;
 
 /**
@@ -15,17 +15,21 @@ import scheduling.Scheduler;
  *
  */
 public class NoopScheduler implements Scheduler {
-	private final List<Runnable> operators = new ArrayList<>();
+	private final List<ActiveRunnable> tasks = new ArrayList<>();
 	private final List<BasicWorkerThread> threads = new ArrayList<>();
+	private volatile boolean enabled;
 
 	@Override
-	public void addTasks(Collection<? extends Operator<?, ?>> tasks) {
-		operators.addAll(tasks);
+	public void addTasks(Collection<? extends ActiveRunnable> tasks) {
+		this.tasks.addAll(tasks);
 	}
 
 	@Override
 	public void startTasks() {
-		for (Runnable operator : operators) {
+		if (!isEnabled()) {
+			throw new IllegalStateException();
+		}
+		for (Runnable operator : tasks) {
 			BasicWorkerThread thread = new BasicWorkerThread(operator);
 			threads.add(thread);
 			thread.enable();
@@ -35,6 +39,9 @@ public class NoopScheduler implements Scheduler {
 
 	@Override
 	public void stopTasks() {
+		if (isEnabled()) {
+			throw new IllegalStateException();
+		}
 		for (BasicWorkerThread thread : threads) {
 			try {
 				thread.disable();
@@ -43,6 +50,27 @@ public class NoopScheduler implements Scheduler {
 				e.printStackTrace();
 				Thread.currentThread().interrupt();
 			}
+		}
+	}
+
+	@Override
+	public void enable() {
+		for (ActiveRunnable task : tasks) {
+			task.enable();
+		}
+		this.enabled = true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return this.enabled;
+	}
+
+	@Override
+	public void disable() {
+		this.enabled = false;
+		for (ActiveRunnable task : tasks) {
+			task.disable();
 		}
 	}
 

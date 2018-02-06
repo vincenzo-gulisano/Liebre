@@ -1,7 +1,7 @@
 package scheduling.impl;
 
 import operator.Operator;
-import operator.PriorityMetric;
+import scheduling.priority.PriorityMetric;
 
 public class OperatorPriority implements Comparable<OperatorPriority> {
 

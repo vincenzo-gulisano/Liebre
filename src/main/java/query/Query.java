@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import common.Active;
-import common.ActiveRunnable;
 import common.StreamProducer;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
@@ -52,9 +50,7 @@ import operator.router.BaseRouterOperator;
 import operator.router.RouterFunction;
 import operator.router.RouterOperator;
 import operator.router.RouterOperatorStatistic;
-import scheduling.ActiveThread;
 import scheduling.Scheduler;
-import scheduling.impl.BasicWorkerThread;
 import scheduling.impl.NoopScheduler;
 import sink.BaseSink;
 import sink.Sink;
@@ -78,7 +74,6 @@ public class Query {
 	private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
 	private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
 
-	private final List<ActiveThread> threads = new ArrayList<>();
 	private final Scheduler scheduler;
 	private StreamFactory streamFactory = BlockingStreamFactory.INSTANCE;
 
@@ -216,13 +211,25 @@ public class Query {
 		System.out.format("*** [Query] Operators: %d%n", operators.size() + operators2in.size());
 		System.out.format("*** [Query] Sources: %d%n", sources.size());
 		System.out.format("*** [Query] Streams: %d%n", getAllStreams().size());
-		activateTasks(sinks.values());
-		for (ActiveRunnable o : getAllOperators()) {
-			o.enable();
-		}
+		scheduler.addTasks(sinks.values());
 		scheduler.addTasks(getAllOperators());
+		scheduler.addTasks(sources.values());
+		scheduler.enable();
 		scheduler.startTasks();
-		activateTasks(sources.values());
+	}
+
+	public void deActivate() {
+		System.out.println("*** [Query] Deactivating tasks...");
+		scheduler.disable();
+		System.out.println("*** [Query] Waiting for threads to terminate...");
+		scheduler.stopTasks();
+		System.out.println("*** [Query] Done!");
+	}
+
+	private void checkIfExists(String id, String type, Map<?, ?> map) {
+		if (map.containsKey(id)) {
+			throw new IllegalArgumentException(String.format("%s with id [%s] already exists in query!", type, id));
+		}
 	}
 
 	private Set<Stream<?>> getAllStreams() {
@@ -233,50 +240,6 @@ public class Query {
 			}
 		}
 		return streams;
-	}
-
-	public void deActivate() {
-		System.out.println("*** [Query] Deactivating sinks...");
-		deactivateTasks(sinks.values());
-		System.out.println("*** [Query] Deactivating operators...");
-		deactivateTasks(getAllOperators());
-		System.out.println("*** [Query] Deactivating sources...");
-		deactivateTasks(sources.values());
-		System.out.println("*** [Query] Waiting for threads to terminate...");
-		scheduler.stopTasks();
-		for (ActiveThread t : threads) {
-			try {
-				t.disable();
-				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				Thread.currentThread().interrupt();
-			}
-		}
-		System.out.println("*** [Query] Done!");
-	}
-
-	private void activateTasks(Collection<? extends Active> tasks) {
-		for (Active task : tasks) {
-			task.enable();
-			if (task instanceof Runnable) {
-				ActiveThread t = new BasicWorkerThread((Runnable) task);
-				t.start();
-				threads.add(t);
-			}
-		}
-	}
-
-	private void deactivateTasks(Collection<? extends Active> tasks) {
-		for (Active task : tasks) {
-			task.disable();
-		}
-	}
-
-	private void checkIfExists(String id, String type, Map<?, ?> map) {
-		if (map.containsKey(id)) {
-			throw new IllegalArgumentException(String.format("%s with id [%s] already exists in query!", type, id));
-		}
 	}
 
 	private Collection<Operator<?, ?>> getAllOperators() {

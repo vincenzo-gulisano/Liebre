@@ -51,6 +51,11 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	}
 
 	@Override
+	public boolean hasInput() {
+		return state.hasInput();
+	}
+
+	@Override
 	public void run() {
 		processCommand.run();
 	}

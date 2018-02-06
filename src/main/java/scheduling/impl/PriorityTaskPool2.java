@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import operator.Operator;
-import operator.PriorityMetric;
 import scheduling.TaskPool;
+import scheduling.priority.PriorityMetric;
 
 public class PriorityTaskPool2 implements TaskPool<Operator<?, ?>> {
 	private final PriorityMetric metric;

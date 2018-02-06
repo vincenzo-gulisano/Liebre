@@ -2,19 +2,21 @@ package scheduling.impl;
 
 import java.util.concurrent.TimeUnit;
 
-import operator.Operator;
+import common.ActiveRunnable;
+import common.StreamConsumer;
+import common.StreamProducer;
 import scheduling.ActiveThread;
 import scheduling.TaskPool;
 
 public class PoolWorkerThread extends ActiveThread {
-	private final TaskPool<Operator<?, ?>> availableTasks;
+	private final TaskPool<ActiveRunnable> availableTasks;
 	private long quantum;
 	private final TimeUnit unit;
 
 	private static long threadCount = 0;
 	protected final long index;
 
-	public PoolWorkerThread(TaskPool<Operator<?, ?>> availableTasks, long quantum, TimeUnit unit) {
+	public PoolWorkerThread(TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit) {
 		this.availableTasks = availableTasks;
 		this.quantum = quantum;
 		this.unit = unit;
@@ -24,30 +26,30 @@ public class PoolWorkerThread extends ActiveThread {
 
 	@Override
 	public void doRun() {
-		Operator<?, ?> task = getTask();
+		ActiveRunnable task = getTask();
 		if (task == null) {
-			System.err.format("[WARN] %s was not given an operator to execute. Ignoring...%n", this);
+			System.err.format("[WARN] %s was not given a task to execute. Ignoring...%n", this);
 			return;
 		}
 		executeTask(task);
 		putTask(task);
 	}
 
-	protected Operator<?, ?> getTask() {
+	protected ActiveRunnable getTask() {
 		return availableTasks.getNext(index);
 	}
 
-	protected boolean executeTask(Operator<?, ?> task) {
+	protected boolean executeTask(ActiveRunnable task) {
 		boolean executed = false;
 		long runUntil = System.nanoTime() + unit.toNanos(quantum);
-		while (System.nanoTime() < runUntil && task.hasInput() && task.hasOutput()) {
+		while (System.nanoTime() < runUntil && hasInput(task) && hasOutput(task)) {
 			task.run();
 			executed = true;
 		}
 		return executed;
 	}
 
-	protected void putTask(Operator<?, ?> task) {
+	protected void putTask(ActiveRunnable task) {
 		availableTasks.put(task);
 	}
 
@@ -59,6 +61,14 @@ public class PoolWorkerThread extends ActiveThread {
 	@Override
 	public void disable() {
 		super.disable();
+	}
+
+	boolean hasInput(ActiveRunnable task) {
+		return (task instanceof StreamConsumer == false) || ((StreamConsumer<?>) task).hasInput();
+	}
+
+	boolean hasOutput(ActiveRunnable task) {
+		return (task instanceof StreamProducer == false) || ((StreamProducer<?>) task).hasOutput();
 	}
 
 }
