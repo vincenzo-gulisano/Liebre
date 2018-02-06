@@ -29,7 +29,6 @@ import java.util.Set;
 
 import common.Active;
 import common.ActiveRunnable;
-import common.NamedEntity;
 import common.StreamProducer;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
@@ -213,10 +212,10 @@ public class Query {
 
 	public void activate() {
 		System.out.println("*** [Query] Activating...");
-		System.out.println("*** [Query] Sinks: " + collectionToFormattedString(sinks.values()));
-		System.out.println("*** [Query] Operators: " + collectionToFormattedString(getAllOperators()));
-		System.out.println("*** [Query] Sources: " + collectionToFormattedString(sources.values()));
-		System.out.println("*** [Query] Streams: " + collectionToFormattedString(getAllStreams()));
+		System.out.println("*** [Query] Sinks: " + sinks.size());
+		System.out.println("*** [Query] Operators: " + operators.size() + operators2in.size());
+		System.out.println("*** [Query] Sources: " + sources.size());
+		System.out.println("*** [Query] Streams: " + getAllStreams().size());
 		activateTasks(sinks.values());
 		for (ActiveRunnable o : getAllOperators()) {
 			o.enable();
@@ -224,18 +223,6 @@ public class Query {
 		scheduler.addTasks(getAllOperators());
 		scheduler.startTasks();
 		activateTasks(sources.values());
-	}
-
-	// FIXME: Temporary, remove
-	private String collectionToFormattedString(Collection<?> lst) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		for (Object elem : lst) {
-			sb.append("'").append(((NamedEntity) elem).getId()).append("',");
-		}
-		sb.deleteCharAt(sb.length() - 1);
-		sb.append("]");
-		return sb.toString();
 	}
 
 	private Set<Stream<?>> getAllStreams() {
