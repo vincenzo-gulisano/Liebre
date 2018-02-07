@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import common.Active;
 import common.ActiveRunnable;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
+import source.Source;
 
 public class ThreadPoolScheduler implements Scheduler {
 
@@ -19,6 +21,9 @@ public class ThreadPoolScheduler implements Scheduler {
 	private final TimeUnit timeUnit;
 	private String statsFolder;
 	private String executionId;
+	private volatile boolean indepedentSources;
+	private final List<BasicWorkerThread> sourceThreads = new ArrayList<>();
+	private final List<Source<?>> sources = new ArrayList<>();
 
 	public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit, TaskPool<ActiveRunnable> availableTasks) {
 		this.availableTasks = availableTasks;
@@ -27,12 +32,22 @@ public class ThreadPoolScheduler implements Scheduler {
 		this.timeUnit = unit;
 	}
 
+	public ThreadPoolScheduler enableSourceThreads() {
+		System.err.println("[WARN] Never call enableSourceThreads() after enable(). Bad things will happen!");
+		this.indepedentSources = true;
+		return this;
+	}
+
 	@Override
 	public void addTasks(Collection<? extends ActiveRunnable> tasks) {
 		for (ActiveRunnable task : tasks) {
-			availableTasks.register(task);
+			if (indepedentSources && task instanceof Source) {
+				sources.add((Source<?>) task);
+			} else {
+				availableTasks.register(task);
+				nTasks++;
+			}
 		}
-		nTasks += tasks.size();
 	}
 
 	@Override
@@ -47,10 +62,17 @@ public class ThreadPoolScheduler implements Scheduler {
 					? new PoolWorkerThreadStatistic(availableTasks, quantum, timeUnit, statsFolder, executionId)
 					: new PoolWorkerThread(availableTasks, quantum, timeUnit);
 			workers.add(worker);
+			worker.enable();
+			worker.start();
 		}
-		for (PoolWorkerThread workerThread : workers) {
-			workerThread.enable();
-			workerThread.start();
+		// Independent source threads
+		System.out.format("*** [%s] Starting %d source threads%n", getClass().getSimpleName(), sources.size());
+		for (ActiveRunnable task : sources) {
+			BasicWorkerThread t = new BasicWorkerThread(task);
+			sourceThreads.add(t);
+			t.enable();
+			t.start();
+
 		}
 		// TODO: Observer pattern to detect thread crashes
 	}
@@ -70,6 +92,16 @@ public class ThreadPoolScheduler implements Scheduler {
 			}
 		}
 		workers.clear();
+		for (BasicWorkerThread workerThread : sourceThreads) {
+			try {
+				workerThread.disable();
+				workerThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+				Thread.currentThread().interrupt();
+			}
+		}
+		sourceThreads.clear();
 	}
 
 	@Override
@@ -81,7 +113,9 @@ public class ThreadPoolScheduler implements Scheduler {
 	@Override
 	public void enable() {
 		availableTasks.enable();
-
+		for (Active s : sources) {
+			s.enable();
+		}
 	}
 
 	@Override
@@ -92,6 +126,9 @@ public class ThreadPoolScheduler implements Scheduler {
 	@Override
 	public void disable() {
 		availableTasks.disable();
+		for (Active s : sources) {
+			s.disable();
+		}
 	}
 
 }
