@@ -9,7 +9,7 @@ import common.util.StatisticFilename;
 import scheduling.TaskPool;
 
 public class PoolWorkerThreadStatistic extends PoolWorkerThread {
-	private final AverageStatistic schedulingTimeStatistic;
+	private final CountStatistic schedulingTimeStatistic;
 	private final AverageStatistic actualQuantumStatistic;
 	private final CountStatistic timesScheduledStatistic;
 	private final CountStatistic timesRunStatistic;
@@ -17,7 +17,7 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	public PoolWorkerThreadStatistic(TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit,
 			String statsFolder, String executionId) {
 		super(availableTasks, quantum, unit);
-		schedulingTimeStatistic = new AverageStatistic(
+		schedulingTimeStatistic = new CountStatistic(
 				StatisticFilename.INSTANCE.get(statsFolder, threadId(executionId), "schedtime"), true);
 		timesScheduledStatistic = new CountStatistic(
 				StatisticFilename.INSTANCE.get(statsFolder, threadId(executionId), "sched"), true);

@@ -20,7 +20,7 @@ import source.Source;
 public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 	private final long firstUpdateInterval;
 	private final PriorityMetric metric;
-	private final PriorityBlockingQueue<OperatorPriority> tasks;
+	private final PriorityBlockingQueue<TaskPriority> tasks;
 
 	private final ConcurrentHashMap<String, LongAdder> calls = new ConcurrentHashMap<>();
 	private final ExecutorService service;
@@ -68,7 +68,7 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 
 	@Override
 	public void put(Operator<?, ?> task) {
-		tasks.offer(new OperatorPriority(task, metric));
+		tasks.offer(new TaskPriority(task, metric));
 		for (StreamConsumer<?> next : task.getNext()) {
 			updateOperator(next);
 		}
@@ -76,7 +76,7 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 
 	private Operator<?, ?> takeTask() {
 		try {
-			Operator<?, ?> task = tasks.take().getOperator();
+			Operator<?, ?> task = tasks.take().getTask();
 			return task;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -89,8 +89,8 @@ public class PriorityTaskPool implements TaskPool<Operator<?, ?>> {
 			return;
 		}
 		Operator<?, ?> op = (Operator<?, ?>) obj;
-		if (tasks.remove(OperatorPriority.empty(op))) {
-			tasks.offer(new OperatorPriority(op, metric));
+		if (tasks.remove(TaskPriority.empty(op))) {
+			tasks.offer(new TaskPriority(op, metric));
 		}
 	}
 
