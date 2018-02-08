@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
@@ -22,11 +21,31 @@ import scheduling.priority.PriorityMetric;
 
 public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
+	private static class Turn {
+		private final long ts;
+		private final long threadId;
+		private final long turnPeriodNanos;
+
+		public Turn(long threadId, long turnPeriodNanos) {
+			this.ts = System.nanoTime();
+			this.threadId = threadId;
+			this.turnPeriodNanos = turnPeriodNanos;
+		}
+
+		public Turn next(int nThreads) {
+			return new Turn((threadId + 1) % nThreads, turnPeriodNanos);
+		}
+
+		public boolean isTime(long threadId) {
+			return this.threadId == threadId && (ts + turnPeriodNanos > System.nanoTime());
+		}
+	}
+
 	protected final List<ActiveRunnable> tasks = new ArrayList<>();
 	private AtomicReference<AliasMethod> sampler = new AtomicReference<AliasMethod>(null);
 	private final PriorityMetric metric;
 	private final int nThreads;
-	private final AtomicLong ctr = new AtomicLong(0);
+	private final AtomicReference<Turn> turns;
 	private volatile Map<String, Integer> taskIndex;
 	private AtomicReferenceArray<Boolean> available;
 	private volatile boolean enabled;
@@ -36,15 +55,17 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	private final CSVPrinter csv;
 	private final boolean statisticsEnabled;
 
-	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor) {
-		this(metric, nThreads, priorityScalingFactor, null);
+	// FIXME: Builder
+	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor, long priorityUpdateInterval) {
+		this(metric, nThreads, priorityScalingFactor, priorityUpdateInterval, null);
 	}
 
-	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor,
+	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor, long priorityUpdateInterval,
 			String statisticsFolder) {
 		this.metric = metric;
 		this.nThreads = nThreads;
 		this.priorityScalingFactor = priorityScalingFactor;
+		this.turns = new AtomicReference<Turn>(new Turn(0, priorityUpdateInterval));
 		// TODO: Refactor/remove
 		if (statisticsFolder != null) {
 			try {
@@ -71,9 +92,10 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
 	@Override
 	public ActiveRunnable getNext(long threadId) {
-		if (ctr.get() == threadId) {
+		Turn turn = turns.get();
+		if (turn.isTime(threadId)) {
 			updatePriorities(threadId);
-			ctr.set((threadId + 1) % nThreads);
+			turns.set(turn.next(nThreads));
 		}
 		AliasMethod alias = sampler.get();
 		while (true) {

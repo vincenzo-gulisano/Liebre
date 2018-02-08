@@ -11,13 +11,13 @@ import scheduling.priority.StimulusPriorityMetric;
 
 public class QueryConfiguration {
 	private static final String SCHEDULING_ENABLED_KEY = "liebre.scheduling.enabled";
-	private static final String SCHEDULING_INTERVAL_KEY = "liebre.scheduling.interval.millis";
+	private static final String SCHEDULING_INTERVAL_KEY = "liebre.scheduling.interval.nanos";
+
 	private static final String NUMBER_THREADS_KEY = "liebre.scheduling.threads.worker.number";
-	private static final String NUMBER_HELPER_THREADS_KEY = "liebre.scheduling.threads.helper.number";
-	private static final String HELPER_THREAD_INTERVAL_KEY = "liebre.scheduling.threads.helper.interval.millis";
 	private static final String PRIORITY_METRIC_KEY = "liebre.scheduling.metric.name";
-	private static final String TASK_POOL_TYPE = "liebre.scheduling.task.pool.type";
-	private static final String PRIORITY_SCALING_FACTOR = "liebre.scheduling.priority.scaling";
+	private static final String TASK_POOL_TYPE_KEY = "liebre.scheduling.task.pool.type";
+	private static final String PRIORITY_SCALING_FACTOR_KEY = "liebre.scheduling.priority.scaling";
+	private static final String PRIORITY_INTERVAL_KEY = "liebre.scheduling.priority.interval.nanos";
 
 	private final List<PriorityMetric> availableMetrics = Arrays.asList(QueueSizePriorityMetric.INSTANCE,
 			StimulusPriorityMetric.INSTANCE, BlockingQueuePriorityMetric.INSTANCE);
@@ -25,8 +25,7 @@ public class QueryConfiguration {
 	private final boolean schedulingEnabled;
 	private final int threadsNumber;
 	private final long schedulingInterval;
-	private final int helperThreadsNumber;
-	private final long helperThreadInterval;
+	private final long priorityInterval;
 	private final PriorityMetric priorityMetric;
 	private final int taskPoolType;
 	private final int priorityScalingFactor;
@@ -34,14 +33,13 @@ public class QueryConfiguration {
 	private final PropertyFileLoader properties;
 
 	public QueryConfiguration(String filename, Class<?> clazz) {
-		properties = new PropertyFileLoader(filename, clazz);
+		this.properties = new PropertyFileLoader(filename, clazz);
 		this.schedulingEnabled = Boolean.parseBoolean(getProperty(SCHEDULING_ENABLED_KEY));
 		this.threadsNumber = Integer.parseInt(getProperty(NUMBER_THREADS_KEY));
 		this.schedulingInterval = Long.parseLong(getProperty(SCHEDULING_INTERVAL_KEY));
-		this.helperThreadsNumber = Integer.parseInt(getProperty(NUMBER_HELPER_THREADS_KEY));
-		this.helperThreadInterval = Long.parseLong(getProperty(HELPER_THREAD_INTERVAL_KEY));
-		this.taskPoolType = Integer.parseInt(getProperty(TASK_POOL_TYPE));
-		this.priorityScalingFactor = Integer.parseInt(getProperty(PRIORITY_SCALING_FACTOR));
+		this.priorityInterval = Long.parseLong(getProperty(PRIORITY_INTERVAL_KEY));
+		this.taskPoolType = Integer.parseInt(getProperty(TASK_POOL_TYPE_KEY));
+		this.priorityScalingFactor = Integer.parseInt(getProperty(PRIORITY_SCALING_FACTOR_KEY));
 		String priorityMetricName = getProperty(PRIORITY_METRIC_KEY);
 		this.priorityMetric = getObjectByName(priorityMetricName, availableMetrics);
 	}
@@ -84,12 +82,8 @@ public class QueryConfiguration {
 		return schedulingInterval;
 	}
 
-	public int getHelperThreadsNumber() {
-		return helperThreadsNumber;
-	}
-
-	public long getHelperThreadInterval() {
-		return helperThreadInterval;
+	public long getPriorityInterval() {
+		return priorityInterval;
 	}
 
 	public int getTaskPoolType() {
@@ -107,9 +101,9 @@ public class QueryConfiguration {
 	@Override
 	public String toString() {
 		return "QueryConfiguration [schedulingEnabled=" + schedulingEnabled + ", threadsNumber=" + threadsNumber
-				+ ", schedulingInterval=" + schedulingInterval + ", helperThreadsNumber=" + helperThreadsNumber
-				+ ", helperThreadInterval=" + helperThreadInterval + ", priorityMetric=" + priorityMetric
-				+ ", taskPoolType=" + taskPoolType + ", priorityScalingFactor=" + priorityScalingFactor + "]";
+				+ ", schedulingInterval=" + schedulingInterval + ", priorityInterval=" + priorityInterval
+				+ ", priorityMetric=" + priorityMetric + ", taskPoolType=" + taskPoolType + ", priorityScalingFactor="
+				+ priorityScalingFactor + "]";
 	}
 
 }
