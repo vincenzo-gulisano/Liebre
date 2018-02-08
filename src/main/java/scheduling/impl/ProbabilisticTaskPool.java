@@ -169,17 +169,21 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 			try {
 				csv.close();
 			} catch (IOException e) {
-				throw new IllegalStateException(e);
+				System.err.format("[WARN] Failed to close statistics file for TaskPool: %s%n", e.getMessage());
 			}
 		}
 	}
 
 	private void recordStatistics(List<Double> probabilities, long threadId) {
+		if (!isEnabled()) {
+			System.err.println("[WARN] Ignoring append, TaskPool is disabled");
+			return;
+		}
 		if (statisticsEnabled && threadId % 4 == 0) {
 			try {
 				csv.printRecord(probabilities);
 			} catch (IOException e) {
-				throw new IllegalStateException(e);
+				System.err.format("[WARN] Failed to record statistics for TaskPool: %s%n", e.getMessage());
 			}
 		}
 	}
