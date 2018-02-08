@@ -37,7 +37,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 		}
 
 		public boolean isTime(long threadId) {
-			return this.threadId == threadId && (ts + turnPeriodNanos > System.nanoTime());
+			return this.threadId == threadId && (System.nanoTime() >= ts + turnPeriodNanos);
 		}
 	}
 
@@ -56,12 +56,13 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	private final boolean statisticsEnabled;
 
 	// FIXME: Builder
-	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor, long priorityUpdateInterval) {
+	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor,
+			long priorityUpdateInterval) {
 		this(metric, nThreads, priorityScalingFactor, priorityUpdateInterval, null);
 	}
 
-	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor, long priorityUpdateInterval,
-			String statisticsFolder) {
+	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor,
+			long priorityUpdateInterval, String statisticsFolder) {
 		this.metric = metric;
 		this.nThreads = nThreads;
 		this.priorityScalingFactor = priorityScalingFactor;
@@ -94,6 +95,8 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	public ActiveRunnable getNext(long threadId) {
 		Turn turn = turns.get();
 		if (turn.isTime(threadId)) {
+			System.out.format("Thread %d updating priorities%n", threadId);
+			System.out.println(turn.ts - System.nanoTime());
 			updatePriorities(threadId);
 			turns.set(turn.next(nThreads));
 		}
