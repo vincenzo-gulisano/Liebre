@@ -95,8 +95,6 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	public ActiveRunnable getNext(long threadId) {
 		Turn turn = turns.get();
 		if (turn.isTime(threadId)) {
-			System.out.format("Thread %d updating priorities%n", threadId);
-			System.out.println(turn.ts - System.nanoTime());
 			updatePriorities(threadId);
 			turns.set(turn.next(nThreads));
 		}
