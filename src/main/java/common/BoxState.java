@@ -5,13 +5,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 import common.tuple.Tuple;
 import stream.Stream;
 import stream.StreamFactory;
 
+//FIXME: Builder
 public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	public static enum BoxType {
@@ -60,25 +59,19 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	private volatile boolean enabled;
 
 	private final Map<String, Stream<IN>> inputs = new ConcurrentHashMap<>();
-	private final List<StreamProducer<? extends Tuple>> previous = new CopyOnWriteArrayList<>();
+	private final Map<String, StreamProducer<? extends Tuple>> previous = new ConcurrentHashMap<>();
 	private final Map<String, StreamConsumer<OUT>> next = new ConcurrentHashMap<>();
 
 	private final BoxType type;
 
-	private long inTuples;
-	private long outTuples;
-	private long startTimeNanos;
+	private final ExecutionLog<String, Long> writeLog = ExecutionLog.cummulativeLong();
+	private final ExecutionLog<String, Long> readLog = ExecutionLog.cummulativeLong();
+	private final ExecutionLog<String, Long> latencyLog = ExecutionLog.maxLong();
 
 	public BoxState(String id, BoxType type, StreamFactory streamFactory) {
 		this.id = id;
 		this.type = type;
 		this.factory = streamFactory;
-	}
-
-	public void restart() {
-		this.inTuples = 0;
-		this.outTuples = 0;
-		this.startTimeNanos = System.nanoTime();
 	}
 
 	public void enable() {
@@ -106,6 +99,11 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return id;
 	}
 
+	public void setOutput(String key, StreamConsumer<OUT> out, StreamProducer<OUT> caller) {
+		next.put(key, out);
+		out.registerIn(caller);
+	}
+
 	public void setInput(String key, StreamProducer<IN> in, NamedEntity caller) {
 		if (factory == null) {
 			throw new IllegalStateException("This entity cannot have inputs. Factory == null");
@@ -118,7 +116,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 					"WARNING: It seems that you are explicitly registering inputs. Please use addOutput() instead!");
 		}
 		inputs.put(key, factory.newStream(in.getId(), id));
-		previous.add(in);
+		previous.put(key, in);
 	}
 
 	private boolean nextIsSet(StreamProducer<IN> prev, NamedEntity current) {
@@ -133,35 +131,17 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return inputs.get(key);
 	}
 
-	public void setOutput(String key, StreamConsumer<OUT> out, StreamProducer<OUT> caller) {
-		next.put(key, out);
-		out.registerIn(caller);
-	}
-
 	public Collection<StreamConsumer<OUT>> getNext() {
 		return next.values();
 	}
 
 	public IN readTuple(String key) {
 		IN tuple = getInputStream(key).getNextTuple();
-		if (tuple != null) {
-			inTuples++;
-		}
 		return tuple;
 	}
 
-	public void writeTuple(OUT tuple, String key, StreamProducer<OUT> caller) {
-		outTuples++;
-		getOutputStream(key, caller).addTuple(tuple);
-	}
-
-	public double getThroughput() {
-		long timeDiff = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
-		return timeDiff / (double) inTuples;
-	}
-
-	public double getSelectivity() {
-		return outTuples / (double) inTuples;
+	public void writeTuple(OUT tuple, String destId, StreamProducer<OUT> src) {
+		getOutputStream(destId, src).addTuple(tuple);
 	}
 
 	public Stream<OUT> getOutputStream(String destId, StreamProducer<OUT> src) {
@@ -179,7 +159,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public Collection<StreamProducer<? extends Tuple>> getPrevious() {
-		return previous;
+		return previous.values();
 	}
 
 	public boolean hasInput() {
