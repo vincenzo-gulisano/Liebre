@@ -3,11 +3,14 @@ package scheduling.priority;
 public enum MatrixMetricFactory {
 	STIMULUS {
 		@Override
-		public MatrixPriorityMetric newInstance(int nThreads, int nTasks) {
+		public MatrixPriorityMetric newInstance(int nTasks, int nThreads) {
 			return new StimulusMatrixMetric(nTasks, nThreads);
 		}
 	},
-	QUEUE_SIZE {
+	QUEUE_SIZE
+
+	{
+
 		@Override
 		public MatrixPriorityMetric newInstance(int nTasks, int nThreads) {
 			return new QueueSizeMatrixMetric(nTasks, nThreads);

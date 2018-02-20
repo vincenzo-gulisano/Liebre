@@ -31,8 +31,9 @@ public class StimulusMatrixMetric extends MatrixPriorityMetric {
 	public List<Double> getPriorities(int scaleFactor) {
 		List<Long> stimulus = matrix.min();
 		long t = System.nanoTime();
-		stimulus = stimulus.stream().map(i -> i == Long.MAX_VALUE ? 1 : t - i).collect(Collectors.toList());
-		return scale(stimulus, scaleFactor);
+		stimulus = stimulus.stream().map(i -> i == Long.MAX_VALUE ? 0 : t - i).collect(Collectors.toList());
+		List<Double> res = scale(stimulus, scaleFactor);
+		return res;
 	}
 
 }

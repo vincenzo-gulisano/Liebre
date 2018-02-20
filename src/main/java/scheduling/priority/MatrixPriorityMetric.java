@@ -28,7 +28,8 @@ public abstract class MatrixPriorityMetric {
 			sum += pi;
 		}
 		// Set default priority for unknown metric values
-		final double defaultValue = sum / (data.size() - noValueCount);
+		final double defaultValue = data.size() > noValueCount ? sum / (data.size() - noValueCount)
+				: 1 / (double) data.size();
 		sum = 0;
 		for (int i = 0; i < scaled.size(); i++) {
 			if (scaled.get(i) <= 0) {
