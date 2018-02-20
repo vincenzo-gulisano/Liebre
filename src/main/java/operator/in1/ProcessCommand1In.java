@@ -4,6 +4,7 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import operator.AbstractProcessCommand;
+import stream.Stream;
 
 public class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
 		extends AbstractProcessCommand<Operator1In<IN, OUT>> {
@@ -14,12 +15,18 @@ public class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
 
 	@Override
 	public final void process() {
-		IN inTuple = operator.getInputStream(operator.getId()).getNextTuple();
+		Stream<IN> input = operator.getInputStream(operator.getId());
+		Stream<OUT> output = operator.getOutputStream(operator.getId());
+
+		IN inTuple = input.getNextTuple();
 		if (inTuple != null) {
+			operator.recordTupleRead(inTuple, input);
 			List<OUT> outTuples = operator.processTupleIn1(inTuple);
 			if (outTuples != null) {
-				for (OUT t : outTuples)
-					operator.getOutputStream(operator.getId()).addTuple(t);
+				for (OUT t : outTuples) {
+					output.addTuple(t);
+					operator.recordTupleWrite(t, output);
+				}
 			}
 		}
 	}

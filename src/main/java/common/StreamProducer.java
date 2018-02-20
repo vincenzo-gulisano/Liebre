@@ -1,6 +1,7 @@
 package common;
 
 import java.util.Collection;
+import java.util.Map;
 
 import common.tuple.Tuple;
 import operator.in2.Operator2In;
@@ -37,5 +38,11 @@ public interface StreamProducer<OUT extends Tuple> extends NamedEntity {
 	 *         streams
 	 */
 	boolean hasOutput();
+
+	Map<String, Long> getWriteLog();
+
+	Map<String, Long> getLatencyLog();
+
+	void recordTupleWrite(OUT tuple, Stream<OUT> output);
 
 }

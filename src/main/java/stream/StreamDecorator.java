@@ -31,6 +31,11 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
 	}
 
 	@Override
+	public int getIndex() {
+		return decorated.getIndex();
+	}
+
+	@Override
 	public void addTuple(T tuple) {
 		decorated.addTuple(tuple);
 	}
@@ -58,6 +63,16 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
 	@Override
 	public String toString() {
 		return decorated.toString();
+	}
+
+	@Override
+	public String getSrcId() {
+		return decorated.getSrcId();
+	}
+
+	@Override
+	public String getDestId() {
+		return decorated.getDestId();
 	}
 
 }

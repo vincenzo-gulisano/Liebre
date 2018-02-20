@@ -5,7 +5,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import stream.Stream;
 import stream.StreamFactory;
@@ -54,7 +56,9 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		protected abstract boolean checkState(BoxState<?, ?> state);
 	}
 
+	private static AtomicInteger nextIndex = new AtomicInteger();
 	private final String id;
+	private final int index;
 	private final StreamFactory factory;
 	private volatile boolean enabled;
 
@@ -70,6 +74,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	public BoxState(String id, BoxType type, StreamFactory streamFactory) {
 		this.id = id;
+		this.index = nextIndex.getAndIncrement();
 		this.type = type;
 		this.factory = streamFactory;
 	}
@@ -99,6 +104,10 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return id;
 	}
 
+	public int getIndex() {
+		return index;
+	}
+
 	public void setOutput(String key, StreamConsumer<OUT> out, StreamProducer<OUT> caller) {
 		next.put(key, out);
 		out.registerIn(caller);
@@ -115,7 +124,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 			System.err.println(
 					"WARNING: It seems that you are explicitly registering inputs. Please use addOutput() instead!");
 		}
-		inputs.put(key, factory.newStream(in.getId(), id));
+		inputs.put(key, factory.newStream(in, caller));
 		previous.put(key, in);
 	}
 
@@ -135,13 +144,17 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return next.values();
 	}
 
-	public IN readTuple(String key) {
-		IN tuple = getInputStream(key).getNextTuple();
-		return tuple;
+	public void recordTupleRead(IN tuple, Stream<? extends IN> input) {
+		if (tuple != null) {
+			readLog.record(input.getSrcId(), 1L);
+		}
 	}
 
-	public void writeTuple(OUT tuple, String destId, StreamProducer<OUT> src) {
-		getOutputStream(destId, src).addTuple(tuple);
+	public void recordTupleWrite(OUT tuple, Stream<? extends OUT> output) {
+		writeLog.record(output.getDestId(), 1L);
+		if (tuple instanceof RichTuple) {
+			latencyLog.record(output.getDestId(), ((RichTuple) tuple).getTimestamp());
+		}
 	}
 
 	public Stream<OUT> getOutputStream(String destId, StreamProducer<OUT> src) {
@@ -169,6 +182,24 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 			}
 		}
 		return true;
+	}
+
+	public Map<String, Long> getWriteLog() {
+		return writeLog.get();
+	}
+
+	public Map<String, Long> getReadLog() {
+		return readLog.get();
+	}
+
+	public Map<String, Long> getLatencyLog() {
+		return latencyLog.get();
+	}
+
+	public void resetLog() {
+		writeLog.reset();
+		readLog.reset();
+		latencyLog.reset();
 	}
 
 	public boolean hasOutput() {

@@ -2,6 +2,7 @@ package operator.in2;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import common.StreamConsumer;
 import common.StreamProducer;
@@ -57,6 +58,11 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 	@Override
 	public String getId() {
 		return decorated.getId();
+	}
+
+	@Override
+	public int getIndex() {
+		return decorated.getIndex();
 	}
 
 	@Override
@@ -117,6 +123,33 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 	@Override
 	public void onRun() {
 		decorated.onRun();
+	}
+
+	@Override
+	public Map<String, Long> getReadLog() {
+		return decorated.getReadLog();
+	}
+
+	@Override
+	public Map<String, Long> getWriteLog() {
+		return decorated.getWriteLog();
+	}
+
+	@Override
+	public Map<String, Long> getLatencyLog() {
+		return decorated.getLatencyLog();
+	}
+
+	public void recordTuple2Read(IN2 tuple, Stream<IN2> input) {
+		decorated.recordTuple2Read(tuple, input);
+	}
+
+	public void recordTupleRead(IN tuple, Stream<IN> input) {
+		decorated.recordTupleRead(tuple, input);
+	}
+
+	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
+		decorated.recordTupleWrite(tuple, output);
 	}
 
 	@Override

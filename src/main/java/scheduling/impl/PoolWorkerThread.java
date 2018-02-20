@@ -1,6 +1,7 @@
 package scheduling.impl;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import common.ActiveRunnable;
 import common.StreamConsumer;
@@ -12,16 +13,16 @@ public class PoolWorkerThread extends ActiveThread {
 	private final TaskPool<ActiveRunnable> availableTasks;
 	private long quantum;
 	private final TimeUnit unit;
+	protected volatile boolean executed;
 
-	private static long threadCount = 0;
-	protected final long index;
+	private static AtomicInteger threadCount = new AtomicInteger();
+	protected final int index;
 
 	public PoolWorkerThread(TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit) {
 		this.availableTasks = availableTasks;
 		this.quantum = quantum;
 		this.unit = unit;
-		this.index = threadCount;
-		threadCount++;
+		this.index = threadCount.getAndIncrement();
 	}
 
 	@Override
@@ -39,18 +40,20 @@ public class PoolWorkerThread extends ActiveThread {
 		return availableTasks.getNext(index);
 	}
 
-	protected boolean executeTask(ActiveRunnable task) {
-		boolean executed = false;
+	protected void executeTask(ActiveRunnable task) {
+		executed = false;
 		long runUntil = System.nanoTime() + unit.toNanos(quantum);
 		while (System.nanoTime() < runUntil && hasInput(task) && hasOutput(task)) {
 			task.run();
 			executed = true;
 		}
-		return executed;
 	}
 
 	protected void putTask(ActiveRunnable task) {
-		availableTasks.put(task);
+		availableTasks.put(task, index);
+		if (executed) {
+			task.onRun();
+		}
 	}
 
 	@Override

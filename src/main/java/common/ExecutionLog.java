@@ -39,8 +39,8 @@ public class ExecutionLog<K, V> {
 		this.mergeFunction = mergeFunction;
 	}
 
-	public void record(K executor, V value) {
-		log.merge(executor, value, mergeFunction);
+	public void record(K item, V value) {
+		log.merge(item, value, mergeFunction);
 	}
 
 	public void reset() {

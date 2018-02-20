@@ -1,6 +1,7 @@
 package operator.in2;
 
 import java.util.Collection;
+import java.util.Map;
 
 import common.StreamConsumer;
 import common.StreamProducer;
@@ -10,98 +11,128 @@ import stream.Stream;
 
 class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
-	private final Operator2In<?, IN, OUT> operator;
+	private final Operator2In<?, IN, OUT> decorated;
 
 	public SecondInputOperator2InAdapter(Operator2In<?, IN, OUT> operator) {
-		this.operator = operator;
+		this.decorated = operator;
 	}
 
 	@Override
 	public void run() {
-		operator.run();
+		decorated.run();
 	}
 
 	@Override
 	public void registerIn(StreamProducer<IN> in) {
-		operator.registerIn2(in);
+		decorated.registerIn2(in);
 	}
 
 	@Override
 	public Collection<StreamProducer<?>> getPrevious() {
-		return operator.getPrevious();
+		return decorated.getPrevious();
 	}
 
 	@Override
 	public Stream<IN> getInputStream(String requestorId) {
-		return operator.getInput2Stream(requestorId);
+		return decorated.getInput2Stream(requestorId);
 	}
 
 	@Override
 	public String getId() {
-		return operator.getId();
+		return decorated.getId();
+	}
+
+	@Override
+	public int getIndex() {
+		return decorated.getIndex();
 	}
 
 	@Override
 	public void addOutput(StreamConsumer<OUT> out) {
-		operator.addOutput(out);
+		decorated.addOutput(out);
 	}
 
 	@Override
 	public Collection<StreamConsumer<OUT>> getNext() {
-		return operator.getNext();
+		return decorated.getNext();
 	}
 
 	@Override
 	public Stream<OUT> getOutputStream(String requestorId) {
-		return operator.getOutputStream(requestorId);
+		return decorated.getOutputStream(requestorId);
 	}
 
 	@Override
 	public boolean hasInput() {
-		return operator.hasInput();
+		return decorated.hasInput();
 	}
 
 	@Override
 	public boolean hasOutput() {
-		return operator.hasOutput();
+		return decorated.hasOutput();
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((operator == null) ? 0 : operator.hashCode());
+		result = prime * result + ((decorated == null) ? 0 : decorated.hashCode());
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		return this.operator.equals(obj);
+		return this.decorated.equals(obj);
 	}
 
 	@Override
 	public void enable() {
-		operator.enable();
+		decorated.enable();
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return operator.isEnabled();
+		return decorated.isEnabled();
 	}
 
 	@Override
 	public void disable() {
-		operator.disable();
+		decorated.disable();
 	}
 
 	@Override
 	public void onRun() {
-		operator.onRun();
+		decorated.onRun();
 	}
 
 	@Override
 	public void onScheduled() {
-		operator.onScheduled();
+		decorated.onScheduled();
+	}
+
+	@Override
+	public Map<String, Long> getReadLog() {
+		return decorated.getReadLog();
+	}
+
+	@Override
+	public Map<String, Long> getWriteLog() {
+		return decorated.getWriteLog();
+	}
+
+	@Override
+	public Map<String, Long> getLatencyLog() {
+		return decorated.getLatencyLog();
+	}
+
+	@Override
+	public void recordTupleRead(IN tuple, Stream<IN> input) {
+		decorated.recordTuple2Read(tuple, input);
+	}
+
+	@Override
+	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
+		decorated.recordTupleWrite(tuple, output);
 	}
 
 }

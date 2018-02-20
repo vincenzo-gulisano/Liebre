@@ -27,7 +27,7 @@ import operator.AbstractOperator;
 import stream.Stream;
 import stream.StreamFactory;
 
-public class UnionOperator<IN extends Tuple> extends AbstractOperator<IN, IN> {
+public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 	private static final String OUTPUT_KEY = "OUTPUT";
 
 	public UnionOperator(String id, StreamFactory streamFactory) {
@@ -35,12 +35,12 @@ public class UnionOperator<IN extends Tuple> extends AbstractOperator<IN, IN> {
 	}
 
 	@Override
-	public void registerIn(StreamProducer<IN> in) {
+	public void registerIn(StreamProducer<T> in) {
 		state.setInput(in.getId(), in, this);
 	}
 
 	@Override
-	public Stream<IN> getInputStream(String reqId) {
+	public Stream<T> getInputStream(String reqId) {
 		return state.getInputStream(reqId);
 	}
 
@@ -53,8 +53,8 @@ public class UnionOperator<IN extends Tuple> extends AbstractOperator<IN, IN> {
 
 	// FIXME: Convert to command like the other operators
 	public final void process() {
-		for (Stream<IN> in : state.getInputs()) {
-			IN inTuple = in.getNextTuple();
+		for (Stream<T> in : state.getInputs()) {
+			T inTuple = in.getNextTuple();
 			if (inTuple != null) {
 				getOutputStream(getId()).addTuple(inTuple);
 			}
@@ -62,12 +62,12 @@ public class UnionOperator<IN extends Tuple> extends AbstractOperator<IN, IN> {
 	}
 
 	@Override
-	public void addOutput(StreamConsumer<IN> out) {
+	public void addOutput(StreamConsumer<T> out) {
 		state.setOutput(OUTPUT_KEY, out, this);
 	}
 
 	@Override
-	public Stream<IN> getOutputStream(String requestorId) {
+	public Stream<T> getOutputStream(String requestorId) {
 		return state.getOutputStream(OUTPUT_KEY, this);
 	}
 

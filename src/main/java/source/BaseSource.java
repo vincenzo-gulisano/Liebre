@@ -20,6 +20,7 @@
 package source;
 
 import java.util.Collection;
+import java.util.Map;
 
 import common.BoxState;
 import common.BoxState.BoxType;
@@ -27,25 +28,25 @@ import common.StreamConsumer;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class BaseSource<T extends Tuple> implements Source<T> {
+public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
-	private final BoxState<Tuple, T> state;
+	private final BoxState<Tuple, OUT> state;
 	private final String OUTPUT_KEY = "OUTPUT";
-	private final SourceFunction<T> function;
-	private final ProcessCommandSource<T> processCommand = new ProcessCommandSource<>(this);
+	private final SourceFunction<OUT> function;
+	private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
 
-	public BaseSource(String id, SourceFunction<T> function) {
+	public BaseSource(String id, SourceFunction<OUT> function) {
 		state = new BoxState<>(id, BoxType.SOURCE, null);
 		this.function = function;
 	}
 
 	@Override
-	public void addOutput(StreamConsumer<T> out) {
+	public void addOutput(StreamConsumer<OUT> out) {
 		state.setOutput(OUTPUT_KEY, out, this);
 	}
 
 	@Override
-	public Stream<T> getOutputStream(String reqId) {
+	public Stream<OUT> getOutputStream(String reqId) {
 		return state.getOutputStream(OUTPUT_KEY, this);
 	}
 
@@ -66,7 +67,7 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public Collection<StreamConsumer<T>> getNext() {
+	public Collection<StreamConsumer<OUT>> getNext() {
 		return state.getNext();
 	}
 
@@ -82,7 +83,7 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public T getNextTuple() {
+	public OUT getNextTuple() {
 		return function.getNextTuple();
 	}
 
@@ -92,11 +93,32 @@ public class BaseSource<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
+	public int getIndex() {
+		return state.getIndex();
+	}
+
+	@Override
 	public void onScheduled() {
 	}
 
 	@Override
 	public void onRun() {
+		state.resetLog();
+	}
+
+	@Override
+	public Map<String, Long> getWriteLog() {
+		return state.getWriteLog();
+	}
+
+	@Override
+	public Map<String, Long> getLatencyLog() {
+		return state.getLatencyLog();
+	}
+
+	@Override
+	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
+		state.recordTupleWrite(tuple, output);
 	}
 
 	@Override

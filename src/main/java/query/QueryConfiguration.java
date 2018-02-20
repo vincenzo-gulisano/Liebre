@@ -4,10 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import common.util.PropertyFileLoader;
-import scheduling.priority.BlockingQueuePriorityMetric;
-import scheduling.priority.PriorityMetric;
-import scheduling.priority.QueueSizePriorityMetric;
-import scheduling.priority.StimulusPriorityMetric;
+import scheduling.priority.MatrixMetricFactory;
 
 public class QueryConfiguration {
 	private static final String SCHEDULING_ENABLED_KEY = "liebre.scheduling.enabled";
@@ -19,14 +16,13 @@ public class QueryConfiguration {
 	private static final String PRIORITY_SCALING_FACTOR_KEY = "liebre.scheduling.priority.scaling";
 	private static final String PRIORITY_INTERVAL_KEY = "liebre.scheduling.priority.interval.nanos";
 
-	private final List<PriorityMetric> availableMetrics = Arrays.asList(QueueSizePriorityMetric.INSTANCE,
-			StimulusPriorityMetric.INSTANCE, BlockingQueuePriorityMetric.INSTANCE);
+	private final List<MatrixMetricFactory> availableMetrics = Arrays.asList(MatrixMetricFactory.values());
 
 	private final boolean schedulingEnabled;
 	private final int threadsNumber;
 	private final long schedulingInterval;
 	private final long priorityInterval;
-	private final PriorityMetric priorityMetric;
+	private final MatrixMetricFactory metricFactory;
 	private final int taskPoolType;
 	private final int priorityScalingFactor;
 
@@ -41,13 +37,15 @@ public class QueryConfiguration {
 		this.taskPoolType = Integer.parseInt(getProperty(TASK_POOL_TYPE_KEY));
 		this.priorityScalingFactor = Integer.parseInt(getProperty(PRIORITY_SCALING_FACTOR_KEY));
 		String priorityMetricName = getProperty(PRIORITY_METRIC_KEY);
-		this.priorityMetric = getObjectByName(priorityMetricName, availableMetrics);
+		this.metricFactory = getObjectByName(priorityMetricName, availableMetrics);
 	}
 
 	private <T> T getObjectByName(String name, List<T> availableObjects) {
 		T chosen = null;
 		for (T obj : availableObjects) {
-			if (obj.getClass().getSimpleName().equals(name)) {
+			boolean hasClassName = obj.getClass().getSimpleName().equals(name);
+			boolean hasEnumMemberName = (obj instanceof Enum) && ((Enum<?>) obj).name().equals(name);
+			if (hasClassName || hasEnumMemberName) {
 				chosen = obj;
 				break;
 			}
@@ -94,15 +92,15 @@ public class QueryConfiguration {
 		return priorityScalingFactor;
 	}
 
-	public PriorityMetric getPriorityMetric() {
-		return priorityMetric;
+	public MatrixMetricFactory getMetricFactory() {
+		return metricFactory;
 	}
 
 	@Override
 	public String toString() {
 		return "QueryConfiguration [schedulingEnabled=" + schedulingEnabled + ", threadsNumber=" + threadsNumber
 				+ ", schedulingInterval=" + schedulingInterval + ", priorityInterval=" + priorityInterval
-				+ ", priorityMetric=" + priorityMetric + ", taskPoolType=" + taskPoolType + ", priorityScalingFactor="
+				+ ", priorityMetric=" + metricFactory + ", taskPoolType=" + taskPoolType + ", priorityScalingFactor="
 				+ priorityScalingFactor + "]";
 	}
 

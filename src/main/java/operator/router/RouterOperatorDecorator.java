@@ -2,6 +2,7 @@ package operator.router;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import common.StreamConsumer;
 import common.StreamProducer;
@@ -53,6 +54,11 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 	}
 
 	@Override
+	public int getIndex() {
+		return decorated.getIndex();
+	}
+
+	@Override
 	public void addOutput(StreamConsumer<T> out) {
 		decorated.addOutput(out);
 	}
@@ -100,6 +106,29 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 	@Override
 	public void onRun() {
 		decorated.onRun();
+	}
+
+	@Override
+	public Map<String, Long> getReadLog() {
+		return decorated.getReadLog();
+	}
+
+	@Override
+	public Map<String, Long> getWriteLog() {
+		return decorated.getWriteLog();
+	}
+
+	@Override
+	public Map<String, Long> getLatencyLog() {
+		return decorated.getLatencyLog();
+	}
+
+	public void recordTupleRead(T tuple, Stream<T> input) {
+		decorated.recordTupleRead(tuple, input);
+	}
+
+	public void recordTupleWrite(T tuple, Stream<T> output) {
+		decorated.recordTupleWrite(tuple, output);
 	}
 
 }

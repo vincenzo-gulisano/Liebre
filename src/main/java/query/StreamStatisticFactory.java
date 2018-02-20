@@ -1,5 +1,6 @@
 package query;
 
+import common.NamedEntity;
 import common.tuple.Tuple;
 import stream.Stream;
 import stream.StreamFactory;
@@ -18,8 +19,8 @@ public class StreamStatisticFactory implements StreamFactory {
 	}
 
 	@Override
-	public <T extends Tuple> Stream<T> newStream(String fromId, String toId) {
-		Stream<T> stream = factory.newStream(fromId, toId);
+	public <T extends Tuple> Stream<T> newStream(NamedEntity from, NamedEntity to) {
+		Stream<T> stream = factory.newStream(from, to);
 		return new StreamStatistic<>(stream, folder, autoFlush);
 	}
 

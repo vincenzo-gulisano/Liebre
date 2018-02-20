@@ -3,6 +3,7 @@ package stream;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import common.NamedEntity;
 import common.tuple.Tuple;
 
 public class BlockingStream<T extends Tuple> implements Stream<T> {
@@ -13,9 +14,13 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 	private BlockingQueue<T> stream = new ArrayBlockingQueue<T>(CAPACITY);
 	private volatile long tuplesWritten, tuplesRead;
 	private volatile boolean enabled;
+	private final String srcId;
+	private final String destId;
 
-	public BlockingStream(String id) {
+	public BlockingStream(String id, NamedEntity from, NamedEntity to) {
 		this.id = id;
+		this.srcId = from.getId();
+		this.destId = to.getId();
 		tuplesWritten = 0;
 		tuplesRead = 0;
 	}
@@ -83,6 +88,21 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 	@Override
 	public String getId() {
 		return this.id;
+	}
+
+	@Override
+	public String getDestId() {
+		return destId;
+	}
+
+	@Override
+	public String getSrcId() {
+		return srcId;
+	}
+
+	@Override
+	public int getIndex() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

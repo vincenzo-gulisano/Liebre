@@ -38,7 +38,7 @@ public class PriorityTaskPool2 implements TaskPool<ActiveRunnable> {
 	}
 
 	@Override
-	public ActiveRunnable getNext(long threadId) {
+	public ActiveRunnable getNext(int threadId) {
 		if (ctr.get() == threadId) {
 			// System.out.println("THREAD " + threadId + " updating array");
 			List<TaskPriority> oldPriorities = priorities.get();
@@ -71,7 +71,7 @@ public class PriorityTaskPool2 implements TaskPool<ActiveRunnable> {
 	}
 
 	@Override
-	public void put(ActiveRunnable task) {
+	public void put(ActiveRunnable task, int threadId) {
 		if (task instanceof Source) {
 			throw new IllegalStateException("This pool does not accept sources!");
 		}

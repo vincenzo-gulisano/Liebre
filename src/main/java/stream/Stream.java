@@ -34,4 +34,8 @@ public interface Stream<T extends Tuple> extends Active, NamedEntity {
 	public long remainingCapacity();
 
 	public long size();
+
+	public String getSrcId();
+
+	public String getDestId();
 }

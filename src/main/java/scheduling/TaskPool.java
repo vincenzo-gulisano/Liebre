@@ -4,11 +4,11 @@ import common.Active;
 
 public interface TaskPool<T extends Runnable> extends Active {
 	default void register(T task) {
-		put(task);
+		put(task, -1);
 	}
 
-	T getNext(long threadId);
+	T getNext(int threadId);
 
-	void put(T task);
+	void put(T task, int threadId);
 
 }

@@ -1,6 +1,7 @@
 package sink;
 
 import java.util.Collection;
+import java.util.Map;
 
 import common.StreamProducer;
 import common.tuple.Tuple;
@@ -61,6 +62,11 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 	}
 
 	@Override
+	public int getIndex() {
+		return decorated.getIndex();
+	}
+
+	@Override
 	public void processTuple(IN tuple) {
 		decorated.processTuple(tuple);
 	}
@@ -78,6 +84,15 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 	@Override
 	public String toString() {
 		return decorated.toString();
+	}
+
+	@Override
+	public Map<String, Long> getReadLog() {
+		return decorated.getReadLog();
+	}
+
+	public void recordTupleRead(IN tuple, Stream<IN> input) {
+		decorated.recordTupleRead(tuple, input);
 	}
 
 }

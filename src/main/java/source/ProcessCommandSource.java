@@ -1,6 +1,7 @@
 package source;
 
 import common.tuple.Tuple;
+import stream.Stream;
 
 public class ProcessCommandSource<T extends Tuple> implements Runnable {
 	private final Source<T> source;
@@ -17,9 +18,11 @@ public class ProcessCommandSource<T extends Tuple> implements Runnable {
 	}
 
 	public final void process() {
-		T t = source.getNextTuple();
-		if (t != null) {
-			source.getOutputStream(source.getId()).addTuple(t);
+		T tuple = source.getNextTuple();
+		if (tuple != null) {
+			Stream<T> output = source.getOutputStream(source.getId());
+			output.addTuple(tuple);
+			source.recordTupleWrite(tuple, output);
 		}
 	}
 

@@ -1,17 +1,18 @@
 package source;
 
 import java.util.Collection;
+import java.util.Map;
 
 import common.StreamConsumer;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class SourceDecorator<T extends Tuple> implements Source<T> {
+public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 
-	private final Source<T> decorated;
-	private final ProcessCommandSource<T> processCommand = new ProcessCommandSource<>(this);
+	private final Source<OUT> decorated;
+	private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
 
-	public SourceDecorator(Source<T> decorated) {
+	public SourceDecorator(Source<OUT> decorated) {
 		this.decorated = decorated;
 	}
 
@@ -36,12 +37,12 @@ public class SourceDecorator<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public void addOutput(StreamConsumer<T> out) {
+	public void addOutput(StreamConsumer<OUT> out) {
 		decorated.addOutput(out);
 	}
 
 	@Override
-	public Collection<StreamConsumer<T>> getNext() {
+	public Collection<StreamConsumer<OUT>> getNext() {
 		return decorated.getNext();
 	}
 
@@ -51,7 +52,7 @@ public class SourceDecorator<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public Stream<T> getOutputStream(String requestorId) {
+	public Stream<OUT> getOutputStream(String requestorId) {
 		return decorated.getOutputStream(requestorId);
 	}
 
@@ -61,7 +62,12 @@ public class SourceDecorator<T extends Tuple> implements Source<T> {
 	}
 
 	@Override
-	public T getNextTuple() {
+	public int getIndex() {
+		return decorated.getIndex();
+	}
+
+	@Override
+	public OUT getNextTuple() {
 		return decorated.getNextTuple();
 	}
 
@@ -78,6 +84,20 @@ public class SourceDecorator<T extends Tuple> implements Source<T> {
 	@Override
 	public String toString() {
 		return decorated.toString();
+	}
+
+	@Override
+	public Map<String, Long> getWriteLog() {
+		return decorated.getWriteLog();
+	}
+
+	@Override
+	public Map<String, Long> getLatencyLog() {
+		return decorated.getLatencyLog();
+	}
+
+	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
+		decorated.recordTupleWrite(tuple, output);
 	}
 
 }

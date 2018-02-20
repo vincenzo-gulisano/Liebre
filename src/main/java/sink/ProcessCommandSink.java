@@ -1,6 +1,7 @@
 package sink;
 
 import common.tuple.Tuple;
+import stream.Stream;
 
 public class ProcessCommandSink<T extends Tuple> implements Runnable {
 
@@ -19,9 +20,11 @@ public class ProcessCommandSink<T extends Tuple> implements Runnable {
 	}
 
 	public final void process() {
-		T t = sink.getInputStream(sink.getId()).getNextTuple();
-		if (t != null) {
-			sink.processTuple(t);
+		Stream<T> input = sink.getInputStream(sink.getId());
+		T tuple = input.getNextTuple();
+		if (tuple != null) {
+			sink.recordTupleRead(tuple, input);
+			sink.processTuple(tuple);
 		}
 	}
 

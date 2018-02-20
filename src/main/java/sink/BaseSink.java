@@ -20,6 +20,7 @@
 package sink;
 
 import java.util.Collection;
+import java.util.Map;
 
 import common.BoxState;
 import common.BoxState.BoxType;
@@ -83,6 +84,11 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	}
 
 	@Override
+	public int getIndex() {
+		return state.getIndex();
+	}
+
+	@Override
 	public Collection<StreamProducer<? extends Tuple>> getPrevious() {
 		return state.getPrevious();
 	}
@@ -97,6 +103,17 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
 	@Override
 	public void onRun() {
+		state.resetLog();
+	}
+
+	@Override
+	public Map<String, Long> getReadLog() {
+		return state.getReadLog();
+	}
+
+	@Override
+	public void recordTupleRead(IN tuple, Stream<IN> input) {
+		state.recordTupleRead(tuple, input);
 	}
 
 	@Override

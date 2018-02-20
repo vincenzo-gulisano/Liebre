@@ -20,6 +20,7 @@
 package operator.in2;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 import common.BoxState;
@@ -120,6 +121,11 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
+	public int getIndex() {
+		return state.getIndex();
+	}
+
+	@Override
 	public boolean hasInput() {
 		return state.hasInput();
 	}
@@ -131,11 +137,42 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public void onRun() {
+		state.resetLog();
+	}
+
+	@Override
+	public Map<String, Long> getReadLog() {
+		return state.getReadLog();
+	}
+
+	@Override
+	public Map<String, Long> getWriteLog() {
+		return state.getWriteLog();
+	}
+
+	@Override
+	public Map<String, Long> getLatencyLog() {
+		return state.getLatencyLog();
 	}
 
 	@Override
 	public void onScheduled() {
 
+	}
+
+	@Override
+	public void recordTupleRead(IN tuple, Stream<IN> input) {
+		state.recordTupleRead(tuple, input);
+	}
+
+	@Override
+	public void recordTuple2Read(IN2 tuple, Stream<IN2> input) {
+		state.recordTupleRead(tuple, input);
+	}
+
+	@Override
+	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
+		state.recordTupleWrite(tuple, output);
 	}
 
 	@Override

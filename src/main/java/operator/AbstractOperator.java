@@ -1,6 +1,7 @@
 package operator;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 import common.BoxState;
@@ -8,6 +9,7 @@ import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import stream.Stream;
 import stream.StreamFactory;
 
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
@@ -59,6 +61,11 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	}
 
 	@Override
+	public int getIndex() {
+		return state.getIndex();
+	}
+
+	@Override
 	public String toString() {
 		return getId();
 	}
@@ -74,7 +81,33 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	}
 
 	@Override
+	public Map<String, Long> getReadLog() {
+		return state.getReadLog();
+	}
+
+	@Override
+	public Map<String, Long> getWriteLog() {
+		return state.getWriteLog();
+	}
+
+	@Override
+	public Map<String, Long> getLatencyLog() {
+		return state.getLatencyLog();
+	}
+
+	@Override
+	public void recordTupleRead(IN tuple, Stream<IN> input) {
+		state.recordTupleRead(tuple, input);
+	}
+
+	@Override
+	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
+		state.recordTupleWrite(tuple, output);
+	}
+
+	@Override
 	public void onRun() {
+		state.resetLog();
 	}
 
 	@Override

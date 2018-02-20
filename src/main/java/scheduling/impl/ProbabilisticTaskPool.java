@@ -17,7 +17,8 @@ import common.ActiveRunnable;
 import common.util.AliasMethod;
 import common.util.StatisticFilename;
 import scheduling.TaskPool;
-import scheduling.priority.PriorityMetric;
+import scheduling.priority.MatrixMetricFactory;
+import scheduling.priority.MatrixPriorityMetric;
 
 public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
@@ -43,7 +44,8 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
 	protected final List<ActiveRunnable> tasks = new ArrayList<>();
 	private AtomicReference<AliasMethod> sampler = new AtomicReference<AliasMethod>(null);
-	private final PriorityMetric metric;
+	private final MatrixMetricFactory metricFactory;
+	private volatile MatrixPriorityMetric metric;
 	private final int nThreads;
 	private final AtomicReference<Turn> turns;
 	private volatile Map<String, Integer> taskIndex;
@@ -56,14 +58,14 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	private final boolean statisticsEnabled;
 
 	// FIXME: Builder
-	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor,
+	public ProbabilisticTaskPool(MatrixMetricFactory metricFactory, int nThreads, int priorityScalingFactor,
 			long priorityUpdateInterval) {
-		this(metric, nThreads, priorityScalingFactor, priorityUpdateInterval, null);
+		this(metricFactory, nThreads, priorityScalingFactor, priorityUpdateInterval, null);
 	}
 
-	public ProbabilisticTaskPool(PriorityMetric metric, int nThreads, int priorityScalingFactor,
+	public ProbabilisticTaskPool(MatrixMetricFactory metricFactory, int nThreads, int priorityScalingFactor,
 			long priorityUpdateInterval, String statisticsFolder) {
-		this.metric = metric;
+		this.metricFactory = metricFactory;
 		this.nThreads = nThreads;
 		this.priorityScalingFactor = priorityScalingFactor;
 		this.turns = new AtomicReference<Turn>(new Turn(0, priorityUpdateInterval));
@@ -92,7 +94,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	}
 
 	@Override
-	public ActiveRunnable getNext(long threadId) {
+	public ActiveRunnable getNext(int threadId) {
 		Turn turn = turns.get();
 		if (turn.isTime(threadId)) {
 			updatePriorities(threadId);
@@ -108,48 +110,15 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	}
 
 	@Override
-	public void put(ActiveRunnable task) {
+	public void put(ActiveRunnable task, int threadId) {
+		metric.updatePriorityStatistics(task, taskIndex, threadId);
 		available.set(taskIndex.get(task.getId()), true);
-
 	}
 
 	private void updatePriorities(long threadId) {
-		// FIXME: Shared array, do not create it each time
-		List<Double> probabilities = new ArrayList<>();
-		double prioritySum = 0;
-		int nanCount = 0;
-		for (ActiveRunnable task : tasks) {
-			double priority = getPriority(task);
-			probabilities.add(priority);
-			if (Double.isNaN(priority)) {
-				nanCount++;
-			} else {
-				prioritySum += priority;
-			}
-		}
-		// Set default priority for unknown metric values
-		final double defaultProbability = prioritySum / (probabilities.size() - nanCount);
-		prioritySum = 0;
-		for (int i = 0; i < probabilities.size(); i++) {
-			double priority = probabilities.get(i);
-			if (Double.isNaN(priority)) {
-				probabilities.set(i, defaultProbability);
-			}
-			prioritySum += probabilities.get(i);
-		}
-		// Final normalization
-		for (int i = 0; i < probabilities.size(); i++) {
-			probabilities.set(i, probabilities.get(i) / prioritySum);
-		}
+		List<Double> probabilities = metric.getPriorities(priorityScalingFactor);
 		recordStatistics(probabilities, threadId);
-		// System.out.println(probabilities);
 		sampler.set(new AliasMethod(probabilities));
-	}
-
-	private double getPriority(ActiveRunnable task) {
-		double p = metric.getPriority(task);
-		// Scale priority to emphasize the difference between high and low priorities
-		return Double.isNaN(p) ? p : Math.pow(p, priorityScalingFactor);
 	}
 
 	@Override
@@ -172,6 +141,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 			task.enable();
 		}
 		taskIndex = Collections.unmodifiableMap(tempIndex);
+		metric = metricFactory.newInstance(tasks.size(), nThreads);
 		// Initialize priorities
 		updatePriorities(1);
 		this.enabled = true;

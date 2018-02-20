@@ -1,6 +1,7 @@
 package common;
 
 import java.util.Collection;
+import java.util.Map;
 
 import common.tuple.Tuple;
 import stream.Stream;
@@ -33,5 +34,9 @@ public interface StreamConsumer<IN extends Tuple> extends NamedEntity {
 	 *         input streams.
 	 */
 	boolean hasInput();
+
+	Map<String, Long> getReadLog();
+
+	void recordTupleRead(IN tuple, Stream<IN> input);
 
 }

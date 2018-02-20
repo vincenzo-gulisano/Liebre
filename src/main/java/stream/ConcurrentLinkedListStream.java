@@ -21,6 +21,7 @@ package stream;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import common.NamedEntity;
 import common.tuple.Tuple;
 import common.util.BackOff;
 
@@ -33,9 +34,13 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	private final BackOff writerBackOff, readerBackOff;
 	private volatile long tuplesWritten, tuplesRead;
 	private final String id;
+	private final String srcId;
+	private final String destId;
 
-	public ConcurrentLinkedListStream(String id) {
+	public ConcurrentLinkedListStream(String id, NamedEntity from, NamedEntity to) {
 		this.id = id;
+		this.srcId = from.getId();
+		this.destId = to.getId();
 		writerBackOff = BackOff.newDecreasing(10, 1000, 5);
 		readerBackOff = BackOff.newDecreasing(1, 20, 5);
 		tuplesWritten = 0;
@@ -44,7 +49,7 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public void addTuple(T tuple) {
-		// FIXME: Do nothing if disabled
+		// TODO: Do nothing if disabled
 		if (size() > WRITER_BACKOFF_LIMIT)
 			writerBackOff.backoff();
 		else if (size() < WRITER_RELAX_LIMIT)
@@ -55,7 +60,7 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public T getNextTuple() {
-		// FIXME: Do nothing if disabled
+		// TODO: Do nothing if disabled
 		T nextTuple = stream.poll();
 		if (nextTuple == null) {
 			readerBackOff.backoff();
@@ -98,6 +103,21 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	@Override
 	public String getId() {
 		return this.id;
+	}
+
+	@Override
+	public String getDestId() {
+		return destId;
+	}
+
+	@Override
+	public String getSrcId() {
+		return srcId;
+	}
+
+	@Override
+	public int getIndex() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
