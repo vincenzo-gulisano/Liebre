@@ -111,7 +111,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
 	@Override
 	public void put(ActiveRunnable task, int threadId) {
-		metric.updatePriorityStatistics(task, taskIndex, threadId);
+		metric.updatePriorityStatistics(task, threadId);
 		available.set(taskIndex.get(task.getId()), true);
 	}
 
@@ -141,7 +141,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 			task.enable();
 		}
 		taskIndex = Collections.unmodifiableMap(tempIndex);
-		metric = metricFactory.newInstance(tasks.size(), nThreads);
+		metric = metricFactory.newInstance(taskIndex, tasks.size(), nThreads);
 		// Initialize priorities
 		updatePriorities(1);
 		this.enabled = true;

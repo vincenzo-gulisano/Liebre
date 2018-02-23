@@ -99,16 +99,16 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
 	@Override
 	public void onScheduled() {
-	}
-
-	@Override
-	public void onRun() {
 		state.resetLog();
 	}
 
 	@Override
-	public Map<String, Long> getWriteLog() {
-		return state.getWriteLog();
+	public void onRun() {
+	}
+
+	@Override
+	public Map<String, Long> getOutputDiff() {
+		return state.getOutputQueueDiff();
 	}
 
 	@Override

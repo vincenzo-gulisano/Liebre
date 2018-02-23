@@ -136,28 +136,26 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
-	public void onRun() {
+	public void onScheduled() {
 		state.resetLog();
 	}
 
-	@Override
-	public Map<String, Long> getReadLog() {
-		return state.getReadLog();
+	public void onRun() {
 	}
 
 	@Override
-	public Map<String, Long> getWriteLog() {
-		return state.getWriteLog();
+	public Map<String, Long> getInputQueueDiff() {
+		return state.getInputQueueDiff();
+	}
+
+	@Override
+	public Map<String, Long> getOutputDiff() {
+		return state.getOutputQueueDiff();
 	}
 
 	@Override
 	public Map<String, Long> getLatencyLog() {
 		return state.getLatencyLog();
-	}
-
-	@Override
-	public void onScheduled() {
-
 	}
 
 	@Override

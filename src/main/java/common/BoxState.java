@@ -1,5 +1,6 @@
 package common;
 
+import java.nio.channels.IllegalSelectorException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -68,8 +69,8 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	private final BoxType type;
 
-	private final ExecutionLog<String, Long> writeLog = ExecutionLog.cummulativeLong();
-	private final ExecutionLog<String, Long> readLog = ExecutionLog.cummulativeLong();
+	private final ExecutionLog<String, Long> outputQueueDiff = ExecutionLog.cummulativeLong();
+	private final ExecutionLog<String, Long> inputQueueDiff = ExecutionLog.cummulativeLong();
 	private final ExecutionLog<String, Long> latencyLog = ExecutionLog.maxLong();
 
 	public BoxState(String id, BoxType type, StreamFactory streamFactory) {
@@ -145,13 +146,24 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public void recordTupleRead(IN tuple, Stream<? extends IN> input) {
-		if (tuple != null) {
-			readLog.record(input.getSrcId(), 1L);
+		if (tuple == null) {
+			throw new IllegalStateException();
 		}
+		// When reading a tuple, the input queue size of this box
+		// and the output queue of the previous one
+		// is decreased
+		outputQueueDiff.record(input.getSrcId(), -1L);
+		inputQueueDiff.record(input.getDestId(), -1L); // == this.id
 	}
 
 	public void recordTupleWrite(OUT tuple, Stream<? extends OUT> output) {
-		writeLog.record(output.getDestId(), 1L);
+		if (tuple == null) {
+			throw new IllegalSelectorException();
+		}
+		// When writing a tuple the output queue size of this box
+		// and the input queue of the next one is increased
+		outputQueueDiff.record(output.getSrcId(), 1L); // == this.id
+		inputQueueDiff.record(output.getDestId(), 1L);
 		if (tuple instanceof RichTuple) {
 			latencyLog.record(output.getDestId(), ((RichTuple) tuple).getTimestamp());
 		}
@@ -184,12 +196,12 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return true;
 	}
 
-	public Map<String, Long> getWriteLog() {
-		return writeLog.get();
+	public Map<String, Long> getOutputQueueDiff() {
+		return outputQueueDiff.get();
 	}
 
-	public Map<String, Long> getReadLog() {
-		return readLog.get();
+	public Map<String, Long> getInputQueueDiff() {
+		return inputQueueDiff.get();
 	}
 
 	public Map<String, Long> getLatencyLog() {
@@ -197,8 +209,8 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public void resetLog() {
-		writeLog.reset();
-		readLog.reset();
+		outputQueueDiff.reset();
+		inputQueueDiff.reset();
 		latencyLog.reset();
 	}
 

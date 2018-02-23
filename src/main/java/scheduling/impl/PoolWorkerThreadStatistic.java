@@ -66,7 +66,6 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	protected void executeTask(ActiveRunnable task) {
 		// Measure scheduled statistic
 		timesScheduledStatistic.append(1L);
-		task.onScheduled();
 		long start = System.nanoTime();
 		super.executeTask(task);
 		actualQuantumStatistic.append(System.nanoTime() - start);
@@ -74,12 +73,12 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 
 	@Override
 	protected void putTask(ActiveRunnable task) {
-		long start = System.nanoTime();
-		super.putTask(task);
-		schedulingTimeStatistic.append(System.nanoTime() - start);
 		if (executed) {
 			timesRunStatistic.append(1L);
 		}
+		long start = System.nanoTime();
+		super.putTask(task);
+		schedulingTimeStatistic.append(System.nanoTime() - start);
 	}
 
 }

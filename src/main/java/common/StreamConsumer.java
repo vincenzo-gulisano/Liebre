@@ -35,7 +35,7 @@ public interface StreamConsumer<IN extends Tuple> extends NamedEntity {
 	 */
 	boolean hasInput();
 
-	Map<String, Long> getReadLog();
+	Map<String, Long> getInputQueueDiff();
 
 	void recordTupleRead(IN tuple, Stream<IN> input);
 

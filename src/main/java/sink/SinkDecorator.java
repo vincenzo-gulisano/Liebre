@@ -87,8 +87,8 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 	}
 
 	@Override
-	public Map<String, Long> getReadLog() {
-		return decorated.getReadLog();
+	public Map<String, Long> getInputQueueDiff() {
+		return decorated.getInputQueueDiff();
 	}
 
 	public void recordTupleRead(IN tuple, Stream<IN> input) {

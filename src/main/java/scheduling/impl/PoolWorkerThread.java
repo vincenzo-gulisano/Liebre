@@ -42,6 +42,7 @@ public class PoolWorkerThread extends ActiveThread {
 
 	protected void executeTask(ActiveRunnable task) {
 		executed = false;
+		task.onScheduled();
 		long runUntil = System.nanoTime() + unit.toNanos(quantum);
 		while (System.nanoTime() < runUntil && hasInput(task) && hasOutput(task)) {
 			task.run();
@@ -50,10 +51,10 @@ public class PoolWorkerThread extends ActiveThread {
 	}
 
 	protected void putTask(ActiveRunnable task) {
-		availableTasks.put(task, index);
 		if (executed) {
 			task.onRun();
 		}
+		availableTasks.put(task, index);
 	}
 
 	@Override

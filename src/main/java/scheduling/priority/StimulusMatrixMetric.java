@@ -13,18 +13,18 @@ public class StimulusMatrixMetric extends MatrixPriorityMetric {
 
 	private final ExecutionMatrix matrix;
 
-	public StimulusMatrixMetric(int nTasks, int nThreads) {
-		this.matrix = new ExecutionMatrix(nTasks, nThreads);
+	public StimulusMatrixMetric(Map<String, Integer> index, int nTasks, int nThreads) {
+		this.matrix = new ExecutionMatrix(index, nTasks, nThreads);
 		matrix.init(Long.MAX_VALUE);
 	}
 
 	@Override
-	public void updatePriorityStatistics(ActiveRunnable task, Map<String, Integer> index, int threadId) {
+	public void updatePriorityStatistics(ActiveRunnable task, int threadId) {
 		if (task instanceof StreamProducer == false) {
 			return;
 		}
 		Map<String, Long> log = ((StreamProducer<?>) task).getLatencyLog();
-		matrix.update(log, index, threadId);
+		matrix.updateReplace(log, threadId);
 	}
 
 	@Override

@@ -51,4 +51,9 @@ public class ExecutionLog<K, V> {
 		return Collections.unmodifiableMap(log);
 	}
 
+	@Override
+	public String toString() {
+		return "ExecutionLog [log=" + log + ", mergeFunction=" + mergeFunction + "]";
+	}
+
 }

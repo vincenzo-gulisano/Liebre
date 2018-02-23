@@ -39,7 +39,7 @@ public interface StreamProducer<OUT extends Tuple> extends NamedEntity {
 	 */
 	boolean hasOutput();
 
-	Map<String, Long> getWriteLog();
+	Map<String, Long> getOutputDiff();
 
 	Map<String, Long> getLatencyLog();
 

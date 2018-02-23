@@ -2,12 +2,11 @@ package scheduling.priority;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import common.ActiveRunnable;
 
 public abstract class MatrixPriorityMetric {
-	public abstract void updatePriorityStatistics(ActiveRunnable task, Map<String, Integer> index, int threadId);
+	public abstract void updatePriorityStatistics(ActiveRunnable task, int threadId);
 
 	public abstract List<Double> getPriorities(int scaleFactor);
 

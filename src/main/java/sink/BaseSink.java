@@ -99,16 +99,16 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
 	@Override
 	public void onScheduled() {
-	}
-
-	@Override
-	public void onRun() {
 		state.resetLog();
 	}
 
 	@Override
-	public Map<String, Long> getReadLog() {
-		return state.getReadLog();
+	public void onRun() {
+	}
+
+	@Override
+	public Map<String, Long> getInputQueueDiff() {
+		return state.getInputQueueDiff();
 	}
 
 	@Override

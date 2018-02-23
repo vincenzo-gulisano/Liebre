@@ -87,8 +87,8 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 	}
 
 	@Override
-	public Map<String, Long> getWriteLog() {
-		return decorated.getWriteLog();
+	public Map<String, Long> getOutputDiff() {
+		return decorated.getOutputDiff();
 	}
 
 	@Override

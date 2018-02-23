@@ -10,33 +10,46 @@ import common.StreamConsumer;
 import common.StreamProducer;
 
 public class QueueSizeMatrixMetric extends MatrixPriorityMetric {
-	private final ExecutionMatrix writeMatrix;
+	private static final long QUEUE_CAPACITY = 10000;
 
-	private final ExecutionMatrix readMatrix;
+	private final ExecutionMatrix outputQueueMatrix;
 
-	public QueueSizeMatrixMetric(int nTasks, int nThreads) {
-		readMatrix = new ExecutionMatrix(nTasks, nThreads);
-		writeMatrix = new ExecutionMatrix(nTasks, nThreads);
+	private final ExecutionMatrix inputQueueMatrix;
+
+	public QueueSizeMatrixMetric(Map<String, Integer> index, int nTasks, int nThreads) {
+		inputQueueMatrix = new ExecutionMatrix(index, nTasks, nThreads);
+		outputQueueMatrix = new ExecutionMatrix(index, nTasks, nThreads);
 	}
 
 	@Override
-	public void updatePriorityStatistics(ActiveRunnable task, Map<String, Integer> index, int threadId) {
+	public void updatePriorityStatistics(ActiveRunnable task, int threadId) {
 		if (task instanceof StreamProducer) {
-			Map<String, Long> updates = ((StreamProducer<?>) task).getWriteLog();
-			writeMatrix.update(updates, index, threadId);
-		} else if (task instanceof StreamConsumer) {
-			Map<String, Long> updates = ((StreamConsumer<?>) task).getReadLog();
-			readMatrix.update(updates, index, threadId);
+			Map<String, Long> updates = ((StreamProducer<?>) task).getOutputDiff();
+			if (updates.size() > 0 && task.getId().equals("R.test.00")) {
+				// System.out.println("OUTPUT: " + task + " " + updates);
+			}
+			outputQueueMatrix.updateReplace(updates, threadId);
+		}
+		if (task instanceof StreamConsumer) {
+			Map<String, Long> updates = ((StreamConsumer<?>) task).getInputQueueDiff();
+			if (updates.size() > 0 && task.getId().equals("R.test.00")) {
+				// System.out.println("INPUT: " + task + " " + updates);
+			}
+			inputQueueMatrix.updateReplace(updates, threadId);
 		}
 	}
 
 	@Override
 	public List<Double> getPriorities(int scaleFactor) {
-		List<Long> reads = readMatrix.sum();
-		List<Long> writes = writeMatrix.sum();
-		List<Long> result = new ArrayList<>(reads.size());
-		for (int i = 0; i < reads.size(); i++) {
-			result.add(writes.get(i) - reads.get(i));
+		List<Long> inputQueues = inputQueueMatrix.sum();
+		List<Long> outputQueues = outputQueueMatrix.sum();
+		System.out.println("INPUT\n" + inputQueueMatrix);
+		System.out.println(inputQueues);
+		System.out.println("OUTPUT\n" + outputQueueMatrix);
+		System.out.println(outputQueues);
+		List<Long> result = new ArrayList<>(inputQueues.size());
+		for (int i = 0; i < inputQueues.size(); i++) {
+			result.add(Math.min(QUEUE_CAPACITY - outputQueues.get(i), inputQueues.get(i)));
 		}
 		return scale(result, scaleFactor);
 	}

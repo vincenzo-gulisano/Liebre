@@ -109,13 +109,13 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 	}
 
 	@Override
-	public Map<String, Long> getReadLog() {
-		return decorated.getReadLog();
+	public Map<String, Long> getInputQueueDiff() {
+		return decorated.getInputQueueDiff();
 	}
 
 	@Override
-	public Map<String, Long> getWriteLog() {
-		return decorated.getWriteLog();
+	public Map<String, Long> getOutputDiff() {
+		return decorated.getOutputDiff();
 	}
 
 	@Override

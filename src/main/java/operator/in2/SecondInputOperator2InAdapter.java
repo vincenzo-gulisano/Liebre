@@ -111,13 +111,13 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
 	}
 
 	@Override
-	public Map<String, Long> getReadLog() {
-		return decorated.getReadLog();
+	public Map<String, Long> getInputQueueDiff() {
+		return decorated.getInputQueueDiff();
 	}
 
 	@Override
-	public Map<String, Long> getWriteLog() {
-		return decorated.getWriteLog();
+	public Map<String, Long> getOutputDiff() {
+		return decorated.getOutputDiff();
 	}
 
 	@Override

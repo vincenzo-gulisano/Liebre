@@ -3,80 +3,58 @@ package common;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.function.BiFunction;
 
 public class ExecutionMatrix {
-	private final long[][] matrix;
-	private ReadWriteLock[] locks;
+	private final AtomicLongArray matrix;
+	private final Map<String, Integer> index;
 	private final int nThreads;
 	private final int nTasks;
 
-	public ExecutionMatrix(int nTasks, int nThreads) {
-		this.matrix = new long[nThreads][nTasks];
-		this.locks = new ReadWriteLock[nThreads];
-		for (int i = 0; i < nThreads; i++) {
-			locks[i] = new ReentrantReadWriteLock();
-		}
+	public ExecutionMatrix(Map<String, Integer> index, int nTasks, int nThreads) {
+		this.index = index;
+		this.matrix = new AtomicLongArray(nTasks * nThreads);
 		this.nThreads = nThreads;
 		this.nTasks = nTasks;
 	}
 
+	protected long get(int threadId, int taskId) {
+		return matrix.get((nTasks * threadId) + taskId);
+	}
+
+	protected void set(int threadId, int taskId, long newValue) {
+		matrix.set((nTasks * threadId) + taskId, newValue);
+	}
+
 	public void init(long value) {
 		for (int i = 0; i < nThreads; i++) {
-			try {
-				locks[i].writeLock().lockInterruptibly();
-				try {
-					for (int j = 0; j < nTasks; j++) {
-						matrix[i][j] = value;
-					}
-				} finally {
-					locks[i].writeLock().unlock();
-				}
-			} catch (InterruptedException e) {
-				System.out.format("[WARN] Lock interrupted: %s%n", e.getStackTrace()[2]);
-				// Restore interruption status for thread
-				Thread.currentThread().interrupt();
+			for (int j = 0; j < nTasks; j++) {
+				set(i, j, value);
 			}
+		}
 
+	}
+
+	public void updateReplace(Map<String, Long> updates, int threadId) {
+		for (Map.Entry<String, Long> update : updates.entrySet()) {
+			int taskId = index.get(update.getKey());
+			set(threadId, taskId, update.getValue());
 		}
 	}
 
-	public void update(Map<String, Long> updates, Map<String, Integer> index, int threadId) {
+	public void updateApply(Map<String, Long> updates, int threadId, BiFunction<Long, Long, Long> func) {
 		for (Map.Entry<String, Long> update : updates.entrySet()) {
 			int taskId = index.get(update.getKey());
-			try {
-				locks[threadId].writeLock().lockInterruptibly();
-				try {
-					matrix[threadId][taskId] = update.getValue();
-				} finally {
-					locks[threadId].writeLock().unlock();
-				}
-			} catch (InterruptedException e) {
-				System.out.format("[WARN] Lock interrupted: %s%n", e.getStackTrace()[2]);
-				// Restore interruption status for thread
-				Thread.currentThread().interrupt();
-			}
+			long oldValue = get(threadId, taskId);
+			set(threadId, taskId, func.apply(oldValue, update.getValue()));
 		}
-
 	}
 
 	private long apply(int taskId, BiFunction<Long, Long, Long> func, long initialValue) {
 		long result = initialValue;
 		for (int i = 0; i < nThreads; i++) {
-			try {
-				locks[i].readLock().lockInterruptibly();
-				try {
-					result = func.apply(result, matrix[i][taskId]);
-				} finally {
-					locks[i].readLock().unlock();
-				}
-			} catch (InterruptedException e) {
-				System.out.format("[WARN] Lock interrupted: %s%n", e.getStackTrace()[2]);
-				// Restore interruption status for thread
-				Thread.currentThread().interrupt();
-			}
+			result = func.apply(result, get(i, taskId));
 		}
 		return result;
 	}
@@ -86,7 +64,7 @@ public class ExecutionMatrix {
 	}
 
 	public long min(int taskId) {
-		return apply(taskId, Math::min, matrix[0][taskId]);
+		return apply(taskId, Math::min, get(0, taskId));
 	}
 
 	public List<Long> sum() {
@@ -108,9 +86,14 @@ public class ExecutionMatrix {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+		sb.append("TN ");
+		index.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue())
+				.forEach(e -> sb.append(String.format("%1$20s", e.getKey())));
+		sb.append("\n");
 		for (int i = 0; i < nThreads; i++) {
+			sb.append("T").append(i).append(" ");
 			for (int j = 0; j < nTasks; j++) {
-				sb.append(matrix[i][j]).append(" ");
+				sb.append(String.format("% 20d", get(i, j))).append(" ");
 			}
 			sb.append("\n");
 		}

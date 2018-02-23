@@ -77,17 +77,21 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 
 	@Override
 	public void onScheduled() {
-
+		state.resetLog();
 	}
 
 	@Override
-	public Map<String, Long> getReadLog() {
-		return state.getReadLog();
+	public void onRun() {
 	}
 
 	@Override
-	public Map<String, Long> getWriteLog() {
-		return state.getWriteLog();
+	public Map<String, Long> getInputQueueDiff() {
+		return state.getInputQueueDiff();
+	}
+
+	@Override
+	public Map<String, Long> getOutputDiff() {
+		return state.getOutputQueueDiff();
 	}
 
 	@Override
@@ -103,11 +107,6 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	@Override
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
 		state.recordTupleWrite(tuple, output);
-	}
-
-	@Override
-	public void onRun() {
-		state.resetLog();
 	}
 
 	@Override
