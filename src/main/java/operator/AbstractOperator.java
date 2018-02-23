@@ -90,7 +90,7 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	}
 
 	@Override
-	public Map<String, Long> getOutputDiff() {
+	public Map<String, Long> getOutputQueueDiff() {
 		return state.getOutputQueueDiff();
 	}
 

@@ -4,7 +4,7 @@ import java.io.File;
 
 import common.NamedEntity;
 import operator.Operator;
-import scheduling.ActiveThread;
+import scheduling.thread.ActiveThread;
 import sink.Sink;
 import source.Source;
 import stream.Stream;

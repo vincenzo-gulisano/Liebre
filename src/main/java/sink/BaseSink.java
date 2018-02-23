@@ -112,6 +112,16 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	}
 
 	@Override
+	public Map<String, Long> getOutputQueueDiff() {
+		return state.getOutputQueueDiff();
+	}
+
+	@Override
+	public Map<String, Long> getLatencyLog() {
+		return state.getLatencyLog();
+	}
+
+	@Override
 	public void recordTupleRead(IN tuple, Stream<IN> input) {
 		state.recordTupleRead(tuple, input);
 	}

@@ -9,11 +9,14 @@ import common.Active;
 import common.ActiveRunnable;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
+import scheduling.thread.ActiveThread;
+import scheduling.thread.PoolWorkerThread;
+import scheduling.thread.SourceThread;
 import source.Source;
 
 public class ThreadPoolScheduler implements Scheduler {
 
-	private final TaskPool<ActiveRunnable> availableTasks;
+	private final TaskPool<ActiveRunnable> taskPool;
 	private final List<PoolWorkerThread> workers = new ArrayList<>();
 	private final int maxThreads;
 	private int nTasks;
@@ -22,11 +25,12 @@ public class ThreadPoolScheduler implements Scheduler {
 	private String statsFolder;
 	private String executionId;
 	private volatile boolean indepedentSources;
-	private final List<BasicWorkerThread> sourceThreads = new ArrayList<>();
+	private final List<SourceThread> sourceThreads = new ArrayList<>();
 	private final List<Source<?>> sources = new ArrayList<>();
+	private volatile int nThreads;
 
-	public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit, TaskPool<ActiveRunnable> availableTasks) {
-		this.availableTasks = availableTasks;
+	public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit, TaskPool<ActiveRunnable> taskPool) {
+		this.taskPool = taskPool;
 		this.maxThreads = maxThreads;
 		this.quantum = quantum;
 		this.timeUnit = unit;
@@ -43,8 +47,9 @@ public class ThreadPoolScheduler implements Scheduler {
 		for (ActiveRunnable task : tasks) {
 			if (indepedentSources && task instanceof Source) {
 				sources.add((Source<?>) task);
+				taskPool.registerPassive(task);
 			} else {
-				availableTasks.register(task);
+				taskPool.register(task);
 				nTasks++;
 			}
 		}
@@ -55,12 +60,12 @@ public class ThreadPoolScheduler implements Scheduler {
 		if (!isEnabled()) {
 			throw new IllegalStateException();
 		}
-		int nThreads = Math.min(maxThreads, nTasks);
 		System.out.format("*** [%s] Starting %d worker threads%n", getClass().getSimpleName(), nThreads);
-		for (int i = 0; i < nThreads; i++) {
+		int threadIndex = 0;
+		for (threadIndex = 0; threadIndex < nThreads; threadIndex++) {
 			PoolWorkerThread worker = statsFolder != null
-					? new PoolWorkerThreadStatistic(availableTasks, quantum, timeUnit, statsFolder, executionId)
-					: new PoolWorkerThread(availableTasks, quantum, timeUnit);
+					? new PoolWorkerThreadStatistic(threadIndex, taskPool, quantum, timeUnit, statsFolder, executionId)
+					: new PoolWorkerThread(threadIndex, taskPool, quantum, timeUnit);
 			workers.add(worker);
 			worker.enable();
 			worker.start();
@@ -68,13 +73,12 @@ public class ThreadPoolScheduler implements Scheduler {
 		// Independent source threads
 		System.out.format("*** [%s] Starting %d source threads%n", getClass().getSimpleName(), sources.size());
 		for (ActiveRunnable task : sources) {
-			BasicWorkerThread t = new BasicWorkerThread(task);
+			SourceThread t = new SourceThread(threadIndex, task, taskPool, quantum, timeUnit);
 			sourceThreads.add(t);
 			t.enable();
 			t.start();
-
+			threadIndex++;
 		}
-		// TODO: Observer pattern to detect thread crashes
 	}
 
 	@Override
@@ -82,7 +86,7 @@ public class ThreadPoolScheduler implements Scheduler {
 		if (isEnabled()) {
 			throw new IllegalStateException();
 		}
-		for (PoolWorkerThread workerThread : workers) {
+		for (ActiveThread workerThread : workers) {
 			try {
 				workerThread.disable();
 				workerThread.join();
@@ -92,7 +96,7 @@ public class ThreadPoolScheduler implements Scheduler {
 			}
 		}
 		workers.clear();
-		for (BasicWorkerThread workerThread : sourceThreads) {
+		for (ActiveThread workerThread : sourceThreads) {
 			try {
 				workerThread.disable();
 				workerThread.join();
@@ -112,7 +116,9 @@ public class ThreadPoolScheduler implements Scheduler {
 
 	@Override
 	public void enable() {
-		availableTasks.enable();
+		nThreads = Math.min(maxThreads, nTasks);
+		taskPool.setThreadsNumber(nThreads);
+		taskPool.enable();
 		for (Active s : sources) {
 			s.enable();
 		}
@@ -120,12 +126,12 @@ public class ThreadPoolScheduler implements Scheduler {
 
 	@Override
 	public boolean isEnabled() {
-		return availableTasks.isEnabled();
+		return taskPool.isEnabled();
 	}
 
 	@Override
 	public void disable() {
-		availableTasks.disable();
+		taskPool.disable();
 		for (Active s : sources) {
 			s.disable();
 		}

@@ -3,58 +3,98 @@ package common;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLongArray;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BiFunction;
 
 public class ExecutionMatrix {
-	private final AtomicLongArray matrix;
+
+	private static class MatrixElement {
+		private final boolean hasValue;
+		private final long timestamp;
+		private final long value;
+
+		public MatrixElement() {
+			this.hasValue = false;
+			this.timestamp = 0;
+			this.value = 0;
+		}
+
+		public MatrixElement(long timestamp, long value) {
+			this.timestamp = timestamp;
+			this.value = value;
+			this.hasValue = true;
+		}
+
+		public MatrixElement apply(long timestamp, long newValue, BiFunction<Long, Long, Long> func) {
+			if (this.hasValue) {
+				return new MatrixElement(timestamp, func.apply(this.value, newValue));
+			} else {
+				return new MatrixElement(timestamp, newValue);
+			}
+		}
+
+	}
+
+	private final AtomicReferenceArray<MatrixElement> matrix;
 	private final Map<String, Integer> index;
 	private final int nThreads;
 	private final int nTasks;
 
 	public ExecutionMatrix(Map<String, Integer> index, int nTasks, int nThreads) {
 		this.index = index;
-		this.matrix = new AtomicLongArray(nTasks * nThreads);
+		this.matrix = new AtomicReferenceArray<MatrixElement>(nTasks * nThreads);
 		this.nThreads = nThreads;
 		this.nTasks = nTasks;
+		init();
 	}
 
-	protected long get(int threadId, int taskId) {
+	protected MatrixElement get(int threadId, int taskId) {
 		return matrix.get((nTasks * threadId) + taskId);
 	}
 
-	protected void set(int threadId, int taskId, long newValue) {
-		matrix.set((nTasks * threadId) + taskId, newValue);
+	protected void set(int threadId, int taskId, MatrixElement element) {
+		matrix.set((nTasks * threadId) + taskId, element);
+
 	}
 
-	public void init(long value) {
+	public void init() {
 		for (int i = 0; i < nThreads; i++) {
 			for (int j = 0; j < nTasks; j++) {
-				set(i, j, value);
+				set(i, j, new MatrixElement());
 			}
 		}
 
 	}
 
 	public void updateReplace(Map<String, Long> updates, int threadId) {
+		long ts = System.nanoTime();
 		for (Map.Entry<String, Long> update : updates.entrySet()) {
-			int taskId = index.get(update.getKey());
-			set(threadId, taskId, update.getValue());
+			Integer taskId = index.get(update.getKey());
+			if (taskId != null) {
+				set(threadId, taskId, new MatrixElement(ts, update.getValue()));
+			}
 		}
 	}
 
 	public void updateApply(Map<String, Long> updates, int threadId, BiFunction<Long, Long, Long> func) {
+		long ts = System.nanoTime();
 		for (Map.Entry<String, Long> update : updates.entrySet()) {
-			int taskId = index.get(update.getKey());
-			long oldValue = get(threadId, taskId);
-			set(threadId, taskId, func.apply(oldValue, update.getValue()));
+			Integer taskId = index.get(update.getKey());
+			if (taskId != null) {
+				MatrixElement elem = get(threadId, taskId);
+				set(threadId, taskId, elem.apply(ts, update.getValue(), func));
+			}
+
 		}
 	}
 
 	private long apply(int taskId, BiFunction<Long, Long, Long> func, long initialValue) {
 		long result = initialValue;
 		for (int i = 0; i < nThreads; i++) {
-			result = func.apply(result, get(i, taskId));
+			MatrixElement elem = get(i, taskId);
+			if (elem.hasValue) {
+				result = func.apply(result, elem.value);
+			}
 		}
 		return result;
 	}
@@ -64,13 +104,25 @@ public class ExecutionMatrix {
 	}
 
 	public long min(int taskId) {
-		return apply(taskId, Math::min, get(0, taskId));
+		return apply(taskId, Math::min, get(0, taskId).value);
 	}
 
-	public List<Long> sum() {
+	public long latest(int taskId) {
+		long latestTs = 0;
+		long result = -1;
+		for (int i = 0; i < nThreads; i++) {
+			MatrixElement elem = get(i, taskId);
+			if (elem.hasValue && elem.timestamp > latestTs) {
+				result = elem.value;
+			}
+		}
+		return result;
+	}
+
+	public List<Long> sum(long minValue) {
 		List<Long> result = new ArrayList<>(nTasks);
 		for (int i = 0; i < nTasks; i++) {
-			result.add(sum(i));
+			result.add(Math.max(sum(i), minValue));
 		}
 		return result;
 	}
@@ -79,6 +131,14 @@ public class ExecutionMatrix {
 		List<Long> result = new ArrayList<>(nTasks);
 		for (int i = 0; i < nTasks; i++) {
 			result.add(min(i));
+		}
+		return result;
+	}
+
+	public List<Long> latest() {
+		List<Long> result = new ArrayList<>(nTasks);
+		for (int i = 0; i < nTasks; i++) {
+			result.add(latest(i));
 		}
 		return result;
 	}
@@ -93,7 +153,7 @@ public class ExecutionMatrix {
 		for (int i = 0; i < nThreads; i++) {
 			sb.append("T").append(i).append(" ");
 			for (int j = 0; j < nTasks; j++) {
-				sb.append(String.format("% 20d", get(i, j))).append(" ");
+				sb.append(String.format("% 20d", get(i, j).value)).append(" ");
 			}
 			sb.append("\n");
 		}

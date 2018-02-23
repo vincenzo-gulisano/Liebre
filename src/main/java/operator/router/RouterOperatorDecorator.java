@@ -114,8 +114,8 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 	}
 
 	@Override
-	public Map<String, Long> getOutputDiff() {
-		return decorated.getOutputDiff();
+	public Map<String, Long> getOutputQueueDiff() {
+		return decorated.getOutputQueueDiff();
 	}
 
 	@Override

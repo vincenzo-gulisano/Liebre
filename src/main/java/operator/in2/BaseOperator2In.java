@@ -149,7 +149,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
-	public Map<String, Long> getOutputDiff() {
+	public Map<String, Long> getOutputQueueDiff() {
 		return state.getOutputQueueDiff();
 	}
 

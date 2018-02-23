@@ -6,6 +6,7 @@ import java.util.List;
 
 import common.ActiveRunnable;
 import scheduling.Scheduler;
+import scheduling.thread.BasicWorkerThread;
 
 /**
  * Scheduler implementation in case no scheduling is actually needed and the

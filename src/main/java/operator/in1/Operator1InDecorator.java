@@ -114,8 +114,8 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 	}
 
 	@Override
-	public Map<String, Long> getOutputDiff() {
-		return decorated.getOutputDiff();
+	public Map<String, Long> getOutputQueueDiff() {
+		return decorated.getOutputQueueDiff();
 	}
 
 	@Override

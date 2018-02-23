@@ -1,12 +1,11 @@
 package common;
 
 import java.util.Collection;
-import java.util.Map;
 
 import common.tuple.Tuple;
 import stream.Stream;
 
-public interface StreamConsumer<IN extends Tuple> extends NamedEntity {
+public interface StreamConsumer<IN extends Tuple> extends NamedEntity, ActiveRunnable {
 	void registerIn(StreamProducer<IN> in);
 
 	Collection<StreamProducer<?>> getPrevious();
@@ -34,8 +33,6 @@ public interface StreamConsumer<IN extends Tuple> extends NamedEntity {
 	 *         input streams.
 	 */
 	boolean hasInput();
-
-	Map<String, Long> getInputQueueDiff();
 
 	void recordTupleRead(IN tuple, Stream<IN> input);
 

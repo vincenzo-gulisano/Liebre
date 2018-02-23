@@ -1,4 +1,4 @@
-package scheduling;
+package scheduling.thread;
 
 import common.Active;
 import common.util.StopJvmUncaughtExceptionHandler;

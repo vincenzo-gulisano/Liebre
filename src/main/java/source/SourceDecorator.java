@@ -87,8 +87,8 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 	}
 
 	@Override
-	public Map<String, Long> getOutputDiff() {
-		return decorated.getOutputDiff();
+	public Map<String, Long> getOutputQueueDiff() {
+		return decorated.getOutputQueueDiff();
 	}
 
 	@Override
@@ -98,6 +98,10 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
 		decorated.recordTupleWrite(tuple, output);
+	}
+
+	public Map<String, Long> getInputQueueDiff() {
+		return decorated.getInputQueueDiff();
 	}
 
 }

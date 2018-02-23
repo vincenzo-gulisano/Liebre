@@ -43,10 +43,11 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	}
 
 	protected final List<ActiveRunnable> tasks = new ArrayList<>();
+	protected final List<ActiveRunnable> passiveTasks = new ArrayList<>();
 	private AtomicReference<AliasMethod> sampler = new AtomicReference<AliasMethod>(null);
 	private final MatrixMetricFactory metricFactory;
 	private volatile MatrixPriorityMetric metric;
-	private final int nThreads;
+	private volatile int nThreads;
 	private final AtomicReference<Turn> turns;
 	private volatile Map<String, Integer> taskIndex;
 	private AtomicReferenceArray<Boolean> available;
@@ -58,15 +59,14 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	private final boolean statisticsEnabled;
 
 	// FIXME: Builder
-	public ProbabilisticTaskPool(MatrixMetricFactory metricFactory, int nThreads, int priorityScalingFactor,
+	public ProbabilisticTaskPool(MatrixMetricFactory metricFactory, int priorityScalingFactor,
 			long priorityUpdateInterval) {
-		this(metricFactory, nThreads, priorityScalingFactor, priorityUpdateInterval, null);
+		this(metricFactory, priorityScalingFactor, priorityUpdateInterval, null);
 	}
 
-	public ProbabilisticTaskPool(MatrixMetricFactory metricFactory, int nThreads, int priorityScalingFactor,
+	public ProbabilisticTaskPool(MatrixMetricFactory metricFactory, int priorityScalingFactor,
 			long priorityUpdateInterval, String statisticsFolder) {
 		this.metricFactory = metricFactory;
-		this.nThreads = nThreads;
 		this.priorityScalingFactor = priorityScalingFactor;
 		this.turns = new AtomicReference<Turn>(new Turn(0, priorityUpdateInterval));
 		// TODO: Refactor/remove
@@ -88,9 +88,17 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	@Override
 	public void register(ActiveRunnable task) {
 		if (isEnabled()) {
-			throw new IllegalStateException("Cannot add operators in an enabled TaskPool!");
+			throw new IllegalStateException("Cannot add tasks in an enabled TaskPool!");
 		}
 		tasks.add(task);
+	}
+
+	@Override
+	public void registerPassive(ActiveRunnable task) {
+		if (isEnabled()) {
+			throw new IllegalStateException("Cannot add tasks in an enabled TaskPool!");
+		}
+		passiveTasks.add(task);
 	}
 
 	@Override
@@ -111,14 +119,26 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
 	@Override
 	public void put(ActiveRunnable task, int threadId) {
-		metric.updatePriorityStatistics(task, threadId);
 		available.set(taskIndex.get(task.getId()), true);
+	}
+
+	@Override
+	public void update(ActiveRunnable task, int threadId) {
+		metric.updatePriorityStatistics(task, threadId);
 	}
 
 	private void updatePriorities(long threadId) {
 		List<Double> probabilities = metric.getPriorities(priorityScalingFactor);
 		recordStatistics(probabilities, threadId);
 		sampler.set(new AliasMethod(probabilities));
+	}
+
+	@Override
+	public void setThreadsNumber(int activeThreads) {
+		if (isEnabled()) {
+			throw new IllegalStateException("Cannot set threads number when TaskPool is enabled");
+		}
+		this.nThreads = activeThreads;
 	}
 
 	@Override
@@ -131,17 +151,21 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 				throw new IllegalStateException(e);
 			}
 		}
+		if (nThreads == 0) {
+			throw new IllegalStateException("Thread number not set!");
+		}
 		// Initialize locks and operator index
 		available = new AtomicReferenceArray<>(tasks.size());
 		Map<String, Integer> tempIndex = new HashMap<>();
-		for (int i = 0; i < tasks.size(); i++) {
+		int i = 0;
+		for (i = 0; i < tasks.size(); i++) {
 			ActiveRunnable task = tasks.get(i);
 			tempIndex.put(task.getId(), i);
 			available.set(i, true);
 			task.enable();
 		}
 		taskIndex = Collections.unmodifiableMap(tempIndex);
-		metric = metricFactory.newInstance(taskIndex, tasks.size(), nThreads);
+		metric = metricFactory.newInstance(taskIndex, nThreadsTotal());
 		// Initialize priorities
 		updatePriorities(1);
 		this.enabled = true;
@@ -165,6 +189,10 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 				System.err.format("[WARN] Failed to close statistics file for TaskPool: %s%n", e.getMessage());
 			}
 		}
+	}
+
+	private int nThreadsTotal() {
+		return nThreads + passiveTasks.size();
 	}
 
 	private void recordStatistics(List<Double> probabilities, long threadId) {

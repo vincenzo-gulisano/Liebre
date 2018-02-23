@@ -95,4 +95,12 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 		decorated.recordTupleRead(tuple, input);
 	}
 
+	public Map<String, Long> getOutputQueueDiff() {
+		return decorated.getOutputQueueDiff();
+	}
+
+	public Map<String, Long> getLatencyLog() {
+		return decorated.getLatencyLog();
+	}
+
 }

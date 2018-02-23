@@ -19,10 +19,9 @@
 
 package sink;
 
-import common.ActiveRunnable;
 import common.StreamConsumer;
 import common.tuple.Tuple;
 
-public interface Sink<IN extends Tuple> extends ActiveRunnable, StreamConsumer<IN> {
+public interface Sink<IN extends Tuple> extends StreamConsumer<IN> {
 	void processTuple(IN tuple);
 }

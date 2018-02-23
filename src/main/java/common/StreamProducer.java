@@ -1,13 +1,12 @@
 package common;
 
 import java.util.Collection;
-import java.util.Map;
 
 import common.tuple.Tuple;
 import operator.in2.Operator2In;
 import stream.Stream;
 
-public interface StreamProducer<OUT extends Tuple> extends NamedEntity {
+public interface StreamProducer<OUT extends Tuple> extends NamedEntity, ActiveRunnable {
 	void addOutput(StreamConsumer<OUT> out);
 
 	default void addOutput(Operator2In<?, OUT, ?> out) {
@@ -38,10 +37,6 @@ public interface StreamProducer<OUT extends Tuple> extends NamedEntity {
 	 *         streams
 	 */
 	boolean hasOutput();
-
-	Map<String, Long> getOutputDiff();
-
-	Map<String, Long> getLatencyLog();
 
 	void recordTupleWrite(OUT tuple, Stream<OUT> output);
 

@@ -7,16 +7,18 @@ import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticFilename;
 import scheduling.TaskPool;
+import scheduling.thread.PoolWorkerThread;
 
+//TODO: Decorate instead
 public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	private final CountStatistic schedulingTimeStatistic;
 	private final AverageStatistic actualQuantumStatistic;
 	private final CountStatistic timesScheduledStatistic;
 	private final CountStatistic timesRunStatistic;
 
-	public PoolWorkerThreadStatistic(TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit,
+	public PoolWorkerThreadStatistic(int index, TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit,
 			String statsFolder, String executionId) {
-		super(availableTasks, quantum, unit);
+		super(index, availableTasks, quantum, unit);
 		schedulingTimeStatistic = new CountStatistic(
 				StatisticFilename.INSTANCE.get(statsFolder, threadId(executionId), "schedtime"), true);
 		timesScheduledStatistic = new CountStatistic(

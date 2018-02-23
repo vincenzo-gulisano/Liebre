@@ -1,28 +1,23 @@
-package scheduling.impl;
+package scheduling.thread;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import common.ActiveRunnable;
 import common.StreamConsumer;
 import common.StreamProducer;
-import scheduling.ActiveThread;
 import scheduling.TaskPool;
 
 public class PoolWorkerThread extends ActiveThread {
-	private final TaskPool<ActiveRunnable> availableTasks;
-	private long quantum;
-	private final TimeUnit unit;
+	private final TaskPool<ActiveRunnable> taskPool;
+	private long quantumNanos;
 	protected volatile boolean executed;
 
-	private static AtomicInteger threadCount = new AtomicInteger();
 	protected final int index;
 
-	public PoolWorkerThread(TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit) {
-		this.availableTasks = availableTasks;
-		this.quantum = quantum;
-		this.unit = unit;
-		this.index = threadCount.getAndIncrement();
+	public PoolWorkerThread(int index, TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit) {
+		this.index = index;
+		this.taskPool = availableTasks;
+		this.quantumNanos = unit.toNanos(quantum);
 	}
 
 	@Override
@@ -37,13 +32,13 @@ public class PoolWorkerThread extends ActiveThread {
 	}
 
 	protected ActiveRunnable getTask() {
-		return availableTasks.getNext(index);
+		return taskPool.getNext(index);
 	}
 
 	protected void executeTask(ActiveRunnable task) {
 		executed = false;
 		task.onScheduled();
-		long runUntil = System.nanoTime() + unit.toNanos(quantum);
+		final long runUntil = System.nanoTime() + quantumNanos;
 		while (System.nanoTime() < runUntil && hasInput(task) && hasOutput(task)) {
 			task.run();
 			executed = true;
@@ -54,7 +49,8 @@ public class PoolWorkerThread extends ActiveThread {
 		if (executed) {
 			task.onRun();
 		}
-		availableTasks.put(task, index);
+		taskPool.update(task, index);
+		taskPool.put(task, index);
 	}
 
 	@Override
@@ -67,11 +63,11 @@ public class PoolWorkerThread extends ActiveThread {
 		super.disable();
 	}
 
-	boolean hasInput(ActiveRunnable task) {
+	private boolean hasInput(ActiveRunnable task) {
 		return (task instanceof StreamConsumer == false) || ((StreamConsumer<?>) task).hasInput();
 	}
 
-	boolean hasOutput(ActiveRunnable task) {
+	private boolean hasOutput(ActiveRunnable task) {
 		return (task instanceof StreamProducer == false) || ((StreamProducer<?>) task).hasOutput();
 	}
 

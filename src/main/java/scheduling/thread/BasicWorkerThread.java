@@ -1,6 +1,4 @@
-package scheduling.impl;
-
-import scheduling.ActiveThread;
+package scheduling.thread;
 
 public class BasicWorkerThread extends ActiveThread {
 

@@ -13,6 +13,7 @@ import scheduling.TaskPool;
 import scheduling.priority.PriorityMetric;
 import source.Source;
 
+@Deprecated
 public class PriorityTaskPool2 implements TaskPool<ActiveRunnable> {
 	private final PriorityMetric metric;
 	private final ConcurrentHashMap<String, ActiveRunnable> available = new ConcurrentHashMap<>();
@@ -22,9 +23,10 @@ public class PriorityTaskPool2 implements TaskPool<ActiveRunnable> {
 	private final long nThreads;
 	private volatile boolean enabled;
 
-	public PriorityTaskPool2(PriorityMetric metric, int nThreads) {
+	public PriorityTaskPool2(PriorityMetric metric) {
 		this.metric = metric;
-		this.nThreads = nThreads;
+		this.nThreads = 0;
+		throw new IllegalStateException("TaskPool is deprecated");
 	}
 
 	@Override
@@ -97,6 +99,16 @@ public class PriorityTaskPool2 implements TaskPool<ActiveRunnable> {
 		for (TaskPriority p : priorities.get()) {
 			p.getTask().disable();
 		}
+	}
+
+	@Override
+	public void update(ActiveRunnable task, int threadId) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setThreadsNumber(int activeThreads) {
+		throw new UnsupportedOperationException();
 	}
 
 }

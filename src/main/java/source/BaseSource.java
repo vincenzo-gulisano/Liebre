@@ -107,7 +107,12 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 	}
 
 	@Override
-	public Map<String, Long> getOutputDiff() {
+	public Map<String, Long> getInputQueueDiff() {
+		return state.getInputQueueDiff();
+	}
+
+	@Override
+	public Map<String, Long> getOutputQueueDiff() {
 		return state.getOutputQueueDiff();
 	}
 
