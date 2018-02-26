@@ -20,17 +20,20 @@
 package source;
 
 import java.util.Collection;
-import java.util.Map;
 
 import common.BoxState;
 import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.tuple.Tuple;
+import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.NoopMatrixPriorityMetric;
 import stream.Stream;
 
 public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
 	private final BoxState<Tuple, OUT> state;
+	private volatile MatrixPriorityMetric priorityMetric = new NoopMatrixPriorityMetric();
+
 	private final String OUTPUT_KEY = "OUTPUT";
 	private final SourceFunction<OUT> function;
 	private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
@@ -38,10 +41,6 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 	public BaseSource(String id, SourceFunction<OUT> function) {
 		state = new BoxState<>(id, BoxType.SOURCE, null);
 		this.function = function;
-	}
-
-	public void enableExecutionMetrics() {
-		state.enableExecutionMetrics();
 	}
 
 	@Override
@@ -103,7 +102,6 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
 	@Override
 	public void onScheduled() {
-		state.resetLog();
 	}
 
 	@Override
@@ -111,23 +109,13 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 	}
 
 	@Override
-	public Map<String, Long> getInputQueueDiff() {
-		return state.getInputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getOutputQueueDiff() {
-		return state.getOutputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getLatencyLog() {
-		return state.getLatencyLog();
+	public void setPriorityMetric(MatrixPriorityMetric metric) {
+		this.priorityMetric = metric;
 	}
 
 	@Override
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		state.recordTupleWrite(tuple, output);
+		priorityMetric.recordTupleWrite(tuple, output);
 	}
 
 	@Override

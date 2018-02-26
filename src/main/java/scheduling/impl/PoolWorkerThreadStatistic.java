@@ -31,7 +31,7 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 
 	private String threadId(String executionId) {
 		StringBuilder sb = new StringBuilder("THREAD_");
-		sb.append(index);
+		sb.append(getIndex());
 		if (executionId != null && !executionId.isEmpty()) {
 			sb.append(".").append(executionId);
 		}

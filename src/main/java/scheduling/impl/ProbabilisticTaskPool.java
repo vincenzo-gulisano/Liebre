@@ -3,10 +3,7 @@ package scheduling.impl;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
@@ -49,7 +46,6 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	private volatile MatrixPriorityMetric metric;
 	private volatile int nThreads;
 	private final AtomicReference<Turn> turns;
-	private volatile Map<String, Integer> taskIndex;
 	private AtomicReferenceArray<Boolean> available;
 	private volatile boolean enabled;
 
@@ -86,11 +82,6 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	}
 
 	@Override
-	public boolean schedulingMetricsEnabled() {
-		return true;
-	}
-
-	@Override
 	public void register(ActiveRunnable task) {
 		if (isEnabled()) {
 			throw new IllegalStateException("Cannot add tasks in an enabled TaskPool!");
@@ -103,6 +94,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 		if (isEnabled()) {
 			throw new IllegalStateException("Cannot add tasks in an enabled TaskPool!");
 		}
+		tasks.add(task);
 		passiveTasks.add(task);
 	}
 
@@ -124,12 +116,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
 	@Override
 	public void put(ActiveRunnable task, int threadId) {
-		available.set(taskIndex.get(task.getId()), true);
-	}
-
-	@Override
-	public void update(ActiveRunnable task, int threadId) {
-		metric.updatePriorityStatistics(task, threadId);
+		available.set(task.getIndex(), true);
 	}
 
 	private void updatePriorities(long threadId) {
@@ -161,16 +148,19 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 		}
 		// Initialize locks and operator index
 		available = new AtomicReferenceArray<>(tasks.size());
-		Map<String, Integer> tempIndex = new HashMap<>();
-		int i = 0;
-		for (i = 0; i < tasks.size(); i++) {
-			ActiveRunnable task = tasks.get(i);
-			tempIndex.put(task.getId(), i);
-			available.set(i, true);
+		// Sort tasks according to their indexes
+		// FIXME: Some spots in the array might be empty because of source operators
+		// Find a way to ignore these spots
+		tasks.sort((ActiveRunnable t1, ActiveRunnable t2) -> Integer.compare(t1.getIndex(), t2.getIndex()));
+		metric = metricFactory.newInstance(tasks.size(), nThreadsTotal());
+		for (ActiveRunnable task : tasks) {
+			boolean isActive = !passiveTasks.contains(task);
+			// Only the active tasks can be picked for execution
+			// by the task pool
+			available.set(task.getIndex(), isActive);
+			task.setPriorityMetric(metric);
 			task.enable();
 		}
-		taskIndex = Collections.unmodifiableMap(tempIndex);
-		metric = metricFactory.newInstance(taskIndex, nThreadsTotal());
 		// Initialize priorities
 		updatePriorities(1);
 		this.enabled = true;

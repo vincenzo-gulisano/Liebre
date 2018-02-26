@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
+@Deprecated
 public class ExecutionLog<K, V> {
 
 	private final Map<K, V> log = new ConcurrentHashMap<>();

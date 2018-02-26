@@ -45,9 +45,6 @@ public class ThreadPoolScheduler implements Scheduler {
 	@Override
 	public void addTasks(Collection<? extends ActiveRunnable> tasks) {
 		for (ActiveRunnable task : tasks) {
-			if (taskPool.schedulingMetricsEnabled()) {
-				task.enableExecutionMetrics();
-			}
 			if (indepedentSources && task instanceof Source) {
 				sources.add((Source<?>) task);
 				taskPool.registerPassive(task);
@@ -76,7 +73,7 @@ public class ThreadPoolScheduler implements Scheduler {
 		// Independent source threads
 		System.out.format("*** [%s] Starting %d source threads%n", getClass().getSimpleName(), sources.size());
 		for (ActiveRunnable task : sources) {
-			SourceThread t = new SourceThread(threadIndex, task, taskPool, quantum, timeUnit);
+			SourceThread t = new SourceThread(threadIndex, task, quantum, timeUnit);
 			sourceThreads.add(t);
 			t.enable();
 			t.start();

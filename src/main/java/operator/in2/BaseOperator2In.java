@@ -20,7 +20,6 @@
 package operator.in2;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Objects;
 
 import common.BoxState;
@@ -29,6 +28,8 @@ import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
 import operator.Operator;
+import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.NoopMatrixPriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
@@ -36,6 +37,8 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 		implements Operator2In<IN, IN2, OUT> {
 
 	private final BoxState<Tuple, OUT> state;
+	private volatile MatrixPriorityMetric priorityMetric = new NoopMatrixPriorityMetric();
+
 	private final String INPUT1_KEY = "INPUT1";
 	private final String INPUT2_KEY = "INPUT2";
 	private final String OUTPUT_KEY = "OUTPUT";
@@ -137,44 +140,29 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public void onScheduled() {
-		state.resetLog();
 	}
 
 	public void onRun() {
 	}
 
 	@Override
-	public Map<String, Long> getInputQueueDiff() {
-		return state.getInputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getOutputQueueDiff() {
-		return state.getOutputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getLatencyLog() {
-		return state.getLatencyLog();
+	public void setPriorityMetric(MatrixPriorityMetric metric) {
+		this.priorityMetric = metric;
 	}
 
 	@Override
 	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		state.recordTupleRead(tuple, input);
+		priorityMetric.recordTupleRead(tuple, input);
 	}
 
 	@Override
 	public void recordTuple2Read(IN2 tuple, Stream<IN2> input) {
-		state.recordTupleRead(tuple, input);
-	}
-
-	public void enableExecutionMetrics() {
-		state.enableExecutionMetrics();
+		priorityMetric.recordTupleRead(tuple, input);
 	}
 
 	@Override
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		state.recordTupleWrite(tuple, output);
+		priorityMetric.recordTupleWrite(tuple, output);
 	}
 
 	@Override

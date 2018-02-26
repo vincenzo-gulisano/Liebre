@@ -20,6 +20,7 @@
 package stream;
 
 import common.Active;
+import common.ActiveRunnable;
 import common.NamedEntity;
 import common.tuple.Tuple;
 
@@ -35,7 +36,7 @@ public interface Stream<T extends Tuple> extends Active, NamedEntity {
 
 	public long size();
 
-	public String getSrcId();
+	public ActiveRunnable getSource();
 
-	public String getDestId();
+	public ActiveRunnable getDestination();
 }

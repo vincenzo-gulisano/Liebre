@@ -1,17 +1,12 @@
 package common;
 
-import java.util.Map;
+import scheduling.priority.MatrixPriorityMetric;
 
 public interface ActiveRunnable extends Active, Runnable, NamedEntity {
 	void onScheduled();
 
 	void onRun();
 
-	void enableExecutionMetrics();
+	void setPriorityMetric(MatrixPriorityMetric metric);
 
-	Map<String, Long> getInputQueueDiff();
-
-	Map<String, Long> getOutputQueueDiff();
-
-	Map<String, Long> getLatencyLog();
 }

@@ -1,7 +1,6 @@
 package operator;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Objects;
 
 import common.BoxState;
@@ -9,12 +8,16 @@ import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.NoopMatrixPriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
 	protected final BoxState<IN, OUT> state;
+	// FIXME: Check if this needs to be volatile
+	private volatile MatrixPriorityMetric priorityMetric = new NoopMatrixPriorityMetric();
 
 	public AbstractOperator(String id, BoxType type, StreamFactory streamFactory) {
 		state = new BoxState<>(id, type, streamFactory);
@@ -77,7 +80,6 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 
 	@Override
 	public void onScheduled() {
-		state.resetLog();
 	}
 
 	@Override
@@ -85,32 +87,18 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	}
 
 	@Override
-	public Map<String, Long> getInputQueueDiff() {
-		return state.getInputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getOutputQueueDiff() {
-		return state.getOutputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getLatencyLog() {
-		return state.getLatencyLog();
+	public void setPriorityMetric(MatrixPriorityMetric metric) {
+		this.priorityMetric = metric;
 	}
 
 	@Override
 	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		state.recordTupleRead(tuple, input);
+		priorityMetric.recordTupleRead(tuple, input);
 	}
 
 	@Override
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		state.recordTupleWrite(tuple, output);
-	}
-
-	public void enableExecutionMetrics() {
-		state.enableExecutionMetrics();
+		priorityMetric.recordTupleWrite(tuple, output);
 	}
 
 	@Override

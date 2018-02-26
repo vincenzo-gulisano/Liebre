@@ -3,7 +3,7 @@ package stream;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import common.NamedEntity;
+import common.ActiveRunnable;
 import common.tuple.Tuple;
 
 public class BlockingStream<T extends Tuple> implements Stream<T> {
@@ -14,13 +14,13 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 	private BlockingQueue<T> stream = new ArrayBlockingQueue<T>(CAPACITY);
 	private volatile long tuplesWritten, tuplesRead;
 	private volatile boolean enabled;
-	private final String srcId;
-	private final String destId;
+	private final ActiveRunnable source;
+	private final ActiveRunnable destination;
 
-	public BlockingStream(String id, NamedEntity from, NamedEntity to) {
+	public BlockingStream(String id, ActiveRunnable source, ActiveRunnable destination) {
 		this.id = id;
-		this.srcId = from.getId();
-		this.destId = to.getId();
+		this.source = source;
+		this.destination = destination;
 		tuplesWritten = 0;
 		tuplesRead = 0;
 	}
@@ -90,14 +90,12 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 		return this.id;
 	}
 
-	@Override
-	public String getDestId() {
-		return destId;
+	public ActiveRunnable getSource() {
+		return source;
 	}
 
-	@Override
-	public String getSrcId() {
-		return srcId;
+	public ActiveRunnable getDestination() {
+		return destination;
 	}
 
 	@Override

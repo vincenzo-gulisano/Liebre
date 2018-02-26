@@ -1,5 +1,6 @@
 package stream;
 
+import common.ActiveRunnable;
 import common.tuple.Tuple;
 
 public class StreamDecorator<T extends Tuple> implements Stream<T> {
@@ -65,14 +66,12 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
 		return decorated.toString();
 	}
 
-	@Override
-	public String getSrcId() {
-		return decorated.getSrcId();
+	public ActiveRunnable getSource() {
+		return decorated.getSource();
 	}
 
-	@Override
-	public String getDestId() {
-		return decorated.getDestId();
+	public ActiveRunnable getDestination() {
+		return decorated.getDestination();
 	}
 
 }

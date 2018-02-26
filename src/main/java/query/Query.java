@@ -60,8 +60,10 @@ import source.BaseSource;
 import source.Source;
 import source.SourceFunction;
 import source.SourceStatistic;
+import stream.BlockingStreamFactory;
 import stream.Stream;
 import stream.StreamFactory;
+import stream.StreamStatisticFactory;
 
 public class Query {
 

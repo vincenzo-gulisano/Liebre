@@ -10,8 +10,14 @@ import common.util.StopJvmUncaughtExceptionHandler;
  *
  */
 public abstract class ActiveThread extends Thread implements Active {
+	private final int index;
 
 	public ActiveThread() {
+		this(-1);
+	}
+
+	public ActiveThread(int index) {
+		this.index = index;
 		setDefaultUncaughtExceptionHandler(StopJvmUncaughtExceptionHandler.INSTANCE);
 	}
 
@@ -36,6 +42,10 @@ public abstract class ActiveThread extends Thread implements Active {
 	@Override
 	public void disable() {
 		interrupt();
+	}
+
+	public int getIndex() {
+		return index;
 	}
 
 }

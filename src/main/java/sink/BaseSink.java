@@ -20,18 +20,21 @@
 package sink;
 
 import java.util.Collection;
-import java.util.Map;
 
 import common.BoxState;
 import common.BoxState.BoxType;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.NoopMatrixPriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
 public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
 	private final BoxState<IN, Tuple> state;
+	private volatile MatrixPriorityMetric priorityMetric = new NoopMatrixPriorityMetric();
+
 	private final SinkFunction<IN> function;
 	private final String INPUT_KEY = "INPUT";
 	private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
@@ -49,10 +52,6 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	@Override
 	public Stream<IN> getInputStream(String reqId) {
 		return state.getInputStream(INPUT_KEY);
-	}
-
-	public void enableExecutionMetrics() {
-		state.enableExecutionMetrics();
 	}
 
 	@Override
@@ -103,7 +102,6 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
 	@Override
 	public void onScheduled() {
-		state.resetLog();
 	}
 
 	@Override
@@ -111,23 +109,13 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	}
 
 	@Override
-	public Map<String, Long> getInputQueueDiff() {
-		return state.getInputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getOutputQueueDiff() {
-		return state.getOutputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getLatencyLog() {
-		return state.getLatencyLog();
+	public void setPriorityMetric(MatrixPriorityMetric metric) {
+		this.priorityMetric = metric;
 	}
 
 	@Override
 	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		state.recordTupleRead(tuple, input);
+		priorityMetric.recordTupleRead(tuple, input);
 	}
 
 	@Override

@@ -1,19 +1,17 @@
 package scheduling.priority;
 
-import java.util.Map;
-
 public enum MatrixMetricFactory {
 	STIMULUS {
 		@Override
-		public MatrixPriorityMetric newInstance(Map<String, Integer> index, int nThreads) {
-			return new StimulusMatrixMetric(index, index.size(), nThreads);
+		public MatrixPriorityMetric newInstance(int nTasks, int nThreads) {
+			return new StimulusMatrixMetric(nTasks, nThreads);
 		}
 	},
 	QUEUE_SIZE {
 		@Override
-		public MatrixPriorityMetric newInstance(Map<String, Integer> index, int nThreads) {
-			return new QueueSizeMatrixMetric(index, index.size(), nThreads);
+		public MatrixPriorityMetric newInstance(int nTasks, int nThreads) {
+			return new QueueSizeMatrixMetric(nTasks, nThreads);
 		}
 	};
-	public abstract MatrixPriorityMetric newInstance(Map<String, Integer> index, int nThreads);
+	public abstract MatrixPriorityMetric newInstance(int nTasks, int nThreads);
 }

@@ -21,7 +21,7 @@ package stream;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import common.NamedEntity;
+import common.ActiveRunnable;
 import common.tuple.Tuple;
 import common.util.BackOff;
 
@@ -34,13 +34,13 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	private final BackOff writerBackOff, readerBackOff;
 	private volatile long tuplesWritten, tuplesRead;
 	private final String id;
-	private final String srcId;
-	private final String destId;
+	private final ActiveRunnable source;
+	private final ActiveRunnable destination;
 
-	public ConcurrentLinkedListStream(String id, NamedEntity from, NamedEntity to) {
+	public ConcurrentLinkedListStream(String id, ActiveRunnable source, ActiveRunnable destination) {
 		this.id = id;
-		this.srcId = from.getId();
-		this.destId = to.getId();
+		this.source = source;
+		this.destination = destination;
 		writerBackOff = BackOff.newDecreasing(10, 1000, 5);
 		readerBackOff = BackOff.newDecreasing(1, 20, 5);
 		tuplesWritten = 0;
@@ -105,14 +105,12 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 		return this.id;
 	}
 
-	@Override
-	public String getDestId() {
-		return destId;
+	public ActiveRunnable getSource() {
+		return source;
 	}
 
-	@Override
-	public String getSrcId() {
-		return srcId;
+	public ActiveRunnable getDestination() {
+		return destination;
 	}
 
 	@Override

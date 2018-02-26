@@ -81,10 +81,6 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		this.factory = streamFactory;
 	}
 
-	public void enableExecutionMetrics() {
-		this.executionMetricsEnabled = true;
-	}
-
 	public void enable() {
 		if (!type.checkState(this)) {
 			throw new IllegalStateException(id);
@@ -119,7 +115,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		out.registerIn(caller);
 	}
 
-	public void setInput(String key, StreamProducer<IN> in, NamedEntity caller) {
+	public void setInput(String key, StreamProducer<IN> in, ActiveRunnable caller) {
 		if (factory == null) {
 			throw new IllegalStateException("This entity cannot have inputs. Factory == null");
 		}
@@ -150,6 +146,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		return next.values();
 	}
 
+	@Deprecated
 	public void recordTupleRead(IN tuple, Stream<? extends IN> input) {
 		if (!executionMetricsEnabled) {
 			return;
@@ -160,10 +157,11 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		// When reading a tuple, the input queue size of this box
 		// and the output queue of the previous one
 		// is decreased
-		outputQueueDiff.record(input.getSrcId(), -1L);
-		inputQueueDiff.record(input.getDestId(), -1L); // == this.id
+		outputQueueDiff.record(input.getSource().getId(), -1L);
+		inputQueueDiff.record(input.getDestination().getId(), -1L); // == this.id
 	}
 
+	@Deprecated
 	public void recordTupleWrite(OUT tuple, Stream<? extends OUT> output) {
 		if (!executionMetricsEnabled) {
 			return;
@@ -173,10 +171,10 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		}
 		// When writing a tuple the output queue size of this box
 		// and the input queue of the next one is increased
-		outputQueueDiff.record(output.getSrcId(), 1L); // == this.id
-		inputQueueDiff.record(output.getDestId(), 1L);
+		outputQueueDiff.record(output.getSource().getId(), 1L); // == this.id
+		inputQueueDiff.record(output.getDestination().getId(), 1L);
 		if (tuple instanceof RichTuple) {
-			latencyLog.record(output.getDestId(), ((RichTuple) tuple).getTimestamp());
+			latencyLog.record(output.getDestination().getId(), ((RichTuple) tuple).getTimestamp());
 		}
 	}
 
@@ -205,24 +203,6 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 			}
 		}
 		return true;
-	}
-
-	public Map<String, Long> getOutputQueueDiff() {
-		return outputQueueDiff.get();
-	}
-
-	public Map<String, Long> getInputQueueDiff() {
-		return inputQueueDiff.get();
-	}
-
-	public Map<String, Long> getLatencyLog() {
-		return latencyLog.get();
-	}
-
-	public void resetLog() {
-		outputQueueDiff.reset();
-		inputQueueDiff.reset();
-		latencyLog.reset();
 	}
 
 	public boolean hasOutput() {

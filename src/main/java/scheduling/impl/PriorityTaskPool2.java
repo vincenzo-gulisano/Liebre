@@ -102,11 +102,6 @@ public class PriorityTaskPool2 implements TaskPool<ActiveRunnable> {
 	}
 
 	@Override
-	public void update(ActiveRunnable task, int threadId) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public void setThreadsNumber(int activeThreads) {
 		throw new UnsupportedOperationException();
 	}

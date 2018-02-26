@@ -1,12 +1,12 @@
 package operator.in2;
 
 import java.util.Collection;
-import java.util.Map;
 
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
 import operator.Operator;
+import scheduling.priority.MatrixPriorityMetric;
 import stream.Stream;
 
 class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
@@ -20,10 +20,6 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
 	@Override
 	public void run() {
 		decorated.run();
-	}
-
-	public void enableExecutionMetrics() {
-		decorated.enableExecutionMetrics();
 	}
 
 	@Override
@@ -115,21 +111,6 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
 	}
 
 	@Override
-	public Map<String, Long> getInputQueueDiff() {
-		return decorated.getInputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getOutputQueueDiff() {
-		return decorated.getOutputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getLatencyLog() {
-		return decorated.getLatencyLog();
-	}
-
-	@Override
 	public void recordTupleRead(IN tuple, Stream<IN> input) {
 		decorated.recordTuple2Read(tuple, input);
 	}
@@ -137,6 +118,10 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
 	@Override
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
 		decorated.recordTupleWrite(tuple, output);
+	}
+
+	public void setPriorityMetric(MatrixPriorityMetric metric) {
+		decorated.setPriorityMetric(metric);
 	}
 
 }

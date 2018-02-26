@@ -1,10 +1,10 @@
 package source;
 
 import java.util.Collection;
-import java.util.Map;
 
 import common.StreamConsumer;
 import common.tuple.Tuple;
+import scheduling.priority.MatrixPriorityMetric;
 import stream.Stream;
 
 public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
@@ -19,10 +19,6 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 	@Override
 	public void enable() {
 		decorated.enable();
-	}
-
-	public void enableExecutionMetrics() {
-		decorated.enableExecutionMetrics();
 	}
 
 	@Override
@@ -90,22 +86,12 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 		return decorated.toString();
 	}
 
-	@Override
-	public Map<String, Long> getOutputQueueDiff() {
-		return decorated.getOutputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getLatencyLog() {
-		return decorated.getLatencyLog();
-	}
-
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
 		decorated.recordTupleWrite(tuple, output);
 	}
 
-	public Map<String, Long> getInputQueueDiff() {
-		return decorated.getInputQueueDiff();
+	public void setPriorityMetric(MatrixPriorityMetric metric) {
+		decorated.setPriorityMetric(metric);
 	}
 
 }

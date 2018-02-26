@@ -2,11 +2,11 @@ package operator.in1;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import scheduling.priority.MatrixPriorityMetric;
 import stream.Stream;
 
 public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implements Operator1In<IN, OUT> {
@@ -108,31 +108,16 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 		decorated.onRun();
 	}
 
-	@Override
-	public Map<String, Long> getInputQueueDiff() {
-		return decorated.getInputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getOutputQueueDiff() {
-		return decorated.getOutputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getLatencyLog() {
-		return decorated.getLatencyLog();
-	}
-
-	public void enableExecutionMetrics() {
-		decorated.enableExecutionMetrics();
-	}
-
 	public void recordTupleRead(IN tuple, Stream<IN> input) {
 		decorated.recordTupleRead(tuple, input);
 	}
 
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
 		decorated.recordTupleWrite(tuple, output);
+	}
+
+	public void setPriorityMetric(MatrixPriorityMetric metric) {
+		decorated.setPriorityMetric(metric);
 	}
 
 }

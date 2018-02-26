@@ -70,14 +70,4 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 		processCommand.run();
 	}
 
-	@Override
-	public void recordTupleRead(T tuple, Stream<T> input) {
-		state.recordTupleRead(tuple, input);
-	}
-
-	@Override
-	public void recordTupleWrite(T tuple, Stream<T> output) {
-		state.recordTupleWrite(tuple, output);
-	}
-
 }

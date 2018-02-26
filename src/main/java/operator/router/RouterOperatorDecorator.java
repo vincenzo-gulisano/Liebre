@@ -2,11 +2,11 @@ package operator.router;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import scheduling.priority.MatrixPriorityMetric;
 import stream.Stream;
 
 public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<T> {
@@ -31,10 +31,6 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 	@Override
 	public void run() {
 		processingCommand.run();
-	}
-
-	public void enableExecutionMetrics() {
-		decorated.enableExecutionMetrics();
 	}
 
 	@Override
@@ -112,27 +108,16 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 		decorated.onRun();
 	}
 
-	@Override
-	public Map<String, Long> getInputQueueDiff() {
-		return decorated.getInputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getOutputQueueDiff() {
-		return decorated.getOutputQueueDiff();
-	}
-
-	@Override
-	public Map<String, Long> getLatencyLog() {
-		return decorated.getLatencyLog();
-	}
-
 	public void recordTupleRead(T tuple, Stream<T> input) {
 		decorated.recordTupleRead(tuple, input);
 	}
 
 	public void recordTupleWrite(T tuple, Stream<T> output) {
 		decorated.recordTupleWrite(tuple, output);
+	}
+
+	public void setPriorityMetric(MatrixPriorityMetric metric) {
+		decorated.setPriorityMetric(metric);
 	}
 
 }

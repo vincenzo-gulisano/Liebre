@@ -15,12 +15,6 @@ public interface TaskPool<T extends Runnable> extends Active {
 
 	void put(T task, int threadId);
 
-	void update(T task, int threadId);
-
 	void setThreadsNumber(int activeThreads);
-
-	default boolean schedulingMetricsEnabled() {
-		return false;
-	}
 
 }

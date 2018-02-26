@@ -2,10 +2,10 @@ package scheduling.priority;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import common.ActiveRunnable;
 import common.ExecutionMatrix;
+import common.tuple.Tuple;
+import stream.Stream;
 
 public class QueueSizeMatrixMetric extends MatrixPriorityMetric {
 	private static final long QUEUE_CAPACITY = 10000;
@@ -14,21 +14,9 @@ public class QueueSizeMatrixMetric extends MatrixPriorityMetric {
 
 	private final ExecutionMatrix inputQueueMatrix;
 
-	public QueueSizeMatrixMetric(Map<String, Integer> index, int nTasks, int nThreads) {
-		inputQueueMatrix = new ExecutionMatrix(index, nTasks, nThreads);
-		outputQueueMatrix = new ExecutionMatrix(index, nTasks, nThreads);
-	}
-
-	@Override
-	public void updatePriorityStatistics(ActiveRunnable task, int threadId) {
-		Map<String, Long> outputUpdates = task.getOutputQueueDiff();
-		Map<String, Long> inputUpdates = task.getInputQueueDiff();
-		// if (inputUpdates.size() > 0 && task.getId().startsWith("I")) {
-		// System.out.format("[T%d] INPUT %s %s%n", threadId, task.getId(),
-		// inputUpdates);
-		// }
-		inputQueueMatrix.updateApply(inputUpdates, threadId, (a, b) -> a + b);
-		outputQueueMatrix.updateApply(outputUpdates, threadId, (a, b) -> a + b);
+	public QueueSizeMatrixMetric(int nTasks, int nThreads) {
+		inputQueueMatrix = new ExecutionMatrix(nTasks, nThreads);
+		outputQueueMatrix = new ExecutionMatrix(nTasks, nThreads);
 	}
 
 	@Override
@@ -44,6 +32,30 @@ public class QueueSizeMatrixMetric extends MatrixPriorityMetric {
 			result.add(Math.min(Math.max(QUEUE_CAPACITY - outputQueues.get(i), 1), inputQueues.get(i)));
 		}
 		return scale(result, scaleFactor);
+	}
+
+	@Override
+	public <IN extends Tuple> void recordTupleRead(IN tuple, Stream<IN> input) {
+		// FIXME: This should be in operator, e.g. NooppriorityMetric
+		// if (!executionMetricsEnabled) {
+		// return;
+		// }
+		if (tuple == null) {
+			throw new IllegalStateException();
+		}
+		// When reading a tuple, the input queue size of this box
+		// and the output queue of the previous one
+		// is decreased
+		int threadIndex = threadIndex();
+		outputQueueMatrix.add(threadIndex, input.getSource().getIndex(), -1L);
+		inputQueueMatrix.add(threadIndex, input.getDestination().getIndex(), -1L);
+	}
+
+	@Override
+	public <OUT extends Tuple> void recordTupleWrite(OUT tuple, Stream<OUT> output) {
+		int threadIndex = threadIndex();
+		outputQueueMatrix.add(threadIndex, output.getSource().getIndex(), 1L);
+		inputQueueMatrix.add(threadIndex, output.getDestination().getIndex(), 1L);
 	}
 
 }

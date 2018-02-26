@@ -2,10 +2,11 @@ package common;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.function.BiFunction;
 
+//FIXME: Optimize all functions!
+//FIXME: Make interface and two implementations, one with diffs (without timestamps) and one with latest
 public class ExecutionMatrix {
 
 	private static class MatrixElement {
@@ -36,12 +37,10 @@ public class ExecutionMatrix {
 	}
 
 	private final AtomicReferenceArray<MatrixElement> matrix;
-	private final Map<String, Integer> index;
 	private final int nThreads;
 	private final int nTasks;
 
-	public ExecutionMatrix(Map<String, Integer> index, int nTasks, int nThreads) {
-		this.index = index;
+	public ExecutionMatrix(int nTasks, int nThreads) {
 		this.matrix = new AtomicReferenceArray<MatrixElement>(nTasks * nThreads);
 		this.nThreads = nThreads;
 		this.nTasks = nTasks;
@@ -63,29 +62,11 @@ public class ExecutionMatrix {
 				set(i, j, new MatrixElement());
 			}
 		}
-
 	}
 
-	public void updateReplace(Map<String, Long> updates, int threadId) {
-		long ts = System.nanoTime();
-		for (Map.Entry<String, Long> update : updates.entrySet()) {
-			Integer taskId = index.get(update.getKey());
-			if (taskId != null) {
-				set(threadId, taskId, new MatrixElement(ts, update.getValue()));
-			}
-		}
-	}
-
-	public void updateApply(Map<String, Long> updates, int threadId, BiFunction<Long, Long, Long> func) {
-		long ts = System.nanoTime();
-		for (Map.Entry<String, Long> update : updates.entrySet()) {
-			Integer taskId = index.get(update.getKey());
-			if (taskId != null) {
-				MatrixElement elem = get(threadId, taskId);
-				set(threadId, taskId, elem.apply(ts, update.getValue(), func));
-			}
-
-		}
+	public void add(int threadId, int taskId, long value) {
+		MatrixElement e = get(threadId, taskId);
+		set(threadId, taskId, new MatrixElement(System.nanoTime(), e.value + value));
 	}
 
 	private long apply(int taskId, BiFunction<Long, Long, Long> func, long initialValue) {
@@ -148,8 +129,6 @@ public class ExecutionMatrix {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("TN ");
-		index.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue())
-				.forEach(e -> sb.append(String.format("%1$20s", e.getKey())));
 		sb.append("\n");
 		for (int i = 0; i < nThreads; i++) {
 			sb.append("T").append(i).append(" ");

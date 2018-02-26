@@ -3,10 +3,15 @@ package scheduling.priority;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.ActiveRunnable;
+import common.tuple.Tuple;
+import scheduling.thread.ActiveThread;
+import stream.Stream;
 
 public abstract class MatrixPriorityMetric {
-	public abstract void updatePriorityStatistics(ActiveRunnable task, int threadId);
+
+	public abstract <IN extends Tuple> void recordTupleRead(IN tuple, Stream<IN> input);
+
+	public abstract <OUT extends Tuple> void recordTupleWrite(OUT tuple, Stream<OUT> output);
 
 	public abstract List<Double> getPriorities(int scaleFactor);
 
@@ -26,5 +31,9 @@ public abstract class MatrixPriorityMetric {
 		for (int i = 0; i < data.size(); i++) {
 			data.set(i, data.get(i) / sum);
 		}
+	}
+
+	protected int threadIndex() {
+		return ((ActiveThread) Thread.currentThread()).getIndex();
 	}
 }

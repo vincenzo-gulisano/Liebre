@@ -28,12 +28,12 @@ import common.tuple.Tuple;
 import common.util.Util;
 import operator.Operator;
 import operator.in1.BaseOperator1In;
-import query.ConcurrentLinkedListStreamFactory;
 import query.Query;
 import sink.Sink;
 import sink.SinkFunction;
 import source.Source;
 import source.SourceFunction;
+import stream.ConcurrentLinkedListStreamFactory;
 
 public class SimpleQuery {
 	private static class MyTuple implements Tuple {

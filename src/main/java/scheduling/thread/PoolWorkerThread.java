@@ -12,10 +12,8 @@ public class PoolWorkerThread extends ActiveThread {
 	private long quantumNanos;
 	protected volatile boolean executed;
 
-	protected final int index;
-
 	public PoolWorkerThread(int index, TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit) {
-		this.index = index;
+		super(index);
 		this.taskPool = availableTasks;
 		this.quantumNanos = unit.toNanos(quantum);
 	}
@@ -32,7 +30,7 @@ public class PoolWorkerThread extends ActiveThread {
 	}
 
 	protected ActiveRunnable getTask() {
-		return taskPool.getNext(index);
+		return taskPool.getNext(getIndex());
 	}
 
 	protected void executeTask(ActiveRunnable task) {
@@ -49,8 +47,7 @@ public class PoolWorkerThread extends ActiveThread {
 		if (executed) {
 			task.onRun();
 		}
-		taskPool.update(task, index);
-		taskPool.put(task, index);
+		taskPool.put(task, getIndex());
 	}
 
 	@Override
