@@ -51,6 +51,10 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 		return state.getInputStream(INPUT_KEY);
 	}
 
+	public void enableExecutionMetrics() {
+		state.enableExecutionMetrics();
+	}
+
 	@Override
 	public boolean hasInput() {
 		return state.hasInput();

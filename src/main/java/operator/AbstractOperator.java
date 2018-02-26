@@ -109,6 +109,10 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 		state.recordTupleWrite(tuple, output);
 	}
 
+	public void enableExecutionMetrics() {
+		state.enableExecutionMetrics();
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

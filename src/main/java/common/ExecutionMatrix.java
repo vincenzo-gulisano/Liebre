@@ -114,6 +114,7 @@ public class ExecutionMatrix {
 			MatrixElement elem = get(i, taskId);
 			if (elem.hasValue && elem.timestamp > latestTs) {
 				result = elem.value;
+				latestTs = elem.timestamp;
 			}
 		}
 		return result;

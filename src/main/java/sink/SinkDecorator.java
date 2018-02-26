@@ -16,6 +16,10 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 		this.decorated = decorated;
 	}
 
+	public void enableExecutionMetrics() {
+		decorated.enableExecutionMetrics();
+	}
+
 	@Override
 	public void enable() {
 		decorated.enable();

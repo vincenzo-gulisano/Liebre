@@ -22,6 +22,10 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
 		decorated.run();
 	}
 
+	public void enableExecutionMetrics() {
+		decorated.enableExecutionMetrics();
+	}
+
 	@Override
 	public void registerIn(StreamProducer<IN> in) {
 		decorated.registerIn2(in);

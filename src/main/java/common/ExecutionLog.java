@@ -1,13 +1,11 @@
 package common;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 public class ExecutionLog<K, V> {
 
-	// TODO: Maybe it's safe to have just a HashMap
 	private final Map<K, V> log = new ConcurrentHashMap<>();
 	private final BiFunction<? super V, ? super V, ? extends V> mergeFunction;
 
@@ -48,7 +46,7 @@ public class ExecutionLog<K, V> {
 	}
 
 	public Map<K, V> get() {
-		return Collections.unmodifiableMap(log);
+		return log;
 	}
 
 	@Override

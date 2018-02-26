@@ -86,6 +86,11 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	}
 
 	@Override
+	public boolean schedulingMetricsEnabled() {
+		return true;
+	}
+
+	@Override
 	public void register(ActiveRunnable task) {
 		if (isEnabled()) {
 			throw new IllegalStateException("Cannot add tasks in an enabled TaskPool!");

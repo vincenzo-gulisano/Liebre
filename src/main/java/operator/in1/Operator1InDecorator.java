@@ -123,6 +123,10 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 		return decorated.getLatencyLog();
 	}
 
+	public void enableExecutionMetrics() {
+		decorated.enableExecutionMetrics();
+	}
+
 	public void recordTupleRead(IN tuple, Stream<IN> input) {
 		decorated.recordTupleRead(tuple, input);
 	}

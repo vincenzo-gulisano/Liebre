@@ -21,6 +21,10 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 		decorated.enable();
 	}
 
+	public void enableExecutionMetrics() {
+		decorated.enableExecutionMetrics();
+	}
+
 	@Override
 	public boolean isEnabled() {
 		return decorated.isEnabled();

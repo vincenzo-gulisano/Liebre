@@ -62,6 +62,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	private final int index;
 	private final StreamFactory factory;
 	private volatile boolean enabled;
+	private volatile boolean executionMetricsEnabled;
 
 	private final Map<String, Stream<IN>> inputs = new ConcurrentHashMap<>();
 	private final Map<String, StreamProducer<? extends Tuple>> previous = new ConcurrentHashMap<>();
@@ -78,6 +79,10 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 		this.index = nextIndex.getAndIncrement();
 		this.type = type;
 		this.factory = streamFactory;
+	}
+
+	public void enableExecutionMetrics() {
+		this.executionMetricsEnabled = true;
 	}
 
 	public void enable() {
@@ -146,6 +151,9 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public void recordTupleRead(IN tuple, Stream<? extends IN> input) {
+		if (!executionMetricsEnabled) {
+			return;
+		}
 		if (tuple == null) {
 			throw new IllegalStateException();
 		}
@@ -157,6 +165,9 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public void recordTupleWrite(OUT tuple, Stream<? extends OUT> output) {
+		if (!executionMetricsEnabled) {
+			return;
+		}
 		if (tuple == null) {
 			throw new IllegalSelectorException();
 		}

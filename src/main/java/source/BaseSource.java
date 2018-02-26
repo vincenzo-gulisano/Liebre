@@ -40,6 +40,10 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 		this.function = function;
 	}
 
+	public void enableExecutionMetrics() {
+		state.enableExecutionMetrics();
+	}
+
 	@Override
 	public void addOutput(StreamConsumer<OUT> out) {
 		state.setOutput(OUTPUT_KEY, out, this);

@@ -40,6 +40,10 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 		processingCommand.run();
 	}
 
+	public void enableExecutionMetrics() {
+		decorated.enableExecutionMetrics();
+	}
+
 	@Override
 	public void registerIn(StreamProducer<IN> in) {
 		decorated.registerIn(in);

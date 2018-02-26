@@ -168,6 +168,10 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 		state.recordTupleRead(tuple, input);
 	}
 
+	public void enableExecutionMetrics() {
+		state.enableExecutionMetrics();
+	}
+
 	@Override
 	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
 		state.recordTupleWrite(tuple, output);

@@ -33,6 +33,10 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 		processingCommand.run();
 	}
 
+	public void enableExecutionMetrics() {
+		decorated.enableExecutionMetrics();
+	}
+
 	@Override
 	public void registerIn(StreamProducer<T> in) {
 		decorated.registerIn(in);

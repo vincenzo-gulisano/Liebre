@@ -7,6 +7,8 @@ public interface ActiveRunnable extends Active, Runnable, NamedEntity {
 
 	void onRun();
 
+	void enableExecutionMetrics();
+
 	Map<String, Long> getInputQueueDiff();
 
 	Map<String, Long> getOutputQueueDiff();

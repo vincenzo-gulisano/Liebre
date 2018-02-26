@@ -45,6 +45,9 @@ public class ThreadPoolScheduler implements Scheduler {
 	@Override
 	public void addTasks(Collection<? extends ActiveRunnable> tasks) {
 		for (ActiveRunnable task : tasks) {
+			if (taskPool.schedulingMetricsEnabled()) {
+				task.enableExecutionMetrics();
+			}
 			if (indepedentSources && task instanceof Source) {
 				sources.add((Source<?>) task);
 				taskPool.registerPassive(task);
