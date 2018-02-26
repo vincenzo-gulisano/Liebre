@@ -23,6 +23,17 @@ import common.tuple.Tuple;
 
 public interface FilterFunction<T extends Tuple> {
 
-	public boolean forward(T tuple);
+	boolean forward(T tuple);
+
+	default void enable() {
+	}
+
+	default void disable() {
+
+	}
+
+	default boolean isEnabled() {
+		return true;
+	}
 
 }
