@@ -1,6 +1,5 @@
-package common;
+package common.exec;
 
-import java.nio.channels.IllegalSelectorException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -8,7 +7,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import common.tuple.RichTuple;
+import common.ActiveRunnable;
+import common.NamedEntity;
+import common.StreamConsumer;
+import common.StreamProducer;
 import common.tuple.Tuple;
 import stream.Stream;
 import stream.StreamFactory;
@@ -62,17 +64,12 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	private final int index;
 	private final StreamFactory factory;
 	private volatile boolean enabled;
-	private volatile boolean executionMetricsEnabled;
 
 	private final Map<String, Stream<IN>> inputs = new ConcurrentHashMap<>();
 	private final Map<String, StreamProducer<? extends Tuple>> previous = new ConcurrentHashMap<>();
 	private final Map<String, StreamConsumer<OUT>> next = new ConcurrentHashMap<>();
 
 	private final BoxType type;
-
-	private final ExecutionLog<String, Long> outputQueueDiff = ExecutionLog.cummulativeLong();
-	private final ExecutionLog<String, Long> inputQueueDiff = ExecutionLog.cummulativeLong();
-	private final ExecutionLog<String, Long> latencyLog = ExecutionLog.maxLong();
 
 	public BoxState(String id, BoxType type, StreamFactory streamFactory) {
 		this.id = id;
@@ -144,38 +141,6 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 
 	public Collection<StreamConsumer<OUT>> getNext() {
 		return next.values();
-	}
-
-	@Deprecated
-	public void recordTupleRead(IN tuple, Stream<? extends IN> input) {
-		if (!executionMetricsEnabled) {
-			return;
-		}
-		if (tuple == null) {
-			throw new IllegalStateException();
-		}
-		// When reading a tuple, the input queue size of this box
-		// and the output queue of the previous one
-		// is decreased
-		outputQueueDiff.record(input.getSource().getId(), -1L);
-		inputQueueDiff.record(input.getDestination().getId(), -1L); // == this.id
-	}
-
-	@Deprecated
-	public void recordTupleWrite(OUT tuple, Stream<? extends OUT> output) {
-		if (!executionMetricsEnabled) {
-			return;
-		}
-		if (tuple == null) {
-			throw new IllegalSelectorException();
-		}
-		// When writing a tuple the output queue size of this box
-		// and the input queue of the next one is increased
-		outputQueueDiff.record(output.getSource().getId(), 1L); // == this.id
-		inputQueueDiff.record(output.getDestination().getId(), 1L);
-		if (tuple instanceof RichTuple) {
-			latencyLog.record(output.getDestination().getId(), ((RichTuple) tuple).getTimestamp());
-		}
 	}
 
 	public Stream<OUT> getOutputStream(String destId, StreamProducer<OUT> src) {

@@ -22,10 +22,10 @@ package operator.in2;
 import java.util.Collection;
 import java.util.Objects;
 
-import common.BoxState;
-import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
+import common.exec.BoxState;
+import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import operator.Operator;
 import scheduling.priority.MatrixPriorityMetric;

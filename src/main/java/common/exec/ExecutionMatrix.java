@@ -1,12 +1,10 @@
-package common;
+package common.exec;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
-import java.util.function.BiFunction;
 
-//FIXME: Optimize all functions!
-//FIXME: Make interface and two implementations, one with diffs (without timestamps) and one with latest
+//TODO: Make interface and two implementations, one with diffs (without timestamps) and one with latest
 public class ExecutionMatrix {
 
 	private static class MatrixElement {
@@ -20,18 +18,14 @@ public class ExecutionMatrix {
 			this.value = 0;
 		}
 
+		public MatrixElement(long value) {
+			this(System.nanoTime(), value);
+		}
+
 		public MatrixElement(long timestamp, long value) {
 			this.timestamp = timestamp;
 			this.value = value;
 			this.hasValue = true;
-		}
-
-		public MatrixElement apply(long timestamp, long newValue, BiFunction<Long, Long, Long> func) {
-			if (this.hasValue) {
-				return new MatrixElement(timestamp, func.apply(this.value, newValue));
-			} else {
-				return new MatrixElement(timestamp, newValue);
-			}
 		}
 
 	}
@@ -40,11 +34,25 @@ public class ExecutionMatrix {
 	private final int nThreads;
 	private final int nTasks;
 
+	/**
+	 * Construct
+	 * 
+	 * @param nTasks
+	 * @param nThreads
+	 */
 	public ExecutionMatrix(int nTasks, int nThreads) {
 		this.matrix = new AtomicReferenceArray<MatrixElement>(nTasks * nThreads);
 		this.nThreads = nThreads;
 		this.nTasks = nTasks;
 		init();
+	}
+
+	private void init() {
+		for (int i = 0; i < nThreads; i++) {
+			for (int j = 0; j < nTasks; j++) {
+				set(i, j, new MatrixElement());
+			}
+		}
 	}
 
 	protected MatrixElement get(int threadId, int taskId) {
@@ -56,41 +64,29 @@ public class ExecutionMatrix {
 
 	}
 
-	public void init() {
-		for (int i = 0; i < nThreads; i++) {
-			for (int j = 0; j < nTasks; j++) {
-				set(i, j, new MatrixElement());
-			}
-		}
-	}
-
 	public void add(int threadId, int taskId, long value) {
 		MatrixElement e = get(threadId, taskId);
-		set(threadId, taskId, new MatrixElement(System.nanoTime(), e.value + value));
+		set(threadId, taskId, new MatrixElement(e.value + value));
 	}
 
-	private long apply(int taskId, BiFunction<Long, Long, Long> func, long initialValue) {
-		long result = initialValue;
+	public void put(int threadId, int taskId, long value) {
+		set(threadId, taskId, new MatrixElement(value));
+	}
+
+	private long sum(int taskId) {
+		long result = 0;
 		for (int i = 0; i < nThreads; i++) {
 			MatrixElement elem = get(i, taskId);
 			if (elem.hasValue) {
-				result = func.apply(result, elem.value);
+				result += elem.value;
 			}
 		}
 		return result;
 	}
 
-	public long sum(int taskId) {
-		return apply(taskId, (a, b) -> a + b, 0);
-	}
-
-	public long min(int taskId) {
-		return apply(taskId, Math::min, get(0, taskId).value);
-	}
-
-	public long latest(int taskId) {
+	private long latest(int taskId) {
 		long latestTs = 0;
-		long result = -1;
+		long result = 0;
 		for (int i = 0; i < nThreads; i++) {
 			MatrixElement elem = get(i, taskId);
 			if (elem.hasValue && elem.timestamp > latestTs) {
@@ -105,14 +101,6 @@ public class ExecutionMatrix {
 		List<Long> result = new ArrayList<>(nTasks);
 		for (int i = 0; i < nTasks; i++) {
 			result.add(Math.max(sum(i), minValue));
-		}
-		return result;
-	}
-
-	public List<Long> min() {
-		List<Long> result = new ArrayList<>(nTasks);
-		for (int i = 0; i < nTasks; i++) {
-			result.add(min(i));
 		}
 		return result;
 	}

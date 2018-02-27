@@ -3,7 +3,7 @@ package scheduling.priority;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.ExecutionMatrix;
+import common.exec.ExecutionMatrix;
 import common.tuple.Tuple;
 import stream.Stream;
 
@@ -36,10 +36,6 @@ public class QueueSizeMatrixMetric extends MatrixPriorityMetric {
 
 	@Override
 	public <IN extends Tuple> void recordTupleRead(IN tuple, Stream<IN> input) {
-		// FIXME: This should be in operator, e.g. NooppriorityMetric
-		// if (!executionMetricsEnabled) {
-		// return;
-		// }
 		if (tuple == null) {
 			throw new IllegalStateException();
 		}

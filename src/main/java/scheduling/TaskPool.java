@@ -8,7 +8,7 @@ public interface TaskPool<T extends Runnable> extends Active {
 	}
 
 	default void registerPassive(T task) {
-		put(task, -1);
+		System.out.format("[WARN] [%s] Ignoring registerPassive(%s)%n", getClass().getSimpleName(), task);
 	}
 
 	T getNext(int threadId);

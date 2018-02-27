@@ -149,8 +149,6 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 		// Initialize locks and operator index
 		available = new AtomicReferenceArray<>(tasks.size());
 		// Sort tasks according to their indexes
-		// FIXME: Some spots in the array might be empty because of source operators
-		// Find a way to ignore these spots
 		tasks.sort((ActiveRunnable t1, ActiveRunnable t2) -> Integer.compare(t1.getIndex(), t2.getIndex()));
 		metric = metricFactory.newInstance(tasks.size(), nThreadsTotal());
 		for (ActiveRunnable task : tasks) {

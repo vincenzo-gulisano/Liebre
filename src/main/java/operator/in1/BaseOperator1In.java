@@ -19,9 +19,9 @@
 
 package operator.in1;
 
-import common.BoxState.BoxType;
 import common.StreamConsumer;
 import common.StreamProducer;
+import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
 import stream.Stream;

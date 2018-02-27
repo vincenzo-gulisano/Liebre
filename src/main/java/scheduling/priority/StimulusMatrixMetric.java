@@ -1,13 +1,12 @@
 package scheduling.priority;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import common.ExecutionMatrix;
+import common.exec.ExecutionMatrix;
+import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import stream.Stream;
 
-//FIXME
 public class StimulusMatrixMetric extends MatrixPriorityMetric {
 
 	private final ExecutionMatrix matrix;
@@ -18,24 +17,45 @@ public class StimulusMatrixMetric extends MatrixPriorityMetric {
 
 	@Override
 	public List<Double> getPriorities(int scaleFactor) {
-		List<Long> stimulus = matrix.latest();
-		long t = System.nanoTime();
-		stimulus = stimulus.stream().map(i -> i == -1 ? 1 : t - i).collect(Collectors.toList());
-		List<Double> res = scale(stimulus, scaleFactor);
+		List<Long> timestamps = matrix.latest();
+		preprocessTimestamps(timestamps);
+		List<Double> res = scale(timestamps, scaleFactor);
 		return res;
+	}
+
+	private void preprocessTimestamps(List<Long> timestamps) {
+		long t = System.nanoTime();
+		long defaultValue = t - minNonZero(timestamps);
+		for (int i = 0; i < timestamps.size(); i++) {
+			long ts = timestamps.get(i);
+			ts = (ts > 0) ? (t - ts) : defaultValue;
+			timestamps.set(i, ts);
+		}
+	}
+
+	private long minNonZero(List<Long> list) {
+		// TODO: This avoids starvation BUT
+		// gives a non-zero priority to the sources
+		// and might delay scheduling if we have many of them
+		long min = Long.MAX_VALUE;
+		for (int i = 0; i < list.size(); i++) {
+			long value = list.get(i);
+			if (value > 0 && value < min) {
+				min = value;
+			}
+		}
+		return min;
 	}
 
 	@Override
 	public <IN extends Tuple> void recordTupleRead(IN tuple, Stream<IN> input) {
-		throw new UnsupportedOperationException();
-		// FIXME: Implement
+		// TODO: Fail-fast behavior if not richtuples, maybe have to change at some
+		// point
+		matrix.put(threadIndex(), input.getSource().getIndex(), ((RichTuple) tuple).getTimestamp());
 	}
 
 	@Override
 	public <OUT extends Tuple> void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		throw new UnsupportedOperationException();
-		// FIXME: Implement
-
 	}
 
 }

@@ -21,9 +21,9 @@ package sink;
 
 import java.util.Collection;
 
-import common.BoxState;
-import common.BoxState.BoxType;
 import common.StreamProducer;
+import common.exec.BoxState;
+import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import scheduling.priority.MatrixPriorityMetric;
 import scheduling.priority.NoopMatrixPriorityMetric;
