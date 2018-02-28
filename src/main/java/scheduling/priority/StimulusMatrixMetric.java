@@ -7,7 +7,7 @@ import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class StimulusMatrixMetric extends MatrixPriorityMetric {
+public class StimulusMatrixMetric extends PriorityMetric {
 
 	private final ExecutionMatrix matrix;
 

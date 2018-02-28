@@ -7,7 +7,7 @@ import common.exec.ExecutionMatrix;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class QueueSizeMatrixMetric extends MatrixPriorityMetric {
+public class QueueSizeMatrixMetric extends PriorityMetric {
 	private static final long QUEUE_CAPACITY = 10000;
 
 	private final ExecutionMatrix outputQueueMatrix;

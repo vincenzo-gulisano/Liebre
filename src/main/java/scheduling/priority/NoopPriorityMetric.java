@@ -5,7 +5,7 @@ import java.util.List;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class NoopMatrixPriorityMetric extends MatrixPriorityMetric {
+public class NoopPriorityMetric extends PriorityMetric {
 
 	@Override
 	public <IN extends Tuple> void recordTupleRead(IN tuple, Stream<IN> input) {

@@ -7,7 +7,7 @@ import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
 import operator.Operator;
-import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
@@ -137,7 +137,7 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 		decorated.recordTupleWrite(tuple, output);
 	}
 
-	public void setPriorityMetric(MatrixPriorityMetric metric) {
+	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}
 

@@ -28,8 +28,8 @@ import common.exec.BoxState;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import operator.Operator;
-import scheduling.priority.MatrixPriorityMetric;
-import scheduling.priority.NoopMatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
+import scheduling.priority.NoopPriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
@@ -37,7 +37,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 		implements Operator2In<IN, IN2, OUT> {
 
 	private final BoxState<Tuple, OUT> state;
-	private volatile MatrixPriorityMetric priorityMetric = new NoopMatrixPriorityMetric();
+	private volatile PriorityMetric priorityMetric = new NoopPriorityMetric();
 
 	private final String INPUT1_KEY = "INPUT1";
 	private final String INPUT2_KEY = "INPUT2";
@@ -146,7 +146,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
-	public void setPriorityMetric(MatrixPriorityMetric metric) {
+	public void setPriorityMetric(PriorityMetric metric) {
 		this.priorityMetric = metric;
 	}
 

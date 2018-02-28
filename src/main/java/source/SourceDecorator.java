@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import common.StreamConsumer;
 import common.tuple.Tuple;
-import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
@@ -90,7 +90,7 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 		decorated.recordTupleWrite(tuple, output);
 	}
 
-	public void setPriorityMetric(MatrixPriorityMetric metric) {
+	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}
 

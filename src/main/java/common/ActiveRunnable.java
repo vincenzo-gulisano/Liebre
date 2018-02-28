@@ -1,12 +1,12 @@
 package common;
 
-import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
 
 public interface ActiveRunnable extends Active, Runnable, NamedEntity {
 	void onScheduled();
 
 	void onRun();
 
-	void setPriorityMetric(MatrixPriorityMetric metric);
+	void setPriorityMetric(PriorityMetric metric);
 
 }

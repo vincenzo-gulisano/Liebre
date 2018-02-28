@@ -14,8 +14,8 @@ import common.ActiveRunnable;
 import common.util.AliasMethod;
 import common.util.StatisticFilename;
 import scheduling.TaskPool;
-import scheduling.priority.MatrixMetricFactory;
-import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
+import scheduling.priority.PriorityMetricFactory;
 
 public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
@@ -42,8 +42,8 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	protected final List<ActiveRunnable> tasks = new ArrayList<>();
 	protected final List<ActiveRunnable> passiveTasks = new ArrayList<>();
 	private AtomicReference<AliasMethod> sampler = new AtomicReference<AliasMethod>(null);
-	private final MatrixMetricFactory metricFactory;
-	private volatile MatrixPriorityMetric metric;
+	private final PriorityMetricFactory metricFactory;
+	private volatile PriorityMetric metric;
 	private volatile int nThreads;
 	private final AtomicReference<Turn> turns;
 	private AtomicReferenceArray<Boolean> available;
@@ -55,12 +55,12 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 	private final boolean statisticsEnabled;
 
 	// FIXME: Builder
-	public ProbabilisticTaskPool(MatrixMetricFactory metricFactory, int priorityScalingFactor,
+	public ProbabilisticTaskPool(PriorityMetricFactory metricFactory, int priorityScalingFactor,
 			long priorityUpdateInterval) {
 		this(metricFactory, priorityScalingFactor, priorityUpdateInterval, null);
 	}
 
-	public ProbabilisticTaskPool(MatrixMetricFactory metricFactory, int priorityScalingFactor,
+	public ProbabilisticTaskPool(PriorityMetricFactory metricFactory, int priorityScalingFactor,
 			long priorityUpdateInterval, String statisticsFolder) {
 		this.metricFactory = metricFactory;
 		this.priorityScalingFactor = priorityScalingFactor;
@@ -150,7 +150,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 		available = new AtomicReferenceArray<>(tasks.size());
 		// Sort tasks according to their indexes
 		tasks.sort((ActiveRunnable t1, ActiveRunnable t2) -> Integer.compare(t1.getIndex(), t2.getIndex()));
-		metric = metricFactory.newInstance(tasks.size(), nThreadsTotal());
+		metric = metricFactory.newInstance(tasks, passiveTasks, nThreadsTotal());
 		for (ActiveRunnable task : tasks) {
 			boolean isActive = !passiveTasks.contains(task);
 			// Only the active tasks can be picked for execution

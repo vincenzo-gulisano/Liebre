@@ -7,7 +7,7 @@ import common.tuple.Tuple;
 import scheduling.thread.ActiveThread;
 import stream.Stream;
 
-public abstract class MatrixPriorityMetric {
+public abstract class PriorityMetric {
 
 	public abstract <IN extends Tuple> void recordTupleRead(IN tuple, Stream<IN> input);
 

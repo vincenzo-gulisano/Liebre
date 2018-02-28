@@ -8,8 +8,8 @@ import common.StreamProducer;
 import common.exec.BoxState;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
-import scheduling.priority.MatrixPriorityMetric;
-import scheduling.priority.NoopMatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
+import scheduling.priority.NoopPriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
@@ -17,7 +17,7 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 
 	protected final BoxState<IN, OUT> state;
 	// FIXME: Check if this needs to be volatile
-	private volatile MatrixPriorityMetric priorityMetric = new NoopMatrixPriorityMetric();
+	private volatile PriorityMetric priorityMetric = new NoopPriorityMetric();
 
 	public AbstractOperator(String id, BoxType type, StreamFactory streamFactory) {
 		state = new BoxState<>(id, type, streamFactory);
@@ -87,7 +87,7 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 	}
 
 	@Override
-	public void setPriorityMetric(MatrixPriorityMetric metric) {
+	public void setPriorityMetric(PriorityMetric metric) {
 		this.priorityMetric = metric;
 	}
 

@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import common.StreamProducer;
 import common.tuple.Tuple;
-import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
@@ -90,7 +90,7 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 		decorated.recordTupleRead(tuple, input);
 	}
 
-	public void setPriorityMetric(MatrixPriorityMetric metric) {
+	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}
 

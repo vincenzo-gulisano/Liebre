@@ -6,7 +6,7 @@ import java.util.List;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
-import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implements Operator1In<IN, OUT> {
@@ -116,7 +116,7 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
 		decorated.recordTupleWrite(tuple, output);
 	}
 
-	public void setPriorityMetric(MatrixPriorityMetric metric) {
+	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}
 

@@ -25,14 +25,14 @@ import common.StreamConsumer;
 import common.exec.BoxState;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
-import scheduling.priority.MatrixPriorityMetric;
-import scheduling.priority.NoopMatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
+import scheduling.priority.NoopPriorityMetric;
 import stream.Stream;
 
 public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
 	private final BoxState<Tuple, OUT> state;
-	private volatile MatrixPriorityMetric priorityMetric = new NoopMatrixPriorityMetric();
+	private volatile PriorityMetric priorityMetric = new NoopPriorityMetric();
 
 	private final String OUTPUT_KEY = "OUTPUT";
 	private final SourceFunction<OUT> function;
@@ -109,7 +109,7 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 	}
 
 	@Override
-	public void setPriorityMetric(MatrixPriorityMetric metric) {
+	public void setPriorityMetric(PriorityMetric metric) {
 		this.priorityMetric = metric;
 	}
 

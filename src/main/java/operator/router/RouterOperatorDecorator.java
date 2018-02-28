@@ -6,7 +6,7 @@ import java.util.List;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
-import scheduling.priority.MatrixPriorityMetric;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<T> {
@@ -116,7 +116,7 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 		decorated.recordTupleWrite(tuple, output);
 	}
 
-	public void setPriorityMetric(MatrixPriorityMetric metric) {
+	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}
 
