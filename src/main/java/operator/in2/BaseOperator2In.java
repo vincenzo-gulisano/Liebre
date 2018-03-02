@@ -29,7 +29,6 @@ import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import operator.Operator;
 import scheduling.priority.PriorityMetric;
-import scheduling.priority.NoopPriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
@@ -37,7 +36,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 		implements Operator2In<IN, IN2, OUT> {
 
 	private final BoxState<Tuple, OUT> state;
-	private volatile PriorityMetric priorityMetric = new NoopPriorityMetric();
+	private PriorityMetric priorityMetric = PriorityMetric.noopMetric();
 
 	private final String INPUT1_KEY = "INPUT1";
 	private final String INPUT2_KEY = "INPUT2";

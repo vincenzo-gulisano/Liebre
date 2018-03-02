@@ -26,14 +26,13 @@ import common.exec.BoxState;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import scheduling.priority.PriorityMetric;
-import scheduling.priority.NoopPriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
 public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
 	private final BoxState<IN, Tuple> state;
-	private volatile PriorityMetric priorityMetric = new NoopPriorityMetric();
+	private PriorityMetric priorityMetric = PriorityMetric.noopMetric();
 
 	private final SinkFunction<IN> function;
 	private final String INPUT_KEY = "INPUT";

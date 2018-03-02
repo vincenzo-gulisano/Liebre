@@ -26,13 +26,12 @@ import common.exec.BoxState;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import scheduling.priority.PriorityMetric;
-import scheduling.priority.NoopPriorityMetric;
 import stream.Stream;
 
 public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
 	private final BoxState<Tuple, OUT> state;
-	private volatile PriorityMetric priorityMetric = new NoopPriorityMetric();
+	private PriorityMetric priorityMetric = PriorityMetric.noopMetric();
 
 	private final String OUTPUT_KEY = "OUTPUT";
 	private final SourceFunction<OUT> function;

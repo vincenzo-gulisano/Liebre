@@ -3,25 +3,41 @@ package common.exec;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class TimestampExecutionMatrix extends ExecutionMatrix {
-	private static class MatrixElement {
+	public static class MatrixElement {
 		private final boolean hasValue;
 		private final long timestamp;
-		private final long value;
+		public final long value;
+		private final int type;
 
 		public MatrixElement() {
 			this.hasValue = false;
-			this.timestamp = 0;
-			this.value = 0;
+			this.timestamp = -1;
+			this.value = -1;
+			this.type = -1;
 		}
 
-		public MatrixElement(long value) {
-			this(System.nanoTime(), value);
+		public MatrixElement(long value, int type) {
+			this(System.nanoTime(), value, type);
 		}
 
-		public MatrixElement(long timestamp, long value) {
+		public MatrixElement(long timestamp, long value, int type) {
 			this.timestamp = timestamp;
 			this.value = value;
 			this.hasValue = true;
+			this.type = type;
+		}
+
+		public static MatrixElement oldest(MatrixElement a, MatrixElement b) {
+			if (b.hasValue && b.type >= a.type && b.timestamp > a.timestamp) {
+				return b;
+			} else {
+				return a;
+			}
+		}
+
+		@Override
+		public String toString() {
+			return String.format("(%b, %d, %d, %d)", hasValue, type, timestamp, value);
 		}
 
 	}
@@ -56,25 +72,22 @@ public class TimestampExecutionMatrix extends ExecutionMatrix {
 		matrix.set(getIndex(threadId, taskId), element);
 	}
 
-	public void put(int threadId, int taskId, long value) {
-		set(threadId, taskId, new MatrixElement(value));
+	public void put(int threadId, int taskId, long value, int type) {
+		set(threadId, taskId, new MatrixElement(value, type));
 	}
 
-	private long latest(int taskId) {
-		long latestTs = 0;
-		long result = 0;
+	private MatrixElement latest(int taskId) {
+		MatrixElement result = new MatrixElement();
 		for (int i = 0; i < nThreads; i++) {
 			MatrixElement elem = get(i, taskId);
-			if (elem.hasValue && elem.timestamp > latestTs) {
-				result = elem.value;
-				latestTs = elem.timestamp;
-			}
+			// If all writes (0) select the write, if even one read, select the read instead
+			result = MatrixElement.oldest(result, elem);
 		}
 		return result;
 	}
 
-	public long[] latest() {
-		long[] result = new long[nTasks];
+	public MatrixElement[] latest() {
+		MatrixElement[] result = new MatrixElement[nTasks];
 		for (int i = 0; i < nTasks; i++) {
 			result[i] = latest(i);
 		}

@@ -9,15 +9,13 @@ import common.exec.BoxState;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import scheduling.priority.PriorityMetric;
-import scheduling.priority.NoopPriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
 	protected final BoxState<IN, OUT> state;
-	// FIXME: Check if this needs to be volatile
-	private volatile PriorityMetric priorityMetric = new NoopPriorityMetric();
+	private PriorityMetric priorityMetric = PriorityMetric.noopMetric();
 
 	public AbstractOperator(String id, BoxType type, StreamFactory streamFactory) {
 		state = new BoxState<>(id, type, streamFactory);

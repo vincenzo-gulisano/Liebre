@@ -1,9 +1,6 @@
 package scheduling.priority;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import common.ActiveRunnable;
 import common.StreamConsumer;
@@ -14,32 +11,20 @@ import sink.Sink;
 import source.Source;
 import stream.Stream;
 
-//FIXME: Retrieval of input/output streams of each task can be done
-// as a preprocessing step
 public class QueueSizeMetric extends PriorityMetric {
-	private final List<ActiveRunnable> tasks;
-	private final Set<Integer> ignoredIndexes;
 
 	// TODO: Optimization where we record which boxes are "dirty" and update only
 	// these priorities
 	public QueueSizeMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> ignoredTasks) {
-		this.tasks = Collections.unmodifiableList(tasks);
-		Set<Integer> passiveIndexes = new HashSet<>();
-		for (ActiveRunnable task : ignoredTasks) {
-			passiveIndexes.add(task.getIndex());
-		}
-		this.ignoredIndexes = Collections.unmodifiableSet(passiveIndexes);
+		super(tasks, ignoredTasks);
 	}
 
 	@Override
 	public <IN extends Tuple> void recordTupleRead(IN tuple, Stream<IN> input) {
-
 	}
 
 	@Override
 	public <OUT extends Tuple> void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -52,7 +37,7 @@ public class QueueSizeMetric extends PriorityMetric {
 	}
 
 	private long getPriority(ActiveRunnable task) {
-		if (ignoredIndexes.contains(task.getIndex())) {
+		if (isIgnored(task)) {
 			return 0;
 		}
 		if (task instanceof Source) {
