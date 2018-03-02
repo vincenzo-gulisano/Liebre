@@ -1,6 +1,5 @@
 package scheduling.priority;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -8,11 +7,12 @@ import java.util.Set;
 
 import common.ActiveRunnable;
 import common.StreamConsumer;
-import common.StreamProducer;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import stream.Stream;
 
+//FIXME: Retrieval of input/output streams of each task can be done
+//as a preprocessing step
 public class StimulusMetric extends PriorityMetric {
 	private final List<ActiveRunnable> tasks;
 	private final Set<Integer> ignoredIndexes;
@@ -36,29 +36,30 @@ public class StimulusMetric extends PriorityMetric {
 
 	@Override
 	public List<Double> getPriorities(int scaleFactor) {
-		List<Long> priorities = new ArrayList<>(tasks.size());
-		for (ActiveRunnable task : tasks) {
-			priorities.add(getPriority(task));
+		long[] priorities = new long[tasks.size()];
+		for (int i = 0; i < tasks.size(); i++) {
+			priorities[i] = getPriority(tasks.get(i));
 		}
 		return scale(priorities, scaleFactor);
 	}
 
-	public long getPriority(ActiveRunnable task) {
+	private long getPriority(ActiveRunnable task) {
 		if (ignoredIndexes.contains(task.getIndex()) || task instanceof StreamConsumer == false) {
 			return 0;
 		}
 		StreamConsumer<?> consumer = (StreamConsumer<?>) task;
 		long latency = 0;
 		// FIXME: Give a better interface for this
-		for (StreamProducer<?> prev : consumer.getPrevious()) {
-			Stream<?> input = prev.getOutputStream(consumer.getId());
+		for (Stream<?> input : getInputs(consumer)) {
+			// FIXME: Streams could save the latest ts in a volatile variable
+			// to remove the peek() call
 			Tuple t = input.peek();
 			if (t instanceof RichTuple) {
 				long ts = ((RichTuple) t).getTimestamp();
 				latency = Math.max(System.nanoTime() - ts, latency);
 			}
 		}
-		return 1 + latency;
+		return latency;
 	}
 
 }

@@ -2,44 +2,44 @@ package scheduling.priority;
 
 import java.util.List;
 
-import common.exec.ExecutionMatrix;
+import common.exec.TimestampExecutionMatrix;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import stream.Stream;
 
 public class StimulusMatrixMetric extends PriorityMetric {
 
-	private final ExecutionMatrix matrix;
+	private final TimestampExecutionMatrix matrix;
 
 	public StimulusMatrixMetric(int nTasks, int nThreads) {
-		this.matrix = new ExecutionMatrix(nTasks, nThreads);
+		this.matrix = new TimestampExecutionMatrix(nTasks, nThreads);
 	}
 
 	@Override
 	public List<Double> getPriorities(int scaleFactor) {
-		List<Long> timestamps = matrix.latest();
+		long[] timestamps = matrix.latest();
 		preprocessTimestamps(timestamps);
 		List<Double> res = scale(timestamps, scaleFactor);
 		return res;
 	}
 
-	private void preprocessTimestamps(List<Long> timestamps) {
+	private void preprocessTimestamps(long[] timestamps) {
 		long t = System.nanoTime();
 		long defaultValue = t - minNonZero(timestamps);
-		for (int i = 0; i < timestamps.size(); i++) {
-			long ts = timestamps.get(i);
+		for (int i = 0; i < timestamps.length; i++) {
+			long ts = timestamps[i];
 			ts = (ts > 0) ? (t - ts) : defaultValue;
-			timestamps.set(i, ts);
+			timestamps[i] = ts;
 		}
 	}
 
-	private long minNonZero(List<Long> list) {
+	private long minNonZero(long[] values) {
 		// TODO: This avoids starvation BUT
 		// gives a non-zero priority to the sources
 		// and might delay scheduling if we have many of them
 		long min = Long.MAX_VALUE;
-		for (int i = 0; i < list.size(); i++) {
-			long value = list.get(i);
+		for (int i = 0; i < values.length; i++) {
+			long value = values[i];
 			if (value > 0 && value < min) {
 				min = value;
 			}

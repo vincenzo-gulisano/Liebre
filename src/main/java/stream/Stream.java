@@ -26,17 +26,18 @@ import common.tuple.Tuple;
 
 public interface Stream<T extends Tuple> extends Active, NamedEntity {
 
-	public void addTuple(T tuple);
+	void addTuple(T tuple);
 
-	public T getNextTuple();
+	T getNextTuple();
 
-	public T peek();
+	T peek();
 
-	public long remainingCapacity();
+	long remainingCapacity();
 
-	public long size();
+	long size();
 
-	public ActiveRunnable getSource();
+	ActiveRunnable getSource();
 
-	public ActiveRunnable getDestination();
+	ActiveRunnable getDestination();
+
 }

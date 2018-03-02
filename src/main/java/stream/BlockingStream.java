@@ -2,6 +2,7 @@ package stream;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import common.ActiveRunnable;
 import common.tuple.Tuple;
@@ -9,8 +10,11 @@ import common.tuple.Tuple;
 public class BlockingStream<T extends Tuple> implements Stream<T> {
 
 	private static final int CAPACITY = 10000;
+	private static AtomicInteger nextIndex = new AtomicInteger();
 
 	private final String id;
+	private final int index;
+
 	private BlockingQueue<T> stream = new ArrayBlockingQueue<T>(CAPACITY);
 	private volatile long tuplesWritten, tuplesRead;
 	private volatile boolean enabled;
@@ -19,6 +23,7 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 
 	public BlockingStream(String id, ActiveRunnable source, ActiveRunnable destination) {
 		this.id = id;
+		this.index = nextIndex.getAndIncrement();
 		this.source = source;
 		this.destination = destination;
 		tuplesWritten = 0;
@@ -100,7 +105,7 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public int getIndex() {
-		throw new UnsupportedOperationException();
+		return index;
 	}
 
 	@Override

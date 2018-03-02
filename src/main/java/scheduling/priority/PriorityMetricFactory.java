@@ -14,7 +14,7 @@ public enum PriorityMetricFactory {
 	QUEUE_SIZE_MATRIX {
 		@Override
 		public PriorityMetric newInstance(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks, int nThreads) {
-			return new QueueSizeMatrixMetric(tasks.size(), nThreads);
+			return new QueueSizeMatrixMetric(tasks, passiveTasks, nThreads);
 		}
 	},
 	STIMULUS {

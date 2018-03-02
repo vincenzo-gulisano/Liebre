@@ -1,7 +1,5 @@
 package scheduling.priority;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +14,8 @@ import sink.Sink;
 import source.Source;
 import stream.Stream;
 
+//FIXME: Retrieval of input/output streams of each task can be done
+// as a preprocessing step
 public class QueueSizeMetric extends PriorityMetric {
 	private final List<ActiveRunnable> tasks;
 	private final Set<Integer> ignoredIndexes;
@@ -44,14 +44,14 @@ public class QueueSizeMetric extends PriorityMetric {
 
 	@Override
 	public List<Double> getPriorities(int scaleFactor) {
-		List<Long> priorities = new ArrayList<>(tasks.size());
-		for (ActiveRunnable task : tasks) {
-			priorities.add(getPriority(task));
+		long[] priorities = new long[tasks.size()];
+		for (int i = 0; i < tasks.size(); i++) {
+			priorities[i] = getPriority(tasks.get(i));
 		}
 		return scale(priorities, scaleFactor);
 	}
 
-	public long getPriority(ActiveRunnable task) {
+	private long getPriority(ActiveRunnable task) {
 		if (ignoredIndexes.contains(task.getIndex())) {
 			return 0;
 		}
@@ -69,9 +69,7 @@ public class QueueSizeMetric extends PriorityMetric {
 
 	private <IN extends Tuple> long getMinimumInputSize(StreamConsumer<IN> consumer) {
 		long minInputSize = -1;
-		Collection<StreamProducer<?>> previous = consumer.getPrevious();
-		for (StreamProducer<?> prev : previous) {
-			Stream<?> input = prev.getOutputStream(consumer.getId());
+		for (Stream<?> input : getInputs(consumer)) {
 			minInputSize = minInputSize < 0 ? input.size() : Math.min(input.size(), minInputSize);
 		}
 		return minInputSize;
@@ -79,9 +77,7 @@ public class QueueSizeMetric extends PriorityMetric {
 
 	private <OUT extends Tuple> long getMinimumOutputCapacity(StreamProducer<OUT> producer) {
 		long minOutputCapacity = -1;
-		Collection<StreamConsumer<OUT>> nextOperators = producer.getNext();
-		for (StreamConsumer<?> next : nextOperators) {
-			Stream<?> output = next.getInputStream(producer.getId());
+		for (Stream<?> output : getOutputs(producer)) {
 			minOutputCapacity = minOutputCapacity < 0 ? output.remainingCapacity()
 					: Math.min(output.remainingCapacity(), minOutputCapacity);
 		}
