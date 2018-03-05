@@ -24,11 +24,13 @@ import common.StreamProducer;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
 public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 	private static final String OUTPUT_KEY = "OUTPUT";
+	private PriorityMetric metric = PriorityMetric.noopMetric();
 
 	public UnionOperator(String id, StreamFactory streamFactory) {
 		super(id, BoxType.UNION, streamFactory);
@@ -51,12 +53,15 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 		}
 	}
 
-	// FIXME: Convert to command like the other operators
+	// TODO: Convert to command like the other operators
 	public final void process() {
 		for (Stream<T> in : state.getInputs()) {
 			T inTuple = in.getNextTuple();
 			if (inTuple != null) {
-				getOutputStream(getId()).addTuple(inTuple);
+				metric.recordTupleRead(inTuple, in);
+				Stream<T> output = getOutputStream(getId());
+				metric.recordTupleWrite(inTuple, output);
+				output.addTuple(inTuple);
 			}
 		}
 	}
@@ -69,6 +74,11 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 	@Override
 	public Stream<T> getOutputStream(String requestorId) {
 		return state.getOutputStream(OUTPUT_KEY, this);
+	}
+
+	@Override
+	public void setPriorityMetric(PriorityMetric metric) {
+		this.metric = metric;
 	}
 
 }

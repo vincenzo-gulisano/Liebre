@@ -20,6 +20,7 @@
 package stream;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import common.ActiveRunnable;
 import common.tuple.Tuple;
@@ -29,16 +30,19 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	private static final long WRITER_BACKOFF_LIMIT = 50;
 	private static final long WRITER_RELAX_LIMIT = 25;
-
 	private ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
 	private final BackOff writerBackOff, readerBackOff;
 	private volatile long tuplesWritten, tuplesRead;
 	private final String id;
+	private static AtomicInteger nextIndex = new AtomicInteger();
+	private final int index;
 	private final ActiveRunnable source;
 	private final ActiveRunnable destination;
+	private volatile boolean enabled;
 
 	public ConcurrentLinkedListStream(String id, ActiveRunnable source, ActiveRunnable destination) {
 		this.id = id;
+		this.index = nextIndex.getAndIncrement();
 		this.source = source;
 		this.destination = destination;
 		writerBackOff = BackOff.newDecreasing(10, 1000, 5);
@@ -49,7 +53,9 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public void addTuple(T tuple) {
-		// TODO: Do nothing if disabled
+		if (!isEnabled()) {
+			return;
+		}
 		if (size() > WRITER_BACKOFF_LIMIT)
 			writerBackOff.backoff();
 		else if (size() < WRITER_RELAX_LIMIT)
@@ -60,7 +66,9 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public T getNextTuple() {
-		// TODO: Do nothing if disabled
+		if (!isEnabled()) {
+			return null;
+		}
 		T nextTuple = stream.poll();
 		if (nextTuple == null) {
 			readerBackOff.backoff();
@@ -73,21 +81,22 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public void enable() {
+		this.enabled = true;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return true;
+		return this.enabled;
 	}
 
 	@Override
 	public void disable() {
-
+		this.enabled = false;
 	}
 
 	@Override
 	public T peek() {
-		return stream.peek();
+		return isEnabled() ? stream.peek() : null;
 	}
 
 	@Override
@@ -115,7 +124,7 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public int getIndex() {
-		throw new UnsupportedOperationException();
+		return index;
 	}
 
 	@Override

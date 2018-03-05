@@ -32,7 +32,6 @@ import stream.StreamFactory;
 public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
 	private final BoxState<IN, Tuple> state;
-	private PriorityMetric priorityMetric = PriorityMetric.noopMetric();
 
 	private final SinkFunction<IN> function;
 	private final String INPUT_KEY = "INPUT";
@@ -100,21 +99,16 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
 	}
 
 	@Override
+	public void setPriorityMetric(PriorityMetric metric) {
+		processCommand.setMetric(metric);
+	}
+
+	@Override
 	public void onScheduled() {
 	}
 
 	@Override
 	public void onRun() {
-	}
-
-	@Override
-	public void setPriorityMetric(PriorityMetric metric) {
-		this.priorityMetric = metric;
-	}
-
-	@Override
-	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		priorityMetric.recordTupleRead(tuple, input);
 	}
 
 	@Override

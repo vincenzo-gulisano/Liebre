@@ -37,5 +37,4 @@ public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tu
 
 	Operator<IN2, OUT> secondInputView();
 
-	void recordTuple2Read(IN2 tuple, Stream<IN2> input);
 }

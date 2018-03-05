@@ -8,14 +8,11 @@ import common.StreamProducer;
 import common.exec.BoxState;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
-import scheduling.priority.PriorityMetric;
-import stream.Stream;
 import stream.StreamFactory;
 
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
 	protected final BoxState<IN, OUT> state;
-	private PriorityMetric priorityMetric = PriorityMetric.noopMetric();
 
 	public AbstractOperator(String id, BoxType type, StreamFactory streamFactory) {
 		state = new BoxState<>(id, type, streamFactory);
@@ -82,21 +79,6 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 
 	@Override
 	public void onRun() {
-	}
-
-	@Override
-	public void setPriorityMetric(PriorityMetric metric) {
-		this.priorityMetric = metric;
-	}
-
-	@Override
-	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		priorityMetric.recordTupleRead(tuple, input);
-	}
-
-	@Override
-	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		priorityMetric.recordTupleWrite(tuple, output);
 	}
 
 	@Override

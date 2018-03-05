@@ -20,12 +20,12 @@ public class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
 
 		IN inTuple = input.getNextTuple();
 		if (inTuple != null) {
-			operator.recordTupleRead(inTuple, input);
+			metric.recordTupleRead(inTuple, input);
 			List<OUT> outTuples = operator.processTupleIn1(inTuple);
 			if (outTuples != null) {
 				for (OUT t : outTuples) {
+					metric.recordTupleWrite(t, output);
 					output.addTuple(t);
-					operator.recordTupleWrite(t, output);
 				}
 			}
 		}

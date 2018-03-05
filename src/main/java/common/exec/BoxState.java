@@ -173,7 +173,7 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	public boolean hasOutput() {
 		for (StreamConsumer<OUT> out : next.values()) {
 			Stream<OUT> output = out.getInputStream(getId());
-			if (output.remainingCapacity() == 0) {
+			if (output.remainingCapacity() <= 1) {
 				return false;
 			}
 		}

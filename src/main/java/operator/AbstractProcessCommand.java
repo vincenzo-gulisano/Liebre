@@ -1,5 +1,8 @@
 package operator;
 
+import common.exec.ProcessCommand;
+import scheduling.priority.PriorityMetric;
+
 /**
  * Encapsulation of the execution logic for operators. This is required in order
  * to have reusable decorators without the need to duplicate code (i.e. the
@@ -13,8 +16,9 @@ package operator;
  * @param <OP>
  *            The operator subclass used.
  */
-public abstract class AbstractProcessCommand<OP extends Operator<?, ?>> implements Runnable {
+public abstract class AbstractProcessCommand<OP extends Operator<?, ?>> implements ProcessCommand {
 	protected final OP operator;
+	protected PriorityMetric metric = PriorityMetric.noopMetric();
 
 	protected AbstractProcessCommand(OP operator) {
 		this.operator = operator;
@@ -27,6 +31,11 @@ public abstract class AbstractProcessCommand<OP extends Operator<?, ?>> implemen
 		}
 	}
 
-	protected abstract void process();
+	@Override
+	public abstract void process();
+
+	public void setMetric(PriorityMetric metric) {
+		this.metric = metric;
+	}
 
 }

@@ -26,6 +26,7 @@ import common.StreamProducer;
 import common.exec.BoxState.BoxType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
@@ -68,6 +69,11 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 	@Override
 	public void run() {
 		processCommand.run();
+	}
+
+	@Override
+	public void setPriorityMetric(PriorityMetric metric) {
+		processCommand.setMetric(metric);
 	}
 
 }

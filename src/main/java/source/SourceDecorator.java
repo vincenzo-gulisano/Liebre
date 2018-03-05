@@ -82,16 +82,13 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 	}
 
 	@Override
-	public String toString() {
-		return decorated.toString();
-	}
-
-	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		decorated.recordTupleWrite(tuple, output);
-	}
-
 	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
+	}
+
+	@Override
+	public String toString() {
+		return decorated.toString();
 	}
 
 }

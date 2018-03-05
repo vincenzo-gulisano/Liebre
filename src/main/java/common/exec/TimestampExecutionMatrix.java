@@ -27,7 +27,7 @@ public class TimestampExecutionMatrix extends ExecutionMatrix {
 			this.type = type;
 		}
 
-		public static MatrixElement oldest(MatrixElement a, MatrixElement b) {
+		public static MatrixElement getOldest(MatrixElement a, MatrixElement b) {
 			if (b.hasValue && b.type >= a.type && b.timestamp > a.timestamp) {
 				return b;
 			} else {
@@ -81,7 +81,7 @@ public class TimestampExecutionMatrix extends ExecutionMatrix {
 		for (int i = 0; i < nThreads; i++) {
 			MatrixElement elem = get(i, taskId);
 			// If all writes (0) select the write, if even one read, select the read instead
-			result = MatrixElement.oldest(result, elem);
+			result = MatrixElement.getOldest(result, elem);
 		}
 		return result;
 	}

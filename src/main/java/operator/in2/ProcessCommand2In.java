@@ -22,22 +22,22 @@ public class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends 
 		IN inTuple1 = input1.getNextTuple();
 		IN2 inTuple2 = input2.getNextTuple();
 		if (inTuple1 != null) {
-			operator.recordTupleRead(inTuple1, input1);
+			metric.recordTupleRead(inTuple1, input1);
 			List<OUT> outTuples = operator.processTupleIn1(inTuple1);
 			if (outTuples != null) {
 				for (OUT t : outTuples) {
+					metric.recordTupleWrite(t, output);
 					output.addTuple(t);
-					operator.recordTupleWrite(t, output);
 				}
 			}
 		}
 		if (inTuple2 != null) {
-			operator.recordTuple2Read(inTuple2, input2);
+			metric.recordTupleRead(inTuple2, input2);
 			List<OUT> outTuples = operator.processTupleIn2(inTuple2);
 			if (outTuples != null) {
 				for (OUT t : outTuples) {
-					operator.getOutputStream(operator.getId()).addTuple(t);
-					operator.recordTupleWrite(t, output);
+					metric.recordTupleWrite(t, output);
+					output.addTuple(t);
 				}
 			}
 		}

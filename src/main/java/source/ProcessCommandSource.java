@@ -1,10 +1,13 @@
 package source;
 
+import common.exec.ProcessCommand;
 import common.tuple.Tuple;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
-public class ProcessCommandSource<T extends Tuple> implements Runnable {
+public class ProcessCommandSource<T extends Tuple> implements ProcessCommand {
 	private final Source<T> source;
+	private PriorityMetric metric = PriorityMetric.noopMetric();
 
 	public ProcessCommandSource(Source<T> source) {
 		this.source = source;
@@ -17,13 +20,18 @@ public class ProcessCommandSource<T extends Tuple> implements Runnable {
 		}
 	}
 
+	@Override
 	public final void process() {
 		T tuple = source.getNextTuple();
 		if (tuple != null) {
 			Stream<T> output = source.getOutputStream(source.getId());
+			metric.recordTupleWrite(tuple, output);
 			output.addTuple(tuple);
-			source.recordTupleWrite(tuple, output);
 		}
+	}
+
+	public void setMetric(PriorityMetric metric) {
+		this.metric = metric;
 	}
 
 }

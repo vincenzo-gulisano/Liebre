@@ -108,14 +108,6 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 		decorated.onRun();
 	}
 
-	public void recordTupleRead(T tuple, Stream<T> input) {
-		decorated.recordTupleRead(tuple, input);
-	}
-
-	public void recordTupleWrite(T tuple, Stream<T> output) {
-		decorated.recordTupleWrite(tuple, output);
-	}
-
 	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}

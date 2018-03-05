@@ -34,6 +34,4 @@ public interface StreamConsumer<IN extends Tuple> extends NamedEntity, ActiveRun
 	 */
 	boolean hasInput();
 
-	void recordTupleRead(IN tuple, Stream<IN> input);
-
 }

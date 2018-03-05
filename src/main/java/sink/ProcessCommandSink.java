@@ -1,11 +1,14 @@
 package sink;
 
+import common.exec.ProcessCommand;
 import common.tuple.Tuple;
+import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
-public class ProcessCommandSink<T extends Tuple> implements Runnable {
+public class ProcessCommandSink<T extends Tuple> implements ProcessCommand {
 
 	private final Sink<T> sink;
+	private PriorityMetric metric = PriorityMetric.noopMetric();
 
 	public ProcessCommandSink(Sink<T> sink) {
 		this.sink = sink;
@@ -16,16 +19,20 @@ public class ProcessCommandSink<T extends Tuple> implements Runnable {
 		if (sink.isEnabled()) {
 			process();
 		}
-
 	}
 
+	@Override
 	public final void process() {
 		Stream<T> input = sink.getInputStream(sink.getId());
 		T tuple = input.getNextTuple();
 		if (tuple != null) {
-			sink.recordTupleRead(tuple, input);
+			metric.recordTupleRead(tuple, input);
 			sink.processTuple(tuple);
 		}
+	}
+
+	public void setMetric(PriorityMetric metric) {
+		this.metric = metric;
 	}
 
 }

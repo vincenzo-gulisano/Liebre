@@ -17,13 +17,13 @@ public class ProcessCommandRouter<T extends Tuple> extends AbstractProcessComman
 		Stream<T> input = operator.getInputStream(operator.getId());
 		T inTuple = input.getNextTuple();
 		if (inTuple != null) {
-			operator.recordTupleRead(inTuple, input);
+			metric.recordTupleRead(inTuple, input);
 			List<String> streams = operator.chooseOperators(inTuple);
 			if (streams != null)
 				for (String op : streams) {
 					Stream<T> output = operator.getOutputStream(op);
+					metric.recordTupleWrite(inTuple, output);
 					output.addTuple(inTuple);
-					operator.recordTupleWrite(inTuple, output);
 				}
 		}
 	}

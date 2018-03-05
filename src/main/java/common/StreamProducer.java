@@ -38,6 +38,4 @@ public interface StreamProducer<OUT extends Tuple> extends NamedEntity, ActiveRu
 	 */
 	boolean hasOutput();
 
-	void recordTupleWrite(OUT tuple, Stream<OUT> output);
-
 }

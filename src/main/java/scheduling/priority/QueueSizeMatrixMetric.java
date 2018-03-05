@@ -24,8 +24,6 @@ public class QueueSizeMatrixMetric extends PriorityMetric {
 		}
 		long priority = -1;
 		for (int idx : getInputIndexes(task)) {
-			// FIXME: This should not be necessary if you change the order of
-			// write/recordTupleWrite
 			long size = Math.max(streamValues[idx], 0);
 			priority = priority < 0 ? size : Math.min(priority, size);
 		}

@@ -86,10 +86,6 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 		return decorated.toString();
 	}
 
-	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		decorated.recordTupleRead(tuple, input);
-	}
-
 	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}

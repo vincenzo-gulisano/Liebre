@@ -31,7 +31,6 @@ import stream.Stream;
 public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
 	private final BoxState<Tuple, OUT> state;
-	private PriorityMetric priorityMetric = PriorityMetric.noopMetric();
 
 	private final String OUTPUT_KEY = "OUTPUT";
 	private final SourceFunction<OUT> function;
@@ -109,12 +108,7 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
 	@Override
 	public void setPriorityMetric(PriorityMetric metric) {
-		this.priorityMetric = metric;
-	}
-
-	@Override
-	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		priorityMetric.recordTupleWrite(tuple, output);
+		processCommand.setMetric(metric);
 	}
 
 	@Override

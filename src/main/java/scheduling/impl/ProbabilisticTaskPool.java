@@ -136,14 +136,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
 	@Override
 	public void enable() {
-		// TODO: remove/refactor
-		if (statisticsEnabled) {
-			try {
-				csv.printRecord(tasks);
-			} catch (IOException e) {
-				throw new IllegalStateException(e);
-			}
-		}
+
 		if (nThreads == 0) {
 			throw new IllegalStateException("Thread number not set!");
 		}
@@ -160,6 +153,7 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 			task.setPriorityMetric(metric);
 			task.enable();
 		}
+		recordStatisticsHeader();
 		// Initialize priorities
 		updatePriorities(1);
 		this.enabled = true;
@@ -187,6 +181,16 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 
 	private int nThreadsTotal() {
 		return nThreads + passiveTasks.size();
+	}
+
+	private void recordStatisticsHeader() {
+		if (statisticsEnabled) {
+			try {
+				csv.printRecord(tasks);
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}
 	}
 
 	private void recordStatistics(List<Double> probabilities, long threadId) {

@@ -125,18 +125,6 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 		decorated.onRun();
 	}
 
-	public void recordTuple2Read(IN2 tuple, Stream<IN2> input) {
-		decorated.recordTuple2Read(tuple, input);
-	}
-
-	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		decorated.recordTupleRead(tuple, input);
-	}
-
-	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		decorated.recordTupleWrite(tuple, output);
-	}
-
 	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}

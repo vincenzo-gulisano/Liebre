@@ -19,6 +19,7 @@ public class StimulusMatrixMetric extends PriorityMetric {
 	public StimulusMatrixMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks, int nThreads) {
 		super(tasks, passiveTasks, nThreads);
 		this.matrix = new TimestampExecutionMatrix(this.maximumStreamIndex, nThreads);
+		System.err.println("[WARN] STIMULUS MATRIX NOT SUPPORTED AT THE MOMENT!");
 	}
 
 	@Override
@@ -39,7 +40,7 @@ public class StimulusMatrixMetric extends PriorityMetric {
 		}
 		MatrixElement elem = new MatrixElement();
 		for (int idx : getInputIndexes(task)) {
-			elem = MatrixElement.oldest(elem, latest[idx]);
+			elem = MatrixElement.getOldest(elem, latest[idx]);
 		}
 		return elem.value;
 	}

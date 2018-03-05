@@ -36,7 +36,6 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 		implements Operator2In<IN, IN2, OUT> {
 
 	private final BoxState<Tuple, OUT> state;
-	private PriorityMetric priorityMetric = PriorityMetric.noopMetric();
 
 	private final String INPUT1_KEY = "INPUT1";
 	private final String INPUT2_KEY = "INPUT2";
@@ -146,22 +145,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public void setPriorityMetric(PriorityMetric metric) {
-		this.priorityMetric = metric;
-	}
-
-	@Override
-	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		priorityMetric.recordTupleRead(tuple, input);
-	}
-
-	@Override
-	public void recordTuple2Read(IN2 tuple, Stream<IN2> input) {
-		priorityMetric.recordTupleRead(tuple, input);
-	}
-
-	@Override
-	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		priorityMetric.recordTupleWrite(tuple, output);
+		processCommand.setMetric(metric);
 	}
 
 	@Override

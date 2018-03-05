@@ -110,16 +110,6 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
 		decorated.onScheduled();
 	}
 
-	@Override
-	public void recordTupleRead(IN tuple, Stream<IN> input) {
-		decorated.recordTuple2Read(tuple, input);
-	}
-
-	@Override
-	public void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		decorated.recordTupleWrite(tuple, output);
-	}
-
 	public void setPriorityMetric(PriorityMetric metric) {
 		decorated.setPriorityMetric(metric);
 	}
