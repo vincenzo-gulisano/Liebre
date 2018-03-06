@@ -108,7 +108,11 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 	}
 
 	public void setOutput(String key, StreamConsumer<OUT> out, StreamProducer<OUT> caller) {
-		next.put(key, out);
+		Object previousOutput = next.putIfAbsent(key, out);
+		if (previousOutput != null) {
+			throw new IllegalArgumentException(String.format("Output %s is already set to %s!", key, previousOutput));
+		}
+
 		out.registerIn(caller);
 	}
 
@@ -123,7 +127,10 @@ public class BoxState<IN extends Tuple, OUT extends Tuple> {
 			System.err.println(
 					"WARNING: It seems that you are explicitly registering inputs. Please use addOutput() instead!");
 		}
-		inputs.put(key, factory.newStream(in, caller));
+		Object previousInput = inputs.putIfAbsent(key, factory.newStream(in, caller));
+		if (previousInput != null) {
+			throw new IllegalArgumentException(String.format("Input %s is already set to %s!", key, previousInput));
+		}
 		previous.put(key, in);
 	}
 

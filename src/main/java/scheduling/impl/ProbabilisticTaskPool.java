@@ -39,7 +39,6 @@ public class ProbabilisticTaskPool implements TaskPool<ActiveRunnable> {
 		}
 	}
 
-	// FIXME: is tasks threadSafe??
 	protected final List<ActiveRunnable> tasks = new ArrayList<>();
 	protected final List<ActiveRunnable> passiveTasks = new ArrayList<>();
 	private AtomicReference<AliasMethod> sampler = new AtomicReference<AliasMethod>(null);

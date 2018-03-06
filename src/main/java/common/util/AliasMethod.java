@@ -8,6 +8,8 @@ import java.util.Random;
 
 //FIXME: Cite author
 public class AliasMethod {
+	private static final double EPS = 10 * Double.MIN_VALUE;
+
 	/* The random number generator used to sample from the distribution. */
 	private final Random random;
 
@@ -138,8 +140,19 @@ public class AliasMethod {
 		/* Generate a fair die roll to determine which column to inspect. */
 		int column = random.nextInt(probability.length);
 
-		/* Generate a biased coin toss to determine which option to pick. */
-		boolean coinToss = random.nextDouble() < probability[column];
+		double p = probability[column];
+
+		/*
+		 * If the probability is effectively zero, return the alias immediately
+		 */
+		if (p < EPS) {
+			return alias[column];
+		}
+
+		/*
+		 * Generate a biased coin toss to determine which option to pick.
+		 */
+		boolean coinToss = random.nextDouble() < p;
 
 		/* Based on the outcome, return either the column or its alias. */
 		return coinToss ? column : alias[column];
