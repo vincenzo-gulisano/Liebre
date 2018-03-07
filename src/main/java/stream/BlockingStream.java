@@ -1,7 +1,7 @@
 package stream;
 
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import common.ActiveRunnable;
@@ -15,7 +15,7 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 	private final String id;
 	private final int index;
 
-	private BlockingQueue<T> stream = new LinkedBlockingQueue<T>(CAPACITY);
+	private BlockingQueue<T> stream = new ArrayBlockingQueue<T>(CAPACITY);
 	private volatile long tuplesWritten, tuplesRead;
 	private volatile boolean enabled;
 	private final ActiveRunnable source;
