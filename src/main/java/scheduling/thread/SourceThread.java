@@ -27,6 +27,7 @@ public class SourceThread extends ActiveThread {
 		while (System.nanoTime() < runUntil) {
 			source.run();
 		}
+		source.onRun();
 	}
 
 }
