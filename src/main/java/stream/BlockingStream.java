@@ -87,7 +87,7 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public long remainingCapacity() {
-		return stream.remainingCapacity();
+		return CAPACITY - size();
 	}
 
 	@Override
