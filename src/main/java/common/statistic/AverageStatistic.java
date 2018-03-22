@@ -19,7 +19,7 @@
 
 package common.statistic;
 
-public class AverageStatistic extends AbstractCummulativeStatistic<Long> {
+public class AverageStatistic extends AbstractCummulativeStatistic {
 
 	private long sum;
 	private long count;
@@ -30,7 +30,7 @@ public class AverageStatistic extends AbstractCummulativeStatistic<Long> {
 	}
 
 	@Override
-	protected void doAppend(Long v) {
+	protected void doAppend(long v) {
 		writePreviousAverages();
 		sum += v;
 		count++;

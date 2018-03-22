@@ -19,7 +19,7 @@
 
 package common.statistic;
 
-public class CountStatistic extends AbstractCummulativeStatistic<Long> {
+public class CountStatistic extends AbstractCummulativeStatistic {
 	private long count;
 	long prevSec;
 
@@ -28,7 +28,7 @@ public class CountStatistic extends AbstractCummulativeStatistic<Long> {
 	}
 
 	@Override
-	protected void doAppend(Long v) {
+	protected void doAppend(long v) {
 		writePreviousCounts();
 		count += v;
 	}

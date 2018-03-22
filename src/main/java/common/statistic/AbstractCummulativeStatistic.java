@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import common.Active;
 
-public abstract class AbstractCummulativeStatistic<T extends Number> implements Active {
+public abstract class AbstractCummulativeStatistic implements Active {
 
 	private final PrintWriter out;
 	private volatile boolean enabled;
@@ -63,7 +63,7 @@ public abstract class AbstractCummulativeStatistic<T extends Number> implements 
 		this.enabled = false;
 	}
 
-	public final void append(T value) {
+	public final void append(long value) {
 		if (!isEnabled()) {
 			System.err.println("[WARN] Ignoring append, statistic is disabled");
 			return;
@@ -71,5 +71,5 @@ public abstract class AbstractCummulativeStatistic<T extends Number> implements 
 		doAppend(value);
 	}
 
-	protected abstract void doAppend(T value);
+	protected abstract void doAppend(long value);
 }
