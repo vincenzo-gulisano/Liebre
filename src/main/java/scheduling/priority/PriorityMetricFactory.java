@@ -29,6 +29,12 @@ public enum PriorityMetricFactory {
 			return new QueueSizeMetric(tasks, passiveTasks);
 		}
 
+	},
+	CONTROL {
+		@Override
+		public PriorityMetric newInstance(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks, int nThreads) {
+			return new ControlPriorityMetric(tasks, passiveTasks);
+		}
 	};
 	public abstract PriorityMetric newInstance(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks,
 			int nThreads);
