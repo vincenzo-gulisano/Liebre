@@ -39,9 +39,18 @@ public class SourceStatistic<T extends Tuple> extends BaseSource<T> {
 	}
 
 	@Override
+	public void activate() {
+		//FIXME: Broken decoration logic
+		source.activate();
+		super.activate();
+	}
+
+	@Override
 	public void deActivate() {
+		//FIXME: Broken decoration logic
 		processingTimeStat.close();
 		active = false;
+		source.deActivate();
 	}
 
 	public void process() {

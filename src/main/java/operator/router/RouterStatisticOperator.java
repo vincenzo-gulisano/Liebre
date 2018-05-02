@@ -41,6 +41,7 @@ public class RouterStatisticOperator<T extends Tuple> extends RouterOperator<T> 
 
 	@Override
 	public void deActivate() {
+		//FIXME: Broken decoration logic
 		processingTimeStat.close();
 		active = false;
 	}

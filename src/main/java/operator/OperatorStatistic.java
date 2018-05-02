@@ -43,6 +43,7 @@ public class OperatorStatistic<T1 extends Tuple, T2 extends Tuple> extends
 
 	@Override
 	public void deActivate() {
+		//FIXME: Broken decoration logic
 		processingTimeStat.close();
 		active = false;
 	}

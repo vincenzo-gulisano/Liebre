@@ -38,9 +38,18 @@ public class SinkStatistic<T extends Tuple> extends BaseSink<T> {
 	}
 
 	@Override
+	public void activate() {
+		//FIXME: Broken decoration logic
+		sink.activate();
+		super.activate();
+	}
+
+	@Override
 	public void deActivate() {
+		//FIXME: Broken decoration logic
 		processingTimeStat.close();
 		active = false;
+		sink.deActivate();
 	}
 	
 	public void process() {
