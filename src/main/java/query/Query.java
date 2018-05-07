@@ -183,9 +183,15 @@ public class Query {
 	public <T extends Tuple> Operator<T, T> addUnionOperator(String identifier,
 			List<StreamKey<T>> insKeys, StreamKey<T> outKey) {
 
+		return addUnionOperator(identifier, new UnionOperator<>(), insKeys, outKey);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends Tuple> Operator<T, T> addUnionOperator(String identifier, UnionOperator<T> union,
+			List<StreamKey<T>> insKeys, StreamKey<T> outKey) {
+
 		OperatorKey<T, T> key = new OperatorKey<T, T>(identifier,
 				insKeys.get(0).type, outKey.type);
-		BaseOperator<T, T> union = null;
 		// Notice that the union is a special case. No processing stats are kept
 		// since the union does not process tuples.
 		union = new UnionOperator<T>();
