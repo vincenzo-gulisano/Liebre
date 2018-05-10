@@ -29,6 +29,7 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	private ConcurrentLinkedQueue<T> stream = new ConcurrentLinkedQueue<T>();
 	private BackOff writerBackOff, readerBackOff;
 	private long tuplesWritten, tuplesRead;
+	private boolean backoff;
 
 	public ConcurrentLinkedListStream() {
 		writerBackOff = new BackOff(1, 20, 5);
@@ -39,22 +40,26 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public void addTuple(T tuple) {
-		if (tuplesWritten - tuplesRead > 10000)
-			writerBackOff.backoff();
-		else if (tuplesWritten - tuplesRead < 1000)
-			writerBackOff.relax();
+	  if (backoff) {
+			if (tuplesWritten - tuplesRead > 10000)
+				writerBackOff.backoff();
+			else if (tuplesWritten - tuplesRead < 1000)
+				writerBackOff.relax();
+			tuplesWritten++;
+		}
 		stream.add(tuple);
-		tuplesWritten++;
 	}
 
 	@Override
 	public T getNextTuple() {
 		T nextTuple = stream.poll();
-		if (nextTuple == null)
-			readerBackOff.backoff();
-		else {
-			readerBackOff.relax();
-			tuplesRead++;
+		if (backoff) {
+			if (nextTuple == null)
+				readerBackOff.backoff();
+			else {
+				readerBackOff.relax();
+				tuplesRead++;
+			}
 		}
 		return nextTuple;
 	}
@@ -67,6 +72,11 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	@Override
 	public void deActivate() {
 
+	}
+
+	@Override
+	public void disableBackoff() {
+		this.backoff = false;
 	}
 
 }

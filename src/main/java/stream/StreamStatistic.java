@@ -59,4 +59,9 @@ public class StreamStatistic<T extends Tuple> implements Stream<T> {
 		outRate.close();
 	}
 
+	@Override
+	public void disableBackoff() {
+		stream.disableBackoff();
+	}
+
 }

@@ -31,4 +31,6 @@ public interface Stream<T extends Tuple> {
 
 	public void deActivate();
 
+
+	void disableBackoff();
 }

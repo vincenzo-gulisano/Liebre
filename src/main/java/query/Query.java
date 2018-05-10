@@ -276,6 +276,11 @@ public class Query {
 				predicate), in1Key, in2Key, outKey);
 	}
 
+	public void disableBackoff(StreamKey<?> streamKey) {
+		System.out.format("Disabing stream backoff for %s%n", streamKey.identifier);
+		streams.get(streamKey).disableBackoff();
+	}
+
 	public void activate() {
 		for (Stream<? extends Tuple> s : streams.values()) {
 			s.activate();
