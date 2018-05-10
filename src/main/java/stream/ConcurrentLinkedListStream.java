@@ -36,6 +36,7 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 		readerBackOff = new BackOff(1, 20, 5);
 		tuplesWritten = 0;
 		tuplesRead = 0;
+		backoff = true;
 	}
 
 	@Override
