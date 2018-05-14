@@ -194,7 +194,6 @@ public class Query {
 				insKeys.get(0).type, outKey.type);
 		// Notice that the union is a special case. No processing stats are kept
 		// since the union does not process tuples.
-		union = new UnionOperator<T>();
 		union.registerOut(outKey.identifier, (Stream<T>) streams.get(outKey));
 		for (StreamKey<T> inKey : insKeys)
 			union.registerIn(inKey.identifier, (Stream<T>) streams.get(inKey));
