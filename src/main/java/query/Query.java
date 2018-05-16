@@ -96,6 +96,10 @@ public class Query {
 		this.autoFlush = true;
 	}
 
+	public void deactivateStatistics() {
+		keepStatistics = false;
+	}
+
 	public <T extends Tuple> StreamKey<T> addStream(String identifier,
 			Class<T> type) {
 		StreamKey<T> key = new StreamKey<>(identifier, type);
