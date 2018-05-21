@@ -2,17 +2,17 @@ package scheduling.thread;
 
 import java.util.concurrent.TimeUnit;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.StreamConsumer;
 import common.StreamProducer;
 import scheduling.TaskPool;
 
-public class PoolWorkerThread extends ActiveThread {
-	private final TaskPool<ActiveRunnable> taskPool;
+public class PoolWorkerThread extends LiebreThread {
+	private final TaskPool<Component> taskPool;
 	private long quantumNanos;
 	protected volatile boolean executed;
 
-	public PoolWorkerThread(int index, TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit) {
+	public PoolWorkerThread(int index, TaskPool<Component> availableTasks, long quantum, TimeUnit unit) {
 		super(index);
 		this.taskPool = availableTasks;
 		this.quantumNanos = unit.toNanos(quantum);
@@ -20,7 +20,7 @@ public class PoolWorkerThread extends ActiveThread {
 
 	@Override
 	public void doRun() {
-		ActiveRunnable task = getTask();
+		Component task = getTask();
 		if (task == null) {
 			System.err.format("[WARN] %s was not given a task to execute. Ignoring...%n", this);
 			return;
@@ -29,11 +29,11 @@ public class PoolWorkerThread extends ActiveThread {
 		putTask(task);
 	}
 
-	protected ActiveRunnable getTask() {
+	protected Component getTask() {
 		return taskPool.getNext(getIndex());
 	}
 
-	protected void executeTask(ActiveRunnable task) {
+	protected void executeTask(Component task) {
 		executed = false;
 		task.onScheduled();
 		final long runUntil = System.nanoTime() + quantumNanos;
@@ -43,7 +43,7 @@ public class PoolWorkerThread extends ActiveThread {
 		}
 	}
 
-	protected void putTask(ActiveRunnable task) {
+	protected void putTask(Component task) {
 		if (executed) {
 			task.onRun();
 		}
@@ -60,11 +60,11 @@ public class PoolWorkerThread extends ActiveThread {
 		super.disable();
 	}
 
-	private boolean hasInput(ActiveRunnable task) {
+	private boolean hasInput(Component task) {
 		return (task instanceof StreamConsumer == false) || ((StreamConsumer<?>) task).hasInput();
 	}
 
-	private boolean hasOutput(ActiveRunnable task) {
+	private boolean hasOutput(Component task) {
 		return (task instanceof StreamProducer == false) || ((StreamProducer<?>) task).hasOutput();
 	}
 

@@ -21,8 +21,8 @@ package operator.in2.join;
 
 import common.tuple.Tuple;
 
-public interface Predicate<T1 extends Tuple, T2 extends Tuple, T3 extends Tuple> {
+public interface Predicate<IN1 extends Tuple, IN2 extends Tuple, OUT extends Tuple> {
 
-	public T3 compare(T1 t1, T2 t2);
+	public OUT compare(IN1 t1, IN2 t2);
 
 }

@@ -24,8 +24,8 @@ import java.util.Objects;
 
 import common.StreamConsumer;
 import common.StreamProducer;
-import common.exec.BoxState;
-import common.exec.BoxState.BoxType;
+import common.component.ComponentState;
+import common.component.ComponentState.BoxType;
 import common.tuple.Tuple;
 import operator.Operator;
 import scheduling.priority.PriorityMetric;
@@ -35,7 +35,7 @@ import stream.StreamFactory;
 public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
 		implements Operator2In<IN, IN2, OUT> {
 
-	private final BoxState<Tuple, OUT> state;
+	private final ComponentState<Tuple, OUT> state;
 
 	private final String INPUT1_KEY = "INPUT1";
 	private final String INPUT2_KEY = "INPUT2";
@@ -44,7 +44,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	private final ProcessCommand2In<IN, IN2, OUT> processCommand = new ProcessCommand2In<>(this);
 
 	public BaseOperator2In(String id, StreamFactory streamFactory) {
-		state = new BoxState<>(id, BoxType.OPERATOR2IN, streamFactory);
+		state = new ComponentState<>(id, BoxType.OPERATOR2IN, streamFactory);
 	}
 
 	@SuppressWarnings("unchecked")

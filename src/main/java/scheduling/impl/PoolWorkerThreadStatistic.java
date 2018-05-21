@@ -2,7 +2,7 @@ package scheduling.impl;
 
 import java.util.concurrent.TimeUnit;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticFilename;
@@ -16,7 +16,7 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	private final CountStatistic timesScheduledStatistic;
 	private final CountStatistic timesRunStatistic;
 
-	public PoolWorkerThreadStatistic(int index, TaskPool<ActiveRunnable> availableTasks, long quantum, TimeUnit unit,
+	public PoolWorkerThreadStatistic(int index, TaskPool<Component> availableTasks, long quantum, TimeUnit unit,
 			String statsFolder, String executionId) {
 		super(index, availableTasks, quantum, unit);
 		schedulingTimeStatistic = new CountStatistic(
@@ -57,15 +57,15 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	}
 
 	@Override
-	protected ActiveRunnable getTask() {
+	protected Component getTask() {
 		long start = System.nanoTime();
-		ActiveRunnable task = super.getTask();
+		Component task = super.getTask();
 		schedulingTimeStatistic.append(System.nanoTime() - start);
 		return task;
 	}
 
 	@Override
-	protected void executeTask(ActiveRunnable task) {
+	protected void executeTask(Component task) {
 		// Measure scheduled statistic
 		timesScheduledStatistic.append(1L);
 		long start = System.nanoTime();
@@ -74,7 +74,7 @@ public class PoolWorkerThreadStatistic extends PoolWorkerThread {
 	}
 
 	@Override
-	protected void putTask(ActiveRunnable task) {
+	protected void putTask(Component task) {
 		if (executed) {
 			timesRunStatistic.append(1L);
 		}

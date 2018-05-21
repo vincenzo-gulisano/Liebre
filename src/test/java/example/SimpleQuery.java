@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import common.exec.BoxState.BoxType;
+import common.component.ComponentState.BoxType;
 import common.tuple.Tuple;
 import common.util.Util;
 import operator.Operator;

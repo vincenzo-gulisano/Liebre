@@ -5,17 +5,17 @@ import java.util.Objects;
 
 import common.StreamConsumer;
 import common.StreamProducer;
-import common.exec.BoxState;
-import common.exec.BoxState.BoxType;
+import common.component.ComponentState;
+import common.component.ComponentState.BoxType;
 import common.tuple.Tuple;
 import stream.StreamFactory;
 
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
-	protected final BoxState<IN, OUT> state;
+	protected final ComponentState<IN, OUT> state;
 
 	public AbstractOperator(String id, BoxType type, StreamFactory streamFactory) {
-		state = new BoxState<>(id, type, streamFactory);
+		state = new ComponentState<>(id, type, streamFactory);
 	}
 
 	@Override

@@ -2,14 +2,14 @@ package scheduling.priority;
 
 import java.util.List;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import stream.Stream;
 
 public class StimulusMetric extends PriorityMetric {
 
-	public StimulusMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> ignoredTasks) {
+	public StimulusMetric(List<Component> tasks, List<Component> ignoredTasks) {
 		super(tasks, ignoredTasks);
 	}
 
@@ -30,7 +30,7 @@ public class StimulusMetric extends PriorityMetric {
 		return scale(priorities, scaleFactor);
 	}
 
-	private long getPriority(ActiveRunnable task) {
+	private long getPriority(Component task) {
 		if (isIgnored(task)) {
 			return 0;
 		}

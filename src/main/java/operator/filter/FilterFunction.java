@@ -19,21 +19,9 @@
 
 package operator.filter;
 
+import common.Active;
 import common.tuple.Tuple;
 
 public interface FilterFunction<T extends Tuple> {
-
 	boolean forward(T tuple);
-
-	default void enable() {
-	}
-
-	default void disable() {
-
-	}
-
-	default boolean isEnabled() {
-		return true;
-	}
-
 }

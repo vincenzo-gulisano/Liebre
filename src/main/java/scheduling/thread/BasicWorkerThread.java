@@ -1,6 +1,6 @@
 package scheduling.thread;
 
-public class BasicWorkerThread extends ActiveThread {
+public class BasicWorkerThread extends LiebreThread {
 
 	private final Runnable task;
 

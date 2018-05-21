@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import scheduling.Scheduler;
 import scheduling.thread.BasicWorkerThread;
 
@@ -16,12 +16,12 @@ import scheduling.thread.BasicWorkerThread;
  *
  */
 public class NoopScheduler implements Scheduler {
-	private final List<ActiveRunnable> tasks = new ArrayList<>();
+	private final List<Component> tasks = new ArrayList<>();
 	private final List<BasicWorkerThread> threads = new ArrayList<>();
 	private volatile boolean enabled;
 
 	@Override
-	public void addTasks(Collection<? extends ActiveRunnable> tasks) {
+	public void addTasks(Collection<? extends Component> tasks) {
 		this.tasks.addAll(tasks);
 	}
 
@@ -56,7 +56,7 @@ public class NoopScheduler implements Scheduler {
 
 	@Override
 	public void enable() {
-		for (ActiveRunnable task : tasks) {
+		for (Component task : tasks) {
 			task.enable();
 		}
 		this.enabled = true;
@@ -70,7 +70,7 @@ public class NoopScheduler implements Scheduler {
 	@Override
 	public void disable() {
 		this.enabled = false;
-		for (ActiveRunnable task : tasks) {
+		for (Component task : tasks) {
 			task.disable();
 		}
 	}

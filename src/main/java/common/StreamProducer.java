@@ -1,12 +1,13 @@
 package common;
 
+import common.component.Component;
 import java.util.Collection;
 
 import common.tuple.Tuple;
 import operator.in2.Operator2In;
 import stream.Stream;
 
-public interface StreamProducer<OUT extends Tuple> extends NamedEntity, ActiveRunnable {
+public interface StreamProducer<OUT extends Tuple> extends Named, Component {
 	void addOutput(StreamConsumer<OUT> out);
 
 	default void addOutput(Operator2In<?, OUT, ?> out) {

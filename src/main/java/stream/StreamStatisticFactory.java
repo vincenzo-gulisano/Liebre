@@ -1,6 +1,6 @@
 package stream;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.tuple.Tuple;
 
 public class StreamStatisticFactory implements StreamFactory {
@@ -16,7 +16,7 @@ public class StreamStatisticFactory implements StreamFactory {
 	}
 
 	@Override
-	public <T extends Tuple> Stream<T> newStream(ActiveRunnable from, ActiveRunnable to) {
+	public <T extends Tuple> Stream<T> newStream(Component from, Component to) {
 		Stream<T> stream = factory.newStream(from, to);
 		return new StreamStatistic<>(stream, folder, autoFlush);
 	}

@@ -22,8 +22,8 @@ package sink;
 import java.util.Collection;
 
 import common.StreamProducer;
-import common.exec.BoxState;
-import common.exec.BoxState.BoxType;
+import common.component.ComponentState;
+import common.component.ComponentState.BoxType;
 import common.tuple.Tuple;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
@@ -31,14 +31,14 @@ import stream.StreamFactory;
 
 public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
-	private final BoxState<IN, Tuple> state;
+	private final ComponentState<IN, Tuple> state;
 
 	private final SinkFunction<IN> function;
 	private final String INPUT_KEY = "INPUT";
 	private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
 
 	public BaseSink(String id, StreamFactory streamFactory, SinkFunction<IN> function) {
-		state = new BoxState<>(id, BoxType.SINK, streamFactory);
+		state = new ComponentState<>(id, BoxType.SINK, streamFactory);
 		this.function = function;
 	}
 

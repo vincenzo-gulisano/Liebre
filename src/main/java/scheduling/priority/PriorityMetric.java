@@ -1,6 +1,7 @@
 package scheduling.priority;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,17 +9,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
-import scheduling.thread.ActiveThread;
+import scheduling.thread.LiebreThread;
 import stream.Stream;
 
 public abstract class PriorityMetric {
 
-	protected final List<ActiveRunnable> tasks;
+	protected final List<Component> tasks;
 	protected final int maximumStreamIndex;
 	private final Set<Integer> ignoredTasks;
 	private final Map<String, List<Stream<?>>> inputStreams = new HashMap<>();
@@ -50,23 +52,23 @@ public abstract class PriorityMetric {
 		this.maximumStreamIndex = -1;
 	}
 
-	protected PriorityMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks) {
+	protected PriorityMetric(List<Component> tasks, List<Component> passiveTasks) {
 		this(tasks, passiveTasks, 0);
 	}
 
-	protected PriorityMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks, int nThreads) {
+	protected PriorityMetric(List<Component> tasks, List<Component> passiveTasks, int nThreads) {
 		this.tasks = tasks;
 		this.ignoredTasks = passiveTasks.stream().mapToInt(t -> t.getIndex()).boxed().collect(Collectors.toSet());
-		for (ActiveRunnable task : tasks) {
+		for (Component task : tasks) {
 			inputStreams.put(task.getId(), getInputs(task));
 			outputStreams.put(task.getId(), getOutputs(task));
 		}
 		this.maximumStreamIndex = processStreamIndexes(tasks);
 	}
 
-	private int processStreamIndexes(List<ActiveRunnable> tasks) {
+	private int processStreamIndexes(List<Component> tasks) {
 		int maximumStreamIndex = 0;
-		for (ActiveRunnable task : tasks) {
+		for (Component task : tasks) {
 			List<Integer> inputIndexes = getInputs(task).stream().mapToInt(s -> s.getIndex()).boxed()
 					.collect(Collectors.toList());
 			List<Integer> outputIndexes = getOutputs(task).stream().mapToInt(s -> s.getIndex()).boxed()
@@ -84,6 +86,23 @@ public abstract class PriorityMetric {
 	public abstract <OUT extends Tuple> void recordTupleWrite(OUT tuple, Stream<OUT> output);
 
 	public abstract List<Double> getPriorities(int scaleFactor);
+
+	protected List<Double> exponential(long[] data, double lambda) {
+		int[] sortedIndices = IntStream.range(0, data.length).boxed().sorted((i, j) -> Long.compare(data[i], data[j]))
+				.mapToInt(ele -> ele).toArray();
+		System.out.println(Arrays.toString(sortedIndices));
+		List<Double> result = new ArrayList<Double>(Collections.nCopies(data.length, null));
+		double sum = 0;
+		for (int i = 0; i < data.length; i++) {
+			int idx = sortedIndices[i];
+			double value = lambda * Math.exp(-lambda * i);
+			sum += value;
+			result.set(idx, value);
+		}
+		System.out.println(result);
+		normalize(result, sum);
+		return result;
+	}
 
 	protected List<Double> scale(long[] data, int scaleFactor) {
 		List<Double> scaled = new ArrayList<>(data.length);
@@ -104,10 +123,10 @@ public abstract class PriorityMetric {
 	}
 
 	protected final int threadIndex() {
-		return ((ActiveThread) Thread.currentThread()).getIndex();
+		return ((LiebreThread) Thread.currentThread()).getIndex();
 	}
 
-	protected final List<Stream<?>> getInputs(ActiveRunnable task) {
+	protected final List<Stream<?>> getInputs(Component task) {
 		if (task instanceof StreamConsumer == false) {
 			return Collections.emptyList();
 		}
@@ -124,15 +143,15 @@ public abstract class PriorityMetric {
 		return inputs;
 	}
 
-	protected final List<Integer> getInputIndexes(ActiveRunnable task) {
+	protected final List<Integer> getInputIndexes(Component task) {
 		return inputIndex.get(task.getId());
 	}
 
-	protected final List<Integer> getOutputIndexes(ActiveRunnable task) {
+	protected final List<Integer> getOutputIndexes(Component task) {
 		return outputIndex.get(task.getId());
 	}
 
-	protected final List<Stream<?>> getOutputs(ActiveRunnable task) {
+	protected final List<Stream<?>> getOutputs(Component task) {
 		if (task instanceof StreamProducer == false) {
 			return Collections.emptyList();
 		}
@@ -149,7 +168,7 @@ public abstract class PriorityMetric {
 		return outputs;
 	}
 
-	protected final boolean isIgnored(ActiveRunnable task) {
+	protected final boolean isIgnored(Component task) {
 		return ignoredTasks.contains(task.getIndex());
 	}
 

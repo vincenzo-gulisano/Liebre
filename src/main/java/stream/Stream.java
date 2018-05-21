@@ -20,11 +20,11 @@
 package stream;
 
 import common.Active;
-import common.ActiveRunnable;
-import common.NamedEntity;
+import common.component.Component;
+import common.Named;
 import common.tuple.Tuple;
 
-public interface Stream<T extends Tuple> extends Active, NamedEntity {
+public interface Stream<T extends Tuple> extends Active, Named {
 
 	void addTuple(T tuple);
 
@@ -36,8 +36,8 @@ public interface Stream<T extends Tuple> extends Active, NamedEntity {
 
 	long size();
 
-	ActiveRunnable getSource();
+	Component getSource();
 
-	ActiveRunnable getDestination();
+	Component getDestination();
 
 }

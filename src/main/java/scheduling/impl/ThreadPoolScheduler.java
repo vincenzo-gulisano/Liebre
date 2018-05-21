@@ -6,17 +6,17 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import common.Active;
-import common.ActiveRunnable;
+import common.component.Component;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
-import scheduling.thread.ActiveThread;
+import scheduling.thread.LiebreThread;
 import scheduling.thread.PoolWorkerThread;
 import scheduling.thread.SourceThread;
 import source.Source;
 
 public class ThreadPoolScheduler implements Scheduler {
 
-	private final TaskPool<ActiveRunnable> taskPool;
+	private final TaskPool<Component> taskPool;
 	private final List<PoolWorkerThread> workers = new ArrayList<>();
 	private final int maxThreads;
 	private int nTasks;
@@ -29,7 +29,7 @@ public class ThreadPoolScheduler implements Scheduler {
 	private final List<Source<?>> sources = new ArrayList<>();
 	private volatile int nThreads;
 
-	public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit, TaskPool<ActiveRunnable> taskPool) {
+	public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit, TaskPool<Component> taskPool) {
 		this.taskPool = taskPool;
 		this.maxThreads = maxThreads;
 		this.quantum = quantum;
@@ -43,8 +43,8 @@ public class ThreadPoolScheduler implements Scheduler {
 	}
 
 	@Override
-	public void addTasks(Collection<? extends ActiveRunnable> tasks) {
-		for (ActiveRunnable task : tasks) {
+	public void addTasks(Collection<? extends Component> tasks) {
+		for (Component task : tasks) {
 			if (indepedentSources && task instanceof Source) {
 				sources.add((Source<?>) task);
 				taskPool.registerPassive(task);
@@ -72,7 +72,7 @@ public class ThreadPoolScheduler implements Scheduler {
 		}
 		// Independent source threads
 		System.out.format("*** [%s] Starting %d source threads%n", getClass().getSimpleName(), sources.size());
-		for (ActiveRunnable task : sources) {
+		for (Component task : sources) {
 			SourceThread t = new SourceThread(threadIndex, task, quantum, timeUnit);
 			sourceThreads.add(t);
 			t.enable();
@@ -86,7 +86,7 @@ public class ThreadPoolScheduler implements Scheduler {
 		if (isEnabled()) {
 			throw new IllegalStateException();
 		}
-		for (ActiveThread workerThread : workers) {
+		for (LiebreThread workerThread : workers) {
 			try {
 				workerThread.disable();
 				workerThread.join();
@@ -96,7 +96,7 @@ public class ThreadPoolScheduler implements Scheduler {
 			}
 		}
 		workers.clear();
-		for (ActiveThread workerThread : sourceThreads) {
+		for (LiebreThread workerThread : sourceThreads) {
 			try {
 				workerThread.disable();
 				workerThread.join();

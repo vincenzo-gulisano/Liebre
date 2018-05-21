@@ -22,7 +22,7 @@ package stream;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.tuple.Tuple;
 import common.util.BackOff;
 
@@ -36,11 +36,11 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 	private final String id;
 	private static AtomicInteger nextIndex = new AtomicInteger();
 	private final int index;
-	private final ActiveRunnable source;
-	private final ActiveRunnable destination;
+	private final Component source;
+	private final Component destination;
 	private volatile boolean enabled;
 
-	public ConcurrentLinkedListStream(String id, ActiveRunnable source, ActiveRunnable destination) {
+	public ConcurrentLinkedListStream(String id, Component source, Component destination) {
 		this.id = id;
 		this.index = nextIndex.getAndIncrement();
 		this.source = source;
@@ -114,11 +114,11 @@ public class ConcurrentLinkedListStream<T extends Tuple> implements Stream<T> {
 		return this.id;
 	}
 
-	public ActiveRunnable getSource() {
+	public Component getSource() {
 		return source;
 	}
 
-	public ActiveRunnable getDestination() {
+	public Component getDestination() {
 		return destination;
 	}
 

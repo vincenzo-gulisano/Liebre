@@ -1,6 +1,6 @@
 package operator;
 
-import common.exec.ProcessCommand;
+import common.component.ProcessCommand;
 import scheduling.priority.PriorityMetric;
 
 /**

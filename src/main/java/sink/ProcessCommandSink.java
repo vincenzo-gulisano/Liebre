@@ -1,6 +1,6 @@
 package sink;
 
-import common.exec.ProcessCommand;
+import common.component.ProcessCommand;
 import common.tuple.Tuple;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;

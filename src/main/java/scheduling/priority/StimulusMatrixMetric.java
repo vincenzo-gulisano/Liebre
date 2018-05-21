@@ -2,7 +2,7 @@ package scheduling.priority;
 
 import java.util.List;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.exec.TimestampExecutionMatrix;
 import common.exec.TimestampExecutionMatrix.MatrixElement;
 import common.tuple.RichTuple;
@@ -16,7 +16,7 @@ public class StimulusMatrixMetric extends PriorityMetric {
 	private static final int WRITE_TYPE = 0;
 	private static final int READ_TYPE = 1;
 
-	public StimulusMatrixMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks, int nThreads) {
+	public StimulusMatrixMetric(List<Component> tasks, List<Component> passiveTasks, int nThreads) {
 		super(tasks, passiveTasks, nThreads);
 		this.matrix = new TimestampExecutionMatrix(this.maximumStreamIndex, nThreads);
 		System.err.println("[WARN] STIMULUS MATRIX NOT SUPPORTED AT THE MOMENT!");
@@ -34,7 +34,7 @@ public class StimulusMatrixMetric extends PriorityMetric {
 		return res;
 	}
 
-	private long getTaskPriority(ActiveRunnable task, MatrixElement[] latest) {
+	private long getTaskPriority(Component task, MatrixElement[] latest) {
 		if (isIgnored(task)) {
 			return 0;
 		}

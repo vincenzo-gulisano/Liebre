@@ -1,11 +1,12 @@
 package common;
 
+import common.component.Component;
 import java.util.Collection;
 
 import common.tuple.Tuple;
 import stream.Stream;
 
-public interface StreamConsumer<IN extends Tuple> extends NamedEntity, ActiveRunnable {
+public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 	void registerIn(StreamProducer<IN> in);
 
 	Collection<StreamProducer<?>> getPrevious();

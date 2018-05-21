@@ -1,6 +1,6 @@
 package stream;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.tuple.Tuple;
 
 public class StreamDecorator<T extends Tuple> implements Stream<T> {
@@ -66,11 +66,11 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
 		return decorated.toString();
 	}
 
-	public ActiveRunnable getSource() {
+	public Component getSource() {
 		return decorated.getSource();
 	}
 
-	public ActiveRunnable getDestination() {
+	public Component getDestination() {
 		return decorated.getDestination();
 	}
 

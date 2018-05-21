@@ -3,11 +3,11 @@ package scheduling.priority;
 import java.util.List;
 import java.util.Random;
 
-import common.ActiveRunnable;
+import common.component.Component;
 
 public class ControlPriorityMetric extends QueueSizeMetric {
 
-	protected ControlPriorityMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks) {
+	protected ControlPriorityMetric(List<Component> tasks, List<Component> passiveTasks) {
 		super(tasks, passiveTasks);
 	}
 

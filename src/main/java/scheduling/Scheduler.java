@@ -3,7 +3,7 @@ package scheduling;
 import java.util.Collection;
 
 import common.Active;
-import common.ActiveRunnable;
+import common.component.Component;
 
 /**
  * Scheduler for streaming operators.
@@ -19,7 +19,7 @@ public interface Scheduler extends Active {
 	 * @param tasks
 	 *            The operators to be scheduled
 	 */
-	void addTasks(Collection<? extends ActiveRunnable> tasks);
+	void addTasks(Collection<? extends Component> tasks);
 
 	/**
 	 * Start and schedule the tasks according to the actual scheduler

@@ -2,7 +2,7 @@ package scheduling.priority;
 
 import java.util.List;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
@@ -15,7 +15,7 @@ public class QueueSizeMetric extends PriorityMetric {
 
 	// TODO: Optimization where we record which boxes are "dirty" and update only
 	// these priorities
-	public QueueSizeMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> ignoredTasks) {
+	public QueueSizeMetric(List<Component> tasks, List<Component> ignoredTasks) {
 		super(tasks, ignoredTasks);
 	}
 
@@ -36,7 +36,7 @@ public class QueueSizeMetric extends PriorityMetric {
 		return scale(priorities, scaleFactor);
 	}
 
-	private long getPriority(ActiveRunnable task) {
+	private long getPriority(Component task) {
 		if (isIgnored(task)) {
 			return 0;
 		}

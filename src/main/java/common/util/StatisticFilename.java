@@ -2,21 +2,21 @@ package common.util;
 
 import java.io.File;
 
-import common.NamedEntity;
+import common.Named;
 import operator.Operator;
-import scheduling.thread.ActiveThread;
+import scheduling.thread.LiebreThread;
 import sink.Sink;
 import source.Source;
 import stream.Stream;
 
 public enum StatisticFilename {
 	INSTANCE;
-	public String get(String folder, NamedEntity entity, String type) {
+	public String get(String folder, Named entity, String type) {
 		String name = getPrefix(entity) + entity.getId();
 		return get(folder, name, type);
 	}
 
-	public String get(String folder, ActiveThread thread, String type) {
+	public String get(String folder, LiebreThread thread, String type) {
 		String name = getPrefix(thread) + thread.getId();
 		return get(folder, name, type);
 	}

@@ -2,15 +2,15 @@ package scheduling.thread;
 
 import java.util.concurrent.TimeUnit;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import source.Source;
 
-public class SourceThread extends ActiveThread {
+public class SourceThread extends LiebreThread {
 
-	private final ActiveRunnable source;
+	private final Component source;
 	private final long quantumNanos;
 
-	public SourceThread(int index, ActiveRunnable source, long quantum, TimeUnit unit) {
+	public SourceThread(int index, Component source, long quantum, TimeUnit unit) {
 		super(index);
 		if (source instanceof Source<?> == false) {
 			throw new IllegalArgumentException(

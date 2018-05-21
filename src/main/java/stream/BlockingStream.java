@@ -4,7 +4,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.tuple.Tuple;
 
 public class BlockingStream<T extends Tuple> implements Stream<T> {
@@ -18,10 +18,10 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 	private BlockingQueue<T> stream = new ArrayBlockingQueue<T>(CAPACITY);
 	private volatile long tuplesWritten, tuplesRead;
 	private volatile boolean enabled;
-	private final ActiveRunnable source;
-	private final ActiveRunnable destination;
+	private final Component source;
+	private final Component destination;
 
-	public BlockingStream(String id, ActiveRunnable source, ActiveRunnable destination) {
+	public BlockingStream(String id, Component source, Component destination) {
 		this.id = id;
 		this.index = nextIndex.getAndIncrement();
 		this.source = source;
@@ -87,6 +87,7 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 
 	@Override
 	public long remainingCapacity() {
+		System.out.format("Stream %s size = %d (R: %d, W: %d)%n", getId(), size(), tuplesRead, tuplesWritten);
 		return CAPACITY - size();
 	}
 
@@ -95,11 +96,11 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 		return this.id;
 	}
 
-	public ActiveRunnable getSource() {
+	public Component getSource() {
 		return source;
 	}
 
-	public ActiveRunnable getDestination() {
+	public Component getDestination() {
 		return destination;
 	}
 

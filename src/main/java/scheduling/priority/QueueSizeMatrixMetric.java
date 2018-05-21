@@ -2,7 +2,7 @@ package scheduling.priority;
 
 import java.util.List;
 
-import common.ActiveRunnable;
+import common.component.Component;
 import common.exec.BaseExecutionMatrix;
 import common.tuple.Tuple;
 import stream.Stream;
@@ -13,12 +13,12 @@ public class QueueSizeMatrixMetric extends PriorityMetric {
 
 	private final BaseExecutionMatrix streamMatrix;
 
-	public QueueSizeMatrixMetric(List<ActiveRunnable> tasks, List<ActiveRunnable> passiveTasks, int nThreads) {
+	public QueueSizeMatrixMetric(List<Component> tasks, List<Component> passiveTasks, int nThreads) {
 		super(tasks, passiveTasks, nThreads);
 		this.streamMatrix = new BaseExecutionMatrix(maximumStreamIndex + 1, nThreads);
 	}
 
-	private long getTaskPriority(ActiveRunnable task, long[] streamValues) {
+	private long getTaskPriority(Component task, long[] streamValues) {
 		if (isIgnored(task)) {
 			return 0;
 		}
@@ -39,7 +39,7 @@ public class QueueSizeMatrixMetric extends PriorityMetric {
 	public List<Double> getPriorities(int scaleFactor) {
 		long[] inputStreamSizes = streamMatrix.sum(0);
 		long[] priorities = new long[tasks.size()];
-		for (ActiveRunnable task : tasks) {
+		for (Component task : tasks) {
 			priorities[task.getIndex()] = getTaskPriority(task, inputStreamSizes);
 		}
 		return scale(priorities, scaleFactor);
