@@ -1,18 +1,18 @@
 /*  Copyright (C) 2017  Vincenzo Gulisano
- * 
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  *  Contact: Vincenzo Gulisano info@vincenzogulisano.com
  *
  */
@@ -34,65 +34,68 @@ import source.TextSourceFunction;
 
 public class TextMapFilter {
 
-	private static class MyTuple implements Tuple {
-		public long timestamp;
-		public int key;
-		public int value;
+  public static void main(String[] args) {
+    final String reportFolder = args[0];
+    final String inputFile = args[1];
+    final String outputFile = reportFolder + File.separator + "TextMapFilter.out.csv";
+    Query q = new Query();
 
-		public MyTuple(long timestamp, int key, int value) {
-			this.timestamp = timestamp;
-			this.key = key;
-			this.value = value;
-		}
-	}
+    q.activateStatistics(reportFolder);
+    Source<MyTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<MyTuple>(inputFile) {
 
-	public static void main(String[] args) {
-		final String reportFolder = args[0];
-		final String inputFile = args[1];
-		final String outputFile = reportFolder + File.separator + "TextMapFilter.out.csv";
-		Query q = new Query();
+      @Override
+      protected MyTuple getNext(String line) {
+        Util.sleep(15);
+        String[] tokens = line.split(",");
+        return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
+            Integer.valueOf(tokens[2]));
+      }
+    });
 
-		q.activateStatistics(reportFolder);
-		Source<MyTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<MyTuple>(inputFile) {
+    Operator<MyTuple, MyTuple> multiply = q
+        .addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
+          @Override
+          public MyTuple map(MyTuple tuple) {
+            return new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2);
+          }
+        });
 
-			@Override
-			protected MyTuple getNext(String line) {
-				Util.sleep(15);
-				String[] tokens = line.split(",");
-				return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
-			}
-		});
+    Operator<MyTuple, MyTuple> filter = q
+        .addFilterOperator("filter", new FilterFunction<MyTuple>() {
 
-		Operator<MyTuple, MyTuple> multiply = q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
-			@Override
-			public MyTuple map(MyTuple tuple) {
-				return new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2);
-			}
-		});
+          @Override
+          public boolean forward(MyTuple tuple) {
+            return tuple.value >= 150;
+          }
 
-		Operator<MyTuple, MyTuple> filter = q.addFilterOperator("filter", new FilterFunction<MyTuple>() {
+        });
 
-			@Override
-			public boolean forward(MyTuple tuple) {
-				return tuple.value >= 150;
-			}
+    Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile) {
 
-		});
+      @Override
+      public String processTupleToText(MyTuple tuple) {
+        return tuple.timestamp + "," + tuple.key + "," + tuple.value;
+      }
+    });
 
-		Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile) {
+    q.connect(i1, multiply).connect(multiply, filter).connect(filter, o1);
 
-			@Override
-			public String processTupleToText(MyTuple tuple) {
-				return tuple.timestamp + "," + tuple.key + "," + tuple.value;
-			}
-		});
+    q.activate();
+    Util.sleep(20000);
+    q.deActivate();
 
-		i1.addOutput(multiply);
-		multiply.addOutput(filter);
-		filter.addOutput(o1);
-		q.activate();
-		Util.sleep(20000);
-		q.deActivate();
+  }
 
-	}
+  private static class MyTuple implements Tuple {
+
+    public long timestamp;
+    public int key;
+    public int value;
+
+    public MyTuple(long timestamp, int key, int value) {
+      this.timestamp = timestamp;
+      this.key = key;
+      this.value = value;
+    }
+  }
 }

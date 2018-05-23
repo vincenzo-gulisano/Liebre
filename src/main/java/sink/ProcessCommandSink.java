@@ -23,7 +23,7 @@ public class ProcessCommandSink<T extends Tuple> implements ProcessCommand {
 
 	@Override
 	public final void process() {
-		Stream<T> input = sink.getInputStream(sink.getId());
+		Stream<T> input = sink.getInput();
 		T tuple = input.getNextTuple();
 		if (tuple != null) {
 			metric.recordTupleRead(tuple, input);

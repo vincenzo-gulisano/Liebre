@@ -1,7 +1,12 @@
 package scheduling.priority;
 
+import common.StreamConsumer;
+import common.StreamProducer;
+import common.component.Component;
+import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,11 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import common.component.Component;
-import common.StreamConsumer;
-import common.StreamProducer;
-import common.tuple.Tuple;
 import scheduling.thread.LiebreThread;
 import stream.Stream;
 
@@ -60,8 +60,8 @@ public abstract class PriorityMetric {
 		this.tasks = tasks;
 		this.ignoredTasks = passiveTasks.stream().mapToInt(t -> t.getIndex()).boxed().collect(Collectors.toSet());
 		for (Component task : tasks) {
-			inputStreams.put(task.getId(), getInputs(task));
-			outputStreams.put(task.getId(), getOutputs(task));
+			inputStreams.put(task.getId(), new ArrayList<>(getInputs(task)));
+			outputStreams.put(task.getId(), new ArrayList<>(getOutputs(task)));
 		}
 		this.maximumStreamIndex = processStreamIndexes(tasks);
 	}
@@ -126,7 +126,7 @@ public abstract class PriorityMetric {
 		return ((LiebreThread) Thread.currentThread()).getIndex();
 	}
 
-	protected final List<Stream<?>> getInputs(Component task) {
+	protected final Collection<? extends Stream<?>> getInputs(Component task) {
 		if (task instanceof StreamConsumer == false) {
 			return Collections.emptyList();
 		}
@@ -134,13 +134,7 @@ public abstract class PriorityMetric {
 		if (cached != null) { // If cache has the content
 			return cached;
 		}
-		List<Stream<?>> inputs = new ArrayList<>();
-		StreamConsumer<?> consumer = (StreamConsumer<?>) task;
-		for (StreamProducer<?> prev : consumer.getPrevious()) {
-			Stream<?> input = prev.getOutputStream(consumer.getId());
-			inputs.add(input);
-		}
-		return inputs;
+		return ((StreamConsumer<?>) task).getInputs();
 	}
 
 	protected final List<Integer> getInputIndexes(Component task) {
@@ -151,7 +145,7 @@ public abstract class PriorityMetric {
 		return outputIndex.get(task.getId());
 	}
 
-	protected final List<Stream<?>> getOutputs(Component task) {
+	protected final Collection<? extends Stream<?>> getOutputs(Component task) {
 		if (task instanceof StreamProducer == false) {
 			return Collections.emptyList();
 		}
@@ -159,13 +153,7 @@ public abstract class PriorityMetric {
 		if (cached != null) { // If cache has the content
 			return cached;
 		}
-		StreamProducer<?> producer = (StreamProducer<?>) task;
-		List<Stream<?>> outputs = new ArrayList<>();
-		for (StreamConsumer<?> next : producer.getNext()) {
-			Stream<?> output = next.getInputStream(producer.getId());
-			outputs.add(output);
-		}
-		return outputs;
+		return ((StreamProducer<?>) task).getOutputs();
 	}
 
 	protected final boolean isIgnored(Component task) {

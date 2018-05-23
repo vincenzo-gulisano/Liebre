@@ -1,117 +1,108 @@
 package operator.in2;
 
-import java.util.Collection;
-
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import java.util.Collection;
+import java.util.List;
 import operator.Operator;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
-class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
+class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements
+    Operator<IN, OUT> {
 
-	private final Operator2In<?, IN, OUT> decorated;
+  private final Operator2In<?, IN, OUT> decorated;
 
-	public SecondInputOperator2InAdapter(Operator2In<?, IN, OUT> operator) {
-		this.decorated = operator;
-	}
+  public SecondInputOperator2InAdapter(Operator2In<?, IN, OUT> operator) {
+    this.decorated = operator;
+  }
 
-	@Override
-	public void run() {
-		decorated.run();
-	}
+  public List<OUT> processTupleIn1(IN tuple) {
+    return decorated.processTupleIn2(tuple);
+  }
 
-	@Override
-	public void registerIn(StreamProducer<IN> in) {
-		decorated.registerIn2(in);
-	}
+  @Override
+  public boolean hasInput() {
+    return decorated.hasInput();
+  }
 
-	@Override
-	public Collection<StreamProducer<?>> getPrevious() {
-		return decorated.getPrevious();
-	}
+  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+    decorated.addInput2(source, stream);
+  }
 
-	@Override
-	public Stream<IN> getInputStream(String requestorId) {
-		return decorated.getInput2Stream(requestorId);
-	}
+  @Override
+  public Collection<? extends Stream<OUT>> getOutputs() {
+    return decorated.getOutputs();
+  }
 
-	@Override
-	public String getId() {
-		return decorated.getId();
-	}
+  @Override
+  public Collection<? extends Stream<Tuple>> getInputs() {
+    return decorated.getInputs();
+  }
 
-	@Override
-	public int getIndex() {
-		return decorated.getIndex();
-	}
+  @Override
+  public Stream<IN> getInput() {
+    return decorated.getInput2();
+  }
 
-	@Override
-	public void addOutput(StreamConsumer<OUT> out) {
-		decorated.addOutput(out);
-	}
+  @Override
+  public String getId() {
+    return decorated.getId();
+  }
 
-	@Override
-	public Collection<StreamConsumer<OUT>> getNext() {
-		return decorated.getNext();
-	}
+  @Override
+  public int getIndex() {
+    return decorated.getIndex();
+  }
 
-	@Override
-	public Stream<OUT> getOutputStream(String requestorId) {
-		return decorated.getOutputStream(requestorId);
-	}
+  @Override
+  public void onScheduled() {
+    decorated.onScheduled();
+  }
 
-	@Override
-	public boolean hasInput() {
-		return decorated.hasInput();
-	}
+  @Override
+  public void onRun() {
+    decorated.onRun();
+  }
 
-	@Override
-	public boolean hasOutput() {
-		return decorated.hasOutput();
-	}
+  @Override
+  public void setPriorityMetric(PriorityMetric metric) {
+    decorated.setPriorityMetric(metric);
+  }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((decorated == null) ? 0 : decorated.hashCode());
-		return result;
-	}
+  @Override
+  public void enable() {
+    decorated.enable();
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		return this.decorated.equals(obj);
-	}
+  @Override
+  public boolean isEnabled() {
+    return decorated.isEnabled();
+  }
 
-	@Override
-	public void enable() {
-		decorated.enable();
-	}
+  @Override
+  public void disable() {
+    decorated.disable();
+  }
 
-	@Override
-	public boolean isEnabled() {
-		return decorated.isEnabled();
-	}
+  @Override
+  public void run() {
+    decorated.run();
+  }
 
-	@Override
-	public void disable() {
-		decorated.disable();
-	}
+  @Override
+  public boolean hasOutput() {
+    return decorated.hasOutput();
+  }
 
-	@Override
-	public void onRun() {
-		decorated.onRun();
-	}
+  @Override
+  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+    decorated.addOutput(destination, stream);
+  }
 
-	@Override
-	public void onScheduled() {
-		decorated.onScheduled();
-	}
-
-	public void setPriorityMetric(PriorityMetric metric) {
-		decorated.setPriorityMetric(metric);
-	}
-
+  @Override
+  public Stream<OUT> getOutput() {
+    return decorated.getOutput();
+  }
 }

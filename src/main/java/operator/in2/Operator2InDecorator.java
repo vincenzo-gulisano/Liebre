@@ -1,11 +1,10 @@
 package operator.in2;
 
-import java.util.Collection;
-import java.util.List;
-
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import java.util.Collection;
+import java.util.List;
 import operator.Operator;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
@@ -36,26 +35,26 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 	}
 
 	@Override
+	public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+		decorated.addOutput(destination, stream);
+	}
+
+	@Override
+	public Stream<OUT> getOutput() {
+		return decorated.getOutput();
+	}
+
+	@Override
 	public void run() {
 		processingCommand.run();
 	}
 
-	@Override
-	public void registerIn(StreamProducer<IN> in) {
-		decorated.registerIn(in);
-	}
+  @Override
+  public Collection<? extends Stream<Tuple>> getInputs() {
+    return decorated.getInputs();
+  }
 
-	@Override
-	public Collection<StreamProducer<?>> getPrevious() {
-		return decorated.getPrevious();
-	}
-
-	@Override
-	public Stream<IN> getInputStream(String requestorId) {
-		return decorated.getInputStream(requestorId);
-	}
-
-	@Override
+  @Override
 	public String getId() {
 		return decorated.getId();
 	}
@@ -66,23 +65,18 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 	}
 
 	@Override
-	public void addOutput(StreamConsumer<OUT> out) {
-		decorated.addOutput(out);
+	public void addInput2(StreamProducer<IN2> source, Stream<IN2> stream) {
+		decorated.addInput2(source, stream);
 	}
 
 	@Override
-	public Collection<StreamConsumer<OUT>> getNext() {
-		return decorated.getNext();
+	public Collection<? extends Stream<OUT>> getOutputs() {
+		return decorated.getOutputs();
 	}
 
 	@Override
-	public Stream<OUT> getOutputStream(String requestorId) {
-		return decorated.getOutputStream(requestorId);
-	}
-
-	@Override
-	public void registerIn2(StreamProducer<IN2> in) {
-		decorated.registerIn2(in);
+	public Stream<IN2> getInput2() {
+		return decorated.getInput2();
 	}
 
 	@Override
@@ -90,14 +84,21 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 		return decorated.processTupleIn2(tuple);
 	}
 
-	@Override
-	public Stream<IN2> getInput2Stream(String reqId) {
-		return decorated.getInput2Stream(reqId);
-	}
+
 
 	@Override
 	public Operator<IN2, OUT> secondInputView() {
 		return decorated.secondInputView();
+	}
+
+	@Override
+	public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+		decorated.addInput(source, stream);
+	}
+
+	@Override
+	public Stream<IN> getInput() {
+		return decorated.getInput();
 	}
 
 	@Override

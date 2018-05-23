@@ -19,7 +19,6 @@
 
 package operator.Union;
 
-import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.ComponentType;
 import common.tuple.Tuple;
@@ -29,21 +28,20 @@ import stream.Stream;
 import stream.StreamFactory;
 
 public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
-	private static final String OUTPUT_KEY = "OUTPUT";
 	private PriorityMetric metric = PriorityMetric.noopMetric();
 
 	public UnionOperator(String id, StreamFactory streamFactory) {
-		super(id, ComponentType.UNION, streamFactory);
+		super(id, ComponentType.UNION);
 	}
 
 	@Override
-	public void registerIn(StreamProducer<T> in) {
-		state.setInput(in.getId(), in, this);
+	public void addInput(StreamProducer<T> source, Stream<T> stream) {
+	  state.addInput(stream);
 	}
 
 	@Override
-	public Stream<T> getInputStream(String reqId) {
-		return state.getInputStream(reqId);
+	public Stream<T> getInput() {
+	  throw new UnsupportedOperationException(String.format("'%s': Unions have multiple inputs!", state.getId()));
 	}
 
 	@Override
@@ -55,26 +53,17 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 
 	// TODO: Convert to command like the other operators
 	public final void process() {
+    Stream<T> output = getOutput();
 		for (Stream<T> in : state.getInputs()) {
 			T inTuple = in.getNextTuple();
 			if (inTuple != null) {
 				metric.recordTupleRead(inTuple, in);
-				Stream<T> output = getOutputStream(getId());
 				metric.recordTupleWrite(inTuple, output);
 				output.addTuple(inTuple);
 			}
 		}
 	}
 
-	@Override
-	public void addOutput(StreamConsumer<T> out) {
-		state.setOutput(OUTPUT_KEY, out, this);
-	}
-
-	@Override
-	public Stream<T> getOutputStream(String requestorId) {
-		return state.getOutputStream(OUTPUT_KEY, this);
-	}
 
 	@Override
 	public void setPriorityMetric(PriorityMetric metric) {

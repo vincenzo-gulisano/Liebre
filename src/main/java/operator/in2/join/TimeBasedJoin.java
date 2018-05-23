@@ -41,7 +41,7 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
 	private LinkedList<IN2> in2TuplesBuffer;
 
 	public TimeBasedJoin(String id, StreamFactory streamFactory, long windowSize, Predicate<IN, IN2, OUT> predicate) {
-		super(id, streamFactory);
+		super(id);
 		this.ws = windowSize;
 		this.predicate = predicate;
 

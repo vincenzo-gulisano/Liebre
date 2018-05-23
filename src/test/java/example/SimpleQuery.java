@@ -32,7 +32,6 @@ import sink.Sink;
 import sink.SinkFunction;
 import source.Source;
 import source.SourceFunction;
-import stream.ConcurrentLinkedListStreamFactory;
 
 public class SimpleQuery {
 	private static class MyTuple implements Tuple {
@@ -62,8 +61,8 @@ public class SimpleQuery {
 			}
 		});
 
-		Operator<MyTuple, MyTuple> multiply = q.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", ComponentType.OPERATOR,
-				ConcurrentLinkedListStreamFactory.INSTANCE) {
+		Operator<MyTuple, MyTuple> multiply = q.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", ComponentType.OPERATOR
+    ) {
 			@Override
 			public List<MyTuple> processTupleIn1(MyTuple tuple) {
 				List<MyTuple> result = new LinkedList<MyTuple>();
@@ -79,8 +78,8 @@ public class SimpleQuery {
 				System.out.println(tuple.timestamp + "," + tuple.key + "," + tuple.value);
 			}
 		});
-		source.addOutput(multiply);
-		multiply.addOutput(sink);
+
+		q.connect(source, multiply).connect(multiply, sink);
 
 		q.activate();
 		Util.sleep(30000);

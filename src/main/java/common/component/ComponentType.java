@@ -20,6 +20,8 @@
 
 package common.component;
 
+import org.apache.commons.lang3.Validate;
+
 /**
  * Enum representing the various types of components which are available as separate subclasses.
  * Defines several functions that check for the invariants of the states of each component typel
@@ -43,9 +45,19 @@ public enum ComponentType {
     this.outputsNumber = outputsNumber;
   }
 
-  public boolean isStateValid(ComponentState<?, ?> state) {
-    return inputsNumber.isValid(state.getInputs().size()) && outputsNumber
-        .isValid(state.getNext().size());
+  public void validateInputs(ComponentState<?, ?> state) {
+    int size = state.getInputs().size();
+    Validate.validState(inputsNumber.isValid(size), "Invalid inputs number for component '%s': %d", state.getId(), size);
+  }
+
+  public void validateOutputs(ComponentState<?, ?> state) {
+    int size = state.getOutputs().size();
+    Validate.validState(outputsNumber.isValid(size), "Invalid outputs number for component '%s': %d", state.getId(), size);
+  }
+
+  public void validate(ComponentState<?, ?> state) {
+    validateInputs(state);
+    validateOutputs(state);
   }
 
   public boolean isProducer() {

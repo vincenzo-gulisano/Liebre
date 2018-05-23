@@ -21,9 +21,8 @@
 package common;
 
 import common.component.Component;
-import java.util.Collection;
-
 import common.tuple.Tuple;
+import java.util.Collection;
 import stream.Stream;
 
 /**
@@ -31,33 +30,6 @@ import stream.Stream;
  * @param <IN> The input type for this component.
  */
 public interface StreamConsumer<IN extends Tuple> extends Named, Component {
-
-  /**
-   * FIXME: This should not be public if possible
-   * Register an input for this consumer.
-   * @param in The writer that will be connected to this reader.
-   */
-	void registerIn(StreamProducer<IN> in);
-
-  /**
-   * Get the upstream Components that are directly connected to this.
-   * @return
-   */
-	Collection<StreamProducer<?>> getPrevious();
-
-	/**
-	 * Get the input {@link Stream} of this {@link StreamConsumer}. If the instance
-	 * has multiple input {@link Stream}s, then the stream connected to the given
-	 * entity id is returned.
-	 * 
-	 * @param requestorId
-	 *            The unique ID of the {@link StreamProducer} that is connected to
-	 *            this input stream. This is only used in cases where the operator
-	 *            has more than one input streams and we need to know both ends of
-	 *            the stream to return it correctly.
-	 * @return The input {@link Stream} of this {@link StreamConsumer}.
-	 */
-	Stream<IN> getInputStream(String requestorId);
 
 	/**
 	 * Heuristic that indicates that the {@link StreamConsumer} has some input
@@ -69,4 +41,9 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 	 */
 	boolean hasInput();
 
+	void addInput(StreamProducer<IN> source, Stream<IN> stream);
+
+	Stream<IN> getInput();
+
+	<T extends Tuple> Collection<? extends Stream<T>> getInputs();
 }

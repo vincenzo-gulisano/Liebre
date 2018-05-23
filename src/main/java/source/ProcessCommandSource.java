@@ -23,8 +23,8 @@ public class ProcessCommandSource<T extends Tuple> implements ProcessCommand {
 	@Override
 	public final void process() {
 		T tuple = source.getNextTuple();
+		Stream<T> output = source.getOutput();
 		if (tuple != null) {
-			Stream<T> output = source.getOutputStream(source.getId());
 			metric.recordTupleWrite(tuple, output);
 			output.addTuple(tuple);
 		}

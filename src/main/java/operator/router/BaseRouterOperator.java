@@ -20,7 +20,6 @@
 package operator.router;
 
 import common.StreamConsumer;
-import common.StreamProducer;
 import common.component.ComponentType;
 import common.tuple.Tuple;
 import java.util.List;
@@ -32,38 +31,27 @@ import stream.StreamFactory;
 public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> implements RouterOperator<T> {
 
 	protected RouterFunction<T> router;
-	private static final String INPUT_KEY = "INPUT";
+	private static final int INPUT_KEY = 0;
 	private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
 
 	public BaseRouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
-		super(id, ComponentType.ROUTER, streamFactory);
+		super(id, ComponentType.ROUTER);
 		this.router = router;
 	}
 
-	@Override
-	public void addOutput(StreamConsumer<T> out) {
-		state.setOutput(out.getId(), out, this);
+  @Override
+  public List<String> chooseOperators(T tuple) {
+    return router.chooseOperators(tuple);
+  }
+
+  @Override
+	public void addOutput(StreamConsumer<T> destination, Stream<T> stream) {
+		state.addOutput(stream);
 	}
 
-	@Override
-	public List<String> chooseOperators(T tuple) {
-		return router.chooseOperators(tuple);
-	}
-
-	@Override
-	public Stream<T> getOutputStream(String reqId) {
-		return state.getOutputStream(reqId, this);
-	}
-
-	@Override
-	public void registerIn(StreamProducer<T> in) {
-		state.setInput(INPUT_KEY, in, this);
-	}
-
-	@Override
-	public Stream<T> getInputStream(String requestorId) {
-		return state.getInputStream(INPUT_KEY);
-	}
+	public Stream<T> getOutput() {
+	  throw new UnsupportedOperationException(String.format("'%s': Router has multiple outputs!", state.getId()));
+  }
 
 	@Override
 	public void run() {

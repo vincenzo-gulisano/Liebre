@@ -23,7 +23,6 @@ package common;
 import common.component.Component;
 import common.tuple.Tuple;
 import java.util.Collection;
-import operator.in2.Operator2In;
 import stream.Stream;
 
 /**
@@ -34,38 +33,6 @@ import stream.Stream;
 public interface StreamProducer<OUT extends Tuple> extends Named, Component {
 
   /**
-   * Connect this component to a downstream {@link StreamConsumer}.
-   * @param out The {@link StreamConsumer} to connect this component to.
-   */
-  void addOutput(StreamConsumer<OUT> out);
-
-  /**
-   * FIXME: Some way to avoid this
-   * For internal use only
-   * @param out
-   */
-  default void addOutput(Operator2In<?, OUT, ?> out) {
-    addOutput(out.secondInputView());
-  }
-
-  /**
-   * Get all the downstream {@link StreamConsumer}s that are directly connected to this component.
-   * @return A collection of components that are read the output of this component.
-   */
-  Collection<StreamConsumer<OUT>> getNext();
-
-  /**
-   * Get the output {@link Stream} of this {@link StreamProducer}. If the instance has multiple
-   * output {@link Stream}s, then the stream connected to the given entity id is returned.
-   *
-   * @param requestorId The unique ID of the {@link StreamConsumer} that is connected to this input
-   * stream. This is only used in cases where the operator has more than one output streams and we
-   * need to know both ends of the stream to return it correctly.
-   * @return The output {@link Stream} of this {@link StreamProducer}.
-   */
-  Stream<OUT> getOutputStream(String requestorId);
-
-  /**
    * Heuristic that indicates if the {@link StreamProducer} can write tuples to all its output
    * streams.
    *
@@ -73,4 +40,9 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
    */
   boolean hasOutput();
 
+  void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream);
+
+  Stream<OUT> getOutput();
+
+  Collection<? extends Stream<OUT>> getOutputs();
 }

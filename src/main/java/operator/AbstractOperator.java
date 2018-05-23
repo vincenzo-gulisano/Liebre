@@ -7,27 +7,47 @@ import common.component.ComponentType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.Objects;
-import stream.StreamFactory;
+import stream.Stream;
 
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
 	protected final ComponentState<IN, OUT> state;
+	private final int INPUT_KEY = 0;
+	private final int OUTPUT_KEY = 0;
 
-	public AbstractOperator(String id, ComponentType type, StreamFactory streamFactory) {
-		state = new ComponentState<>(id, type, streamFactory);
+	public AbstractOperator(String id, ComponentType type) {
+		state = new ComponentState<>(id, type);
 	}
 
 	@Override
-	public Collection<StreamConsumer<OUT>> getNext() {
-		return state.getNext();
-	}
+  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+    state.addOutput(OUTPUT_KEY, stream);
+  }
 
-	@Override
-	public Collection<StreamProducer<?>> getPrevious() {
-		return state.getPrevious();
-	}
+  @Override
+  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+    state.addInput(INPUT_KEY, stream);
+  }
 
-	@Override
+  @Override
+  public Stream<IN> getInput() {
+    return state.getInput(INPUT_KEY);
+  }
+
+  @Override
+  public Stream<OUT> getOutput() {
+    return state.getOutput(OUTPUT_KEY);
+  }
+
+  public Collection<? extends Stream<IN>> getInputs() {
+    return state.getInputs();
+  }
+
+  public Collection<? extends Stream<OUT>> getOutputs() {
+    return state.getOutputs();
+  }
+
+  @Override
 	public boolean hasInput() {
 		return state.hasInput();
 	}

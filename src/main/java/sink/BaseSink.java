@@ -26,29 +26,33 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
-import stream.StreamFactory;
 
 public class BaseSink<IN extends Tuple> implements Sink<IN> {
 
   private final ComponentState<IN, Tuple> state;
 
   private final SinkFunction<IN> function;
-  private final String INPUT_KEY = "INPUT";
+  private final int INPUT_KEY = 0;
   private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
 
-  public BaseSink(String id, StreamFactory streamFactory, SinkFunction<IN> function) {
-    state = new ComponentState<>(id, ComponentType.SINK, streamFactory);
+  public BaseSink(String id, SinkFunction<IN> function) {
+    state = new ComponentState<>(id, ComponentType.SINK);
     this.function = function;
   }
 
   @Override
-  public void registerIn(StreamProducer<IN> in) {
-    state.setInput(INPUT_KEY, in, this);
+  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+    state.addInput(INPUT_KEY, stream);
   }
 
   @Override
-  public Stream<IN> getInputStream(String reqId) {
-    return state.getInputStream(INPUT_KEY);
+  public Stream<IN> getInput() {
+    return state.getInput(INPUT_KEY);
+  }
+
+  @Override
+  public Collection<? extends Stream<IN>> getInputs() {
+    return state.getInputs();
   }
 
   @Override
@@ -86,11 +90,6 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
   @Override
   public int getIndex() {
     return state.getIndex();
-  }
-
-  @Override
-  public Collection<StreamProducer<? extends Tuple>> getPrevious() {
-    return state.getPrevious();
   }
 
   public void processTuple(IN tuple) {

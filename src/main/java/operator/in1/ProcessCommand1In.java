@@ -15,8 +15,8 @@ public class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
 
 	@Override
 	public final void process() {
-		Stream<IN> input = operator.getInputStream(operator.getId());
-		Stream<OUT> output = operator.getOutputStream(operator.getId());
+		Stream<IN> input = operator.getInput();
+		Stream<OUT> output = operator.getOutput();
 
 		IN inTuple = input.getNextTuple();
 		if (inTuple != null) {

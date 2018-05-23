@@ -31,26 +31,31 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 
 	private final ComponentState<Tuple, OUT> state;
 
-	private final String OUTPUT_KEY = "OUTPUT";
+	private final int OUTPUT_KEY = 0;
 	private final SourceFunction<OUT> function;
 	private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
 
 	public BaseSource(String id, SourceFunction<OUT> function) {
-		state = new ComponentState<>(id, ComponentType.SOURCE, null);
+		state = new ComponentState<>(id, ComponentType.SOURCE);
 		this.function = function;
 	}
 
-	@Override
-	public void addOutput(StreamConsumer<OUT> out) {
-		state.setOutput(OUTPUT_KEY, out, this);
-	}
+  @Override
+  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+    state.addOutput(OUTPUT_KEY, stream);
+  }
 
-	@Override
-	public Stream<OUT> getOutputStream(String reqId) {
-		return state.getOutputStream(OUTPUT_KEY, this);
-	}
+  @Override
+  public Stream<OUT> getOutput() {
+	  return state.getOutput(OUTPUT_KEY);
+  }
 
-	@Override
+  @Override
+  public Collection<? extends Stream<OUT>> getOutputs() {
+    return state.getOutputs();
+  }
+
+  @Override
 	public boolean hasOutput() {
 		return state.hasOutput();
 	}
@@ -64,11 +69,6 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 	public void enable() {
 		state.enable();
 		function.enable();
-	}
-
-	@Override
-	public Collection<StreamConsumer<OUT>> getNext() {
-		return state.getNext();
 	}
 
 	@Override

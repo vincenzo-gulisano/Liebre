@@ -29,11 +29,11 @@ import stream.Stream;
 
 public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator1In<IN, OUT> {
 
-	void registerIn2(StreamProducer<IN2> in);
-
 	List<OUT> processTupleIn2(IN2 tuple);
 
-	Stream<IN2> getInput2Stream(String reqId);
+	void addInput2(StreamProducer<IN2> source, Stream<IN2> stream);
+
+  Stream<IN2> getInput2();
 
 	Operator<IN2, OUT> secondInputView();
 
