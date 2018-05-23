@@ -19,12 +19,11 @@
 
 package source;
 
-import java.util.Collection;
-
 import common.StreamConsumer;
 import common.component.ComponentState;
-import common.component.ComponentState.BoxType;
+import common.component.ComponentType;
 import common.tuple.Tuple;
+import java.util.Collection;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
@@ -37,7 +36,7 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 	private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
 
 	public BaseSource(String id, SourceFunction<OUT> function) {
-		state = new ComponentState<>(id, BoxType.SOURCE, null);
+		state = new ComponentState<>(id, ComponentType.SOURCE, null);
 		this.function = function;
 	}
 

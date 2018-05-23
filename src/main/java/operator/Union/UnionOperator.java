@@ -21,7 +21,7 @@ package operator.Union;
 
 import common.StreamConsumer;
 import common.StreamProducer;
-import common.component.ComponentState.BoxType;
+import common.component.ComponentType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
 import scheduling.priority.PriorityMetric;
@@ -33,7 +33,7 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 	private PriorityMetric metric = PriorityMetric.noopMetric();
 
 	public UnionOperator(String id, StreamFactory streamFactory) {
-		super(id, BoxType.UNION, streamFactory);
+		super(id, ComponentType.UNION, streamFactory);
 	}
 
 	@Override

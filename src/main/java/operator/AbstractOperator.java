@@ -1,20 +1,19 @@
 package operator;
 
-import java.util.Collection;
-import java.util.Objects;
-
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.ComponentState;
-import common.component.ComponentState.BoxType;
+import common.component.ComponentType;
 import common.tuple.Tuple;
+import java.util.Collection;
+import java.util.Objects;
 import stream.StreamFactory;
 
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
 
 	protected final ComponentState<IN, OUT> state;
 
-	public AbstractOperator(String id, BoxType type, StreamFactory streamFactory) {
+	public AbstractOperator(String id, ComponentType type, StreamFactory streamFactory) {
 		state = new ComponentState<>(id, type, streamFactory);
 	}
 

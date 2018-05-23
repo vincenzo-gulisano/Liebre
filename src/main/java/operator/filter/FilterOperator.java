@@ -38,12 +38,10 @@ public class FilterOperator<T extends Tuple> extends BaseOperator1In<T, T> {
 	@Override
 	public void enable() {
 		super.enable();
-		filter.enable();
 	}
 
 	@Override
 	public void disable() {
-		filter.disable();
 		super.disable();
 	}
 

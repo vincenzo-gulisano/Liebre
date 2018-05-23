@@ -21,7 +21,7 @@ package operator.in1;
 
 import common.StreamConsumer;
 import common.StreamProducer;
-import common.component.ComponentState.BoxType;
+import common.component.ComponentType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
 import scheduling.priority.PriorityMetric;
@@ -35,12 +35,12 @@ public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> exten
 	private final String OUTPUT_KEY = "OUTPUT";
 	private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(this);
 
-	protected BaseOperator1In(String id, BoxType type, StreamFactory streamFactory) {
+	protected BaseOperator1In(String id, ComponentType type, StreamFactory streamFactory) {
 		super(id, type, streamFactory);
 	}
 
 	public BaseOperator1In(String id, StreamFactory streamFactory) {
-		this(id, BoxType.OPERATOR, streamFactory);
+		this(id, ComponentType.OPERATOR, streamFactory);
 	}
 
 	@Override

@@ -19,12 +19,11 @@
 
 package operator.router;
 
-import java.util.List;
-
 import common.StreamConsumer;
 import common.StreamProducer;
-import common.component.ComponentState.BoxType;
+import common.component.ComponentType;
 import common.tuple.Tuple;
+import java.util.List;
 import operator.AbstractOperator;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
@@ -37,7 +36,7 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 	private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
 
 	public BaseRouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
-		super(id, BoxType.ROUTER, streamFactory);
+		super(id, ComponentType.ROUTER, streamFactory);
 		this.router = router;
 	}
 

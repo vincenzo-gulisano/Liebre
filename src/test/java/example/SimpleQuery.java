@@ -19,13 +19,12 @@
 
 package example;
 
+import common.component.ComponentType;
+import common.tuple.Tuple;
+import common.util.Util;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-
-import common.component.ComponentState.BoxType;
-import common.tuple.Tuple;
-import common.util.Util;
 import operator.Operator;
 import operator.in1.BaseOperator1In;
 import query.Query;
@@ -63,7 +62,7 @@ public class SimpleQuery {
 			}
 		});
 
-		Operator<MyTuple, MyTuple> multiply = q.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", BoxType.OPERATOR,
+		Operator<MyTuple, MyTuple> multiply = q.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", ComponentType.OPERATOR,
 				ConcurrentLinkedListStreamFactory.INSTANCE) {
 			@Override
 			public List<MyTuple> processTupleIn1(MyTuple tuple) {
