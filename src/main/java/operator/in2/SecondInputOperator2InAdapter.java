@@ -2,6 +2,7 @@ package operator.in2;
 
 import common.StreamConsumer;
 import common.StreamProducer;
+import common.component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
@@ -99,6 +100,16 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   @Override
   public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
     decorated.addOutput(destination, stream);
+  }
+
+  @Override
+  public ConnectionsNumber inputsNumber() {
+    return decorated.inputsNumber();
+  }
+
+  @Override
+  public ConnectionsNumber outputsNumber() {
+    return decorated.outputsNumber();
   }
 
   @Override

@@ -22,6 +22,7 @@ package source;
 import common.StreamConsumer;
 import common.component.ComponentState;
 import common.component.ComponentType;
+import common.component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import scheduling.priority.PriorityMetric;
@@ -65,7 +66,17 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
 		processCommand.run();
 	}
 
-	@Override
+  @Override
+  public ConnectionsNumber inputsNumber() {
+    return state.inputsNumber();
+  }
+
+  @Override
+  public ConnectionsNumber outputsNumber() {
+    return state.outputsNumber();
+  }
+
+  @Override
 	public void enable() {
 		state.enable();
 		function.enable();

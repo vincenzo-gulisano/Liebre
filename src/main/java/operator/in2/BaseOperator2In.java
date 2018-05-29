@@ -23,6 +23,7 @@ import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.ComponentState;
 import common.component.ComponentType;
+import common.component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.Objects;
@@ -134,6 +135,16 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   }
 
   public void onRun() {
+  }
+
+  @Override
+  public ConnectionsNumber inputsNumber() {
+    return state.inputsNumber();
+  }
+
+  @Override
+  public ConnectionsNumber outputsNumber() {
+    return state.outputsNumber();
   }
 
   @Override

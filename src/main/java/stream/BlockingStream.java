@@ -45,6 +45,11 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 	}
 
 	@Override
+	public boolean offer(T tuple) {
+		return stream.offer(tuple);
+	}
+
+	@Override
 	public T getNextTuple() {
 		if (!isEnabled()) {
 			return null;
@@ -58,6 +63,11 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 		}
 		tuplesRead++;
 		return nextTuple;
+	}
+
+	@Override
+	public T poll() {
+	  return stream.poll();
 	}
 
 	@Override

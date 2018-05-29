@@ -1,6 +1,7 @@
 package source;
 
 import common.StreamConsumer;
+import common.component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import scheduling.priority.PriorityMetric;
@@ -78,6 +79,17 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   @Override
   public void onRun() {
     decorated.onRun();
+  }
+
+
+  @Override
+  public ConnectionsNumber inputsNumber() {
+    return decorated.inputsNumber();
+  }
+
+  @Override
+  public ConnectionsNumber outputsNumber() {
+    return decorated.outputsNumber();
   }
 
   @Override

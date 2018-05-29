@@ -2,6 +2,7 @@ package operator.router;
 
 import common.StreamConsumer;
 import common.StreamProducer;
+import common.component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
@@ -105,6 +106,16 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 	@Override
 	public void onRun() {
 		decorated.onRun();
+	}
+
+	@Override
+	public ConnectionsNumber inputsNumber() {
+		return decorated.inputsNumber();
+	}
+
+	@Override
+	public ConnectionsNumber outputsNumber() {
+		return decorated.outputsNumber();
 	}
 
 	public void setPriorityMetric(PriorityMetric metric) {

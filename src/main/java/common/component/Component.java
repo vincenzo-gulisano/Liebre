@@ -1,4 +1,6 @@
-/*  Copyright (C) 2017-2018  Vincenzo Gulisano, Dimitris Palyvos Giannas
+/*  Copyright (C) 2017-2018
+ *  Vincenzo Gulisano
+ *  Dimitris Palyvos Giannas
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,5 +37,9 @@ public interface Component extends Active, Runnable, Named {
   void onRun();
 
   void setPriorityMetric(PriorityMetric metric);
+
+  ConnectionsNumber inputsNumber();
+
+  ConnectionsNumber outputsNumber();
 
 }

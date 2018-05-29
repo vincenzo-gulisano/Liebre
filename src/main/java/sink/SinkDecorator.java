@@ -1,6 +1,7 @@
 package sink;
 
 import common.StreamProducer;
+import common.component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import scheduling.priority.PriorityMetric;
@@ -78,6 +79,16 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   @Override
   public void onRun() {
     decorated.onRun();
+  }
+
+  @Override
+  public ConnectionsNumber inputsNumber() {
+    return decorated.inputsNumber();
+  }
+
+  @Override
+  public ConnectionsNumber outputsNumber() {
+    return decorated.outputsNumber();
   }
 
   @Override

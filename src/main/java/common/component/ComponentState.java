@@ -189,6 +189,14 @@ public class ComponentState<IN extends Tuple, OUT extends Tuple> {
     return true;
   }
 
+  public ConnectionsNumber inputsNumber() {
+    return type.inputsNumber();
+  }
+
+  public ConnectionsNumber outputsNumber() {
+    return type.outputsNumber();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

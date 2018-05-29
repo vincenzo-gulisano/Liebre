@@ -20,6 +20,10 @@
 package query;
 
 import common.StreamConsumer;
+import common.StreamProducer;
+import common.component.Component;
+import common.tuple.RichTuple;
+import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,10 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import common.StreamProducer;
-import common.tuple.RichTuple;
-import common.tuple.Tuple;
 import operator.Operator;
 import operator.Union.UnionOperator;
 import operator.aggregate.TimeBasedSingleWindow;
@@ -66,13 +66,21 @@ import stream.BlockingStreamFactory;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatisticFactory;
+import stream.smq.SMQStreamDecorator;
+import stream.smq.SMQStreamDecorator.Builder;
+import stream.smq.SmartMQController;
+import stream.smq.SmartMQReaderImpl;
+import stream.smq.SmartMQWriterImpl;
 
-public class Query {
+public final class Query {
 
   private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
   private final Map<String, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
   private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
   private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
+  private final Map<String, SmartMQReaderImpl> smartMQReaders = new HashMap<>();
+  private final Map<String, SmartMQWriterImpl> smartMQWriters = new HashMap<>();
+
   private final Scheduler scheduler;
   private boolean keepStatistics = false;
   private String statsFolder;
@@ -113,12 +121,11 @@ public class Query {
 
   public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
       Operator1In<IN, OUT> operator) {
-    checkIfExists(operator.getId(), "Operator", operators);
     Operator<IN, OUT> op = operator;
     if (keepStatistics) {
       op = new Operator1InStatistic<IN, OUT>(operator, statsFolder, autoFlush);
     }
-    operators.put(op.getId(), op);
+    saveComponent(operators, operator, "operator");
     return op;
   }
 
@@ -148,33 +155,30 @@ public class Query {
 
   public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier,
       RouterFunction<T> routerF) {
-    checkIfExists(identifier, "Operator", operators);
     RouterOperator<T> router = new BaseRouterOperator<T>(identifier, streamFactory, routerF);
     // Notice that the router is a special case which needs a dedicated
     // statistics operator
     if (keepStatistics) {
       router = new RouterOperatorStatistic<T>(router, statsFolder, autoFlush);
     }
-    operators.put(router.getId(), router);
+    saveComponent(operators, router, "operator");
     return router;
   }
 
   public <T extends Tuple> UnionOperator<T> addUnionOperator(String identifier) {
-    checkIfExists(identifier, "Operator", operators);
     // Notice that the union is a special case. No processing stats are kept
     // since the union does not process tuples.
     UnionOperator<T> union = new UnionOperator<>(identifier, streamFactory);
-    operators.put(union.getId(), union);
+    saveComponent(operators, union, "operator");
     return union;
   }
 
   public <T extends Tuple> Source<T> addSource(Source<T> source) {
-    checkIfExists(source.getId(), "Source", sources);
     Source<T> s = source;
     if (keepStatistics) {
       s = new SourceStatistic<T>(s, streamFactory, statsFolder);
     }
-    sources.put(s.getId(), s);
+    saveComponent(sources, s, "source");
     return s;
   }
 
@@ -183,12 +187,11 @@ public class Query {
   }
 
   public <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
-    checkIfExists(sink.getId(), "Sink", sinks);
     Sink<T> s = sink;
     if (keepStatistics) {
       s = new SinkStatistic<T>(sink, statsFolder);
     }
-    sinks.put(s.getId(), s);
+    saveComponent(sinks, s, "sink");
     return s;
   }
 
@@ -198,12 +201,11 @@ public class Query {
 
   public <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
       Operator2In<IN, IN2, OUT> operator) {
-    checkIfExists(operator.getId(), "Operator", operators2in);
     Operator2In<IN, IN2, OUT> op = operator;
     if (keepStatistics) {
       op = new Operator2InStatistic<IN, IN2, OUT>(operator, statsFolder, autoFlush);
     }
-    operators2in.put(op.getId(), op);
+    saveComponent(operators2in, op, "operator2in");
     return op;
   }
 
@@ -214,25 +216,49 @@ public class Query {
   }
 
   public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination) {
-    Validate.isTrue(destination instanceof Operator2In == false, "Please use connect2in for operators with 2 inputs!");
-    Stream<T> stream = streamFactory.newStream(source, destination);
+    Validate.isTrue(destination instanceof Operator2In == false,
+        "Please use connect2in for operators with 2 inputs!");
+    Stream<T> stream = getSmartMQStream(source, destination);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
     return this;
   }
 
-  public <T extends Tuple> Query connect2inLeft(StreamProducer<T> source, Operator2In<T, ?, ?> destination) {
-    Stream<T> stream = streamFactory.newStream(source, destination);
+  public <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
+      Operator2In<T, ?, ?> destination) {
+    Stream<T> stream = getSmartMQStream(source, destination);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
     return this;
   }
 
-  public <T extends Tuple> Query connect2inRight(StreamProducer<T> source, Operator2In<?, T, ?> destination) {
-    Stream<T> stream = streamFactory.newStream(source, destination);
+  public <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
+      Operator2In<?, T, ?> destination) {
+    Stream<T> stream = getSmartMQStream(source, destination);
     source.addOutput(destination.secondInputView(), stream);
     destination.addInput2(source, stream);
     return this;
+  }
+
+  private <T extends Tuple> Stream<T> getSmartMQStream(Component source, Component destination) {
+    Stream<T> stream = streamFactory.newStream(source, destination);
+    SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
+    SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());
+    if (writer == null && reader == null) {
+      return stream;
+    }
+    SMQStreamDecorator.Builder<T> builder = new Builder<>(stream);
+    if (writer != null) {
+      //FIXME: Backoff option here
+      int index = writer.register(stream);
+      builder.writer(writer, index);
+    }
+    if (reader != null) {
+      //FIXME: Backoff option here
+      int index = reader.register(stream);
+      builder.reader(reader, index);
+    }
+    return builder.build();
   }
 
   public void activate() {
@@ -241,8 +267,14 @@ public class Query {
     System.out.format("*** [Query] Operators: %d%n", operators.size() + operators2in.size());
     System.out.format("*** [Query] Sources: %d%n", sources.size());
     System.out.format("*** [Query] Streams: %d%n", getAllStreams().size());
+    for (SmartMQController reader : smartMQReaders.values()) {
+      reader.enable();
+    }
+    for (SmartMQController writer : smartMQWriters.values()) {
+      writer.enable();
+    }
     scheduler.addTasks(sinks.values());
-    scheduler.addTasks(getAllOperators());
+    scheduler.addTasks(allOperators());
     scheduler.addTasks(sources.values());
     scheduler.enable();
     scheduler.startTasks();
@@ -251,29 +283,58 @@ public class Query {
   public void deActivate() {
     System.out.println("*** [Query] Deactivating tasks...");
     scheduler.disable();
+    for (SmartMQController reader : smartMQReaders.values()) {
+      reader.disable();
+    }
+    for (SmartMQController writer : smartMQWriters.values()) {
+      writer.disable();
+    }
     System.out.println("*** [Query] Waiting for threads to terminate...");
     scheduler.stopTasks();
     System.out.println("*** [Query] Done!");
   }
 
-  private void checkIfExists(String id, String type, Map<?, ?> map) {
-    if (map.containsKey(id)) {
-      throw new IllegalArgumentException(
-          String.format("%s with id [%s] already exists in query!", type, id));
-    }
-  }
-
   private Set<Stream<?>> getAllStreams() {
     Set<Stream<?>> streams = new HashSet<>();
-    for (Operator<?, ?> op : getAllOperators()) {
+    for (Operator<?, ?> op : allOperators()) {
       streams.addAll(op.getInputs());
     }
     return streams;
   }
 
-  private Collection<Operator<?, ?>> getAllOperators() {
+  private Collection<Operator<?, ?>> allOperators() {
     List<Operator<?, ?>> allOperators = new ArrayList<>(operators.values());
     allOperators.addAll(this.operators2in.values());
     return allOperators;
+  }
+
+  private <T extends Component> void saveComponent(Map<String, T> map, T component, String type) {
+    Validate.validState(!map.containsKey(component.getId()),
+        "A component of type %s  with id '%s' has already been added!", type, component);
+    enableSmartMQ(component);
+    map.put(component.getId(), component);
+  }
+
+  private void enableSmartMQ(Component component) {
+    if (component.inputsNumber().isMultiple()) {
+      addSmartMQReader(component.getId());
+    }
+    if (component.outputsNumber().isMultiple()) {
+      addSmartMQReader(component.getId());
+    }
+  }
+
+  private void addSmartMQReader(String id) {
+    if (smartMQReaders.containsKey(id)) {
+      return;
+    }
+    smartMQReaders.put(id, new SmartMQReaderImpl());
+  }
+
+  private void addSmartMQWriter(String id) {
+    if (smartMQWriters.containsKey(id)) {
+      return;
+    }
+    smartMQWriters.put(id, new SmartMQWriterImpl());
   }
 }

@@ -68,32 +68,11 @@ public enum ComponentType {
     return inputsNumber != ConnectionsNumber.NONE;
   }
 
-  private static enum ConnectionsNumber {
-    NONE {
-      @Override
-      protected boolean isValid(int number) {
-        return number == 0;
-      }
-    },
-    ONE {
-      @Override
-      protected boolean isValid(int number) {
-        return number == 1;
-      }
-    },
-    TWO {
-      @Override
-      protected boolean isValid(int number) {
-        return number == 2;
-      }
-    },
-    N {
-      @Override
-      protected boolean isValid(int number) {
-        return number >= 1;
-      }
-    };
+  public ConnectionsNumber inputsNumber() {
+    return inputsNumber;
+  }
 
-    protected abstract boolean isValid(int number);
+  public ConnectionsNumber outputsNumber() {
+    return outputsNumber;
   }
 }
