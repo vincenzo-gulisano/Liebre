@@ -1,8 +1,8 @@
 package stream.smq;
 
 import common.tuple.Tuple;
-import common.util.Backoff;
-import common.util.NoopBackoff;
+import common.util.backoff.Backoff;
+import common.util.backoff.NoopBackoff;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

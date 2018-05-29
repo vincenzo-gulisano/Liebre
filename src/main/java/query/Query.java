@@ -24,6 +24,8 @@ import common.StreamProducer;
 import common.component.Component;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
+import common.util.backoff.Backoff;
+import common.util.backoff.ExponentialBackoff;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -86,6 +88,7 @@ public final class Query {
   private String statsFolder;
   private boolean autoFlush;
   private StreamFactory streamFactory = BlockingStreamFactory.INSTANCE;
+  private Backoff queryBackoff = new ExponentialBackoff(10, 10);
 
   public Query() {
     this.scheduler = new NoopScheduler();
@@ -117,6 +120,10 @@ public final class Query {
 
   public void activateStatistics(String statisticsFolder) {
     activateStatistics(statisticsFolder, true);
+  }
+
+  public void activateBackoff(long initialSleepMs, int maxShift) {
+    this.queryBackoff = new ExponentialBackoff(initialSleepMs, maxShift);
   }
 
   public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
@@ -216,9 +223,13 @@ public final class Query {
   }
 
   public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination) {
+    return connect(source, destination, queryBackoff);
+  }
+
+  public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination, Backoff backoff) {
     Validate.isTrue(destination instanceof Operator2In == false,
         "Please use connect2in for operators with 2 inputs!");
-    Stream<T> stream = getSmartMQStream(source, destination);
+    Stream<T> stream = getSmartMQStream(source, destination, backoff);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
     return this;
@@ -226,7 +237,12 @@ public final class Query {
 
   public <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
       Operator2In<T, ?, ?> destination) {
-    Stream<T> stream = getSmartMQStream(source, destination);
+    return connect2inLeft(source, destination, queryBackoff);
+  }
+
+  public <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
+      Operator2In<T, ?, ?> destination, Backoff backoff) {
+    Stream<T> stream = getSmartMQStream(source, destination, backoff);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
     return this;
@@ -234,13 +250,18 @@ public final class Query {
 
   public <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
       Operator2In<?, T, ?> destination) {
-    Stream<T> stream = getSmartMQStream(source, destination);
+    return connect2inRight(source, destination, queryBackoff);
+  }
+
+  public <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
+      Operator2In<?, T, ?> destination, Backoff backoff) {
+    Stream<T> stream = getSmartMQStream(source, destination, backoff);
     source.addOutput(destination.secondInputView(), stream);
     destination.addInput2(source, stream);
     return this;
   }
 
-  private <T extends Tuple> Stream<T> getSmartMQStream(Component source, Component destination) {
+  private <T extends Tuple> Stream<T> getSmartMQStream(Component source, Component destination, Backoff backoff) {
     Stream<T> stream = streamFactory.newStream(source, destination);
     SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
     SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());
@@ -249,13 +270,11 @@ public final class Query {
     }
     SMQStreamDecorator.Builder<T> builder = new Builder<>(stream);
     if (writer != null) {
-      //FIXME: Backoff option here
-      int index = writer.register(stream);
+      int index = writer.register(stream, backoff.newInstance());
       builder.writer(writer, index);
     }
     if (reader != null) {
-      //FIXME: Backoff option here
-      int index = reader.register(stream);
+      int index = reader.register(stream, backoff.newInstance());
       builder.reader(reader, index);
     }
     return builder.build();

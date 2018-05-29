@@ -21,8 +21,8 @@ package stream;
 
 import common.component.Component;
 import common.tuple.Tuple;
-import common.util.Backoff;
-import common.util.ExponentialBackoff;
+import common.util.backoff.Backoff;
+import common.util.backoff.ExponentialBackoff;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 

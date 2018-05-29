@@ -54,11 +54,11 @@ public class TextUnion {
       }
     });
 
-    Source<MyTuple> i2 = q.addBaseSource("i1", new TextSourceFunction<MyTuple>(inputFile2) {
+    Source<MyTuple> i2 = q.addBaseSource("i2", new TextSourceFunction<MyTuple>(inputFile2) {
 
       @Override
       protected MyTuple getNext(String line) {
-        Util.sleep(50);
+        Util.sleep(1000);
         String[] tokens = line.split(",");
         return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
             Integer.valueOf(tokens[2]));

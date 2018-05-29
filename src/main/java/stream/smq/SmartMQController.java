@@ -2,7 +2,7 @@ package stream.smq;
 
 import common.Active;
 import common.tuple.Tuple;
-import common.util.Backoff;
+import common.util.backoff.Backoff;
 import stream.Stream;
 
 public interface SmartMQController extends Active {

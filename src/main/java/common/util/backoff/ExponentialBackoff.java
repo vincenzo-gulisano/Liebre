@@ -1,4 +1,4 @@
-package common.util;
+package common.util.backoff;
 
 import static common.util.Util.sleep;
 
@@ -21,6 +21,11 @@ public class ExponentialBackoff implements Backoff {
     }
     this.initialSleepMs = initialSleepMs;
     this.maxShift = maxShift;
+  }
+
+  @Override
+  public Backoff newInstance() {
+    return new ExponentialBackoff(initialSleepMs, maxShift);
   }
 
   @Override
