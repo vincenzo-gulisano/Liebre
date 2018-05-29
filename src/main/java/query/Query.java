@@ -54,6 +54,8 @@ import operator.router.RouterFunction;
 import operator.router.RouterOperator;
 import operator.router.RouterOperatorStatistic;
 import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
 import scheduling.impl.NoopScheduler;
 import sink.BaseSink;
@@ -75,6 +77,8 @@ import stream.smq.SmartMQReaderImpl;
 import stream.smq.SmartMQWriterImpl;
 
 public final class Query {
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
   private final Map<String, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
@@ -226,9 +230,10 @@ public final class Query {
     return connect(source, destination, queryBackoff);
   }
 
-  public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination, Backoff backoff) {
+  public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination,
+      Backoff backoff) {
     Validate.isTrue(destination instanceof Operator2In == false,
-        "Please use connect2in for operators with 2 inputs!");
+        "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!", destination.getId());
     Stream<T> stream = getSmartMQStream(source, destination, backoff);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
@@ -261,7 +266,8 @@ public final class Query {
     return this;
   }
 
-  private <T extends Tuple> Stream<T> getSmartMQStream(Component source, Component destination, Backoff backoff) {
+  private <T extends Tuple> Stream<T> getSmartMQStream(Component source, Component destination,
+      Backoff backoff) {
     Stream<T> stream = streamFactory.newStream(source, destination);
     SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
     SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());
@@ -281,11 +287,12 @@ public final class Query {
   }
 
   public void activate() {
-    System.out.println("*** [Query] Activating...");
-    System.out.format("*** [Query] Sinks: %d%n", sinks.size());
-    System.out.format("*** [Query] Operators: %d%n", operators.size() + operators2in.size());
-    System.out.format("*** [Query] Sources: %d%n", sources.size());
-    System.out.format("*** [Query] Streams: %d%n", getAllStreams().size());
+
+    LOGGER.info("Activating query...");
+    LOGGER.info("# Sources = {}", sources.size());
+    LOGGER.info("# Operators = {}", operators.size() + operators2in.size());
+    LOGGER.info("# Sinks = {}", sinks.size());
+    LOGGER.info("# Streams = {}", getAllStreams().size());
     for (SmartMQController reader : smartMQReaders.values()) {
       reader.enable();
     }
@@ -300,7 +307,7 @@ public final class Query {
   }
 
   public void deActivate() {
-    System.out.println("*** [Query] Deactivating tasks...");
+    LOGGER.info("Deactivating query...");
     scheduler.disable();
     for (SmartMQController reader : smartMQReaders.values()) {
       reader.disable();
@@ -308,9 +315,9 @@ public final class Query {
     for (SmartMQController writer : smartMQWriters.values()) {
       writer.disable();
     }
-    System.out.println("*** [Query] Waiting for threads to terminate...");
+    LOGGER.info("Waiting for threads to terminate...");
     scheduler.stopTasks();
-    System.out.println("*** [Query] Done!");
+    LOGGER.info("DONE!");
   }
 
   private Set<Stream<?>> getAllStreams() {
@@ -339,7 +346,7 @@ public final class Query {
       addSmartMQReader(component.getId());
     }
     if (component.outputsNumber().isMultiple()) {
-      addSmartMQReader(component.getId());
+      addSmartMQWriter(component.getId());
     }
   }
 
@@ -347,6 +354,7 @@ public final class Query {
     if (smartMQReaders.containsKey(id)) {
       return;
     }
+    LOGGER.debug("Creating SmartMQReader for {}", id);
     smartMQReaders.put(id, new SmartMQReaderImpl());
   }
 
@@ -354,6 +362,7 @@ public final class Query {
     if (smartMQWriters.containsKey(id)) {
       return;
     }
+    LOGGER.debug("Creating SmartMQWriter for {}", id);
     smartMQWriters.put(id, new SmartMQWriterImpl());
   }
 }
