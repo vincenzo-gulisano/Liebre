@@ -19,9 +19,9 @@
 
 package operator.filter;
 
-import common.Active;
 import common.tuple.Tuple;
 
+@FunctionalInterface
 public interface FilterFunction<T extends Tuple> {
 	boolean forward(T tuple);
 }

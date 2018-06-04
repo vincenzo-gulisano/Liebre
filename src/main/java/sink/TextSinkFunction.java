@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 
 import common.tuple.Tuple;
 
+//TODO: Refactor so that this decorates an actual text function
 public abstract class TextSinkFunction<T extends Tuple> implements SinkFunction<T> {
 	private boolean closed;
 	private PrintWriter pw;

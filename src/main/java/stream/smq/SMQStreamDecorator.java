@@ -1,10 +1,14 @@
 package stream.smq;
 
 import common.tuple.Tuple;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import stream.Stream;
 import stream.StreamDecorator;
 
 public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private final int readerIndex;
   private final SmartMQReader reader;
@@ -21,15 +25,29 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
   @Override
   public void addTuple(T tuple) {
-    writer.offer(writerIndex, tuple);
-    reader.notifyWrite(readerIndex);
+    try {
+      writer.put(writerIndex, tuple);
+      reader.notifyWrite(readerIndex);
+    } catch (InterruptedException e) {
+      LOGGER.info("addTuple() interrupted");
+      Thread.currentThread().interrupt();
+    }
   }
 
   @Override
   public T getNextTuple() {
-    T value = reader.poll(readerIndex);
-    writer.notifyRead(writerIndex);
-    return value;
+    try {
+      T value = reader.take(readerIndex);
+      if (value != null) {
+        writer.notifyRead(writerIndex);
+      }
+      return value;
+    }
+    catch (InterruptedException e) {
+      LOGGER.info("getNextTuple() interrupted");
+      Thread.currentThread().interrupt();
+      return null;
+    }
   }
 
   @Override
@@ -86,7 +104,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
 
     @Override
-    public <T extends Tuple> void offer(int queueIndex, T value) {
+    public <T extends Tuple> void put(int queueIndex, T value) {
       decorated.offer((R)value);
     }
 
@@ -110,7 +128,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
     }
 
     @Override
-    public <T extends Tuple> T poll(int queueIndex) {
+    public <T extends Tuple> T take(int queueIndex) {
       return (T) decorated.poll();
     }
 

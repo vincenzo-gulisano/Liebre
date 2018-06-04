@@ -29,16 +29,12 @@ public final class SmartMQReaderImpl implements SmartMQReader,
 
   @Override
   public int register(Stream<? extends Tuple> stream) {
-    return register(stream, NoopBackoff.INSTANCE);  }
-
-  @Override
-  public void notifyWrite(int queueIndex) {
-    readSemaphore.release(queueIndex);
-    backoffs.get(queueIndex).relax();
+    return register(stream, NoopBackoff.INSTANCE);
   }
 
+
   @Override
-  public <T extends Tuple> T poll(int queueIndex) {
+  public <T extends Tuple> T take(int queueIndex) throws InterruptedException {
     T value = (T) queues.get(queueIndex).poll();
     if (value == null) {
       waitRead(queueIndex);
@@ -48,14 +44,15 @@ public final class SmartMQReaderImpl implements SmartMQReader,
   }
 
   @Override
-  public void waitRead(int queueIndex) {
-    try {
+  public void notifyWrite(int queueIndex) {
+    readSemaphore.release(queueIndex);
+    backoffs.get(queueIndex).relax();
+  }
+
+  @Override
+  public void waitRead(int queueIndex) throws InterruptedException {
       readSemaphore.acquire(queueIndex);
       backoffs.get(queueIndex).backoff();
-    } catch (InterruptedException e) {
-      System.out.println("waitRead() interrupted");
-      Thread.currentThread().interrupt();
-    }
   }
 
   @Override

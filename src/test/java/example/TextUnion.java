@@ -19,10 +19,9 @@
 
 package example;
 
-import java.io.File;
-
 import common.tuple.Tuple;
 import common.util.Util;
+import java.io.File;
 import operator.Operator;
 import query.Query;
 import sink.Sink;
@@ -67,14 +66,16 @@ public class TextUnion {
 
     Operator<MyTuple, MyTuple> union = q.addUnionOperator("union");
 
-    Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile) {
+    Sink<MyTuple> o1 = q.addBaseSink("o1",
 
-      @Override
-      protected String processTupleToText(MyTuple tuple) {
-        return tuple.timestamp + "," + tuple.key + "," + tuple.value;
+        new TextSinkFunction<MyTuple>(outputFile) {
 
-      }
-    });
+          @Override
+          protected String processTupleToText(MyTuple tuple) {
+            return tuple.timestamp + "," + tuple.key + "," + tuple.value;
+
+          }
+        });
 
     q.connect(i1, union);
     q.connect(i2, union);

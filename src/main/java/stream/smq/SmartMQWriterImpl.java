@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicIntegerArray;
+import org.apache.commons.lang3.Validate;
 import stream.Stream;
 
 public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController {
@@ -39,6 +40,7 @@ public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController
 
   @Override
   public void enable() {
+    Validate.validState(queues.size() > 0, "queues");
     this.queues = Collections.unmodifiableList(queues);
     this.buffers = Collections.unmodifiableList(buffers);
     this.backoffs = Collections.unmodifiableList(backoffs);
@@ -58,7 +60,7 @@ public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController
   }
 
   @Override
-  public <T extends Tuple> void offer(int queueIndex, T value) {
+  public <T extends Tuple> void put(int queueIndex, T value) throws InterruptedException {
     if (value == null) {
       throw new IllegalArgumentException("value");
     }
@@ -79,14 +81,9 @@ public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController
   }
 
   @Override
-  public void waitWrite(int queueIndex) {
-    try {
-      writeSemaphore.acquire(queueIndex);
-      backoffs.get(queueIndex).backoff();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      Thread.currentThread().interrupt();
-    }
+  public void waitWrite(int queueIndex) throws InterruptedException {
+    writeSemaphore.acquire(queueIndex);
+    backoffs.get(queueIndex).backoff();
   }
 
   private boolean fullCopyInputBuffer(int queueIndex) {

@@ -4,9 +4,9 @@ import common.tuple.Tuple;
 
 public interface SmartMQWriter {
 
-  <T extends Tuple> void offer(int queueIndex, T value);
+  <T extends Tuple> void put(int queueIndex, T value) throws InterruptedException;
 
-  void notifyRead(int queueIndex);
+  void notifyRead(int queueIndex) throws InterruptedException;
 
-  void waitWrite(int queueIndex);
+  void waitWrite(int queueIndex) throws InterruptedException;
 }

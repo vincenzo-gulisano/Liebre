@@ -66,9 +66,9 @@ import source.BaseSource;
 import source.Source;
 import source.SourceFunction;
 import source.SourceStatistic;
-import stream.BlockingStreamFactory;
 import stream.Stream;
 import stream.StreamFactory;
+import stream.StreamFactoryImpl;
 import stream.StreamStatisticFactory;
 import stream.smq.SMQStreamDecorator;
 import stream.smq.SMQStreamDecorator.Builder;
@@ -77,8 +77,10 @@ import stream.smq.SmartMQReaderImpl;
 import stream.smq.SmartMQWriterImpl;
 
 public final class Query {
+  //FIXME: Validate Component IDs so that they do not contain _
 
   private static final Logger LOGGER = LogManager.getLogger();
+  private static final int DEFAULT_STREAM_CAPACITY = 10000;
 
   private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
   private final Map<String, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
@@ -91,7 +93,7 @@ public final class Query {
   private boolean keepStatistics = false;
   private String statsFolder;
   private boolean autoFlush;
-  private StreamFactory streamFactory = BlockingStreamFactory.INSTANCE;
+  private StreamFactory streamFactory = StreamFactoryImpl.INSTANCE;
   private Backoff queryBackoff = new ExponentialBackoff(10, 10);
 
   public Query() {
@@ -233,7 +235,8 @@ public final class Query {
   public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination,
       Backoff backoff) {
     Validate.isTrue(destination instanceof Operator2In == false,
-        "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!", destination.getId());
+        "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
+        destination.getId());
     Stream<T> stream = getSmartMQStream(source, destination, backoff);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
@@ -268,7 +271,7 @@ public final class Query {
 
   private <T extends Tuple> Stream<T> getSmartMQStream(Component source, Component destination,
       Backoff backoff) {
-    Stream<T> stream = streamFactory.newStream(source, destination);
+    Stream<T> stream = streamFactory.newBoundedStream(source, destination, DEFAULT_STREAM_CAPACITY);
     SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
     SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());
     if (writer == null && reader == null) {
