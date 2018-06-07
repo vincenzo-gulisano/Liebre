@@ -61,11 +61,11 @@ public class PoolWorkerThread extends LiebreThread {
 	}
 
 	private boolean hasInput(Component task) {
-		return (task instanceof StreamConsumer == false) || ((StreamConsumer<?>) task).hasInput();
+		return (task instanceof StreamConsumer == false) || ((StreamConsumer<?>) task).canRead();
 	}
 
 	private boolean hasOutput(Component task) {
-		return (task instanceof StreamProducer == false) || ((StreamProducer<?>) task).hasOutput();
+		return (task instanceof StreamProducer == false) || ((StreamProducer<?>) task).canWrite();
 	}
 
 }

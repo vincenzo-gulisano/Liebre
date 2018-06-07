@@ -23,14 +23,39 @@
 package common.component;
 
 /**
- * Command pattern to decouple the processing logic of components from the specific subclasses.
+ * Type of event processed in {@link Component#wait(EventType)} and Component{@link
+ * #notify(ComponentState)}. Takes care of the actual delegation to the correct functions in {@link
+ * ComponentState}.
  *
  * @author palivosd
  */
-public interface ProcessCommand extends Runnable {
+public enum EventType {
+  READ {
+    @Override
+    protected void setValue(ComponentState state, boolean value) {
+      state.setCanRead(value);
+    }
+  },
+  WRITE {
+    @Override
+    protected void setValue(ComponentState state, boolean value) {
+      state.setCanWrite(value);
+    }
+  };
+
+  protected abstract void setValue(ComponentState state, boolean value);
 
   /**
-   * The main processing function of the component
+   * Set the given {@link ComponentState} to wait for this event type
    */
-  void process();
+  public void wait(ComponentState state) {
+    setValue(state, false);
+  }
+
+  /**
+   * Notify {@link ComponentState} to wait for this event type
+   */
+  public void notify(ComponentState state) {
+    setValue(state, true);
+  }
 }

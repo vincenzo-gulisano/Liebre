@@ -23,6 +23,7 @@ import common.StreamProducer;
 import common.component.ComponentState;
 import common.component.ComponentType;
 import common.component.ConnectionsNumber;
+import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import scheduling.priority.PriorityMetric;
@@ -57,8 +58,18 @@ public class BaseSink<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public boolean hasInput() {
-    return state.hasInput();
+  public boolean canRead() {
+    return state.canRead();
+  }
+
+  @Override
+  public void wait(EventType type) {
+    type.wait(state);
+  }
+
+  @Override
+  public void notify(EventType type) {
+    type.notify(state);
   }
 
   @Override

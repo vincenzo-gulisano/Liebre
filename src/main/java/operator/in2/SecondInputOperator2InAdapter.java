@@ -3,6 +3,7 @@ package operator.in2;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.ConnectionsNumber;
+import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
@@ -24,8 +25,18 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public boolean hasInput() {
-    return decorated.hasInput();
+  public boolean canRead() {
+    return decorated.canRead();
+  }
+
+  @Override
+  public void wait(EventType type) {
+    decorated.wait(type);
+  }
+
+  @Override
+  public void notify(EventType type) {
+    decorated.notify(type);
   }
 
   public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
@@ -93,8 +104,8 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public boolean hasOutput() {
-    return decorated.hasOutput();
+  public boolean canWrite() {
+    return decorated.canWrite();
   }
 
   @Override

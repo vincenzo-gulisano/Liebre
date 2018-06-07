@@ -21,6 +21,7 @@ package example;
 
 import common.tuple.Tuple;
 import common.util.Util;
+import common.util.backoff.NoopBackoff;
 import java.io.File;
 import operator.Operator;
 import query.Query;
@@ -78,7 +79,7 @@ public class TextUnion {
         });
 
     q.connect(i1, union);
-    q.connect(i2, union);
+    q.connect(i2, union, NoopBackoff.INSTANCE);
     q.connect(union, o1);
 
     q.activate();

@@ -1,4 +1,6 @@
-/*  Copyright (C) 2017-2018  Vincenzo Gulisano, Dimitris Palyvos Giannas
+/*  Copyright (C) 2017-2018
+ *  Vincenzo Gulisano
+ *  Dimitris Palyvos Giannas
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,7 +41,7 @@ import stream.Stream;
  * @param <OUT> The type of the outputs of the component where the state belongs to.
  * @author palivosd
  */
-public class ComponentState<IN extends Tuple, OUT extends Tuple> {
+public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
 
   private static AtomicInteger nextIndex = new AtomicInteger();
   private final ComponentType type;
@@ -47,6 +49,8 @@ public class ComponentState<IN extends Tuple, OUT extends Tuple> {
   private final int index;
   private final List<Stream<IN>> inputs = new ArrayList<>();
   private final List<Stream<OUT>> outputs = new ArrayList<>();
+  private volatile boolean canRead;
+  private volatile boolean canWrite;
 
   private volatile boolean enabled = false;
 
@@ -84,19 +88,37 @@ public class ComponentState<IN extends Tuple, OUT extends Tuple> {
     type.validateInputs(this);
   }
 
+  /**
+   * Get the input stream with the given index.
+   */
   public Stream<IN> getInput(int index) {
     return inputs.get(index);
   }
 
+  /**
+   * Get the default input stream (index 0).
+   *
+   * @throws IllegalStateException if the component can have more than 1 input
+   */
   public Stream<IN> getInput() {
+    Validate.validState(type.outputsNumber().isSingle());
     return getInput(0);
   }
 
+  /**
+   * Get the output stream with the given index.
+   */
   public Stream<OUT> getOutput(int index) {
     return outputs.get(index);
   }
 
+  /**
+   * Get the default output stream (index 0).
+   *
+   * @throws IllegalStateException if the component can have more than 1 output
+   */
   public Stream<OUT> getOutput() {
+    Validate.validState(type.outputsNumber().isSingle());
     return getOutput(0);
   }
 
@@ -147,18 +169,26 @@ public class ComponentState<IN extends Tuple, OUT extends Tuple> {
     return index;
   }
 
-
   /**
    * Get all the input streams of this state.
    *
-   * @return The input streams.
+   * @return An unmodifiable collection of all the input streams.
    */
   public Collection<Stream<IN>> getInputs() {
     return Collections.unmodifiableCollection(inputs);
   }
 
+  /**
+   * Get all the output streams of this state.
+   *
+   * @return An unmodifiable collection of all the input streams.
+   */
   public Collection<Stream<OUT>> getOutputs() {
     return Collections.unmodifiableCollection(outputs);
+  }
+
+  void setCanRead(boolean value) {
+    this.canRead = value;
   }
 
   /**
@@ -166,13 +196,12 @@ public class ComponentState<IN extends Tuple, OUT extends Tuple> {
    *
    * @return {@code true} if all input streams are not empty.
    */
-  public boolean hasInput() {
-    for (Stream<?> in : inputs) {
-      if (in.peek() == null) {
-        return false;
-      }
-    }
-    return true;
+  public boolean canRead() {
+    return canRead;
+  }
+
+  void setCanWrite(boolean value) {
+    this.canWrite = value;
   }
 
   /**
@@ -180,19 +209,21 @@ public class ComponentState<IN extends Tuple, OUT extends Tuple> {
    *
    * @return {@code true} if all output streams have non-zero capacity.
    */
-  public boolean hasOutput() {
-    for (Stream<OUT> output : outputs) {
-      if (output.remainingCapacity() == 0) {
-        return false;
-      }
-    }
-    return true;
+  public boolean canWrite() {
+    return canWrite;
   }
 
+  /**
+   * Get the input {@link ConnectionsNumber} for this component.
+   */
   public ConnectionsNumber inputsNumber() {
     return type.inputsNumber();
   }
 
+  /**
+   * Get the ouput {@link ConnectionsNumber} for this component
+   * @return
+   */
   public ConnectionsNumber outputsNumber() {
     return type.outputsNumber();
   }

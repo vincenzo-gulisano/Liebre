@@ -27,23 +27,24 @@ import stream.Stream;
 
 /**
  * A stream {@link Component} that consumes tuples.
+ *
  * @param <IN> The input type for this component.
  */
 public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 
-	/**
-	 * Heuristic that indicates that the {@link StreamConsumer} has some input
-	 * <b>all</b> its input streams. Might not always be accurate in the case of
-	 * operators with multiple input streams.
-	 * 
-	 * @return {@code true} if the operator has some tuples available on all its
-	 *         input streams.
-	 */
-	boolean hasInput();
+  /**
+   * Heuristic that indicates that the {@link StreamConsumer} has some input
+   * <b>all</b> its input streams. Might not always be accurate in the case of
+   * operators with multiple input streams.
+   *
+   * @return {@code true} if the operator has some tuples available on all its input streams.
+   */
+  boolean canRead();
 
-	void addInput(StreamProducer<IN> source, Stream<IN> stream);
+  void addInput(StreamProducer<IN> source, Stream<IN> stream);
 
-	Stream<IN> getInput();
+  Stream<IN> getInput();
 
-	<T extends Tuple> Collection<? extends Stream<T>> getInputs();
+  <T extends Tuple> Collection<? extends Stream<T>> getInputs();
+
 }

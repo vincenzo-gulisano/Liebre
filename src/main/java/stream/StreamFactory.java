@@ -1,10 +1,12 @@
 package stream;
 
-import common.component.Component;
+import common.StreamConsumer;
+import common.StreamProducer;
 import common.tuple.Tuple;
 
 public interface StreamFactory {
 
-  <T extends Tuple> Stream<T> newBoundedStream(Component from, Component to, int capacity);
+  <T extends Tuple> Stream<T> newBoundedStream(StreamProducer<T> from, StreamConsumer<T> to,
+      int capacity);
 
 }

@@ -42,4 +42,8 @@ public interface Component extends Active, Runnable, Named {
 
   ConnectionsNumber outputsNumber();
 
+  void wait(EventType type);
+
+  void notify(EventType type);
+
 }

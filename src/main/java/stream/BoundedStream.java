@@ -1,10 +1,10 @@
 package stream;
 
+import common.StreamConsumer;
+import common.StreamProducer;
+import common.tuple.Tuple;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-
-import common.component.Component;
-import common.tuple.Tuple;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -13,13 +13,13 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
 
   private final String id;
   private final int index;
-  private final Component source;
-  private final Component destination;
+  private final StreamProducer<T> source;
+  private final StreamConsumer<T> destination;
   private BlockingQueue<T> stream;
   private volatile long tuplesWritten, tuplesRead;
   private volatile boolean enabled;
 
-  public BoundedStream(String id, int index, Component source, Component destination, int capacity) {
+  public BoundedStream(String id, int index, StreamProducer<T> source, StreamConsumer<T> destination, int capacity) {
     this.id = id;
     this.index = index;
     this.stream = new ArrayBlockingQueue<T>(capacity);
@@ -114,11 +114,11 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
     return this.id;
   }
 
-  public Component getSource() {
+  public StreamProducer<T> getSource() {
     return source;
   }
 
-  public Component getDestination() {
+  public StreamConsumer<T> getDestination() {
     return destination;
   }
 

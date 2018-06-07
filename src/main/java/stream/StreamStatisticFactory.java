@@ -1,6 +1,7 @@
 package stream;
 
-import common.component.Component;
+import common.StreamConsumer;
+import common.StreamProducer;
 import common.tuple.Tuple;
 
 public class StreamStatisticFactory implements StreamFactory {
@@ -16,7 +17,8 @@ public class StreamStatisticFactory implements StreamFactory {
   }
 
   @Override
-  public <T extends Tuple> Stream<T> newBoundedStream(Component from, Component to, int capacity) {
+  public <T extends Tuple> Stream<T> newBoundedStream(StreamProducer<T> from, StreamConsumer<T> to,
+      int capacity) {
     Stream<T> stream = factory.newBoundedStream(from, to, capacity);
     return new StreamStatistic<>(stream, folder, autoFlush);
   }

@@ -24,6 +24,7 @@ import common.StreamProducer;
 import common.component.ComponentState;
 import common.component.ComponentType;
 import common.component.ConnectionsNumber;
+import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.Objects;
@@ -35,6 +36,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
     implements Operator2In<IN, IN2, OUT> {
 
   private final ComponentState<Tuple, OUT> state;
+  private final Operator<IN2, OUT> secondInputView;
 
   private final int INPUT1_KEY = 0;
   private final int INPUT2_KEY = 1;
@@ -42,7 +44,8 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   private final ProcessCommand2In<IN, IN2, OUT> processCommand = new ProcessCommand2In<>(this);
 
   public BaseOperator2In(String id) {
-    state = new ComponentState<>(id, ComponentType.OPERATOR2IN);
+    this.state = new ComponentState<>(id, ComponentType.OPERATOR2IN);
+    this.secondInputView = new SecondInputOperator2InAdapter<>(this);
   }
 
   @Override
@@ -107,7 +110,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
   @Override
   public Operator<IN2, OUT> secondInputView() {
-    return new SecondInputOperator2InAdapter<>(this);
+    return secondInputView;
   }
 
   @Override
@@ -121,13 +124,23 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   }
 
   @Override
-  public boolean hasInput() {
-    return state.hasInput();
+  public boolean canRead() {
+    return state.canRead();
   }
 
   @Override
-  public boolean hasOutput() {
-    return state.hasOutput();
+  public boolean canWrite() {
+    return state.canWrite();
+  }
+
+  @Override
+  public void wait(EventType type) {
+    type.wait(state);
+  }
+
+  @Override
+  public void notify(EventType type) {
+    type.notify(state);
   }
 
   @Override

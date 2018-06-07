@@ -42,8 +42,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
         writer.notifyRead(writerIndex);
       }
       return value;
-    }
-    catch (InterruptedException e) {
+    } catch (InterruptedException e) {
       LOGGER.info("getNextTuple() interrupted");
       Thread.currentThread().interrupt();
       return null;
@@ -105,7 +104,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
     @Override
     public <T extends Tuple> void put(int queueIndex, T value) {
-      decorated.offer((R)value);
+      decorated.addTuple((R) value);
     }
 
     @Override
@@ -129,7 +128,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
     @Override
     public <T extends Tuple> T take(int queueIndex) {
-      return (T) decorated.poll();
+      return (T) decorated.getNextTuple();
     }
 
     @Override

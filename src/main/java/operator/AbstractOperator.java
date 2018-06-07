@@ -5,22 +5,24 @@ import common.StreamProducer;
 import common.component.ComponentState;
 import common.component.ComponentType;
 import common.component.ConnectionsNumber;
+import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.Objects;
 import stream.Stream;
 
-public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements Operator<IN, OUT> {
+public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements
+    Operator<IN, OUT> {
 
-	protected final ComponentState<IN, OUT> state;
-	private final int INPUT_KEY = 0;
-	private final int OUTPUT_KEY = 0;
+  protected final ComponentState<IN, OUT> state;
+  private final int INPUT_KEY = 0;
+  private final int OUTPUT_KEY = 0;
 
-	public AbstractOperator(String id, ComponentType type) {
-		state = new ComponentState<>(id, type);
-	}
+  public AbstractOperator(String id, ComponentType type) {
+    state = new ComponentState<>(id, type);
+  }
 
-	@Override
+  @Override
   public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
@@ -49,57 +51,67 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
-	public boolean hasInput() {
-		return state.hasInput();
-	}
+  public void wait(EventType type) {
+    type.wait(state);
+  }
 
-	@Override
-	public boolean hasOutput() {
-		return state.hasOutput();
-	}
+  @Override
+  public void notify(EventType type) {
+    type.notify(state);
+  }
 
-	@Override
-	public void enable() {
-		state.enable();
-	}
+  @Override
+  public boolean canRead() {
+    return state.canRead();
+  }
 
-	@Override
-	public void disable() {
-		state.disable();
-	}
+  @Override
+  public boolean canWrite() {
+    return state.canWrite();
+  }
 
-	@Override
-	public boolean isEnabled() {
-		return state.isEnabled();
-	}
+  @Override
+  public void enable() {
+    state.enable();
+  }
 
-	@Override
-	public String getId() {
-		return state.getId();
-	}
+  @Override
+  public void disable() {
+    state.disable();
+  }
 
-	@Override
-	public int getIndex() {
-		return state.getIndex();
-	}
+  @Override
+  public boolean isEnabled() {
+    return state.isEnabled();
+  }
 
-	@Override
-	public String toString() {
-		return getId();
-	}
+  @Override
+  public String getId() {
+    return state.getId();
+  }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(state);
-	}
+  @Override
+  public int getIndex() {
+    return state.getIndex();
+  }
 
-	@Override
-	public void onScheduled() {
-	}
+  @Override
+  public String toString() {
+    return getId();
+  }
 
-	@Override
-	public void onRun() {
-	}
+  @Override
+  public int hashCode() {
+    return Objects.hash(state);
+  }
+
+  @Override
+  public void onScheduled() {
+  }
+
+  @Override
+  public void onRun() {
+  }
 
   @Override
   public ConnectionsNumber inputsNumber() {
@@ -112,16 +124,18 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (!(obj instanceof AbstractOperator)) {
-			return false;
-		}
-		AbstractOperator<?, ?> other = (AbstractOperator<?, ?>) obj;
-		return Objects.equals(state, other.state);
-	}
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (!(obj instanceof AbstractOperator)) {
+      return false;
+    }
+    AbstractOperator<?, ?> other = (AbstractOperator<?, ?>) obj;
+    return Objects.equals(state, other.state);
+  }
 
 }

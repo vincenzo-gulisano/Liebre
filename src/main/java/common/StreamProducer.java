@@ -38,7 +38,7 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
    *
    * @return {@code true} if the operator can write tuples to all its output streams
    */
-  boolean hasOutput();
+  boolean canWrite();
 
   void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream);
 

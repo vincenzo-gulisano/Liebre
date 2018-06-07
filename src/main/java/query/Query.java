@@ -263,14 +263,17 @@ public final class Query {
 
   public <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
       Operator2In<?, T, ?> destination, Backoff backoff) {
-    Stream<T> stream = getSmartMQStream(source, destination, backoff);
+    Stream<T> stream = getSmartMQStream(source, destination.secondInputView(), backoff);
     source.addOutput(destination.secondInputView(), stream);
     destination.addInput2(source, stream);
     return this;
   }
 
-  private <T extends Tuple> Stream<T> getSmartMQStream(Component source, Component destination,
+  private <T extends Tuple> Stream<T> getSmartMQStream(StreamProducer<T> source,
+      StreamConsumer<T> destination,
       Backoff backoff) {
+    //FIXME: Stream Factory should generate the readers/writers
+    // and produce noop versions when using scheduler
     Stream<T> stream = streamFactory.newBoundedStream(source, destination, DEFAULT_STREAM_CAPACITY);
     SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
     SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());

@@ -3,9 +3,12 @@ package operator.in1;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.ConnectionsNumber;
+import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
@@ -65,13 +68,50 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
-  public boolean hasInput() {
-    return decorated.hasInput();
+  public boolean canRead() {
+    return decorated.canRead();
   }
 
   @Override
-  public boolean hasOutput() {
-    return decorated.hasOutput();
+  public boolean canWrite() {
+    return decorated.canWrite();
+  }
+
+
+  @Override
+  public void wait(EventType type) {
+    decorated.wait(type);
+  }
+
+  @Override
+  public void notify(EventType type) {
+    decorated.notify(type);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Operator1InDecorator<?, ?> that = (Operator1InDecorator<?, ?>) o;
+
+    return new EqualsBuilder()
+        .append(decorated, that.decorated)
+        .append(processCommand, that.processCommand)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(decorated)
+        .append(processCommand)
+        .toHashCode();
   }
 
   @Override

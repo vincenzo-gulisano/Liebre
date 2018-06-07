@@ -23,6 +23,8 @@
 package stream;
 
 import common.Active;
+import common.StreamConsumer;
+import common.StreamProducer;
 import common.component.Component;
 import common.Named;
 import common.tuple.Tuple;
@@ -48,8 +50,8 @@ public interface Stream<T extends Tuple> extends Active, Named {
 
   long size();
 
-  Component getSource();
+  StreamProducer<T> getSource();
 
-  Component getDestination();
+  StreamConsumer<T> getDestination();
 
 }
