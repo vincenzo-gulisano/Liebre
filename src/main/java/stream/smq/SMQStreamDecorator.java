@@ -1,5 +1,6 @@
 package stream.smq;
 
+import common.component.EventType;
 import common.tuple.Tuple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -98,6 +99,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
   }
 
+  //FIXME: Is it correct to have these writers everywhere?
   private static final class SMQWriterNoop<R extends Tuple> implements SmartMQWriter {
 
     private final Stream<R> decorated;
@@ -114,10 +116,12 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
     @Override
     public void notifyRead(int queueIndex) {
+      decorated.getSource().notify(EventType.READ);
     }
 
     @Override
     public void waitWrite(int queueIndex) {
+      decorated.getSource().wait(EventType.WRITE);
     }
 
   }
@@ -138,10 +142,12 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
     @Override
     public void notifyWrite(int queueIndex) {
+      decorated.getDestination().notify(EventType.WRITE);
     }
 
     @Override
     public void waitRead(int queueIndex) {
+      decorated.getDestination().wait(EventType.READ);
     }
   }
 

@@ -24,7 +24,7 @@ public class SourceThread extends LiebreThread {
 	protected void doRun() {
 		source.onScheduled();
 		final long runUntil = System.nanoTime() + quantumNanos;
-		while (System.nanoTime() < runUntil) {
+		while (System.nanoTime() < runUntil && source.canRun()) {
 			source.run();
 		}
 		source.onRun();

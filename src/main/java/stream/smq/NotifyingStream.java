@@ -14,7 +14,7 @@ public class NotifyingStream<T extends Tuple> extends ExpandableStream<T> {
   public void addTuple(T tuple) {
     lock.lock();
     try {
-      if (!offer(tuple)) {
+      if (!super.offer(tuple)) {
         // If queue full, writer wait
         getSource().wait(EventType.WRITE);
       }
@@ -29,7 +29,7 @@ public class NotifyingStream<T extends Tuple> extends ExpandableStream<T> {
   public T getNextTuple() {
     lock.lock();
     try {
-      T value = poll();
+      T value = super.poll();
       if (value == null) {
         // if queue empty, reader wait
         getDestination().wait(EventType.READ);
