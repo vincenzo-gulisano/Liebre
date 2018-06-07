@@ -44,7 +44,11 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
     }
   }
 
+  //FIXME: Refactor
   public boolean hasNext() {
+    if (!isEnabled()) {
+      return false;
+    }
     if (hasNext) {
       try {
         if ((nextLine = br.readLine()) == null) {

@@ -1,12 +1,14 @@
 package scheduling.impl;
 
+import common.Active;
+import common.component.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import common.Active;
-import common.component.Component;
+import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
 import scheduling.TaskPool;
 import scheduling.thread.LiebreThread;
@@ -15,6 +17,8 @@ import scheduling.thread.SourceThread;
 import source.Source;
 
 public class ThreadPoolScheduler implements Scheduler {
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private final TaskPool<Component> taskPool;
   private final List<PoolWorkerThread> workers = new ArrayList<>();
@@ -38,8 +42,8 @@ public class ThreadPoolScheduler implements Scheduler {
   }
 
   public ThreadPoolScheduler enableSourceThreads() {
-    System.err
-        .println("[WARN] Never call enableSourceThreads() after enable(). Bad things will happen!");
+    Validate.validState(!isEnabled());
+    LOGGER.warn("NEVER call enableSourceThreads() after enable(). Bad things will happen!");
     this.indepedentSources = true;
     return this;
   }
@@ -62,8 +66,7 @@ public class ThreadPoolScheduler implements Scheduler {
     if (!isEnabled()) {
       throw new IllegalStateException();
     }
-    System.out
-        .format("*** [%s] Starting %d worker threads%n", getClass().getSimpleName(), nThreads);
+    LOGGER.info("Starting {} worker threads", nThreads);
     int threadIndex = 0;
     for (threadIndex = 0; threadIndex < nThreads; threadIndex++) {
       PoolWorkerThread worker = statsFolder != null
@@ -75,8 +78,7 @@ public class ThreadPoolScheduler implements Scheduler {
       worker.start();
     }
     // Independent source threads
-    System.out.format("*** [%s] Starting %d source threads%n", getClass().getSimpleName(),
-        sources.size());
+    LOGGER.info("Starting {} source threads", sources.size());
     for (Component task : sources) {
       SourceThread t = new SourceThread(threadIndex, task, quantum, timeUnit);
       sourceThreads.add(t);
@@ -88,9 +90,7 @@ public class ThreadPoolScheduler implements Scheduler {
 
   @Override
   public void stopTasks() {
-    if (isEnabled()) {
-      throw new IllegalStateException();
-    }
+    Validate.validState(!isEnabled());
     for (LiebreThread workerThread : workers) {
       try {
         workerThread.disable();
