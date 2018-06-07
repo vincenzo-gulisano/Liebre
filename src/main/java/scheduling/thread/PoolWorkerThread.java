@@ -1,10 +1,7 @@
 package scheduling.thread;
 
-import java.util.concurrent.TimeUnit;
-
 import common.component.Component;
-import common.StreamConsumer;
-import common.StreamProducer;
+import java.util.concurrent.TimeUnit;
 import scheduling.TaskPool;
 
 public class PoolWorkerThread extends LiebreThread {
@@ -37,7 +34,7 @@ public class PoolWorkerThread extends LiebreThread {
 		executed = false;
 		task.onScheduled();
 		final long runUntil = System.nanoTime() + quantumNanos;
-		while (System.nanoTime() < runUntil && hasInput(task) && hasOutput(task)) {
+		while (System.nanoTime() < runUntil && task.canRun()) {
 			task.run();
 			executed = true;
 		}
@@ -60,12 +57,5 @@ public class PoolWorkerThread extends LiebreThread {
 		super.disable();
 	}
 
-	private boolean hasInput(Component task) {
-		return (task instanceof StreamConsumer == false) || ((StreamConsumer<?>) task).canRead();
-	}
-
-	private boolean hasOutput(Component task) {
-		return (task instanceof StreamProducer == false) || ((StreamProducer<?>) task).canWrite();
-	}
 
 }

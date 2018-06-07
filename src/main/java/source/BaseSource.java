@@ -38,7 +38,7 @@ public class BaseSource<OUT extends Tuple> implements Source<OUT> {
   private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
 
   public BaseSource(String id, SourceFunction<OUT> function) {
-    state = new ComponentState<>(id, ComponentType.SOURCE);
+    this.state = new ComponentState<>(id, ComponentType.SOURCE);
     this.function = function;
   }
 

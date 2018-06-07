@@ -23,8 +23,13 @@ import common.tuple.Tuple;
 import common.util.Util;
 import common.util.backoff.NoopBackoff;
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 import operator.Operator;
 import query.Query;
+import scheduling.Scheduler;
+import scheduling.impl.ProbabilisticTaskPool;
+import scheduling.impl.ThreadPoolScheduler;
+import scheduling.priority.PriorityMetricFactory;
 import sink.Sink;
 import sink.TextSinkFunction;
 import source.Source;
@@ -39,7 +44,10 @@ public class TextUnion {
     final String inputFile2 = args[2];
     final String outputFile = reportFolder + File.separator + "TextUnion.out.csv";
 
-    Query q = new Query();
+    Scheduler scheduler = new ThreadPoolScheduler(8, 100, TimeUnit.MILLISECONDS,
+        new ProbabilisticTaskPool(PriorityMetricFactory.STIMULUS, 1, 1000)).enableSourceThreads();
+
+    Query q = new Query(scheduler);
 
     q.activateStatistics(reportFolder);
 

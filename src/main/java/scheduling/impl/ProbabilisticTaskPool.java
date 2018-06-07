@@ -35,15 +35,16 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
 
   // FIXME: Builder
   public ProbabilisticTaskPool(PriorityMetricFactory metricFactory, int priorityScalingFactor,
-      long priorityUpdateInterval) {
-    this(metricFactory, priorityScalingFactor, priorityUpdateInterval, null);
+      long priorityUpdateIntervalNanos) {
+    this(metricFactory, priorityScalingFactor, priorityUpdateIntervalNanos, null);
   }
 
   public ProbabilisticTaskPool(PriorityMetricFactory metricFactory, int priorityScalingFactor,
-      long priorityUpdateInterval, String statisticsFolder) {
+      long priorityUpdateIntervalNanos, String statisticsFolder) {
     this.metricFactory = metricFactory;
     this.priorityScalingFactor = priorityScalingFactor;
-    this.turns = new AtomicReference<Turn>(new Turn(0, System.nanoTime(), priorityUpdateInterval));
+    this.turns = new AtomicReference<Turn>(new Turn(0, System.nanoTime(),
+        priorityUpdateIntervalNanos));
     // TODO: Refactor/remove
     if (statisticsFolder != null) {
       try {

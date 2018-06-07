@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import stream.Stream;
+import stream.smq.resource.ResourceManager;
+import stream.smq.resource.ResourceManagerFactory;
 
 public final class SmartMQReaderImpl implements SmartMQReader,
     SmartMQController {
@@ -16,8 +18,14 @@ public final class SmartMQReaderImpl implements SmartMQReader,
 
   private List<Stream<? extends Tuple>> queues = new ArrayList<>();
   private List<Backoff> backoffs = new ArrayList<>();
-  private MultiSemaphore readSemaphore;
+  private ResourceManager readSemaphore;
+  private final ResourceManagerFactory rmFactory;
   private volatile boolean enabled;
+
+
+  public SmartMQReaderImpl(ResourceManagerFactory rmFactory) {
+    this.rmFactory = rmFactory;
+  }
 
   @Override
   public int register(Stream<? extends Tuple> stream, Backoff backoff) {
@@ -59,7 +67,7 @@ public final class SmartMQReaderImpl implements SmartMQReader,
   public void enable() {
     this.queues = Collections.unmodifiableList(queues);
     this.backoffs = Collections.unmodifiableList(backoffs);
-    this.readSemaphore = new MultiSemaphore(queues.size());
+    this.readSemaphore = rmFactory.newResourceManager(queues.size());
     this.enabled = true;
   }
 

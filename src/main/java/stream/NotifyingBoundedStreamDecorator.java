@@ -1,16 +1,17 @@
 package stream;
 
+import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang3.Validate;
 
-class AdditionalOfferBoundedStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
+public class NotifyingBoundedStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
   final Lock lock = new ReentrantLock(false);
   private T overflow;
 
-  public AdditionalOfferBoundedStreamDecorator(BoundedStream<T> stream) {
+  public NotifyingBoundedStreamDecorator(Stream<T> stream) {
     super(stream);
   }
 
@@ -39,8 +40,7 @@ class AdditionalOfferBoundedStreamDecorator<T extends Tuple> extends StreamDecor
         overflow = null;
       }
       return value;
-    }
-    finally {
+    } finally {
       lock.unlock();
     }
   }
@@ -52,8 +52,7 @@ class AdditionalOfferBoundedStreamDecorator<T extends Tuple> extends StreamDecor
       T value = super.peek();
       value = value != null ? value : overflow;
       return value;
-    }
-    finally {
+    } finally {
       lock.unlock();
     }
   }
@@ -61,11 +60,34 @@ class AdditionalOfferBoundedStreamDecorator<T extends Tuple> extends StreamDecor
 
   @Override
   public void addTuple(T tuple) {
-    throw new UnsupportedOperationException();
+    lock.lock();
+    try {
+      if (!offer(tuple)) {
+        // If queue full, writer wait
+        getSource().wait(EventType.WRITE);
+      }
+      // Notify the reader to proceed
+      getDestination().notify(EventType.READ);
+    } finally {
+      lock.unlock();
+    }
   }
 
   @Override
   public T getNextTuple() {
-    throw new UnsupportedOperationException();
+    lock.lock();
+    try {
+      T value = poll();
+      if (value != null) {
+        // if read succeeded, writer proceed
+        getSource().notify(EventType.WRITE);
+      } else {
+        // if queue empty, reader wait
+        getDestination().wait(EventType.READ);
+      }
+      return value;
+    } finally {
+      lock.unlock();
+    }
   }
 }

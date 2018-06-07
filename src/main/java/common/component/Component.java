@@ -46,4 +46,16 @@ public interface Component extends Active, Runnable, Named {
 
   void notify(EventType type);
 
+  default boolean canRead() {
+    return true;
+  }
+
+  default boolean canWrite() {
+    return true;
+  }
+
+  default boolean canRun() {
+    return canRead() && canWrite();
+  }
+
 }

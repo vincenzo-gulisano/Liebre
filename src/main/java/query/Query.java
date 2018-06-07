@@ -22,6 +22,7 @@ package query;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.Component;
+import common.component.EventType;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import common.util.backoff.Backoff;
@@ -66,6 +67,7 @@ import source.BaseSource;
 import source.Source;
 import source.SourceFunction;
 import source.SourceStatistic;
+import stream.NotifyingBoundedStreamDecorator;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamFactoryImpl;
@@ -75,6 +77,9 @@ import stream.smq.SMQStreamDecorator.Builder;
 import stream.smq.SmartMQController;
 import stream.smq.SmartMQReaderImpl;
 import stream.smq.SmartMQWriterImpl;
+import stream.smq.resource.MultiSemaphoreFactory;
+import stream.smq.resource.NotifyingResourceManagerFactory;
+import stream.smq.resource.ResourceManagerFactory;
 
 public final class Query {
   //FIXME: Validate Component IDs so that they do not contain _
@@ -274,7 +279,7 @@ public final class Query {
       Backoff backoff) {
     //FIXME: Stream Factory should generate the readers/writers
     // and produce noop versions when using scheduler
-    Stream<T> stream = streamFactory.newBoundedStream(source, destination, DEFAULT_STREAM_CAPACITY);
+    Stream<T> stream = newStream(source, destination, DEFAULT_STREAM_CAPACITY);
     SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
     SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());
     if (writer == null && reader == null) {
@@ -290,6 +295,16 @@ public final class Query {
       builder.reader(reader, index);
     }
     return builder.build();
+  }
+
+  private <T extends Tuple> Stream<T> newStream(StreamProducer<T> source, StreamConsumer<T> destination, int capacity) {
+    Stream<T> stream = streamFactory.newBoundedStream(source, destination, DEFAULT_STREAM_CAPACITY);
+    if (!scheduler.usesNotifications()) {
+      return stream;
+    }
+    else {
+      return new NotifyingBoundedStreamDecorator<>(stream);
+    }
   }
 
   public void activate() {
@@ -349,26 +364,36 @@ public final class Query {
 
   private void enableSmartMQ(Component component) {
     if (component.inputsNumber().isMultiple()) {
-      addSmartMQReader(component.getId());
+      addSmartMQReader(component);
     }
     if (component.outputsNumber().isMultiple()) {
-      addSmartMQWriter(component.getId());
+      addSmartMQWriter(component);
     }
   }
 
-  private void addSmartMQReader(String id) {
-    if (smartMQReaders.containsKey(id)) {
+  private void addSmartMQReader(Component component) {
+    if (smartMQReaders.containsKey(component.getId())) {
       return;
     }
-    LOGGER.debug("Creating SmartMQReader for {}", id);
-    smartMQReaders.put(id, new SmartMQReaderImpl());
+    LOGGER.debug("Creating SmartMQReader for {}", component.getId());
+    smartMQReaders.put(component.getId(),
+        new SmartMQReaderImpl(getResourceManagerFactory(component, EventType.READ)));
   }
 
-  private void addSmartMQWriter(String id) {
-    if (smartMQWriters.containsKey(id)) {
+  private void addSmartMQWriter(Component component) {
+    if (smartMQWriters.containsKey(component.getId())) {
       return;
     }
-    LOGGER.debug("Creating SmartMQWriter for {}", id);
-    smartMQWriters.put(id, new SmartMQWriterImpl());
+    LOGGER.debug("Creating SmartMQWriter for {}", component.getId());
+    smartMQWriters.put(component.getId(),
+        new SmartMQWriterImpl(getResourceManagerFactory(component, EventType.WRITE)));
+  }
+
+  private ResourceManagerFactory getResourceManagerFactory(Component component, EventType type) {
+    if (scheduler.usesNotifications()) {
+      return new NotifyingResourceManagerFactory(component, type);
+    } else {
+      return MultiSemaphoreFactory.INSTANCE;
+    }
   }
 }

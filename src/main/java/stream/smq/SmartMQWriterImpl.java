@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import org.apache.commons.lang3.Validate;
 import stream.Stream;
+import stream.smq.resource.ResourceManager;
+import stream.smq.resource.ResourceManagerFactory;
 
 public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController {
 
@@ -20,9 +22,14 @@ public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController
   private List<Stream<? extends Tuple>> queues = new ArrayList<>();
   private List<Queue<? extends Tuple>> buffers = new ArrayList<>();
   private List<Backoff> backoffs = new ArrayList<>();
-  private MultiSemaphore writeSemaphore;
   private AtomicIntegerArray bufferLocks;
   private volatile boolean enabled;
+  private ResourceManager writeSemaphore;
+  private final ResourceManagerFactory rmFactory;
+
+  public SmartMQWriterImpl(ResourceManagerFactory rmFactory) {
+    this.rmFactory = rmFactory;
+  }
 
   @Override
   public int register(Stream<? extends Tuple> stream, Backoff backoff) {
@@ -45,7 +52,7 @@ public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController
     this.buffers = Collections.unmodifiableList(buffers);
     this.backoffs = Collections.unmodifiableList(backoffs);
     this.bufferLocks = new AtomicIntegerArray(queues.size());
-    this.writeSemaphore = new MultiSemaphore(queues.size());
+    this.writeSemaphore =  rmFactory.newResourceManager(queues.size());
     this.enabled = true;
   }
 

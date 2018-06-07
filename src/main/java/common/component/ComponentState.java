@@ -49,8 +49,8 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   private final int index;
   private final List<Stream<IN>> inputs = new ArrayList<>();
   private final List<Stream<OUT>> outputs = new ArrayList<>();
-  private volatile boolean canRead;
-  private volatile boolean canWrite;
+  private volatile boolean canRead = false;
+  private volatile boolean canWrite = true;
 
   private volatile boolean enabled = false;
 

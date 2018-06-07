@@ -26,7 +26,4 @@ import common.tuple.Tuple;
 public interface Operator<IN extends Tuple, OUT extends Tuple> extends StreamConsumer<IN>,
     StreamProducer<OUT> {
 
-  default boolean canRun() {
-    return canRead() && canWrite();
-  }
 }
