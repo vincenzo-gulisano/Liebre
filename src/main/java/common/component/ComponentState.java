@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -49,8 +50,10 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   private final int index;
   private final List<Stream<IN>> inputs = new ArrayList<>();
   private final List<Stream<OUT>> outputs = new ArrayList<>();
-  private volatile boolean canRead = false;
-  private volatile boolean canWrite = true;
+
+  // FIXME: Maybe can optimize those
+  private AtomicBoolean canWrite = new AtomicBoolean(true);
+  private AtomicBoolean canRead = new AtomicBoolean(false);
 
   private volatile boolean enabled = false;
 
@@ -187,8 +190,13 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
     return Collections.unmodifiableCollection(outputs);
   }
 
-  void setCanRead(boolean value) {
-    this.canRead = value;
+
+  void notifyRead() {
+    canRead.set(true);
+  }
+
+  void waitRead() {
+    canRead.set(false);
   }
 
   /**
@@ -197,11 +205,15 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    * @return {@code true} if all input streams are not empty.
    */
   public boolean canRead() {
-    return canRead;
+    return canRead.get();
   }
 
-  void setCanWrite(boolean value) {
-    this.canWrite = value;
+  void notifyWrite() {
+    canWrite.set(true);
+  }
+
+  void waitWrite() {
+    canWrite.set(false);
   }
 
   /**
@@ -210,7 +222,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    * @return {@code true} if all output streams have non-zero capacity.
    */
   public boolean canWrite() {
-    return canWrite;
+    return canWrite.get();
   }
 
   /**

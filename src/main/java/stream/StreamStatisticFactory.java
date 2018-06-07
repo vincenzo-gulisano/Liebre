@@ -17,9 +17,9 @@ public class StreamStatisticFactory implements StreamFactory {
   }
 
   @Override
-  public <T extends Tuple> Stream<T> newBoundedStream(StreamProducer<T> from, StreamConsumer<T> to,
+  public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
       int capacity) {
-    Stream<T> stream = factory.newBoundedStream(from, to, capacity);
+    Stream<T> stream = factory.newStream(from, to, capacity);
     return new StreamStatistic<>(stream, folder, autoFlush);
   }
 

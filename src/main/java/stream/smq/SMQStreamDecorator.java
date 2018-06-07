@@ -56,8 +56,8 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
   }
 
   @Override
-  public long size() {
-    return super.size() + writer.bufferSize(writerIndex);
+  public int size() {
+    return super.size();
   }
 
   @Override
@@ -110,11 +110,6 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
     @Override
     public <T extends Tuple> void put(int queueIndex, T value) {
       decorated.addTuple((R) value);
-    }
-
-    @Override
-    public int bufferSize(int index) {
-      return 0;
     }
 
     @Override

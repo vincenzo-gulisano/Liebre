@@ -72,11 +72,11 @@ import source.SourceFunction;
 import source.SourceStatistic;
 import source.TextFileSource;
 import source.TextSourceFunction;
-import stream.NotifyingStreamDecorator;
+import stream.ExpandableStreamFactoryImpl;
 import stream.Stream;
 import stream.StreamFactory;
-import stream.StreamFactoryImpl;
 import stream.StreamStatisticFactory;
+import stream.smq.NotifyingStream;
 import stream.smq.SMQStreamDecorator;
 import stream.smq.SMQStreamDecorator.Builder;
 import stream.smq.SmartMQController;
@@ -103,7 +103,7 @@ public final class Query {
   private boolean keepStatistics = false;
   private String statsFolder;
   private boolean autoFlush;
-  private StreamFactory streamFactory = StreamFactoryImpl.INSTANCE;
+  private StreamFactory streamFactory = ExpandableStreamFactoryImpl.INSTANCE;
   private Backoff queryBackoff = NoopBackoff.INSTANCE;
 
   public Query() {
@@ -319,11 +319,11 @@ public final class Query {
 
   private <T extends Tuple> Stream<T> newStream(StreamProducer<T> source,
       StreamConsumer<T> destination, int capacity) {
-    Stream<T> stream = streamFactory.newBoundedStream(source, destination, DEFAULT_STREAM_CAPACITY);
+    Stream<T> stream = streamFactory.newStream(source, destination, DEFAULT_STREAM_CAPACITY);
     if (!scheduler.usesNotifications()) {
       return stream;
     } else {
-      return new NotifyingStreamDecorator<>(stream);
+      return new NotifyingStream<>(stream);
     }
   }
 

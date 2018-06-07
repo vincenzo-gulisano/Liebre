@@ -32,30 +32,35 @@ package common.component;
 public enum EventType {
   READ {
     @Override
-    protected void setValue(ComponentState state, boolean value) {
-      state.setCanRead(value);
+    public void wait(ComponentState state) {
+      state.waitRead();
+    }
+
+    @Override
+    public void notify(ComponentState state) {
+      state.notifyRead();
     }
   },
   WRITE {
     @Override
-    protected void setValue(ComponentState state, boolean value) {
-      state.setCanWrite(value);
+    public void wait(ComponentState state) {
+      state.waitWrite();
+    }
+
+    @Override
+    public void notify(ComponentState state) {
+      state.notifyWrite();
     }
   };
 
-  protected abstract void setValue(ComponentState state, boolean value);
 
   /**
    * Set the given {@link ComponentState} to wait for this event type
    */
-  public void wait(ComponentState state) {
-    setValue(state, false);
-  }
+  public abstract void wait(ComponentState state);
 
   /**
    * Notify {@link ComponentState} to wait for this event type
    */
-  public void notify(ComponentState state) {
-    setValue(state, true);
-  }
+  public abstract void notify(ComponentState state);
 }

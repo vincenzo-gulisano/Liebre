@@ -16,7 +16,7 @@ public final class SmartMQReaderImpl implements SmartMQReader,
   private static final int FREE = 0;
   private static final int LOCKED = 1;
 
-  private List<Stream<? extends Tuple>> queues = new ArrayList<>();
+  private List<Stream<? extends Tuple>> streams = new ArrayList<>();
   private List<Backoff> backoffs = new ArrayList<>();
   private ResourceManager readSemaphore;
   private final ResourceManagerFactory rmFactory;
@@ -29,8 +29,8 @@ public final class SmartMQReaderImpl implements SmartMQReader,
 
   @Override
   public int register(Stream<? extends Tuple> stream, Backoff backoff) {
-    int index = queues.size();
-    queues.add(stream);
+    int index = streams.size();
+    streams.add(stream);
     backoffs.add(backoff);
     return index;
   }
@@ -43,7 +43,7 @@ public final class SmartMQReaderImpl implements SmartMQReader,
 
   @Override
   public <T extends Tuple> T take(int queueIndex) throws InterruptedException {
-    T value = (T) queues.get(queueIndex).poll();
+    T value = (T) streams.get(queueIndex).poll();
     if (value == null) {
       waitRead(queueIndex);
       return null;
@@ -65,9 +65,9 @@ public final class SmartMQReaderImpl implements SmartMQReader,
 
   @Override
   public void enable() {
-    this.queues = Collections.unmodifiableList(queues);
+    this.streams = Collections.unmodifiableList(streams);
     this.backoffs = Collections.unmodifiableList(backoffs);
-    this.readSemaphore = rmFactory.newResourceManager(queues.size());
+    this.readSemaphore = rmFactory.newResourceManager(streams.size());
     this.enabled = true;
   }
 

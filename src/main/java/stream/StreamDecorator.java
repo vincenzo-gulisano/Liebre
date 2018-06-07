@@ -55,12 +55,12 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
   }
 
   @Override
-  public long size() {
+  public int size() {
     return decorated.size();
   }
 
   @Override
-  public long remainingCapacity() {
+  public int remainingCapacity() {
     return decorated.remainingCapacity();
   }
 

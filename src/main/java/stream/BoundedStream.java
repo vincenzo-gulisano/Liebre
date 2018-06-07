@@ -93,12 +93,12 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
   }
 
   @Override
-  public long size() {
+  public int size() {
     return stream.size();
   }
 
   @Override
-  public long remainingCapacity() {
+  public int remainingCapacity() {
     return stream.remainingCapacity();
   }
 

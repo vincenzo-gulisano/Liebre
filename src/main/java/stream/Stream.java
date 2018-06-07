@@ -46,9 +46,9 @@ public interface Stream<T extends Tuple> extends Active, Named {
 
   T peek();
 
-  long remainingCapacity();
+  int remainingCapacity();
 
-  long size();
+  int size();
 
   StreamProducer<T> getSource();
 
