@@ -72,14 +72,12 @@ import source.SourceFunction;
 import source.SourceStatistic;
 import source.TextFileSource;
 import source.TextSourceFunction;
-import stream.BoundedStreamFactory;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatisticFactory;
-import stream.smq.ExpandableStream;
-import stream.smq.NotifyingStream;
 import stream.smq.SMQStreamDecorator;
 import stream.smq.SMQStreamDecorator.Builder;
+import stream.smq.SMQStreamFactories;
 import stream.smq.SmartMQController;
 import stream.smq.SmartMQReaderImpl;
 import stream.smq.SmartMQWriterImpl;
@@ -104,7 +102,7 @@ public final class Query {
   private boolean keepStatistics = false;
   private String statsFolder;
   private boolean autoFlush;
-  private StreamFactory streamFactory = BoundedStreamFactory.INSTANCE;
+  private StreamFactory streamFactory;
   private Backoff queryBackoff = NoopBackoff.INSTANCE;
 
   public Query() {
@@ -114,8 +112,12 @@ public final class Query {
   public Query(Scheduler scheduler) {
     this.scheduler = scheduler;
     // If scheduler is not smart, use backoffs
-    //FIXME: Revisit this!
-    if (!scheduler.usesNotifications()) {
+    if (scheduler.usesNotifications()) {
+      streamFactory = SMQStreamFactories.NOTIFYING;
+    }
+    else {
+      streamFactory = SMQStreamFactories.EXPANDABLE;
+      //FIXME: Revisit this!
       activateBackoff(10, 10);
     }
   }
@@ -298,9 +300,7 @@ public final class Query {
   private <T extends Tuple> Stream<T> getSmartMQStream(StreamProducer<T> source,
       StreamConsumer<T> destination,
       Backoff backoff) {
-    //FIXME: Stream Factory should generate the readers/writers
-    // and produce noop versions when using scheduler
-    Stream<T> stream = newStream(source, destination, DEFAULT_STREAM_CAPACITY);
+    Stream<T> stream = streamFactory.newStream(source, destination, DEFAULT_STREAM_CAPACITY);
     SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
     SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());
     if (writer == null && reader == null) {
@@ -316,16 +316,6 @@ public final class Query {
       builder.reader(reader, index);
     }
     return builder.build();
-  }
-
-  private <T extends Tuple> Stream<T> newStream(StreamProducer<T> source,
-      StreamConsumer<T> destination, int capacity) {
-    Stream<T> stream = streamFactory.newStream(source, destination, DEFAULT_STREAM_CAPACITY);
-    if (!scheduler.usesNotifications()) {
-      return new ExpandableStream<>(stream);
-    } else {
-      return new NotifyingStream<>(stream);
-    }
   }
 
   public void activate() {

@@ -47,7 +47,7 @@ public class TextUnion {
             reportFolder))
         .enableSourceThreads();
 
-    Query q = new Query(scheduler);
+    Query q = new Query();
 
     q.activateStatistics(reportFolder);
 

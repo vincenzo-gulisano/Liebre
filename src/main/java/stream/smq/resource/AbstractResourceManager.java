@@ -6,6 +6,7 @@ public abstract class AbstractResourceManager implements ResourceManager {
   private static final int FREE = 0;
   private static final int ACQUIRED = 1;
   private final AtomicIntegerArray acquired;
+  protected final int size;
 
 
   public AbstractResourceManager(int size) {
@@ -13,6 +14,7 @@ public abstract class AbstractResourceManager implements ResourceManager {
       throw new IllegalArgumentException("size");
     }
     this.acquired = new AtomicIntegerArray(size);
+    this.size = size;
     initArray();
   }
 
