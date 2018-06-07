@@ -30,12 +30,13 @@ public class NotifyingStream<T extends Tuple> extends ExpandableStream<T> {
     lock.lock();
     try {
       T value = poll();
-      if (value != null) {
-        // if read succeeded, writer proceed
-        getSource().notify(EventType.WRITE);
-      } else {
+      if (value == null) {
         // if queue empty, reader wait
         getDestination().wait(EventType.READ);
+      }
+      else if (!super.isFull()) {
+        // if read succeeded and stream has space, writer proceed
+        getSource().notify(EventType.WRITE);
       }
       return value;
     } finally {

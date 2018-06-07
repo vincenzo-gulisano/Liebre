@@ -43,10 +43,11 @@ public class TextUnion {
     final String outputFile = reportFolder + File.separator + "TextUnion.out.csv";
 
     Scheduler scheduler = new ThreadPoolScheduler(2, 100, TimeUnit.MILLISECONDS,
-        new ProbabilisticTaskPoolStatistic(PriorityMetricFactory.QUEUE_SIZE, 1, 1000000, reportFolder))
+        new ProbabilisticTaskPoolStatistic(PriorityMetricFactory.QUEUE_SIZE, 1, 1000000,
+            reportFolder))
         .enableSourceThreads();
 
-    Query q = new Query(scheduler);
+    Query q = new Query();
 
     q.activateStatistics(reportFolder);
 
@@ -67,7 +68,7 @@ public class TextUnion {
     Operator<MyTuple, MyTuple> union = q.addUnionOperator("union");
 
     Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
-      Util.sleep(100);
+      Util.sleep(10000);
       return tuple.timestamp + "," + tuple.key + "," + tuple.value;
     });
 

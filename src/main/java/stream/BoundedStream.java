@@ -102,6 +102,11 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
     return stream.remainingCapacity();
   }
 
+  @Override
+  public boolean isFull() {
+    throw new UnsupportedOperationException();
+  }
+
   public StreamProducer<T> getSource() {
     return source;
   }

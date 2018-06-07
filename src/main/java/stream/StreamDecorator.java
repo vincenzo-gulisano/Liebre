@@ -65,6 +65,11 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
   }
 
   @Override
+  public boolean isFull() {
+    return decorated.isFull();
+  }
+
+  @Override
   public boolean offer(T tuple) {
     return decorated.offer(tuple);
   }

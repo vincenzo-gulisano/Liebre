@@ -38,7 +38,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
   public T getNextTuple() {
     try {
       T value = reader.take(readerIndex);
-      if (value != null) {
+      if (value != null && !super.isFull()) {
         writer.notifyRead(writerIndex);
       }
       return value;

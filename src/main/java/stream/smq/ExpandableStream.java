@@ -12,6 +12,7 @@ public class ExpandableStream<T extends Tuple> extends StreamDecorator<T> {
 
   final Lock lock = new ReentrantLock(false);
   private final Queue<T> buffer = new ConcurrentLinkedQueue<>();
+  private volatile boolean isFull;
 
   public ExpandableStream(Stream<T> stream) {
     super(stream);
@@ -62,10 +63,12 @@ public class ExpandableStream<T extends Tuple> extends StreamDecorator<T> {
       while (!buffer.isEmpty()) {
         T value = buffer.peek();
         if (!super.offer(value)) {
+          isFull = true;
           return;
         }
         buffer.remove();
       }
+      isFull = false;
     } finally {
       lock.unlock();
     }
@@ -79,5 +82,10 @@ public class ExpandableStream<T extends Tuple> extends StreamDecorator<T> {
     } finally {
       lock.unlock();
     }
+  }
+
+  @Override
+  public boolean isFull() {
+    return isFull;
   }
 }
