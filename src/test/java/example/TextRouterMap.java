@@ -19,19 +19,16 @@
 
 package example;
 
+import common.tuple.BaseRichTuple;
+import common.util.Util;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-
-import common.tuple.BaseRichTuple;
-import common.util.Util;
 import operator.Operator;
 import operator.router.RouterFunction;
 import query.Query;
 import sink.Sink;
-import sink.TextSinkFunction;
 import source.Source;
-import source.TextSourceFunction;
 
 public class TextRouterMap {
 
@@ -44,14 +41,10 @@ public class TextRouterMap {
     Query q = new Query();
 
     q.activateStatistics(reportFolder);
-    Source<MyTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<MyTuple>(inputFile) {
-
-      @Override
-      protected MyTuple getNext(String line) {
-        Util.sleep(15);
-        String[] tokens = line.split(",");
-        return new MyTuple(Long.valueOf(tokens[0]), tokens[1], Integer.valueOf(tokens[2]));
-      }
+    Source<MyTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
+      Util.sleep(15);
+      String[] tokens = line.split(",");
+      return new MyTuple(Long.valueOf(tokens[0]), tokens[1], Integer.valueOf(tokens[2]));
     });
 
     Operator<MyTuple, MyTuple> router = q
@@ -71,19 +64,11 @@ public class TextRouterMap {
           }
         });
 
-    Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile1) {
-
-      @Override
-      public String processTupleToText(MyTuple tuple) {
-        return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.value;
-      }
+    Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile1, tuple -> {
+      return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.value;
     });
-    Sink<MyTuple> o2 = q.addBaseSink("o2", new TextSinkFunction<MyTuple>(outputFile2) {
-
-      @Override
-      public String processTupleToText(MyTuple tuple) {
-        return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.value;
-      }
+    Sink<MyTuple> o2 = q.addTextFileSink("o2", outputFile2, tuple -> {
+      return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.value;
     });
 
     q.connect(i1, router).connect(router, o1).connect(router, o2);

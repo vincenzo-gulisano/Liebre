@@ -19,18 +19,15 @@
 
 package example;
 
-import java.io.File;
-
 import common.tuple.Tuple;
 import common.util.Util;
+import java.io.File;
 import operator.Operator;
 import operator.filter.FilterFunction;
 import operator.map.MapFunction;
 import query.Query;
 import sink.Sink;
-import sink.TextSinkFunction;
 import source.Source;
-import source.TextSourceFunction;
 
 public class TextMapFilter {
 
@@ -41,15 +38,11 @@ public class TextMapFilter {
     Query q = new Query();
 
     q.activateStatistics(reportFolder);
-    Source<MyTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<MyTuple>(inputFile) {
-
-      @Override
-      protected MyTuple getNext(String line) {
-        Util.sleep(15);
-        String[] tokens = line.split(",");
-        return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
-            Integer.valueOf(tokens[2]));
-      }
+    Source<MyTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
+      Util.sleep(15);
+      String[] tokens = line.split(",");
+      return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
+          Integer.valueOf(tokens[2]));
     });
 
     Operator<MyTuple, MyTuple> multiply = q
@@ -70,12 +63,8 @@ public class TextMapFilter {
 
         });
 
-    Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile) {
-
-      @Override
-      public String processTupleToText(MyTuple tuple) {
-        return tuple.timestamp + "," + tuple.key + "," + tuple.value;
-      }
+    Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
+      return tuple.timestamp + "," + tuple.key + "," + tuple.value;
     });
 
     q.connect(i1, multiply).connect(multiply, filter).connect(filter, o1);

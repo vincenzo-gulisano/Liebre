@@ -16,7 +16,6 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
   private BlockingQueue<T> stream;
-  private volatile long tuplesWritten, tuplesRead;
   private volatile boolean enabled;
 
   public BoundedStream(String id, int index, StreamProducer<T> source, StreamConsumer<T> destination, int capacity) {
@@ -25,8 +24,6 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
     this.stream = new ArrayBlockingQueue<T>(capacity);
     this.source = source;
     this.destination = destination;
-    tuplesWritten = 0;
-    tuplesRead = 0;
   }
 
   @Override
@@ -36,7 +33,6 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
     }
     try {
       stream.put(tuple);
-      tuplesWritten++;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       disable();
@@ -49,7 +45,6 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
       return false;
     }
     boolean offered = stream.offer(tuple);
-    tuplesWritten = offered ? tuplesWritten + 1 : tuplesWritten;
     return offered;
   }
 
@@ -61,7 +56,6 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
     T nextTuple = null;
     try {
       nextTuple = stream.take();
-      tuplesRead++;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       disable();
@@ -75,7 +69,6 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
       return null;
     }
     T tuple = stream.poll();
-    tuplesRead = tuple != null ? tuplesRead + 1 : tuplesRead;
     return tuple;
   }
 
@@ -101,17 +94,12 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
 
   @Override
   public long size() {
-    return tuplesWritten - tuplesRead;
+    return stream.size();
   }
 
   @Override
   public long remainingCapacity() {
     return stream.remainingCapacity();
-  }
-
-  @Override
-  public String getId() {
-    return this.id;
   }
 
   public StreamProducer<T> getSource() {
@@ -120,6 +108,11 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
 
   public StreamConsumer<T> getDestination() {
     return destination;
+  }
+
+  @Override
+  public String getId() {
+    return this.id;
   }
 
   @Override
@@ -164,8 +157,6 @@ public class BoundedStream<T extends Tuple> implements Stream<T> {
         .append("index", index)
         .append("source", source)
         .append("destination", destination)
-        .append("tuplesWritten", tuplesWritten)
-        .append("tuplesRead", tuplesRead)
         .append("enabled", enabled)
         .toString();
   }

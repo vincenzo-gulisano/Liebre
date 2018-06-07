@@ -79,6 +79,11 @@ public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController
   }
 
   @Override
+  public int bufferSize(int index) {
+    return buffers.get(index).size();
+  }
+
+  @Override
   public void notifyRead(int queueIndex) {
     //FIXME: Revisit this, is it correct?
     if (fullCopyInputBuffer(queueIndex)) {

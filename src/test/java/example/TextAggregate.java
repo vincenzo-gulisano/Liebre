@@ -19,18 +19,15 @@
 
 package example;
 
-import java.io.File;
-
 import common.tuple.BaseRichTuple;
 import common.util.Util;
+import java.io.File;
 import operator.Operator;
 import operator.aggregate.BaseTimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindow;
 import query.Query;
 import sink.Sink;
-import sink.TextSinkFunction;
 import source.Source;
-import source.TextSourceFunction;
 
 public class TextAggregate {
 
@@ -45,15 +42,11 @@ public class TextAggregate {
 
     q.activateStatistics(reportFolder);
 
-    Source<InputTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<InputTuple>(inputFile) {
-
-      @Override
-      protected InputTuple getNext(String line) {
+    Source<InputTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
         String[] tokens = line.split(",");
         return new InputTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
             Integer.valueOf(tokens[2]));
-      }
-    });
+      });
 
     ;
 
@@ -61,14 +54,9 @@ public class TextAggregate {
         .addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE,
             WINDOW_SLIDE);
 
-    Sink<OutputTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<OutputTuple>(outputFile) {
-
-      @Override
-      public String processTupleToText(OutputTuple tuple) {
+    Sink<OutputTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
         return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.count + ","
             + tuple.average;
-      }
-
     });
 
     q.connect(i1, aggregate).connect(aggregate, o1);

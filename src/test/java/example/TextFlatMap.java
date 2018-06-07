@@ -19,19 +19,16 @@
 
 package example;
 
+import common.tuple.Tuple;
+import common.util.Util;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-
-import common.tuple.Tuple;
-import common.util.Util;
 import operator.Operator;
 import operator.map.FlatMapFunction;
 import query.Query;
 import sink.Sink;
-import sink.TextSinkFunction;
 import source.Source;
-import source.TextSourceFunction;
 
 public class TextFlatMap {
 
@@ -44,18 +41,12 @@ public class TextFlatMap {
     Query q = new Query();
 
     q.activateStatistics(reportFolder);
-    Source<MyTuple> i1 = q.addBaseSource("I1", new TextSourceFunction<MyTuple>(inputFile) {
-
-      @Override
-      protected MyTuple getNext(String line) {
-        Util.sleep(100);
-        String[] tokens = line.split(",");
-        return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
-            Integer.valueOf(tokens[2]));
-      }
+    Source<MyTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
+      Util.sleep(100);
+      String[] tokens = line.split(",");
+      return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
+          Integer.valueOf(tokens[2]));
     });
-
-    ;
 
     Operator<MyTuple, MyTuple> multiply = q
         .addMapOperator("multiply", new FlatMapFunction<MyTuple, MyTuple>() {
@@ -69,13 +60,8 @@ public class TextFlatMap {
           }
         });
 
-    Sink<MyTuple> o1 = q.addBaseSink("o1", new TextSinkFunction<MyTuple>(outputFile) {
-
-      @Override
-      public String processTupleToText(MyTuple tuple) {
-        return tuple.timestamp + "," + tuple.key + "," + tuple.value;
-      }
-
+    Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
+      return tuple.timestamp + "," + tuple.key + "," + tuple.value;
     });
 
     q.connect(i1, multiply).connect(multiply, o1);

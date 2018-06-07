@@ -1,18 +1,11 @@
 package scheduling.impl;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import common.component.Component;
+import common.util.AliasMethod;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
-
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-
-import common.component.Component;
-import common.util.AliasMethod;
-import common.util.StatisticFilename;
 import scheduling.TaskPool;
 import scheduling.priority.PriorityMetric;
 import scheduling.priority.PriorityMetricFactory;
@@ -24,41 +17,19 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
   private final PriorityMetricFactory metricFactory;
   private final AtomicReference<Turn> turns;
   private final int priorityScalingFactor;
-  private final CSVPrinter csv;
-  private final boolean statisticsEnabled;
-  private final ThreadLocal<Integer> cache = new ThreadLocal<>();
+
   private AtomicReference<AliasMethod> sampler = new AtomicReference<AliasMethod>(null);
   private volatile PriorityMetric metric;
   private volatile int nThreads;
   private AtomicReferenceArray<Boolean> available;
   private volatile boolean enabled;
 
-  // FIXME: Builder
   public ProbabilisticTaskPool(PriorityMetricFactory metricFactory, int priorityScalingFactor,
       long priorityUpdateIntervalNanos) {
-    this(metricFactory, priorityScalingFactor, priorityUpdateIntervalNanos, null);
-  }
-
-  public ProbabilisticTaskPool(PriorityMetricFactory metricFactory, int priorityScalingFactor,
-      long priorityUpdateIntervalNanos, String statisticsFolder) {
     this.metricFactory = metricFactory;
     this.priorityScalingFactor = priorityScalingFactor;
     this.turns = new AtomicReference<Turn>(new Turn(0, System.nanoTime(),
         priorityUpdateIntervalNanos));
-    // TODO: Refactor/remove
-    if (statisticsFolder != null) {
-      try {
-        csv = new CSVPrinter(
-            new FileWriter(StatisticFilename.INSTANCE.get(statisticsFolder, "taskPool", "prio")),
-            CSVFormat.DEFAULT);
-        this.statisticsEnabled = true;
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
-    } else {
-      this.csv = null;
-      this.statisticsEnabled = false;
-    }
   }
 
   @Override
@@ -86,15 +57,6 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
       updatePriorities(threadId);
       turns.set(turn.next(nThreads));
     }
-
-    // If there is an operator already locked, run it immediately
-    Integer cachedTask = cache.get();
-    if (cachedTask != null) {
-      cache.set(null);
-      return tasks.get(cachedTask);
-    }
-
-    // Otherwise, search for unlocked probabilistically
     AliasMethod alias = sampler.get();
     while (true) {
       int k = alias.next();
@@ -106,18 +68,13 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
 
   @Override
   public void put(Component task, int threadId) {
-    // If a new random choice gives us the same task, then keep running it and don't unlock it
-    if (sampler.get().next() == task.getIndex()) {
-      cache.set(task.getIndex());
-      return;
-    }
     available.set(task.getIndex(), true);
   }
 
-  private void updatePriorities(long threadId) {
+  protected List<Double> updatePriorities(long threadId) {
     List<Double> probabilities = metric.getPriorities(priorityScalingFactor);
-    recordStatistics(probabilities, threadId);
     sampler.set(new AliasMethod(probabilities));
+    return probabilities;
   }
 
   @Override
@@ -148,7 +105,6 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
       task.setPriorityMetric(metric);
       task.enable();
     }
-    recordStatisticsHeader();
     // Initialize priorities
     updatePriorities(1);
     this.enabled = true;
@@ -165,42 +121,10 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
     for (Component t : tasks) {
       t.disable();
     }
-    if (statisticsEnabled) {
-      try {
-        csv.close();
-      } catch (IOException e) {
-        System.err
-            .format("[WARN] Failed to close statistics file for TaskPool: %s%n", e.getMessage());
-      }
-    }
   }
 
   private int nThreadsTotal() {
     return nThreads + passiveTasks.size();
-  }
-
-  private void recordStatisticsHeader() {
-    if (statisticsEnabled) {
-      try {
-        csv.printRecord(tasks);
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
-    }
-  }
-
-  private void recordStatistics(List<Double> probabilities, long threadId) {
-    if (!isEnabled()) {
-      System.err.println("[WARN] Ignoring append, TaskPool is disabled");
-      return;
-    }
-    if (statisticsEnabled && threadId % 4 == 0) {
-      try {
-        csv.printRecord(probabilities);
-      } catch (IOException e) {
-        System.err.format("[WARN] Failed to record statistics for TaskPool: %s%n", e.getMessage());
-      }
-    }
   }
 
   private static class Turn {

@@ -41,32 +41,31 @@ public class QueueSizeMetric extends PriorityMetric {
 			return 0;
 		}
 		if (task instanceof Source) {
-			return getMinimumOutputCapacity((Source<?>) task);
+			return getOutputCapacity((Source<?>) task);
 		} else if (task instanceof Sink) {
-			return getMinimumInputSize((Sink<?>) task);
+			return getInputSize((Sink<?>) task);
 		} else if (task instanceof Operator<?, ?>) {
 			Operator<?, ?> operator = (Operator<?, ?>) task;
-			return Math.min(getMinimumInputSize(operator), getMinimumOutputCapacity(operator));
+			return Math.min(getInputSize(operator), getOutputCapacity(operator));
 		} else {
 			throw new IllegalArgumentException("Cannot produce metric for class: " + task.getClass());
 		}
 	}
 
-	private <IN extends Tuple> long getMinimumInputSize(StreamConsumer<IN> consumer) {
-		long minInputSize = -1;
+	private <IN extends Tuple> long getInputSize(StreamConsumer<IN> consumer) {
+		long size = 0;
 		for (Stream<?> input : getInputs(consumer)) {
-			minInputSize = minInputSize < 0 ? input.size() : Math.min(input.size(), minInputSize);
+			size += input.size();
 		}
-		return minInputSize;
+		return size;
 	}
 
-	private <OUT extends Tuple> long getMinimumOutputCapacity(StreamProducer<OUT> producer) {
-		long minOutputCapacity = -1;
+	private <OUT extends Tuple> long getOutputCapacity(StreamProducer<OUT> producer) {
+		long capacity = 0;
 		for (Stream<?> output : getOutputs(producer)) {
-			minOutputCapacity = minOutputCapacity < 0 ? output.remainingCapacity()
-					: Math.min(output.remainingCapacity(), minOutputCapacity);
+			capacity += output.remainingCapacity();
 		}
-		return minOutputCapacity;
+		return capacity;
 	}
 
 }

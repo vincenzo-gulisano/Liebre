@@ -6,12 +6,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang3.Validate;
 
-public class NotifyingBoundedStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
+public class NotifyingStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
   final Lock lock = new ReentrantLock(false);
   private T overflow;
 
-  public NotifyingBoundedStreamDecorator(Stream<T> stream) {
+  public NotifyingStreamDecorator(Stream<T> stream) {
     super(stream);
   }
 

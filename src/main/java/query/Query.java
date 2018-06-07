@@ -27,6 +27,7 @@ import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import common.util.backoff.Backoff;
 import common.util.backoff.ExponentialBackoff;
+import common.util.backoff.NoopBackoff;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,11 +64,15 @@ import sink.BaseSink;
 import sink.Sink;
 import sink.SinkFunction;
 import sink.SinkStatistic;
+import sink.TextFileSink;
+import sink.TextSinkFunction;
 import source.BaseSource;
 import source.Source;
 import source.SourceFunction;
 import source.SourceStatistic;
-import stream.NotifyingBoundedStreamDecorator;
+import source.TextFileSource;
+import source.TextSourceFunction;
+import stream.NotifyingStreamDecorator;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamFactoryImpl;
@@ -99,14 +104,19 @@ public final class Query {
   private String statsFolder;
   private boolean autoFlush;
   private StreamFactory streamFactory = StreamFactoryImpl.INSTANCE;
-  private Backoff queryBackoff = new ExponentialBackoff(10, 10);
+  private Backoff queryBackoff = NoopBackoff.INSTANCE;
 
   public Query() {
-    this.scheduler = new NoopScheduler();
+    this(new NoopScheduler());
   }
 
   public Query(Scheduler scheduler) {
     this.scheduler = scheduler;
+    // If scheduler is not smart, use backoffs
+    //FIXME: Revisit this!
+    if (!scheduler.usesNotifications()) {
+      activateBackoff(10, 10);
+    }
   }
 
   public void activateStatistics(String statisticsFolder, boolean autoFlush) {
@@ -183,12 +193,14 @@ public final class Query {
     return router;
   }
 
-  public <T extends Tuple> UnionOperator<T> addUnionOperator(String identifier) {
-    // Notice that the union is a special case. No processing stats are kept
-    // since the union does not process tuples.
-    UnionOperator<T> union = new UnionOperator<>(identifier, streamFactory);
+  public <T extends Tuple > UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
     saveComponent(operators, union, "operator");
     return union;
+  }
+
+  public <T extends Tuple> UnionOperator<T> addUnionOperator(String identifier) {
+    UnionOperator<T> union = new UnionOperator<>(identifier, streamFactory);
+    return addUnionOperator(union);
   }
 
   public <T extends Tuple> Source<T> addSource(Source<T> source) {
@@ -204,6 +216,10 @@ public final class Query {
     return addSource(new BaseSource<>(id, function));
   }
 
+  public <T extends Tuple> Source<T> addTextFileSource(String id, String filename, TextSourceFunction<T> function) {
+    return addSource(new TextFileSource(id, filename, function));
+  }
+
   public <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
     Sink<T> s = sink;
     if (keepStatistics) {
@@ -215,6 +231,10 @@ public final class Query {
 
   public <T extends Tuple> Sink<T> addBaseSink(String id, SinkFunction<T> sinkFunction) {
     return addSink(new BaseSink<>(id, sinkFunction));
+  }
+
+  public <T extends Tuple> Sink<T> addTextFileSink(String id, String file, TextSinkFunction<T> function) {
+    return addSink(new TextFileSink<>(id, file, function));
   }
 
   public <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
@@ -297,13 +317,13 @@ public final class Query {
     return builder.build();
   }
 
-  private <T extends Tuple> Stream<T> newStream(StreamProducer<T> source, StreamConsumer<T> destination, int capacity) {
+  private <T extends Tuple> Stream<T> newStream(StreamProducer<T> source,
+      StreamConsumer<T> destination, int capacity) {
     Stream<T> stream = streamFactory.newBoundedStream(source, destination, DEFAULT_STREAM_CAPACITY);
     if (!scheduler.usesNotifications()) {
       return stream;
-    }
-    else {
-      return new NotifyingBoundedStreamDecorator<>(stream);
+    } else {
+      return new NotifyingStreamDecorator<>(stream);
     }
   }
 

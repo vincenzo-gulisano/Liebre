@@ -27,13 +27,11 @@ import java.util.concurrent.TimeUnit;
 import operator.Operator;
 import query.Query;
 import scheduling.Scheduler;
-import scheduling.impl.ProbabilisticTaskPool;
+import scheduling.impl.ProbabilisticTaskPoolStatistic;
 import scheduling.impl.ThreadPoolScheduler;
 import scheduling.priority.PriorityMetricFactory;
 import sink.Sink;
-import sink.TextSinkFunction;
 import source.Source;
-import source.TextSourceFunction;
 
 public class TextUnion {
 
@@ -44,47 +42,34 @@ public class TextUnion {
     final String inputFile2 = args[2];
     final String outputFile = reportFolder + File.separator + "TextUnion.out.csv";
 
-    Scheduler scheduler = new ThreadPoolScheduler(8, 100, TimeUnit.MILLISECONDS,
-        new ProbabilisticTaskPool(PriorityMetricFactory.STIMULUS, 1, 1000)).enableSourceThreads();
+    Scheduler scheduler = new ThreadPoolScheduler(2, 100, TimeUnit.MILLISECONDS,
+        new ProbabilisticTaskPoolStatistic(PriorityMetricFactory.QUEUE_SIZE, 1, 1000000, reportFolder))
+        .enableSourceThreads();
 
     Query q = new Query(scheduler);
 
     q.activateStatistics(reportFolder);
 
-    Source<MyTuple> i1 = q.addBaseSource("i1", new TextSourceFunction<MyTuple>(inputFile1) {
-
-      @Override
-      protected MyTuple getNext(String line) {
-        Util.sleep(50);
-        String[] tokens = line.split(",");
-        return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
-            Integer.valueOf(tokens[2]));
-      }
+    Source<MyTuple> i1 = q.addTextFileSource("i1", inputFile1, line -> {
+      Util.sleep(5);
+      String[] tokens = line.split(",");
+      return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
+          Integer.valueOf(tokens[2]));
     });
 
-    Source<MyTuple> i2 = q.addBaseSource("i2", new TextSourceFunction<MyTuple>(inputFile2) {
-
-      @Override
-      protected MyTuple getNext(String line) {
-        Util.sleep(1000);
-        String[] tokens = line.split(",");
-        return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
-            Integer.valueOf(tokens[2]));
-      }
+    Source<MyTuple> i2 = q.addTextFileSource("i2", inputFile2, line -> {
+      Util.sleep(1);
+      String[] tokens = line.split(",");
+      return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
+          Integer.valueOf(tokens[2]));
     });
 
     Operator<MyTuple, MyTuple> union = q.addUnionOperator("union");
 
-    Sink<MyTuple> o1 = q.addBaseSink("o1",
-
-        new TextSinkFunction<MyTuple>(outputFile) {
-
-          @Override
-          protected String processTupleToText(MyTuple tuple) {
-            return tuple.timestamp + "," + tuple.key + "," + tuple.value;
-
-          }
-        });
+    Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
+      Util.sleep(100);
+      return tuple.timestamp + "," + tuple.key + "," + tuple.value;
+    });
 
     q.connect(i1, union);
     q.connect(i2, union, NoopBackoff.INSTANCE);
