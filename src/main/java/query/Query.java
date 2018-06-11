@@ -74,7 +74,7 @@ import source.TextFileSource;
 import source.TextSourceFunction;
 import stream.Stream;
 import stream.StreamFactory;
-import stream.StreamStatisticFactory;
+import stream.StreamStatistic;
 import stream.smq.SMQStreamDecorator;
 import stream.smq.SMQStreamDecorator.Builder;
 import stream.smq.SMQStreamFactories;
@@ -100,7 +100,7 @@ public final class Query {
 
   private final Scheduler scheduler;
   private boolean keepStatistics = false;
-  private String statsFolder;
+  private String statisticsFolder;
   private boolean autoFlush;
   private StreamFactory streamFactory;
   private Backoff queryBackoff = NoopBackoff.INSTANCE;
@@ -124,17 +124,15 @@ public final class Query {
 
   public void activateStatistics(String statisticsFolder, boolean autoFlush) {
     this.keepStatistics = true;
-    this.statsFolder = statisticsFolder;
+    this.statisticsFolder = statisticsFolder;
     this.autoFlush = autoFlush;
-    streamFactory = new StreamStatisticFactory(streamFactory, statisticsFolder, autoFlush);
     this.scheduler.activateStatistics(statisticsFolder, "");
   }
 
   public void activateStatistics(String statisticsFolder, String executionId, boolean autoFlush) {
     this.keepStatistics = true;
-    this.statsFolder = statisticsFolder;
+    this.statisticsFolder = statisticsFolder;
     this.autoFlush = autoFlush;
-    streamFactory = new StreamStatisticFactory(streamFactory, statisticsFolder, autoFlush);
     this.scheduler.activateStatistics(statisticsFolder, executionId);
   }
 
@@ -154,7 +152,7 @@ public final class Query {
       Operator1In<IN, OUT> operator) {
     Operator<IN, OUT> op = operator;
     if (keepStatistics) {
-      op = new Operator1InStatistic<IN, OUT>(operator, statsFolder, autoFlush);
+      op = new Operator1InStatistic<IN, OUT>(operator, statisticsFolder, autoFlush);
     }
     saveComponent(operators, operator, "operator");
     return op;
@@ -190,7 +188,7 @@ public final class Query {
     // Notice that the router is a special case which needs a dedicated
     // statistics operator
     if (keepStatistics) {
-      router = new RouterOperatorStatistic<T>(router, statsFolder, autoFlush);
+      router = new RouterOperatorStatistic<T>(router, statisticsFolder, autoFlush);
     }
     saveComponent(operators, router, "operator");
     return router;
@@ -209,7 +207,7 @@ public final class Query {
   public <T extends Tuple> Source<T> addSource(Source<T> source) {
     Source<T> s = source;
     if (keepStatistics) {
-      s = new SourceStatistic<T>(s, streamFactory, statsFolder);
+      s = new SourceStatistic<T>(s, streamFactory, statisticsFolder);
     }
     saveComponent(sources, s, "source");
     return s;
@@ -226,7 +224,7 @@ public final class Query {
   public <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
     Sink<T> s = sink;
     if (keepStatistics) {
-      s = new SinkStatistic<T>(sink, statsFolder);
+      s = new SinkStatistic<T>(sink, statisticsFolder);
     }
     saveComponent(sinks, s, "sink");
     return s;
@@ -244,7 +242,7 @@ public final class Query {
       Operator2In<IN, IN2, OUT> operator) {
     Operator2In<IN, IN2, OUT> op = operator;
     if (keepStatistics) {
-      op = new Operator2InStatistic<IN, IN2, OUT>(operator, statsFolder, autoFlush);
+      op = new Operator2InStatistic<IN, IN2, OUT>(operator, statisticsFolder, autoFlush);
     }
     saveComponent(operators2in, op, "operator2in");
     return op;
@@ -304,7 +302,7 @@ public final class Query {
     SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
     SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());
     if (writer == null && reader == null) {
-      return stream;
+      return addStreamStatistic(stream);
     }
     SMQStreamDecorator.Builder<T> builder = new Builder<>(stream);
     if (writer != null) {
@@ -315,7 +313,14 @@ public final class Query {
       int index = reader.register(stream, backoff.newInstance());
       builder.reader(reader, index);
     }
-    return builder.build();
+    return addStreamStatistic(builder.build());
+  }
+
+  private <T extends Tuple> Stream<T> addStreamStatistic(Stream<T> stream) {
+    if (keepStatistics) {
+      return new StreamStatistic<>(stream, statisticsFolder, autoFlush);
+    }
+    return stream;
   }
 
   public void activate() {

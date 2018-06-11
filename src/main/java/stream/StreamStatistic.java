@@ -43,30 +43,22 @@ public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
   }
 
   @Override
-  public boolean offer(T tuple) {
-    boolean offered = super.offer(tuple);
-    if (offered) {
-      inRate.append(1);
-    }
-    return offered;
-  }
-
-  @Override
-  public T poll() {
-    T tuple = super.poll();
-    if (tuple != null) {
-      outRate.append(1);
-    }
-    return tuple;
-  }
-
-  @Override
   public T getNextTuple() {
     T out = super.getNextTuple();
     if (out != null) {
       outRate.append(1);
     }
     return out;
+  }
+
+  @Override
+  public boolean offer(T tuple) {
+    throw new UnsupportedOperationException("stream statistic must be the last decorator!");
+  }
+
+  @Override
+  public T poll() {
+    throw new UnsupportedOperationException("stream statistic must be the last decorator!");
   }
 
   @Override
