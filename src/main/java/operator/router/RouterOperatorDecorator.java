@@ -91,7 +91,7 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
 
   @Override
   public void notifyFor(EventType type) {
-    decorated.waitFor(type);
+    decorated.notifyFor(type);
   }
 
   @Override

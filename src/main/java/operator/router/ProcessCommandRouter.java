@@ -27,6 +27,7 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import operator.AbstractProcessCommand;
 import stream.Stream;
 
@@ -46,7 +47,7 @@ public class ProcessCommandRouter<T extends Tuple> extends
       List<String> streams = operator.chooseOperators(inTuple);
       if (streams != null) {
         for (String op : streams) {
-          Stream<T> output = getOutputStream(op);
+          Stream<T> output = getOutputStreamForOperator(op);
           metric.recordTupleWrite(inTuple, output);
           output.addTuple(inTuple);
         }
@@ -54,14 +55,16 @@ public class ProcessCommandRouter<T extends Tuple> extends
     }
   }
 
-  private Stream<T> getOutputStream(String id) {
+  //FIXME: Map here for easy retrieval
+  private Stream<T> getOutputStreamForOperator(String id) {
     for (Stream<T> stream : operator.getOutputs()) {
-      if (Objects.equals(stream.getId(), id)) {
+      if (Objects.equals(stream.getDestination().getId(), id)) {
         return stream;
       }
     }
     throw new IllegalStateException(String.format(
-        "Requested output stream with id '%s' but operator '%s' has the following outputs: %s", id,
-        operator.getId(), operator.getOutputs()));
+        "Requested output to operator '%s' but operator '%s' has the following outputs: %s", id,
+        operator.getId(), operator.getOutputs().stream().map(s -> ((Stream) s).getDestination().getId()).collect(
+            Collectors.toList())));
   }
 }

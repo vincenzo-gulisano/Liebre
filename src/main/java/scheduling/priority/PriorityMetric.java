@@ -140,6 +140,7 @@ public abstract class PriorityMetric {
 	}
 
 	protected void normalize(List<Double> data, double sum) {
+	  //FIXME: What if array is all zeroes?
 		for (int i = 0; i < data.size(); i++) {
 			data.set(i, data.get(i) / sum);
 		}

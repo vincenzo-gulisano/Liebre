@@ -84,8 +84,9 @@ public abstract class AbstractCummulativeStatistic implements Active {
 
   @Override
   public void disable() {
-    out.close();
     this.enabled = false;
+    out.flush();
+    out.close();
   }
 
   public final void append(long value) {
