@@ -28,32 +28,37 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import operator.in1.BaseOperator1In;
+import org.apache.commons.lang3.Validate;
 import stream.StreamFactory;
 
 public class FilterOperator<T extends Tuple> extends BaseOperator1In<T, T> {
 
-	protected FilterFunction<T> filter;
+  protected FilterFunction<T> filter;
 
-	public FilterOperator(String id, StreamFactory streamFactory, FilterFunction<T> filter) {
-		super(id, streamFactory);
-		this.filter = filter;
-	}
+  public FilterOperator(String id, StreamFactory streamFactory, FilterFunction<T> filter) {
+    super(id, streamFactory);
+    Validate.notNull(filter, "filter");
+    this.filter = filter;
+  }
 
-	@Override
-	public void enable() {
-		super.enable();
-	}
+  @Override
+  public void enable() {
+    super.enable();
+    filter.enable();
+  }
 
-	@Override
-	public void disable() {
-		super.disable();
-	}
+  @Override
+  public void disable() {
+    filter.disable();
+    super.disable();
+  }
 
-	@Override
-	public List<T> processTupleIn1(T tuple) {
-		List<T> result = new LinkedList<T>();
-		if (filter.forward(tuple))
-			result.add(tuple);
-		return result;
-	}
+  @Override
+  public List<T> processTupleIn1(T tuple) {
+    List<T> result = new LinkedList<T>();
+    if (filter.forward(tuple)) {
+      result.add(tuple);
+    }
+    return result;
+  }
 }

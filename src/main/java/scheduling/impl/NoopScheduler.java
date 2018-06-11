@@ -102,7 +102,7 @@ public class NoopScheduler implements Scheduler {
   }
 
   @Override
-  public void activateStatistics(String folder, String executionId) {
+  public void activateStatistics(String folder) {
     LOGGER.info("No statistics available");
   }
 

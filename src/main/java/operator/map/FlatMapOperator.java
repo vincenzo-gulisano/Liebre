@@ -27,19 +27,33 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import operator.in1.BaseOperator1In;
+import org.apache.commons.lang3.Validate;
 import stream.StreamFactory;
 
 public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator1In<IN, OUT> {
 
-	private FlatMapFunction<IN, OUT> map;
+  private FlatMapFunction<IN, OUT> map;
 
-	public FlatMapOperator(String id, StreamFactory streamFactory, FlatMapFunction<IN, OUT> map) {
-		super(id, streamFactory);
-		this.map = map;
-	}
+  public FlatMapOperator(String id, StreamFactory streamFactory, FlatMapFunction<IN, OUT> map) {
+    super(id, streamFactory);
+    Validate.notNull(map, "map");
+    this.map = map;
+  }
 
-	@Override
-	public List<OUT> processTupleIn1(IN tuple) {
-		return map.map(tuple);
-	}
+  @Override
+  public void enable() {
+    super.enable();
+    map.enable();
+  }
+
+  @Override
+  public void disable() {
+    map.disable();
+    super.disable();
+  }
+
+  @Override
+  public List<OUT> processTupleIn1(IN tuple) {
+    return map.map(tuple);
+  }
 }

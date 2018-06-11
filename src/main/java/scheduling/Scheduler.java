@@ -55,11 +55,10 @@ public interface Scheduler extends Active {
 
   /**
    * Activate statistics for this scheduler instance
+   *  @param folder The folder to save the statistics to
    *
-   * @param folder The folder to save the statistics to
-   * @param executionId The ID of the execution
    */
-  void activateStatistics(String folder, String executionId);
+  void activateStatistics(String folder);
 
   boolean usesNotifications();
 

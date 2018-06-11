@@ -118,8 +118,7 @@ public final class Query {
     // If scheduler is not smart, use backoffs
     if (scheduler.usesNotifications()) {
       streamFactory = SMQStreamFactories.NOTIFYING;
-    }
-    else {
+    } else {
       streamFactory = SMQStreamFactories.EXPANDABLE;
       //FIXME: Revisit this!
       activateBackoff(10, 10);
@@ -127,21 +126,15 @@ public final class Query {
   }
 
   public void activateStatistics(String statisticsFolder, boolean autoFlush) {
+    LOGGER.info("Statistics will be saved at {}", statisticsFolder);
     this.keepStatistics = true;
     this.statisticsFolder = statisticsFolder;
     this.autoFlush = autoFlush;
-    this.scheduler.activateStatistics(statisticsFolder, "");
   }
 
-  public void activateStatistics(String statisticsFolder, String executionId, boolean autoFlush) {
-    this.keepStatistics = true;
-    this.statisticsFolder = statisticsFolder;
-    this.autoFlush = autoFlush;
-    this.scheduler.activateStatistics(statisticsFolder, executionId);
-  }
-
-  public void activateSchedulingStatistics(String statisticsFolder, String executionId) {
-    this.scheduler.activateStatistics(statisticsFolder, executionId);
+  public void activateSchedulingStatistics(String statisticsFolder) {
+    LOGGER.info("Scheduling Statistics will be saved at {}", statisticsFolder);
+    this.scheduler.activateStatistics(statisticsFolder);
   }
 
   public void activateStatistics(String statisticsFolder) {
@@ -198,7 +191,7 @@ public final class Query {
     return router;
   }
 
-  public <T extends Tuple > UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
+  public <T extends Tuple> UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
     saveComponent(operators, union, "operator");
     return union;
   }
@@ -221,7 +214,8 @@ public final class Query {
     return addSource(new BaseSource<>(id, function));
   }
 
-  public <T extends Tuple> Source<T> addTextFileSource(String id, String filename, TextSourceFunction<T> function) {
+  public <T extends Tuple> Source<T> addTextFileSource(String id, String filename,
+      TextSourceFunction<T> function) {
     return addSource(new TextFileSource(id, filename, function));
   }
 
@@ -238,7 +232,8 @@ public final class Query {
     return addSink(new BaseSink<>(id, sinkFunction));
   }
 
-  public <T extends Tuple> Sink<T> addTextFileSink(String id, String file, TextSinkFunction<T> function) {
+  public <T extends Tuple> Sink<T> addTextFileSink(String id, String file,
+      TextSinkFunction<T> function) {
     return addSink(new TextFileSink<>(id, file, function));
   }
 
@@ -330,10 +325,8 @@ public final class Query {
   public void activate() {
 
     LOGGER.info("Activating query...");
-    LOGGER.info("# Sources = {}", sources.size());
-    LOGGER.info("# Operators = {}", operators.size() + operators2in.size());
-    LOGGER.info("# Sinks = {}", sinks.size());
-    LOGGER.info("# Streams = {}", getAllStreams().size());
+    LOGGER.info("Components: {} Sources, {} Operators, {} Sinks, {} Streams", sources.size(),
+        operators.size() + operators2in.size(), sinks.size(), getAllStreams().size());
     for (SmartMQController reader : smartMQReaders.values()) {
       reader.enable();
     }

@@ -96,8 +96,7 @@ public class ThreadPoolScheduler implements Scheduler {
     int threadIndex = 0;
     for (threadIndex = 0; threadIndex < nThreads; threadIndex++) {
       PoolWorkerThread worker = statsFolder != null
-          ? new PoolWorkerThreadStatistic(threadIndex, taskPool, quantum, timeUnit, statsFolder,
-          executionId)
+          ? new PoolWorkerThreadStatistic(threadIndex, taskPool, quantum, timeUnit, statsFolder, "")
           : new PoolWorkerThread(threadIndex, taskPool, quantum, timeUnit);
       workers.add(worker);
       worker.enable();
@@ -140,7 +139,7 @@ public class ThreadPoolScheduler implements Scheduler {
   }
 
   @Override
-  public void activateStatistics(String folder, String executionId) {
+  public void activateStatistics(String folder) {
     this.statsFolder = folder;
     this.executionId = executionId;
   }

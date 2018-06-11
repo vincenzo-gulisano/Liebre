@@ -24,6 +24,7 @@
 package source;
 
 import common.tuple.Tuple;
+import org.apache.commons.lang3.Validate;
 
 public class BaseSource<OUT extends Tuple> extends AbstractSource<OUT> {
 
@@ -31,6 +32,7 @@ public class BaseSource<OUT extends Tuple> extends AbstractSource<OUT> {
 
   public BaseSource(String id, SourceFunction<OUT> function) {
     super(id);
+    Validate.notNull(function, "function");
     this.function = function;
   }
 
@@ -39,4 +41,15 @@ public class BaseSource<OUT extends Tuple> extends AbstractSource<OUT> {
     return function.getNextTuple();
   }
 
+  @Override
+  public void enable() {
+    super.enable();
+    function.enable();
+  }
+
+  @Override
+  public void disable() {
+    function.disable();
+    super.disable();
+  }
 }

@@ -28,20 +28,23 @@ import common.component.ComponentType;
 import common.tuple.Tuple;
 import java.util.List;
 import operator.AbstractOperator;
+import org.apache.commons.lang3.Validate;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
-public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> implements RouterOperator<T> {
+public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> implements
+    RouterOperator<T> {
 
-	protected RouterFunction<T> router;
-	private static final int INPUT_KEY = 0;
-	private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
+  private static final int INPUT_KEY = 0;
+  private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
+  protected RouterFunction<T> router;
 
-	public BaseRouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
-		super(id, ComponentType.ROUTER);
-		this.router = router;
-	}
+  public BaseRouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
+    super(id, ComponentType.ROUTER);
+    Validate.notNull(router, "router");
+    this.router = router;
+  }
 
   @Override
   public List<String> chooseOperators(T tuple) {
@@ -49,22 +52,34 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
   }
 
   @Override
-	public void addOutput(StreamConsumer<T> destination, Stream<T> stream) {
-		state.addOutput(stream);
-	}
-
-	public Stream<T> getOutput() {
-	  throw new UnsupportedOperationException(String.format("'%s': Router has multiple outputs!", state.getId()));
+  public void addOutput(StreamConsumer<T> destination, Stream<T> stream) {
+    state.addOutput(stream);
   }
 
-	@Override
-	public void run() {
-		processCommand.run();
-	}
+  public Stream<T> getOutput() {
+    throw new UnsupportedOperationException(
+        String.format("'%s': Router has multiple outputs!", state.getId()));
+  }
 
-	@Override
-	public void setPriorityMetric(PriorityMetric metric) {
-		processCommand.setMetric(metric);
-	}
+  @Override
+  public void run() {
+    processCommand.run();
+  }
 
+  @Override
+  public void setPriorityMetric(PriorityMetric metric) {
+    processCommand.setMetric(metric);
+  }
+
+  @Override
+  public void enable() {
+    super.enable();
+    router.enable();
+  }
+
+  @Override
+  public void disable() {
+    router.disable();
+    super.disable();
+  }
 }

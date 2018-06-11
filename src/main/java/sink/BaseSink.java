@@ -24,6 +24,7 @@
 package sink;
 
 import common.tuple.Tuple;
+import org.apache.commons.lang3.Validate;
 
 public class BaseSink<IN extends Tuple> extends AbstractSink<IN> {
 
@@ -31,12 +32,25 @@ public class BaseSink<IN extends Tuple> extends AbstractSink<IN> {
 
   public BaseSink(String id, SinkFunction<IN> function) {
     super(id);
+    Validate.notNull(function, "function");
     this.function = function;
   }
 
   @Override
   public void processTuple(IN tuple) {
     function.processTuple(tuple);
+  }
+
+  @Override
+  public void enable() {
+    super.enable();
+    function.enable();
+  }
+
+  @Override
+  public void disable() {
+    function.disable();
+    super.disable();
   }
 
 }

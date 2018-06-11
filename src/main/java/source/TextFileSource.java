@@ -30,6 +30,7 @@ import java.io.IOException;
 
 import common.tuple.Tuple;
 import common.util.Util;
+import org.apache.commons.lang3.Validate;
 
 public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
 
@@ -40,6 +41,7 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
 
   public TextFileSource(String id, String filename, TextSourceFunction<T> function) {
     super(id);
+    Validate.notNull(function, "function");
     this.function = function;
     try {
       this.br = new BufferedReader(new FileReader(filename));
@@ -79,7 +81,14 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
   }
 
   @Override
+  public void enable() {
+    super.enable();
+    function.enable();
+  }
+
+  @Override
   public void disable() {
+    function.disable();
     if (hasNext) {
       try {
         br.close();
@@ -87,6 +96,7 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
         e.printStackTrace();
       }
     }
+    super.disable();
   }
 
 }

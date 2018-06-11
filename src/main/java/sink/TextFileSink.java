@@ -55,8 +55,15 @@ public class TextFileSink<T extends Tuple> extends AbstractSink<T> {
     pw.println(function.processTuple(tuple));
   }
 
+  @Override
+  public void enable() {
+    super.enable();
+    function.enable();
+  }
+
   public void disable() {
     super.disable();
+    function.disable();
     pw.flush();
     pw.close();
   }
