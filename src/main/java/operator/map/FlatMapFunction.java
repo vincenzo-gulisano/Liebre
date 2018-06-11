@@ -23,13 +23,26 @@
 
 package operator.map;
 
+import common.Active;
+import common.tuple.Tuple;
 import java.util.List;
 
-import common.tuple.Tuple;
-
 @FunctionalInterface
-public interface FlatMapFunction<T1 extends Tuple, T2 extends Tuple> {
+public interface FlatMapFunction<T1 extends Tuple, T2 extends Tuple> extends Active {
 
   public List<T2> map(T1 tuple);
+
+  @Override
+  default void enable() {
+  }
+
+  @Override
+  default boolean isEnabled() {
+    return true;
+  }
+
+  @Override
+  default void disable() {
+  }
 
 }

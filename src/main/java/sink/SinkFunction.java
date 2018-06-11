@@ -36,13 +36,12 @@ public interface SinkFunction<T extends Tuple> extends Active {
   }
 
   @Override
-  default void disable() {
-
+  default boolean isEnabled() {
+    return true;
   }
 
   @Override
-  default boolean isEnabled() {
-    return true;
+  default void disable() {
   }
 
 }

@@ -23,11 +23,24 @@
 
 package operator.map;
 
+import common.Active;
 import common.tuple.Tuple;
 
 @FunctionalInterface
-public interface MapFunction<IN extends Tuple, OUT extends Tuple> {
+public interface MapFunction<IN extends Tuple, OUT extends Tuple> extends Active {
 
   public OUT map(IN tuple);
 
+  @Override
+  default void enable() {
+  }
+
+  @Override
+  default boolean isEnabled() {
+    return true;
+  }
+
+  @Override
+  default void disable() {
+  }
 }

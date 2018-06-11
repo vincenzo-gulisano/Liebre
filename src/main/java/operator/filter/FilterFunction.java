@@ -23,9 +23,24 @@
 
 package operator.filter;
 
+import common.Active;
 import common.tuple.Tuple;
 
 @FunctionalInterface
-public interface FilterFunction<T extends Tuple> {
-	boolean forward(T tuple);
+public interface FilterFunction<T extends Tuple> extends Active {
+
+  boolean forward(T tuple);
+
+  @Override
+  default void enable() {
+  }
+
+  @Override
+  default boolean isEnabled() {
+    return true;
+  }
+
+  @Override
+  default void disable() {
+  }
 }

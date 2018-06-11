@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
+import org.apache.commons.lang3.Validate;
 import scheduling.TaskPool;
 import scheduling.priority.PriorityMetric;
 import scheduling.priority.PriorityMetricFactory;
@@ -49,6 +50,7 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
 
   public ProbabilisticTaskPool(PriorityMetricFactory metricFactory, int priorityScalingFactor,
       long priorityUpdateIntervalNanos) {
+    Validate.isTrue(priorityUpdateIntervalNanos > 0, "negative priority interval is not allowed!");
     this.metricFactory = metricFactory;
     this.priorityScalingFactor = priorityScalingFactor;
     this.turns = new AtomicReference<Turn>(new Turn(0, System.nanoTime(),

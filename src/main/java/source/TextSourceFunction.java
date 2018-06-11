@@ -23,9 +23,24 @@
 
 package source;
 
+import common.Active;
+
 @FunctionalInterface
-public interface TextSourceFunction<T> {
+public interface TextSourceFunction<T> extends Active {
 
   T getNext(String text);
+
+  @Override
+  default void enable() {
+  }
+
+  @Override
+  default boolean isEnabled() {
+    return true;
+  }
+
+  @Override
+  default void disable() {
+  }
 
 }

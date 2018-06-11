@@ -58,6 +58,9 @@ public class ThreadPoolScheduler implements Scheduler {
 
   public ThreadPoolScheduler(int maxThreads, long quantum, TimeUnit unit,
       TaskPool<Component> taskPool) {
+    Validate.notNull(taskPool, "taskPool");
+    Validate.isTrue(maxThreads > 0, "maxThreads cannot be negative");
+    Validate.isTrue(quantum > 0, "negative quantum is not allowed");
     this.taskPool = taskPool;
     this.maxThreads = maxThreads;
     this.quantum = quantum;

@@ -23,11 +23,25 @@
 
 package sink;
 
+import common.Active;
 import common.tuple.Tuple;
 
 @FunctionalInterface
-public interface TextSinkFunction<T extends Tuple> {
+public interface TextSinkFunction<T extends Tuple> extends Active {
 
   String processTuple(T tuple);
+
+  @Override
+  default void enable() {
+  }
+
+  @Override
+  default boolean isEnabled() {
+    return true;
+  }
+
+  @Override
+  default void disable() {
+  }
 
 }

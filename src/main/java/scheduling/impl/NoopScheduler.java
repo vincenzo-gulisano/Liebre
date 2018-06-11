@@ -23,11 +23,12 @@
 
 package scheduling.impl;
 
+import common.component.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import common.component.Component;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
 import scheduling.thread.BasicWorkerThread;
 
@@ -38,6 +39,8 @@ import scheduling.thread.BasicWorkerThread;
  * @author palivosd
  */
 public class NoopScheduler implements Scheduler {
+
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private final List<Component> tasks = new ArrayList<>();
   private final List<BasicWorkerThread> threads = new ArrayList<>();
@@ -100,7 +103,7 @@ public class NoopScheduler implements Scheduler {
 
   @Override
   public void activateStatistics(String folder, String executionId) {
-    System.out.format("*** [%s] No statistics available%n", getClass().getSimpleName());
+    LOGGER.info("No statistics available");
   }
 
   @Override

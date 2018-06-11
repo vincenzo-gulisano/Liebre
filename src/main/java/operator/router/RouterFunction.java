@@ -23,12 +23,25 @@
 
 package operator.router;
 
+import common.Active;
+import common.tuple.Tuple;
 import java.util.List;
 
-import common.tuple.Tuple;
+public interface RouterFunction<T extends Tuple> extends Active {
 
-public interface RouterFunction<T extends Tuple> {
+  List<String> chooseOperators(T tuple);
 
-	List<String> chooseOperators(T tuple);
 
+  @Override
+  default void enable() {
+  }
+
+  @Override
+  default boolean isEnabled() {
+    return true;
+  }
+
+  @Override
+  default void disable() {
+  }
 }
