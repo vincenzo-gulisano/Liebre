@@ -154,4 +154,9 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
         .append(state)
         .toHashCode();
   }
+
+  @Override
+  public String toString() {
+    return getId();
+  }
 }

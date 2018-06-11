@@ -52,14 +52,11 @@ public class ProbabilisticTaskPoolStatistic extends ProbabilisticTaskPool {
   }
 
   @Override
-  public void enable() {
-    recordStatisticsHeader();
-    super.enable();
-  }
-
-  @Override
   protected List<Double> updatePriorities(long threadId) {
     List<Double> priorities = super.updatePriorities(threadId);
+    if (threadId == OWN_THREADID) {
+      recordStatisticsHeader();
+    }
     recordStatistics(priorities, threadId);
     return priorities;
   }

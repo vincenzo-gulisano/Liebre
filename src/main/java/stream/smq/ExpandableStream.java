@@ -35,7 +35,7 @@ public class ExpandableStream<T extends Tuple> extends StreamDecorator<T> {
 
   final Lock lock = new ReentrantLock(false);
   private final Queue<T> buffer = new ConcurrentLinkedQueue<>();
-  private boolean isFull;
+  private boolean isFull = false;
 
   public ExpandableStream(Stream<T> stream) {
     super(stream);

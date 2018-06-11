@@ -115,13 +115,11 @@ public final class Query {
 
   public Query(Scheduler scheduler) {
     this.scheduler = scheduler;
-    // If scheduler is not smart, use backoffs
+    activateBackoff(10, 10);
     if (scheduler.usesNotifications()) {
       streamFactory = SMQStreamFactories.NOTIFYING;
     } else {
       streamFactory = SMQStreamFactories.EXPANDABLE;
-      //FIXME: Revisit this!
-      activateBackoff(10, 10);
     }
   }
 

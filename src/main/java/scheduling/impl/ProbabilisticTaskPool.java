@@ -38,6 +38,7 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
 
   protected final List<Component> tasks = new ArrayList<>();
   protected final List<Component> passiveTasks = new ArrayList<>();
+  protected static final int OWN_THREADID = -1;
   private final PriorityMetricFactory metricFactory;
   private final AtomicReference<Turn> turns;
   private final int priorityScalingFactor;
@@ -112,10 +113,7 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
 
   @Override
   public void enable() {
-
-    if (nThreads == 0) {
-      throw new IllegalStateException("Thread number not set!");
-    }
+    Validate.isTrue(nThreads > 0, "thread number is zero");
     // Initialize locks and operator index
     available = new AtomicReferenceArray<>(tasks.size());
     // Sort tasks according to their indexes
@@ -131,7 +129,7 @@ public class ProbabilisticTaskPool implements TaskPool<Component> {
       task.enable();
     }
     // Initialize priorities
-    updatePriorities(1);
+    updatePriorities(OWN_THREADID);
     this.enabled = true;
   }
 
