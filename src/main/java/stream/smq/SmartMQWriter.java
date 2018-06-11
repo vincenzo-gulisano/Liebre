@@ -29,7 +29,7 @@ public interface SmartMQWriter {
 
   <T extends Tuple> void put(int queueIndex, T value) throws InterruptedException;
 
-  void notifyRead(int queueIndex) throws InterruptedException;
+  void notifyReadHappened(int queueIndex) throws InterruptedException;
 
-  void waitWrite(int queueIndex) throws InterruptedException;
+  void waitForRead(int queueIndex) throws InterruptedException;
 }

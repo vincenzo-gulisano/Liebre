@@ -74,12 +74,12 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
-  public void wait(EventType type) {
+  public void waitFor(EventType type) {
     type.wait(state);
   }
 
   @Override
-  public void notify(EventType type) {
+  public void notifyFor(EventType type) {
     type.notify(state);
   }
 

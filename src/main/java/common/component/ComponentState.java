@@ -191,15 +191,6 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
     return Collections.unmodifiableCollection(outputs);
   }
 
-
-  void notifyRead() {
-    canRead.set(true);
-  }
-
-  void waitRead() {
-    canRead.set(false);
-  }
-
   /**
    * Verify that this state has input streams with {@link Tuple}s which can be read.
    *
@@ -209,13 +200,14 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
     return canRead.get();
   }
 
-  void notifyWrite() {
+  void waitForRead() {
+    canWrite.set(false);
+  }
+
+  void notifyForRead() {
     canWrite.set(true);
   }
 
-  void waitWrite() {
-    canWrite.set(false);
-  }
 
   /**
    * Verify that this state has output streams with non-zero capacity.
@@ -224,6 +216,14 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    */
   public boolean canWrite() {
     return canWrite.get();
+  }
+
+  void waitForWrite() {
+    canRead.set(false);
+  }
+
+  void notifyForWrite() {
+    canRead.set(true);
   }
 
   /**

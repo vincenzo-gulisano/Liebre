@@ -303,7 +303,8 @@ public final class Query {
     if (writer == null && reader == null) {
       return addStreamStatistic(stream);
     }
-    SMQStreamDecorator.Builder<T> builder = new Builder<>(stream);
+    SMQStreamDecorator.Builder<T> builder = new Builder<>(stream)
+        .useNotifications(scheduler.usesNotifications());
     if (writer != null) {
       int index = writer.register(stream, backoff.newInstance());
       builder.writer(writer, index);

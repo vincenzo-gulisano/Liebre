@@ -64,12 +64,12 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public void wait(EventType type) {
+  public void waitFor(EventType type) {
     type.wait(state);
   }
 
   @Override
-  public void notify(EventType type) {
+  public void notifyFor(EventType type) {
     type.notify(state);
   }
 

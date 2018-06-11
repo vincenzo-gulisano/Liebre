@@ -50,7 +50,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
   public void addTuple(T tuple) {
     try {
       writer.put(writerIndex, tuple);
-      reader.notifyWrite(readerIndex);
+      reader.notifyWriteHappened(readerIndex);
     } catch (InterruptedException e) {
       LOGGER.info("addTuple() interrupted");
       Thread.currentThread().interrupt();
@@ -62,7 +62,7 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
     try {
       T value = reader.take(readerIndex);
       if (value != null && !super.isFull()) {
-        writer.notifyRead(writerIndex);
+        writer.notifyReadHappened(writerIndex);
       }
       return value;
     } catch (InterruptedException e) {
@@ -99,8 +99,20 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
     public Builder(Stream<T> decorated) {
       this.decorated = decorated;
-      this.reader = new SMQReaderNoop<>(decorated);
-      this.writer = new SMQWriterNoop<>(decorated);
+    }
+
+    public Builder useNotifications(boolean notifications) {
+      if (notifications) {
+        final SMQReadWriteNotifier<T> notifier = new SMQReadWriteNotifier<>(decorated);
+        this.reader = notifier;
+        this.writer = notifier;
+      }
+      else {
+        final SMQNoop<T> noopReaderWriter = new SMQNoop<>(decorated);
+        this.reader = noopReaderWriter;
+        this.writer = noopReaderWriter;
+      }
+      return this;
     }
 
     public Builder reader(SmartMQReaderImpl reader, int index) {
@@ -121,15 +133,14 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
 
   }
 
-  //FIXME: Is it correct to have these writers everywhere?
-  private static final class SMQWriterNoop<R extends Tuple> implements SmartMQWriter {
+  private static final class SMQNoop<R extends Tuple> implements SmartMQWriter,
+      SmartMQReader {
 
     private final Stream<R> decorated;
 
-    public SMQWriterNoop(Stream<R> decorated) {
+    public SMQNoop(Stream<R> decorated) {
       this.decorated = decorated;
     }
-
 
     @Override
     public <T extends Tuple> void put(int queueIndex, T value) {
@@ -137,35 +148,25 @@ public class SMQStreamDecorator<T extends Tuple> extends StreamDecorator<T> {
     }
 
     @Override
-    public void notifyRead(int queueIndex) {
-    }
-
-    @Override
-    public void waitWrite(int queueIndex) {
-    }
-
-  }
-
-
-  private static final class SMQReaderNoop<R extends Tuple> implements SmartMQReader {
-
-    private final Stream<R> decorated;
-
-    public SMQReaderNoop(Stream<R> decorated) {
-      this.decorated = decorated;
-    }
-
-    @Override
-    public <T extends Tuple> T take(int queueIndex) {
+    public <T extends Tuple> T take(int queueIndex) throws InterruptedException {
       return (T) decorated.getNextTuple();
     }
 
     @Override
-    public void notifyWrite(int queueIndex) {
+    public void notifyReadHappened(int queueIndex) {
     }
 
     @Override
-    public void waitRead(int queueIndex) {
+    public void waitForRead(int queueIndex) {
+    }
+
+
+    @Override
+    public void waitForWrite(int queueIndex) throws InterruptedException {
+    }
+
+    @Override
+    public void notifyWriteHappened(int queueIndex) {
     }
   }
 

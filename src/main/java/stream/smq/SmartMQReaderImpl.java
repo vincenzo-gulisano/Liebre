@@ -38,11 +38,10 @@ public final class SmartMQReaderImpl implements SmartMQReader,
 
   private static final int FREE = 0;
   private static final int LOCKED = 1;
-
+  private final ResourceManagerFactory rmFactory;
   private List<Stream<? extends Tuple>> streams = new ArrayList<>();
   private List<Backoff> backoffs = new ArrayList<>();
   private ResourceManager readSemaphore;
-  private final ResourceManagerFactory rmFactory;
   private volatile boolean enabled;
 
 
@@ -68,22 +67,22 @@ public final class SmartMQReaderImpl implements SmartMQReader,
   public <T extends Tuple> T take(int queueIndex) throws InterruptedException {
     T value = (T) streams.get(queueIndex).poll();
     if (value == null) {
-      waitRead(queueIndex);
+      waitForWrite(queueIndex);
       return null;
     }
     return value;
   }
 
   @Override
-  public void notifyWrite(int queueIndex) {
+  public void notifyWriteHappened(int queueIndex) {
     readSemaphore.release(queueIndex);
     backoffs.get(queueIndex).relax();
   }
 
   @Override
-  public void waitRead(int queueIndex) throws InterruptedException {
-      readSemaphore.acquire(queueIndex);
-      backoffs.get(queueIndex).backoff();
+  public void waitForWrite(int queueIndex) throws InterruptedException {
+    readSemaphore.acquire(queueIndex);
+    backoffs.get(queueIndex).backoff();
   }
 
   @Override

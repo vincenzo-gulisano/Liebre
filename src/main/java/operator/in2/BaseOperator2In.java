@@ -138,12 +138,12 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   }
 
   @Override
-  public void wait(EventType type) {
+  public void waitFor(EventType type) {
     type.wait(state);
   }
 
   @Override
-  public void notify(EventType type) {
+  public void notifyFor(EventType type) {
     type.notify(state);
   }
 

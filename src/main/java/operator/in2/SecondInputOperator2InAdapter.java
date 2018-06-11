@@ -53,13 +53,13 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public void wait(EventType type) {
-    decorated.wait(type);
+  public void waitFor(EventType type) {
+    decorated.waitFor(type);
   }
 
   @Override
-  public void notify(EventType type) {
-    decorated.notify(type);
+  public void notifyFor(EventType type) {
+    decorated.notifyFor(type);
   }
 
   public void addInput(StreamProducer<IN> source, Stream<IN> stream) {

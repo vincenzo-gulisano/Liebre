@@ -87,18 +87,18 @@ public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController
     }
     Stream<T> queue = (Stream<T>) queues.get(queueIndex);
     if (!queue.offer(value)) {
-      waitWrite(queueIndex);
+      waitForRead(queueIndex);
     }
   }
 
   @Override
-  public void notifyRead(int queueIndex) {
+  public void notifyReadHappened(int queueIndex) {
     writeSemaphore.release(queueIndex);
     backoffs.get(queueIndex).relax();
   }
 
   @Override
-  public void waitWrite(int queueIndex) throws InterruptedException {
+  public void waitForRead(int queueIndex) throws InterruptedException {
     writeSemaphore.acquire(queueIndex);
     backoffs.get(queueIndex).backoff();
   }

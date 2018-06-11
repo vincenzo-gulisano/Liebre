@@ -24,7 +24,7 @@
 package common.component;
 
 /**
- * Type of event processed in {@link Component#wait(EventType)} and Component{@link
+ * Type of event processed in {@link Component#waitFor(EventType)} and Component{@link
  * #notify(ComponentState)}. Takes care of the actual delegation to the correct functions in {@link
  * ComponentState}.
  *
@@ -34,23 +34,23 @@ public enum EventType {
   READ {
     @Override
     public void wait(ComponentState state) {
-      state.waitRead();
+      state.waitForRead();
     }
 
     @Override
     public void notify(ComponentState state) {
-      state.notifyRead();
+      state.notifyForRead();
     }
   },
   WRITE {
     @Override
     public void wait(ComponentState state) {
-      state.waitWrite();
+      state.waitForWrite();
     }
 
     @Override
     public void notify(ComponentState state) {
-      state.notifyWrite();
+      state.notifyForWrite();
     }
   };
 

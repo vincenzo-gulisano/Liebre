@@ -68,13 +68,13 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public void wait(EventType type) {
-    decorated.wait(type);
+  public void waitFor(EventType type) {
+    decorated.waitFor(type);
   }
 
   @Override
-  public void notify(EventType type) {
-    decorated.notify(type);
+  public void notifyFor(EventType type) {
+    decorated.notifyFor(type);
   }
 
   @Override

@@ -85,13 +85,13 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public void wait(EventType type) {
-    decorated.wait(type);
+  public void waitFor(EventType type) {
+    decorated.waitFor(type);
   }
 
   @Override
-  public void notify(EventType type) {
-    decorated.wait(type);
+  public void notifyFor(EventType type) {
+    decorated.waitFor(type);
   }
 
   @Override

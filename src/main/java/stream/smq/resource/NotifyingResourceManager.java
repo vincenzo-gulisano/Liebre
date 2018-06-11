@@ -42,13 +42,13 @@ public class NotifyingResourceManager extends AbstractResourceManager {
   @Override
   protected void doAcquire() throws InterruptedException {
     if (acquisitionCounter.incrementAndGet() == size) {
-      component.wait(eventType);
+      component.waitFor(eventType);
     }
   }
 
   @Override
   protected void doRelease() {
     acquisitionCounter.decrementAndGet();
-    component.notify(eventType);
+    component.notifyFor(eventType);
   }
 }

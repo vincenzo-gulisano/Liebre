@@ -62,13 +62,13 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public void wait(EventType type) {
-    decorated.wait(type);
+  public void waitFor(EventType type) {
+    decorated.waitFor(type);
   }
 
   @Override
-  public void notify(EventType type) {
-    decorated.notify(type);
+  public void notifyFor(EventType type) {
+    decorated.notifyFor(type);
   }
 
   @Override

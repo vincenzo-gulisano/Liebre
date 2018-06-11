@@ -43,9 +43,9 @@ public interface Component extends Active, Runnable, Named {
 
   ConnectionsNumber outputsNumber();
 
-  void wait(EventType type);
+  void waitFor(EventType type);
 
-  void notify(EventType type);
+  void notifyFor(EventType type);
 
   default boolean canRead() {
     return true;
