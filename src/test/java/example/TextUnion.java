@@ -1,20 +1,24 @@
-/*  Copyright (C) 2017  Vincenzo Gulisano
+/*
+ * Copyright (C) 2017-2018
+ *   Vincenzo Gulisano
+ *   Dimitris Palyvos-Giannas
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  Contact: Vincenzo Gulisano info@vincenzogulisano.com
- *
+ * Contact:
+ *   Vincenzo Gulisano info@vincenzogulisano.com
+ *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
 package example;
@@ -42,12 +46,12 @@ public class TextUnion {
     final String inputFile2 = args[2];
     final String outputFile = reportFolder + File.separator + "TextUnion.out.csv";
 
-    Scheduler scheduler = new ThreadPoolScheduler(1, 100, TimeUnit.MILLISECONDS,
-        new ProbabilisticTaskPoolStatistic(PriorityMetricFactory.QUEUE_SIZE, 1, 1000000,
+    Scheduler scheduler = new ThreadPoolScheduler(1, 10, TimeUnit.MILLISECONDS,
+        new ProbabilisticTaskPoolStatistic(PriorityMetricFactory.CONTROL, 1, 10000000  ,
             reportFolder))
         .enableSourceThreads();
 
-    Query q = new Query();
+    Query q = new Query(scheduler);
 
     q.activateStatistics(reportFolder);
 
@@ -68,7 +72,7 @@ public class TextUnion {
     Operator<MyTuple, MyTuple> union = q.addUnionOperator("union");
 
     Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
-      Util.sleep(100);
+      Util.sleep(1);
       return tuple.timestamp + "," + tuple.key + "," + tuple.value;
     });
 
@@ -77,7 +81,7 @@ public class TextUnion {
     q.connect(union, o1);
 
     q.activate();
-    Util.sleep(40000);
+    Util.sleep(120000);
     q.deActivate();
 
   }
