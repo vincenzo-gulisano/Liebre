@@ -167,7 +167,7 @@ public final class Query {
     return addOperator(new MapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
   }
 
-  public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
+  public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addFlatMapOperator(String identifier,
       FlatMapFunction<IN, OUT> mapFunction) {
     return addOperator(new FlatMapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
   }

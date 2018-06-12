@@ -23,9 +23,7 @@
 
 package sink;
 
-import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
-import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 
@@ -35,7 +33,6 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 	private final CountStatistic processedTuplesStatistic;
 	private final CountStatistic timesScheduledStatistic;
 	private final CountStatistic timesRunStatistic;
-	private final AverageStatistic latencyStatistic;
 
 	public SinkStatistic(Sink<T> sink, String outputFolder) {
 		this(sink, outputFolder, true);
@@ -51,8 +48,6 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 				autoFlush);
 		this.timesRunStatistic = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "runs"),
 				autoFlush);
-		this.latencyStatistic = new AverageStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "latency"),
-				autoFlush);
 	}
 
 	@Override
@@ -62,7 +57,6 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 		timesScheduledStatistic.enable();
 		timesRunStatistic.enable();
 		processedTuplesStatistic.enable();
-		latencyStatistic.enable();
 	}
 
 	@Override
@@ -71,7 +65,6 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 		processedTuplesStatistic.disable();
 		timesScheduledStatistic.disable();
 		timesRunStatistic.disable();
-		latencyStatistic.disable();
 		super.disable();
 	}
 
@@ -93,8 +86,5 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 		super.processTuple(tuple);
 		processingTimeStatistic.append(System.nanoTime() - start);
 		processedTuplesStatistic.append(1L);
-		if (tuple instanceof RichTuple) {
-			latencyStatistic.append(System.nanoTime() - ((RichTuple) tuple).getTimestamp());
-		}
 	}
 }

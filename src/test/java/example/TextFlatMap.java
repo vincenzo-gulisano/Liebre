@@ -53,7 +53,7 @@ public class TextFlatMap {
     });
 
     Operator<MyTuple, MyTuple> multiply = q
-        .addMapOperator("multiply", new FlatMapFunction<MyTuple, MyTuple>() {
+        .addFlatMapOperator("multiply", new FlatMapFunction<MyTuple, MyTuple>() {
           @Override
           public List<MyTuple> map(MyTuple tuple) {
             List<MyTuple> result = new LinkedList<MyTuple>();

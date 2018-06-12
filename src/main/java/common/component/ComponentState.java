@@ -74,22 +74,20 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
 
   public void addOutput(int index, Stream<OUT> stream) {
     outputs.add(index, stream);
-    type.validateOutputs(this);
   }
 
   public void addOutput(Stream<OUT> stream) {
+    Validate.validState(type.outputsNumber().isMultiple());
     outputs.add(stream);
-    type.validateOutputs(this);
   }
 
   public void addInput(int index, Stream<IN> stream) {
     inputs.add(index, stream);
-    type.validateInputs(this);
   }
 
   public void addInput(Stream<IN> stream) {
+    Validate.validState(type.inputsNumber().isMultiple());
     inputs.add(stream);
-    type.validateInputs(this);
   }
 
   /**

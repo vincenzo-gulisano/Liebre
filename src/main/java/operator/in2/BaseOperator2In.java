@@ -44,6 +44,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
   private final int INPUT1_KEY = 0;
   private final int INPUT2_KEY = 1;
+  private final int OUTPUT_KEY = 0;
 
   private final ProcessCommand2In<IN, IN2, OUT> processCommand = new ProcessCommand2In<>(this);
 
@@ -74,7 +75,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
   @Override
   public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
-    state.addOutput(stream);
+    state.addOutput(OUTPUT_KEY, stream);
   }
 
   @Override
