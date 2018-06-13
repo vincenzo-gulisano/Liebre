@@ -58,7 +58,7 @@ public class QueueSizeMetric extends PriorityMetric {
     return scale(priorities, scaleFactor);
   }
 
-  private long getPriority(Component task) {
+  private int getPriority(Component task) {
     if (isIgnored(task)) {
       return 0;
     }
@@ -74,20 +74,22 @@ public class QueueSizeMetric extends PriorityMetric {
     }
   }
 
-  private <IN extends Tuple> long getInputSize(StreamConsumer<IN> consumer) {
-    long size = 0;
-    for (Stream<?> input : getInputs(consumer)) {
+  private <IN extends Tuple> int getInputSize(StreamConsumer<IN> consumer) {
+    int size = 0;
+    for (Stream<?> input : consumer.getInputs()) {
       size += input.size();
     }
     return size;
   }
 
-  private <OUT extends Tuple> long getOutputCapacity(StreamProducer<OUT> producer) {
-    long capacity = 0;
-    for (Stream<?> output : getOutputs(producer)) {
-      capacity += output.remainingCapacity();
+  private <OUT extends Tuple> int getOutputCapacity(StreamProducer<OUT> producer) {
+    int minCapacity = -1;
+    for (Stream<?> output : producer.getOutputs()) {
+      int outputCapacity = output.remainingCapacity();
+      minCapacity =
+          minCapacity >= 0 ? Math.min(minCapacity, outputCapacity) : output.remainingCapacity();
     }
-    return capacity;
+    return Math.max(1, minCapacity);
   }
 
 }

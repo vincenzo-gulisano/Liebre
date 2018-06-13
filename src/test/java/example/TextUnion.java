@@ -25,7 +25,7 @@ package example;
 
 import common.tuple.Tuple;
 import common.util.Util;
-import common.util.backoff.NoopBackoff;
+import common.util.backoff.BackoffFactory;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import operator.Operator;
@@ -77,7 +77,7 @@ public class TextUnion {
     });
 
     q.connect(i1, union);
-    q.connect(i2, union, NoopBackoff.INSTANCE);
+    q.connect(i2, union, BackoffFactory.NOOP);
     q.connect(union, o1);
 
     q.activate();

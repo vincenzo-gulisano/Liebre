@@ -26,12 +26,10 @@ package query;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.Component;
-import common.component.EventType;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
-import common.util.backoff.Backoff;
-import common.util.backoff.ExponentialBackoff;
-import common.util.backoff.NoopBackoff;
+import common.util.backoff.Backoff2;
+import common.util.backoff.BackoffFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -81,14 +79,6 @@ import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatistic;
 import stream.UnboundedStream;
-import stream.smq.SMQStreamDecorator;
-import stream.smq.SMQStreamDecorator.Builder;
-import stream.smq.SmartMQController;
-import stream.smq.SmartMQReaderImpl;
-import stream.smq.SmartMQWriterImpl;
-import stream.smq.resource.MultiSemaphoreFactory;
-import stream.smq.resource.NotifyingResourceManagerFactory;
-import stream.smq.resource.ResourceManagerFactory;
 
 public final class Query {
   //FIXME: Validate Component IDs so that they do not contain _
@@ -100,15 +90,13 @@ public final class Query {
   private final Map<String, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
   private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
   private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
-  private final Map<String, SmartMQReaderImpl> smartMQReaders = new HashMap<>();
-  private final Map<String, SmartMQWriterImpl> smartMQWriters = new HashMap<>();
 
   private final Scheduler scheduler;
   private boolean keepStatistics = false;
   private String statisticsFolder;
   private boolean autoFlush;
   private StreamFactory streamFactory;
-  private Backoff queryBackoff = NoopBackoff.INSTANCE;
+  private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
 
   public Query() {
     this(new NoopScheduler());
@@ -116,7 +104,7 @@ public final class Query {
 
   public Query(Scheduler scheduler) {
     this.scheduler = scheduler;
-    activateBackoff(10, 10);
+    activateBackoff(1, 20, 5);
     if (scheduler.usesNotifications()) {
       streamFactory = NotifyingStream.factory();
     } else {
@@ -140,8 +128,8 @@ public final class Query {
     activateStatistics(statisticsFolder, true);
   }
 
-  public void activateBackoff(long initialSleepMs, int maxShift) {
-    this.queryBackoff = new ExponentialBackoff(initialSleepMs, maxShift);
+  public void activateBackoff(int min, int max, int retries) {
+    this.defaultBackoff = Backoff2.factory(min, max, retries);
   }
 
   public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
@@ -253,15 +241,15 @@ public final class Query {
   }
 
   public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination) {
-    return connect(source, destination, queryBackoff);
+    return connect(source, destination, defaultBackoff);
   }
 
   public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination,
-      Backoff backoff) {
+      BackoffFactory backoff) {
     Validate.isTrue(destination instanceof Operator2In == false,
         "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
         destination.getId());
-    Stream<T> stream = getSmartMQStream(source, destination, backoff);
+    Stream<T> stream = getStream(source, destination, backoff);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
     return this;
@@ -269,12 +257,12 @@ public final class Query {
 
   public <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
       Operator2In<T, ?, ?> destination) {
-    return connect2inLeft(source, destination, queryBackoff);
+    return connect2inLeft(source, destination, defaultBackoff);
   }
 
   public <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
-      Operator2In<T, ?, ?> destination, Backoff backoff) {
-    Stream<T> stream = getSmartMQStream(source, destination, backoff);
+      Operator2In<T, ?, ?> destination, BackoffFactory backoff) {
+    Stream<T> stream = getStream(source, destination, backoff);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
     return this;
@@ -282,44 +270,27 @@ public final class Query {
 
   public <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
       Operator2In<?, T, ?> destination) {
-    return connect2inRight(source, destination, queryBackoff);
+    return connect2inRight(source, destination, defaultBackoff);
   }
 
   public <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
-      Operator2In<?, T, ?> destination, Backoff backoff) {
-    Stream<T> stream = getSmartMQStream(source, destination.secondInputView(), backoff);
+      Operator2In<?, T, ?> destination, BackoffFactory backoff) {
+    Stream<T> stream = getStream(source, destination.secondInputView(), backoff);
     source.addOutput(destination.secondInputView(), stream);
     destination.addInput2(source, stream);
     return this;
   }
 
-  private <T extends Tuple> Stream<T> getSmartMQStream(StreamProducer<T> source,
+  private <T extends Tuple> Stream<T> getStream(StreamProducer<T> source,
       StreamConsumer<T> destination,
-      Backoff backoff) {
-    Stream<T> stream = streamFactory.newStream(source, destination, DEFAULT_STREAM_CAPACITY);
-    SmartMQWriterImpl writer = smartMQWriters.get(source.getId());
-    SmartMQReaderImpl reader = smartMQReaders.get(destination.getId());
-    if (writer == null && reader == null) {
-      return addStreamStatistic(stream);
-    }
-    SMQStreamDecorator.Builder<T> builder = new Builder<>(stream)
-        .useNotifications(scheduler.usesNotifications());
-    if (writer != null) {
-      int index = writer.register(stream, backoff.newInstance());
-      builder.writer(writer, index);
-    }
-    if (reader != null) {
-      int index = reader.register(stream, backoff.newInstance());
-      builder.reader(reader, index);
-    }
-    return addStreamStatistic(builder.build());
-  }
-
-  private <T extends Tuple> Stream<T> addStreamStatistic(Stream<T> stream) {
+      BackoffFactory backoff) {
+    Stream<T> stream = streamFactory.newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
     if (keepStatistics) {
       return new StreamStatistic<>(stream, statisticsFolder, autoFlush);
     }
-    return stream;
+    else {
+      return stream;
+    }
   }
 
   public void activate() {
@@ -327,12 +298,6 @@ public final class Query {
     LOGGER.info("Activating query...");
     LOGGER.info("Components: {} Sources, {} Operators, {} Sinks, {} Streams", sources.size(),
         operators.size() + operators2in.size(), sinks.size(), getAllStreams().size());
-    for (SmartMQController reader : smartMQReaders.values()) {
-      reader.enable();
-    }
-    for (SmartMQController writer : smartMQWriters.values()) {
-      writer.enable();
-    }
     scheduler.addTasks(sinks.values());
     scheduler.addTasks(allOperators());
     scheduler.addTasks(sources.values());
@@ -343,12 +308,6 @@ public final class Query {
   public void deActivate() {
     LOGGER.info("Deactivating query...");
     scheduler.disable();
-    for (SmartMQController reader : smartMQReaders.values()) {
-      reader.disable();
-    }
-    for (SmartMQController writer : smartMQWriters.values()) {
-      writer.disable();
-    }
     LOGGER.info("Waiting for threads to terminate...");
     scheduler.stopTasks();
     LOGGER.info("DONE!");
@@ -371,37 +330,7 @@ public final class Query {
   private <T extends Component> void saveComponent(Map<String, T> map, T component, String type) {
     Validate.validState(!map.containsKey(component.getId()),
         "A component of type %s  with id '%s' has already been added!", type, component);
-    enableSmartMQ(component);
     map.put(component.getId(), component);
   }
 
-  private void enableSmartMQ(Component component) {
-    if (component.inputsNumber().isMultiple()) {
-      addSmartMQReader(component);
-    }
-    if (component.outputsNumber().isMultiple()) {
-      addSmartMQWriter(component);
-    }
-  }
-
-  private void addSmartMQReader(Component component) {
-    if (smartMQReaders.containsKey(component.getId())) {
-      return;
-    }
-    LOGGER.debug("Creating SmartMQReader for {}", component.getId());
-    smartMQReaders.put(component.getId(),
-        new SmartMQReaderImpl(getResourceManagerFactory(component, EventType.READ)));
-  }
-
-  private void addSmartMQWriter(Component component) {
-    LOGGER.debug("Ignoring SmartMQWriter for {}", component.getId());
-  }
-
-  private ResourceManagerFactory getResourceManagerFactory(Component component, EventType type) {
-    if (scheduler.usesNotifications()) {
-      return new NotifyingResourceManagerFactory(component, type);
-    } else {
-      return MultiSemaphoreFactory.INSTANCE;
-    }
-  }
 }

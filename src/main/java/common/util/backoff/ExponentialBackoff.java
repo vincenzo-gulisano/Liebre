@@ -47,11 +47,6 @@ public class ExponentialBackoff implements Backoff {
   }
 
   @Override
-  public Backoff newInstance() {
-    return new ExponentialBackoff(initialSleepMs, maxShift);
-  }
-
-  @Override
   public void backoff() {
     shift = Math.min(shift + 1, maxShift);
     int multiplier = 1 + random.nextInt(1 << shift);

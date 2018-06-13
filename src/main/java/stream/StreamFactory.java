@@ -26,12 +26,17 @@ package stream;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
+import common.util.backoff.BackoffFactory;
 
 public interface StreamFactory {
 
   <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
-      int capacity);
+      int capacity, BackoffFactory backoff);
 
+  default <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
+      int capacity) {
+    return newStream(from, to, capacity, BackoffFactory.NOOP);
+  }
 
   default <T extends Tuple> String getStreamId(StreamProducer<T> from, StreamConsumer<T> to) {
     return String.format("%s_%s", from.getId(), to.getId());

@@ -23,6 +23,7 @@
 
 package scheduling.priority;
 
+import common.StreamConsumer;
 import java.util.List;
 
 import common.component.Component;
@@ -54,11 +55,11 @@ public class StimulusMetric extends PriorityMetric {
   }
 
   private long getPriority(Component task) {
-    if (isIgnored(task)) {
+    if (isIgnored(task) || task instanceof StreamConsumer == false) {
       return 0;
     }
     long latency = 0;
-    for (Stream<?> input : getInputs(task)) {
+    for (Stream<?> input : ((StreamConsumer<?>) task).getInputs()) {
       // FIXME: Streams could save the latest ts in a volatile variable
       // to remove the peek() call
       Tuple t = input.peek();

@@ -27,7 +27,7 @@ import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
 import common.util.backoff.Backoff;
-import common.util.backoff.Backoff2;
+import common.util.backoff.BackoffFactory;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,21 +42,22 @@ public class UnboundedStream<T extends Tuple> implements Stream<T> {
   private final int index;
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
-  private final Backoff readBackoff = new Backoff2(1, 20, 5);
-  private final Backoff writeBackoff = new Backoff2(1, 20, 5);
+  private final Backoff readBackoff;
+  private final Backoff writeBackoff;
   private volatile boolean enabled;
   private volatile long tupleRead;
   private volatile long tuplesWritten;
 
   public UnboundedStream(String id, int index, StreamProducer<T> source,
       StreamConsumer<T> destination,
-      int capacity) {
+      int capacity, BackoffFactory backoff) {
     this.capacity = capacity;
     this.id = id;
     this.index = index;
     this.source = source;
     this.destination = destination;
-
+    this.readBackoff = backoff.newInstance();
+    this.writeBackoff = backoff.newInstance();
   }
 
   public static StreamFactory factory() {
@@ -171,9 +172,9 @@ public class UnboundedStream<T extends Tuple> implements Stream<T> {
 
     @Override
     public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
-        int capacity) {
+        int capacity, BackoffFactory backoff) {
       return new UnboundedStream<>(getStreamId(from, to), indexes.getAndIncrement(), from, to,
-          capacity);
+          capacity, backoff);
     }
   }
 }

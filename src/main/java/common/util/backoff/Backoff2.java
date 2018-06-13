@@ -28,9 +28,9 @@ import java.util.Random;
 
 public class Backoff2 implements Backoff {
 
-  final int min, max, retries;
-  int currentLimit, currentRetries;
+  private final int min, max, retries;
   private final Random rand = new Random();
+  private int currentLimit, currentRetries;
 
   public Backoff2(int min, int max, int retries) {
     this.min = min;
@@ -40,13 +40,16 @@ public class Backoff2 implements Backoff {
     this.currentRetries = retries;
   }
 
+  public static BackoffFactory factory(int min, int max, int retries) {
+    return new Factory(min, max, retries);
+  }
+
   @Override
   public void backoff() {
-
     int delay = rand.nextInt(currentLimit);
     currentRetries--;
     if (currentRetries == 0) {
-      currentLimit = (2 * currentLimit < max) ? 2 * currentLimit : max;
+      currentLimit = Math.min(2*currentLimit, max);
       currentRetries = retries;
     }
 
@@ -57,15 +60,27 @@ public class Backoff2 implements Backoff {
   public void relax() {
     if (currentRetries < retries) {
       currentRetries++;
-      if (currentRetries == retries)
-        currentLimit = (currentLimit / 2 >= min) ? currentLimit / 2
-            : min;
+      if (currentRetries == retries) {
+        currentLimit = Math.max(currentLimit / 2, min);
+      }
     }
   }
 
-  @Override
-  public Backoff newInstance() {
-    return new Backoff2(min, max, retries);
+  private static final class Factory implements BackoffFactory {
+
+    private final int min, max, retries;
+
+    Factory(int min, int max, int retries) {
+      this.min = min;
+      this.max = max;
+      this.retries = retries;
+    }
+
+    @Override
+    public Backoff newInstance() {
+      return new Backoff2(min, max, retries);
+    }
   }
+
 }
 

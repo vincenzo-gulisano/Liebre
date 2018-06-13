@@ -46,8 +46,6 @@ public abstract class PriorityMetric {
 	protected final List<Component> tasks;
 	protected final int maximumStreamIndex;
 	private final Set<Integer> ignoredTasks;
-	private final Map<String, List<Stream<?>>> inputStreams = new HashMap<>();
-	private final Map<String, List<Stream<?>>> outputStreams = new HashMap<>();
 	private final Map<String, List<Integer>> inputIndex = new HashMap<>();
 	private final Map<String, List<Integer>> outputIndex = new HashMap<>();
 
@@ -82,10 +80,6 @@ public abstract class PriorityMetric {
 	protected PriorityMetric(List<Component> tasks, List<Component> passiveTasks, int nThreads) {
 		this.tasks = tasks;
 		this.ignoredTasks = passiveTasks.stream().mapToInt(t -> t.getIndex()).boxed().collect(Collectors.toSet());
-		for (Component task : tasks) {
-			inputStreams.put(task.getId(), new ArrayList<>(getInputs(task)));
-			outputStreams.put(task.getId(), new ArrayList<>(getOutputs(task)));
-		}
 		this.maximumStreamIndex = processStreamIndexes(tasks);
 	}
 
@@ -150,13 +144,9 @@ public abstract class PriorityMetric {
 		return ((LiebreThread) Thread.currentThread()).getIndex();
 	}
 
-	protected final Collection<? extends Stream<?>> getInputs(Component task) {
+	private final Collection<? extends Stream<?>> getInputs(Component task) {
 		if (task instanceof StreamConsumer == false) {
 			return Collections.emptyList();
-		}
-		List<Stream<?>> cached = inputStreams.get(task.getId());
-		if (cached != null) { // If cache has the content
-			return cached;
 		}
 		return ((StreamConsumer<?>) task).getInputs();
 	}
@@ -169,13 +159,9 @@ public abstract class PriorityMetric {
 		return outputIndex.get(task.getId());
 	}
 
-	protected final Collection<? extends Stream<?>> getOutputs(Component task) {
+	private final Collection<? extends Stream<?>> getOutputs(Component task) {
 		if (task instanceof StreamProducer == false) {
 			return Collections.emptyList();
-		}
-		List<Stream<?>> cached = outputStreams.get(task.getId());
-		if (cached != null) { // If cache has the content
-			return cached;
 		}
 		return ((StreamProducer<?>) task).getOutputs();
 	}

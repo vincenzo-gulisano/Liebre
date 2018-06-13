@@ -23,9 +23,10 @@
 
 package operator.router;
 
-import java.util.List;
-
 import common.tuple.Tuple;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import operator.AbstractProcessCommand;
@@ -33,6 +34,8 @@ import stream.Stream;
 
 public class ProcessCommandRouter<T extends Tuple> extends
     AbstractProcessCommand<RouterOperator<T>> {
+
+  private final Map<String, Stream<T>> streamCache = new HashMap<>();
 
   protected ProcessCommandRouter(RouterOperator<T> operator) {
     super(operator);
@@ -55,10 +58,14 @@ public class ProcessCommandRouter<T extends Tuple> extends
     }
   }
 
-  //FIXME: Map here for easy retrieval
   private Stream<T> getOutputStreamForOperator(String id) {
+    Stream<T> cached = streamCache.get(id);
+    if (cached != null) {
+      return cached;
+    }
     for (Stream<T> stream : operator.getOutputs()) {
       if (Objects.equals(stream.getDestination().getId(), id)) {
+        streamCache.put(id, stream);
         return stream;
       }
     }
@@ -67,4 +74,5 @@ public class ProcessCommandRouter<T extends Tuple> extends
         operator.getId(), operator.getOutputs().stream().map(s -> ((Stream) s).getDestination().getId()).collect(
             Collectors.toList())));
   }
+
 }

@@ -89,9 +89,7 @@ public class ThreadPoolScheduler implements Scheduler {
 
   @Override
   public void startTasks() {
-    if (!isEnabled()) {
-      throw new IllegalStateException();
-    }
+    Validate.validState(isEnabled(), "Cannot start tasks when TaskPool is disabled");
     LOGGER.info("Starting {} worker threads", nThreads);
     int threadIndex = 0;
     for (threadIndex = 0; threadIndex < nThreads; threadIndex++) {

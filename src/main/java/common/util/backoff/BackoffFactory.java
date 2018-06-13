@@ -21,8 +21,14 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package stream;
+package common.util.backoff;
 
-public class BoundedStreamFactory {
+import common.util.backoff.NoopBackoff.Factory;
+
+public interface BackoffFactory {
+
+  static final BackoffFactory NOOP = Factory.INSTANCE;
+
+  Backoff newInstance();
 
 }

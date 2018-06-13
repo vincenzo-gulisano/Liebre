@@ -38,7 +38,7 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 
   private static final int INPUT_KEY = 0;
   private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
-  protected RouterFunction<T> router;
+  protected final RouterFunction<T> router;
 
   public BaseRouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
     super(id, ComponentType.ROUTER);

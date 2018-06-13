@@ -23,21 +23,23 @@
 
 package source;
 
+import common.tuple.Tuple;
+import common.util.Util;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-
-import common.tuple.Tuple;
-import common.util.Util;
 import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
 
+  private static final Logger LOGGER = LogManager.getLogger();
+  private final TextSourceFunction<T> function;
   private BufferedReader br;
   private String nextLine = "";
   private boolean hasNext = true;
-  private final TextSourceFunction<T> function;
 
   public TextFileSource(String id, String filename, TextSourceFunction<T> function) {
     super(id);
@@ -62,7 +64,7 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
           hasNext = false;
         }
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.warn("Text Source failed to read", e);
       }
     } else {
       // Prevent spinning

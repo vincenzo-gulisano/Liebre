@@ -27,6 +27,7 @@ import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.EventType;
 import common.tuple.Tuple;
+import common.util.backoff.BackoffFactory;
 
 public class NotifyingStream<T extends Tuple> extends StreamDecorator<T> {
 
@@ -62,8 +63,9 @@ public class NotifyingStream<T extends Tuple> extends StreamDecorator<T> {
 
     @Override
     public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
-        int capacity) {
+        int capacity, BackoffFactory backoff) {
       return new NotifyingStream<>(UnboundedStream.factory().newStream(from, to, capacity));
     }
+
   }
 }

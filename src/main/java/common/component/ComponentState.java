@@ -52,7 +52,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   private final List<Stream<IN>> inputs = new ArrayList<>();
   private final List<Stream<OUT>> outputs = new ArrayList<>();
 
-  // FIXME: Maybe can optimize those
+
   private AtomicBoolean canWrite = new AtomicBoolean(true);
   private AtomicBoolean canRead = new AtomicBoolean(false);
 
@@ -206,14 +206,13 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
     canWrite.set(true);
   }
 
-
   /**
    * Verify that this state has output streams with non-zero capacity.
    *
    * @return {@code true} if all output streams have non-zero capacity.
    */
   public boolean canWrite() {
-    return canWrite.get();
+    return type.outputsNumber().isMultiple() || canWrite.get();
   }
 
   void waitForWrite() {
