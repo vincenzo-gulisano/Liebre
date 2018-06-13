@@ -21,50 +21,49 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package stream.smq;
+package stream;
 
+import common.StreamConsumer;
+import common.StreamProducer;
 import common.component.EventType;
 import common.tuple.Tuple;
-import stream.Stream;
 
-public class NotifyingStream<T extends Tuple> extends ExpandableStream<T> {
+public class NotifyingStream<T extends Tuple> extends StreamDecorator<T> {
 
-  public NotifyingStream(Stream<T> stream) {
-    super(stream);
+  public NotifyingStream(Stream<T> decorated) {
+    super(decorated);
   }
 
   @Override
   public void addTuple(T tuple) {
-    lock.lock();
-    try {
-      if (!super.offer(tuple)) {
-        // If queue full, writer wait
-        getSource().waitFor(EventType.READ);
-      }
-      // Notify the reader to proceed
-      getDestination().notifyFor(EventType.WRITE);
-    } finally {
-      lock.unlock();
+    if (!offer(tuple)) {
+      getSource().waitFor(EventType.READ);
     }
+    getDestination().notifyFor(EventType.WRITE);
   }
+
 
   @Override
   public T getNextTuple() {
-    lock.lock();
-    try {
-      T value = super.poll();
-      if (value == null) {
-        // if queue empty, reader wait
-        getDestination().waitFor(EventType.WRITE);
-      }
-      else if (!super.isFull()) {
-        // if read succeeded and stream has space, writer proceed
-        getSource().notifyFor(EventType.READ);
-      }
-      return value;
-    } finally {
-      lock.unlock();
+    T tuple = poll();
+    if (tuple == null) {
+      getDestination().waitFor(EventType.WRITE);
     }
+    getSource().notifyFor(EventType.READ);
+    return tuple;
   }
 
+  public static StreamFactory factory() {
+    return Factory.INSTANCE;
+  }
+
+  private static enum Factory implements StreamFactory {
+    INSTANCE;
+
+    @Override
+    public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
+        int capacity) {
+      return new NotifyingStream<>(UnboundedStream.factory().newStream(from, to, capacity));
+    }
+  }
 }

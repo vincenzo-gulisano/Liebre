@@ -152,6 +152,7 @@ public class ThreadPoolScheduler implements Scheduler {
     for (Active s : sources) {
       s.enable();
     }
+    LOGGER.info("Thread Pool Scheduling Enabled");
   }
 
   @Override

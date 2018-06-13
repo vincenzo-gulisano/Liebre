@@ -76,12 +76,13 @@ import source.SourceFunction;
 import source.SourceStatistic;
 import source.TextFileSource;
 import source.TextSourceFunction;
+import stream.NotifyingStream;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatistic;
+import stream.UnboundedStream;
 import stream.smq.SMQStreamDecorator;
 import stream.smq.SMQStreamDecorator.Builder;
-import stream.smq.SMQStreamFactories;
 import stream.smq.SmartMQController;
 import stream.smq.SmartMQReaderImpl;
 import stream.smq.SmartMQWriterImpl;
@@ -117,9 +118,9 @@ public final class Query {
     this.scheduler = scheduler;
     activateBackoff(10, 10);
     if (scheduler.usesNotifications()) {
-      streamFactory = SMQStreamFactories.NOTIFYING;
+      streamFactory = NotifyingStream.factory();
     } else {
-      streamFactory = SMQStreamFactories.EXPANDABLE;
+      streamFactory = UnboundedStream.factory();
     }
   }
 
@@ -393,12 +394,7 @@ public final class Query {
   }
 
   private void addSmartMQWriter(Component component) {
-    if (smartMQWriters.containsKey(component.getId())) {
-      return;
-    }
-    LOGGER.debug("Creating SmartMQWriter for {}", component.getId());
-    smartMQWriters.put(component.getId(),
-        new SmartMQWriterImpl(getResourceManagerFactory(component, EventType.WRITE)));
+    LOGGER.debug("Ignoring SmartMQWriter for {}", component.getId());
   }
 
   private ResourceManagerFactory getResourceManagerFactory(Component component, EventType type) {

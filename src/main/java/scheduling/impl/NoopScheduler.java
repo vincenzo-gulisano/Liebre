@@ -86,6 +86,7 @@ public class NoopScheduler implements Scheduler {
       task.enable();
     }
     this.enabled = true;
+    LOGGER.info("Basic Scheduling Enabled");
   }
 
   @Override

@@ -51,8 +51,6 @@ public interface Stream<T extends Tuple> extends Active, Named {
 
   int size();
 
-  boolean isFull();
-
   StreamProducer<T> getSource();
 
   StreamConsumer<T> getDestination();

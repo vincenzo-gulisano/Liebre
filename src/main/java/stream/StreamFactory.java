@@ -32,4 +32,8 @@ public interface StreamFactory {
   <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
       int capacity);
 
+
+  default <T extends Tuple> String getStreamId(StreamProducer<T> from, StreamConsumer<T> to) {
+    return String.format("%s_%s", from.getId(), to.getId());
+  }
 }
