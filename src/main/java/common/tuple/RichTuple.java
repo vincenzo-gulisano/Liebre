@@ -23,9 +23,13 @@
 
 package common.tuple;
 
-public interface RichTuple extends Tuple  {
+public interface RichTuple extends Tuple {
 
-	public long getTimestamp();
+  long getTimestamp();
 
-	public String getKey();
+  String getKey();
+
+  default long getStimulus() {
+    throw new UnsupportedOperationException();
+  }
 }

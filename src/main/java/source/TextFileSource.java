@@ -95,7 +95,7 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
       try {
         br.close();
       } catch (IOException e) {
-        e.printStackTrace();
+        LOGGER.warn("Text Source failed to close reader", e);
       }
     }
     super.disable();

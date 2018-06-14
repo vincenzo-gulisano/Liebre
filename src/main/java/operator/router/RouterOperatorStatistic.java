@@ -23,72 +23,86 @@
 
 package operator.router;
 
-import java.util.List;
-
+import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
+import java.util.Collection;
+import stream.Stream;
 
 public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDecorator<T> {
 
-	private final CountStatistic processingTimeStatistic;
-	private final CountStatistic processedTuplesStatistic;
-	private final CountStatistic timesScheduledStatistic;
-	private final CountStatistic timesRunStatistic;
+  private final AverageStatistic processingTimeStatistic;
+  private final CountStatistic processedTuplesStatistic;
+  private final CountStatistic timesScheduledStatistic;
+  private final CountStatistic timesRunStatistic;
+  private final AverageStatistic executionTimeStatistic;
 
-	public RouterOperatorStatistic(RouterOperator<T> operator, String outputFolder, boolean autoFlush) {
-		super(operator);
-		this.processingTimeStatistic = new CountStatistic(
-				StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
-		this.processedTuplesStatistic = new CountStatistic(
-				StatisticFilename.INSTANCE.get(outputFolder, operator, "tuples"), autoFlush);
-		this.timesScheduledStatistic = new CountStatistic(
-				StatisticFilename.INSTANCE.get(outputFolder, operator, "sched"), autoFlush);
-		this.timesRunStatistic = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, operator, "runs"),
-				autoFlush);
-	}
+  public RouterOperatorStatistic(RouterOperator<T> operator, String outputFolder,
+      boolean autoFlush) {
+    super(operator);
+    this.processingTimeStatistic = new AverageStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
+    this.executionTimeStatistic = new AverageStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, operator, "exec"), autoFlush);
+    this.processedTuplesStatistic = new CountStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, operator, "tuples"), autoFlush);
+    this.timesScheduledStatistic = new CountStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, operator, "sched"), autoFlush);
+    this.timesRunStatistic = new CountStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, operator, "runs"),
+        autoFlush);
+  }
 
-	public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFolder) {
-		this(decorated, outputFolder, true);
-	}
+  public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFolder) {
+    this(decorated, outputFolder, true);
+  }
 
-	@Override
-	public void enable() {
-		super.enable();
-		processingTimeStatistic.enable();
-		timesScheduledStatistic.enable();
-		timesRunStatistic.enable();
-		processedTuplesStatistic.enable();
-	}
+  @Override
+  public void enable() {
+    super.enable();
+    processingTimeStatistic.enable();
+    executionTimeStatistic.enable();
+    timesScheduledStatistic.enable();
+    timesRunStatistic.enable();
+    processedTuplesStatistic.enable();
+  }
 
-	@Override
-	public void disable() {
-		processingTimeStatistic.disable();
-		processedTuplesStatistic.disable();
-		timesScheduledStatistic.disable();
-		timesRunStatistic.disable();
-		super.disable();
-	}
+  @Override
+  public void disable() {
+    processingTimeStatistic.disable();
+    executionTimeStatistic.disable();
+    processedTuplesStatistic.disable();
+    timesScheduledStatistic.disable();
+    timesRunStatistic.disable();
+    super.disable();
+  }
 
-	@Override
-	public void onScheduled() {
-		timesScheduledStatistic.append(1L);
-		super.onScheduled();
-	}
+  @Override
+  public void onScheduled() {
+    timesScheduledStatistic.append(1L);
+    super.onScheduled();
+  }
 
-	@Override
-	public void onRun() {
-		timesRunStatistic.append(1L);
-		super.onRun();
-	}
+  @Override
+  public void onRun() {
+    timesRunStatistic.append(1L);
+    super.onRun();
+  }
 
-	@Override
-	public List<String> chooseOperators(T tuple) {
-		long start = System.nanoTime();
-		List<String> operators = super.chooseOperators(tuple);
-		processingTimeStatistic.append(System.nanoTime() - start);
-		processedTuplesStatistic.append(1L);
-		return operators;
-	}
+  @Override
+  public Collection<? extends Stream<T>> chooseOutputs(T tuple) {
+    long start = System.nanoTime();
+    Collection<? extends Stream<T>> chosenOutputs = super.chooseOutputs(tuple);
+    processingTimeStatistic.append(System.nanoTime() - start);
+    processedTuplesStatistic.append(1L);
+    return chosenOutputs;
+  }
 
+  @Override
+  public void run() {
+    long start = System.nanoTime();
+    super.run();
+    executionTimeStatistic.append(System.nanoTime() - start);
+  }
 }

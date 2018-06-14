@@ -28,13 +28,10 @@ import common.StreamProducer;
 import common.component.Component;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
-import common.util.backoff.Backoff2;
+import common.util.backoff.ExponentialBackoff;
 import common.util.backoff.BackoffFactory;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import operator.Operator;
@@ -54,7 +51,6 @@ import operator.map.FlatMapOperator;
 import operator.map.MapFunction;
 import operator.map.MapOperator;
 import operator.router.BaseRouterOperator;
-import operator.router.RouterFunction;
 import operator.router.RouterOperator;
 import operator.router.RouterOperatorStatistic;
 import org.apache.commons.lang3.Validate;
@@ -81,13 +77,11 @@ import stream.StreamStatistic;
 import stream.UnboundedStream;
 
 public final class Query {
-  //FIXME: Validate Component IDs so that they do not contain _
 
   private static final Logger LOGGER = LogManager.getLogger();
   private static final int DEFAULT_STREAM_CAPACITY = 10000;
 
   private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
-  private final Map<String, Operator2In<? extends Tuple, ? extends Tuple, ? extends Tuple>> operators2in = new HashMap<>();
   private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
   private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
 
@@ -129,7 +123,7 @@ public final class Query {
   }
 
   public void activateBackoff(int min, int max, int retries) {
-    this.defaultBackoff = Backoff2.factory(min, max, retries);
+    this.defaultBackoff = ExponentialBackoff.factory(min, max, retries);
   }
 
   public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
@@ -156,7 +150,8 @@ public final class Query {
     return addOperator(new MapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
   }
 
-  public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addFlatMapOperator(String identifier,
+  public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addFlatMapOperator(
+      String identifier,
       FlatMapFunction<IN, OUT> mapFunction) {
     return addOperator(new FlatMapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
   }
@@ -166,11 +161,8 @@ public final class Query {
     return addOperator(new FilterOperator<T>(identifier, streamFactory, filterF));
   }
 
-  public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier,
-      RouterFunction<T> routerF) {
-    RouterOperator<T> router = new BaseRouterOperator<T>(identifier, streamFactory, routerF);
-    // Notice that the router is a special case which needs a dedicated
-    // statistics operator
+  public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier) {
+    RouterOperator<T> router = new BaseRouterOperator<T>(identifier, streamFactory);
     if (keepStatistics) {
       router = new RouterOperatorStatistic<T>(router, statisticsFolder, autoFlush);
     }
@@ -230,7 +222,7 @@ public final class Query {
     if (keepStatistics) {
       op = new Operator2InStatistic<IN, IN2, OUT>(operator, statisticsFolder, autoFlush);
     }
-    saveComponent(operators2in, op, "operator2in");
+    saveComponent(operators, op, "operator2in");
     return op;
   }
 
@@ -284,11 +276,11 @@ public final class Query {
   private <T extends Tuple> Stream<T> getStream(StreamProducer<T> source,
       StreamConsumer<T> destination,
       BackoffFactory backoff) {
-    Stream<T> stream = streamFactory.newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
+    Stream<T> stream = streamFactory
+        .newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
     if (keepStatistics) {
       return new StreamStatistic<>(stream, statisticsFolder, autoFlush);
-    }
-    else {
+    } else {
       return stream;
     }
   }
@@ -297,9 +289,9 @@ public final class Query {
 
     LOGGER.info("Activating query...");
     LOGGER.info("Components: {} Sources, {} Operators, {} Sinks, {} Streams", sources.size(),
-        operators.size() + operators2in.size(), sinks.size(), getAllStreams().size());
+        operators.size(), sinks.size(), streams().size());
     scheduler.addTasks(sinks.values());
-    scheduler.addTasks(allOperators());
+    scheduler.addTasks(operators.values());
     scheduler.addTasks(sources.values());
     scheduler.enable();
     scheduler.startTasks();
@@ -313,23 +305,23 @@ public final class Query {
     LOGGER.info("DONE!");
   }
 
-  private Set<Stream<?>> getAllStreams() {
+  private Set<Stream<?>> streams() {
     Set<Stream<?>> streams = new HashSet<>();
-    for (Operator<?, ?> op : allOperators()) {
+    for (Operator<?, ?> op : operators.values()) {
       streams.addAll(op.getInputs());
     }
     return streams;
   }
 
-  private Collection<Operator<?, ?>> allOperators() {
-    List<Operator<?, ?>> allOperators = new ArrayList<>(operators.values());
-    allOperators.addAll(this.operators2in.values());
-    return allOperators;
-  }
-
   private <T extends Component> void saveComponent(Map<String, T> map, T component, String type) {
     Validate.validState(!map.containsKey(component.getId()),
         "A component of type %s  with id '%s' has already been added!", type, component);
+    Validate.notNull(component);
+    if (component.getId().contains("_")) {
+      LOGGER.warn(
+          "It is best to avoid component IDs that contain an underscore because it will make it more difficult to analyze statistics date. Offending component: {}",
+          component);
+    }
     map.put(component.getId(), component);
   }
 

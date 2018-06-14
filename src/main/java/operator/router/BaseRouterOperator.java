@@ -26,9 +26,8 @@ package operator.router;
 import common.StreamConsumer;
 import common.component.ComponentType;
 import common.tuple.Tuple;
-import java.util.List;
+import java.util.Collection;
 import operator.AbstractOperator;
-import org.apache.commons.lang3.Validate;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
@@ -38,17 +37,14 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 
   private static final int INPUT_KEY = 0;
   private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
-  protected final RouterFunction<T> router;
 
-  public BaseRouterOperator(String id, StreamFactory streamFactory, RouterFunction<T> router) {
+  public BaseRouterOperator(String id, StreamFactory streamFactory) {
     super(id, ComponentType.ROUTER);
-    Validate.notNull(router, "router");
-    this.router = router;
   }
 
   @Override
-  public List<String> chooseOperators(T tuple) {
-    return router.chooseOperators(tuple);
+  public Collection<? extends Stream<T>> chooseOutputs(T tuple) {
+    return getOutputs();
   }
 
   @Override
@@ -74,12 +70,10 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
   @Override
   public void enable() {
     super.enable();
-    router.enable();
   }
 
   @Override
   public void disable() {
-    router.disable();
     super.disable();
   }
 }

@@ -29,7 +29,6 @@ import common.component.ConnectionsNumber;
 import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import java.util.List;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import scheduling.priority.PriorityMetric;
@@ -110,8 +109,8 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public List<String> chooseOperators(T tuple) {
-    return decorated.chooseOperators(tuple);
+  public Collection<? extends Stream<T>> chooseOutputs(T tuple) {
+    return decorated.chooseOutputs(tuple);
   }
 
   @Override

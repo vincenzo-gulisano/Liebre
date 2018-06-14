@@ -26,10 +26,7 @@ package example;
 import common.tuple.BaseRichTuple;
 import common.util.Util;
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
 import operator.Operator;
-import operator.router.RouterFunction;
 import query.Query;
 import sink.Sink;
 import source.Source;
@@ -51,22 +48,13 @@ public class TextRouterMap {
       return new MyTuple(Long.valueOf(tokens[0]), tokens[1], Integer.valueOf(tokens[2]));
     });
 
-    Operator<MyTuple, MyTuple> router = q
-        .addRouterOperator("router", new RouterFunction<MyTuple>() {
+    Operator<MyTuple, MyTuple> router = q.addRouterOperator("router");
 
-          @Override
-          public List<String> chooseOperators(MyTuple tuple) {
-            List<String> result = new LinkedList<String>();
-            int key = Integer.valueOf(tuple.getKey());
-            if (key < 5) {
-              result.add("o1");
-            }
-            if (key > 4) {
-              result.add("o2");
-            }
-            return result;
-          }
-        });
+    Operator<MyTuple, MyTuple> filterHigh = q
+        .addFilterOperator("fHigh", t -> Integer.valueOf(t.getKey()) < 5);
+
+    Operator<MyTuple, MyTuple> filterLow = q
+        .addFilterOperator("fLow", t -> Integer.valueOf(t.getKey()) > 4);
 
     Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile1, tuple -> {
       return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.value;
@@ -75,7 +63,9 @@ public class TextRouterMap {
       return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.value;
     });
 
-    q.connect(i1, router).connect(router, o1).connect(router, o2);
+    q.connect(i1, router)
+        .connect(router, filterHigh).connect(filterHigh, o1)
+        .connect(router, filterLow).connect(filterLow, o2);
 
     q.activate();
     Util.sleep(5000);

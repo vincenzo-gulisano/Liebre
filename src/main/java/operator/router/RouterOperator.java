@@ -23,13 +23,13 @@
 
 package operator.router;
 
-import java.util.List;
-
 import common.tuple.Tuple;
+import java.util.Collection;
 import operator.Operator;
+import stream.Stream;
 
 public interface RouterOperator<T extends Tuple> extends Operator<T, T> {
 
-	List<String> chooseOperators(T tuple);
+	Collection<? extends Stream<T>> chooseOutputs(T tuple);
 
 }

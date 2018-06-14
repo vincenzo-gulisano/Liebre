@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-//FIXME: Custom backoff!
 public class UnboundedStream<T extends Tuple> implements Stream<T> {
 
   private final Queue<T> stream = new ConcurrentLinkedQueue<>();

@@ -23,68 +23,78 @@
 
 package sink;
 
+import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 
 public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
-	private final CountStatistic processingTimeStatistic;
-	private final CountStatistic processedTuplesStatistic;
-	private final CountStatistic timesScheduledStatistic;
-	private final CountStatistic timesRunStatistic;
+  private final AverageStatistic processingTimeStatistic;
+  private final CountStatistic timesScheduledStatistic;
+  private final CountStatistic timesRunStatistic;
+  private final AverageStatistic executionTimeStatistic;
 
-	public SinkStatistic(Sink<T> sink, String outputFolder) {
-		this(sink, outputFolder, true);
-	}
+  public SinkStatistic(Sink<T> sink, String outputFolder) {
+    this(sink, outputFolder, true);
+  }
 
-	public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
-		super(sink);
-		this.processingTimeStatistic = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "proc"),
-				autoFlush);
-		this.processedTuplesStatistic = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "tuples"),
-				autoFlush);
-		this.timesScheduledStatistic = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "sched"),
-				autoFlush);
-		this.timesRunStatistic = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, sink, "runs"),
-				autoFlush);
-	}
+  public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
+    super(sink);
+    this.processingTimeStatistic = new AverageStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, sink, "proc"),
+        autoFlush);
+    this.executionTimeStatistic = new AverageStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, sink, "exec"), autoFlush);
+    this.timesScheduledStatistic = new CountStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, sink, "sched"),
+        autoFlush);
+    this.timesRunStatistic = new CountStatistic(
+        StatisticFilename.INSTANCE.get(outputFolder, sink, "runs"),
+        autoFlush);
+  }
 
-	@Override
-	public void enable() {
-		super.enable();
-		processingTimeStatistic.enable();
-		timesScheduledStatistic.enable();
-		timesRunStatistic.enable();
-		processedTuplesStatistic.enable();
-	}
+  @Override
+  public void enable() {
+    super.enable();
+    processingTimeStatistic.enable();
+    executionTimeStatistic.enable();
+    timesScheduledStatistic.enable();
+    timesRunStatistic.enable();
+  }
 
-	@Override
-	public void disable() {
-		processingTimeStatistic.disable();
-		processedTuplesStatistic.disable();
-		timesScheduledStatistic.disable();
-		timesRunStatistic.disable();
-		super.disable();
-	}
+  @Override
+  public void disable() {
+    processingTimeStatistic.disable();
+    executionTimeStatistic.disable();
+    timesScheduledStatistic.disable();
+    timesRunStatistic.disable();
+    super.disable();
+  }
 
-	@Override
-	public void onScheduled() {
-		timesScheduledStatistic.append(1L);
-		super.onScheduled();
-	}
+  @Override
+  public void onScheduled() {
+    timesScheduledStatistic.append(1L);
+    super.onScheduled();
+  }
 
-	@Override
-	public void onRun() {
-		timesRunStatistic.append(1L);
-		super.onRun();
-	}
+  @Override
+  public void onRun() {
+    timesRunStatistic.append(1L);
+    super.onRun();
+  }
 
-	@Override
-	public void processTuple(T tuple) {
-		long start = System.nanoTime();
-		super.processTuple(tuple);
-		processingTimeStatistic.append(System.nanoTime() - start);
-		processedTuplesStatistic.append(1L);
-	}
+  @Override
+  public void processTuple(T tuple) {
+    long start = System.nanoTime();
+    super.processTuple(tuple);
+    processingTimeStatistic.append(System.nanoTime() - start);
+  }
+
+  @Override
+  public void run() {
+    long start = System.nanoTime();
+    super.run();
+    executionTimeStatistic.append(System.nanoTime() - start);
+  }
 }

@@ -23,43 +23,64 @@
 
 package common.util.backoff;
 
-import static common.util.Util.sleep;
-
+import common.util.Util;
 import java.util.Random;
 
 public class ExponentialBackoff implements Backoff {
 
-  private static final int INTEGER_RANGE_MAX_SHIFT = 30;
-  private final int maxShift;
-  private final long initialSleepMs;
-  private final Random random = new Random();
-  private int shift;
-  private static final int MAX_RETRIES = 3;
-  private int retries;
+  private final int min, max, retries;
+  private final Random rand = new Random();
+  private int currentLimit, currentRetries;
 
-  public ExponentialBackoff(long initialSleepMs, int maxShift) {
-    if (maxShift > INTEGER_RANGE_MAX_SHIFT) {
-      throw new IllegalArgumentException(
-          String.format("maxShift cannot be greater than %d", INTEGER_RANGE_MAX_SHIFT));
-    }
-    this.initialSleepMs = initialSleepMs;
-    this.maxShift = maxShift;
+  public ExponentialBackoff(int min, int max, int retries) {
+    this.min = min;
+    this.max = max;
+    this.retries = retries;
+    this.currentLimit = min;
+    this.currentRetries = retries;
+  }
+
+  public static BackoffFactory factory(int min, int max, int retries) {
+    return new Factory(min, max, retries);
   }
 
   @Override
   public void backoff() {
-    shift = Math.min(shift + 1, maxShift);
-    int multiplier = 1 + random.nextInt(1 << shift);
-    sleep(initialSleepMs * multiplier);
+    int delay = rand.nextInt(currentLimit);
+    currentRetries--;
+    if (currentRetries == 0) {
+      currentLimit = Math.min(2*currentLimit, max);
+      currentRetries = retries;
+    }
+
+    Util.sleep(delay);
   }
 
   @Override
   public void relax() {
-    if (retries++ > MAX_RETRIES) {
-      retries = 0;
-      shift = Math.max(shift - 1, 0);
+    if (currentRetries < retries) {
+      currentRetries++;
+      if (currentRetries == retries) {
+        currentLimit = Math.max(currentLimit / 2, min);
+      }
     }
   }
 
+  private static final class Factory implements BackoffFactory {
+
+    private final int min, max, retries;
+
+    Factory(int min, int max, int retries) {
+      this.min = min;
+      this.max = max;
+      this.retries = retries;
+    }
+
+    @Override
+    public Backoff newInstance() {
+      return new ExponentialBackoff(min, max, retries);
+    }
+  }
 
 }
+
