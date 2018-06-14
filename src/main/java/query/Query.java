@@ -28,8 +28,8 @@ import common.StreamProducer;
 import common.component.Component;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
-import common.util.backoff.ExponentialBackoff;
 import common.util.backoff.BackoffFactory;
+import common.util.backoff.ExponentialBackoff;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -80,15 +80,11 @@ public final class Query {
 
   private static final Logger LOGGER = LogManager.getLogger();
   private static final int DEFAULT_STREAM_CAPACITY = 10000;
-
   private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
   private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
   private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
-
   private final Scheduler scheduler;
-  private boolean keepStatistics = false;
-  private String statisticsFolder;
-  private boolean autoFlush;
+  private final Map<StatisticType, StatisticsConfiguration> enabledStatistics = new HashMap<>();
   private StreamFactory streamFactory;
   private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
 
@@ -98,7 +94,8 @@ public final class Query {
 
   public Query(Scheduler scheduler) {
     this.scheduler = scheduler;
-    activateBackoff(1, 20, 5);
+    // Set a default backoff value
+    setBackoff(1, 20, 5);
     if (scheduler.usesNotifications()) {
       streamFactory = NotifyingStream.factory();
     } else {
@@ -106,31 +103,35 @@ public final class Query {
     }
   }
 
-  public void activateStatistics(String statisticsFolder, boolean autoFlush) {
-    LOGGER.info("Statistics will be saved at {}", statisticsFolder);
-    this.keepStatistics = true;
-    this.statisticsFolder = statisticsFolder;
-    this.autoFlush = autoFlush;
-  }
-
-  public void activateSchedulingStatistics(String statisticsFolder) {
-    LOGGER.info("Scheduling Statistics will be saved at {}", statisticsFolder);
-    this.scheduler.activateStatistics(statisticsFolder);
-  }
-
   public void activateStatistics(String statisticsFolder) {
     activateStatistics(statisticsFolder, true);
   }
 
-  public void activateBackoff(int min, int max, int retries) {
+  public void activateStatistics(String statisticsFolder, boolean autoFlush) {
+    for (StatisticType type : StatisticType.values()) {
+      activateStatistic(statisticsFolder, autoFlush, type);
+    }
+  }
+
+  public void activateStatistic(String statisticsFolder, boolean autoFlush,
+      StatisticType type) {
+    Validate
+        .isTrue(!enabledStatistics.containsKey(type), "Statistics for %s already enabled", type);
+    LOGGER.info("Statistics for {} will be saved at: {}", type.name().toLowerCase(), statisticsFolder);
+    enabledStatistics.put(type, new StatisticsConfiguration(statisticsFolder, autoFlush, type));
+  }
+
+
+  public void setBackoff(int min, int max, int retries) {
     this.defaultBackoff = ExponentialBackoff.factory(min, max, retries);
   }
 
   public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
       Operator1In<IN, OUT> operator) {
     Operator<IN, OUT> op = operator;
-    if (keepStatistics) {
-      op = new Operator1InStatistic<IN, OUT>(operator, statisticsFolder, autoFlush);
+    if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
+      StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
+      op = new Operator1InStatistic<IN, OUT>(operator, statConfig.folder(), statConfig.autoFlush());
     }
     saveComponent(operators, operator, "operator");
     return op;
@@ -163,8 +164,9 @@ public final class Query {
 
   public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier) {
     RouterOperator<T> router = new BaseRouterOperator<T>(identifier, streamFactory);
-    if (keepStatistics) {
-      router = new RouterOperatorStatistic<T>(router, statisticsFolder, autoFlush);
+    if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
+      StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
+      router = new RouterOperatorStatistic<T>(router, statConfig.folder(), statConfig.autoFlush());
     }
     saveComponent(operators, router, "operator");
     return router;
@@ -182,8 +184,9 @@ public final class Query {
 
   public <T extends Tuple> Source<T> addSource(Source<T> source) {
     Source<T> s = source;
-    if (keepStatistics) {
-      s = new SourceStatistic<T>(s, streamFactory, statisticsFolder);
+    if (enabledStatistics.containsKey(StatisticType.SOURCES)) {
+      StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.SOURCES);
+      s = new SourceStatistic<T>(s, streamFactory, statConfig.folder(), statConfig.autoFlush());
     }
     saveComponent(sources, s, "source");
     return s;
@@ -200,8 +203,9 @@ public final class Query {
 
   public <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
     Sink<T> s = sink;
-    if (keepStatistics) {
-      s = new SinkStatistic<T>(sink, statisticsFolder);
+    if (enabledStatistics.containsKey(StatisticType.SINKS)) {
+      StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.SINKS);
+      s = new SinkStatistic<T>(sink, statConfig.folder(), statConfig.autoFlush());
     }
     saveComponent(sinks, s, "sink");
     return s;
@@ -219,8 +223,10 @@ public final class Query {
   public <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
       Operator2In<IN, IN2, OUT> operator) {
     Operator2In<IN, IN2, OUT> op = operator;
-    if (keepStatistics) {
-      op = new Operator2InStatistic<IN, IN2, OUT>(operator, statisticsFolder, autoFlush);
+    if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
+      StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
+      op = new Operator2InStatistic<IN, IN2, OUT>(operator, statConfig.folder(),
+          statConfig.autoFlush());
     }
     saveComponent(operators, op, "operator2in");
     return op;
@@ -278,8 +284,9 @@ public final class Query {
       BackoffFactory backoff) {
     Stream<T> stream = streamFactory
         .newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
-    if (keepStatistics) {
-      return new StreamStatistic<>(stream, statisticsFolder, autoFlush);
+    if (enabledStatistics.containsKey(StatisticType.STREAMS)) {
+      StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.STREAMS);
+      return new StreamStatistic<>(stream, statConfig.folder(), statConfig.autoFlush());
     } else {
       return stream;
     }
@@ -324,5 +331,6 @@ public final class Query {
     }
     map.put(component.getId(), component);
   }
+
 
 }

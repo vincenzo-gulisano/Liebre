@@ -37,10 +37,6 @@ public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
   private final CountStatistic timesRunStatistic;
   private final AverageStatistic executionTimeStatistic;
 
-  public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFolder) {
-    this(source, streamFactory, outputFolder, true);
-  }
-
   public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFolder,
       boolean autoFlush) {
     super(source);

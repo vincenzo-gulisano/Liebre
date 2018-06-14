@@ -35,10 +35,6 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
   private final CountStatistic timesRunStatistic;
   private final AverageStatistic executionTimeStatistic;
 
-  public SinkStatistic(Sink<T> sink, String outputFolder) {
-    this(sink, outputFolder, true);
-  }
-
   public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
     super(sink);
     this.processingTimeStatistic = new AverageStatistic(
