@@ -212,7 +212,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    * @return {@code true} if all output streams have non-zero capacity.
    */
   public boolean canWrite() {
-    return type.outputsNumber().isMultiple() || canWrite.get();
+    return canWrite.get();
   }
 
   void waitForWrite() {

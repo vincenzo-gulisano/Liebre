@@ -31,136 +31,141 @@ import operator.in2.BaseOperator2In;
 import stream.StreamFactory;
 
 public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple>
-		extends BaseOperator2In<IN, IN2, OUT> {
+    extends BaseOperator2In<IN, IN2, OUT> {
 
-	private long ws;
+  Predicate<IN, IN2, OUT> predicate;
+  private long ws;
+  private LinkedList<IN> in1Tuples;
+  private LinkedList<IN2> in2Tuples;
+  // This is for determinism
+  private LinkedList<IN> in1TuplesBuffer;
+  private LinkedList<IN2> in2TuplesBuffer;
 
-	private LinkedList<IN> in1Tuples;
-	private LinkedList<IN2> in2Tuples;
+  public TimeBasedJoin(String id, StreamFactory streamFactory, long windowSize,
+      Predicate<IN, IN2, OUT> predicate) {
+    super(id);
+    this.ws = windowSize;
+    this.predicate = predicate;
 
-	Predicate<IN, IN2, OUT> predicate;
+    in1Tuples = new LinkedList<IN>();
+    in2Tuples = new LinkedList<IN2>();
 
-	// This is for determinism
-	private LinkedList<IN> in1TuplesBuffer;
-	private LinkedList<IN2> in2TuplesBuffer;
+    in1TuplesBuffer = new LinkedList<IN>();
+    in2TuplesBuffer = new LinkedList<IN2>();
+  }
 
-	public TimeBasedJoin(String id, StreamFactory streamFactory, long windowSize, Predicate<IN, IN2, OUT> predicate) {
-		super(id);
-		this.ws = windowSize;
-		this.predicate = predicate;
+  protected void purge(long ts) {
+    while (in1Tuples.size() > 0 && in1Tuples.peek().getTimestamp() < ts - ws) {
+      in1Tuples.poll();
+    }
+    while (in2Tuples.size() > 0 && in2Tuples.peek().getTimestamp() < ts - ws) {
+      in2Tuples.poll();
+    }
+  }
 
-		in1Tuples = new LinkedList<IN>();
-		in2Tuples = new LinkedList<IN2>();
+  private List<OUT> processReadyTuples() {
 
-		in1TuplesBuffer = new LinkedList<IN>();
-		in2TuplesBuffer = new LinkedList<IN2>();
-	}
+    List<OUT> results = new LinkedList<OUT>();
 
-	protected void purge(long ts) {
-		while (in1Tuples.size() > 0 && in1Tuples.peek().getTimestamp() < ts - ws)
-			in1Tuples.poll();
-		while (in2Tuples.size() > 0 && in2Tuples.peek().getTimestamp() < ts - ws)
-			in2Tuples.poll();
-	}
+    while (in1buffered() && in2buffered()) {
+      if (buffer1Peek().getTimestamp() < buffer2Peek().getTimestamp()) {
 
-	private List<OUT> processReadyTuples() {
+        IN tuple = buffer1Poll();
 
-		List<OUT> results = new LinkedList<OUT>();
+        purge(tuple.getTimestamp());
 
-		while (in1buffered() && in2buffered()) {
-			if (buffer1Peek().getTimestamp() < buffer2Peek().getTimestamp()) {
+        if (in2Tuples.size() > 0) {
 
-				IN tuple = buffer1Poll();
+          for (IN2 t : in2Tuples) {
+            OUT result = predicate.compare(tuple, t);
+            if (result != null) {
+              results.add(result);
+            }
 
-				purge(tuple.getTimestamp());
+          }
 
-				if (in2Tuples.size() > 0) {
+        }
 
-					for (IN2 t : in2Tuples) {
-						OUT result = predicate.compare(tuple, t);
-						if (result != null) {
-							results.add(result);
-						}
+        in1Tuples.add(tuple);
 
-					}
+      } else {
 
-				}
+        IN2 tuple = buffer2Poll();
 
-				in1Tuples.add(tuple);
+        purge(tuple.getTimestamp());
 
-			} else {
+        if (in1Tuples.size() > 0) {
 
-				IN2 tuple = buffer2Poll();
+          for (IN t : in1Tuples) {
+            OUT result = predicate.compare(t, tuple);
+            if (result != null) {
+              results.add(result);
+            }
 
-				purge(tuple.getTimestamp());
+          }
 
-				if (in1Tuples.size() > 0) {
+        }
 
-					for (IN t : in1Tuples) {
-						OUT result = predicate.compare(t, tuple);
-						if (result != null) {
-							results.add(result);
-						}
+        in2Tuples.add(tuple);
 
-					}
+      }
+    }
 
-				}
+    return results;
 
-				in2Tuples.add(tuple);
+  }
 
-			}
-		}
+  @Override
+  public List<OUT> processTupleIn1(IN tuple) {
 
-		return results;
+    in1buffer(tuple);
+    return processReadyTuples();
 
-	}
+  }
 
-	@Override
-	public List<OUT> processTupleIn1(IN tuple) {
+  @Override
+  public List<OUT> processTupleIn2(IN2 tuple) {
 
-		in1buffer(tuple);
-		return processReadyTuples();
+    in2buffer(tuple);
+    return processReadyTuples();
 
-	}
+  }
 
-	@Override
-	public List<OUT> processTupleIn2(IN2 tuple) {
+  private boolean in1buffered() {
+    return !in1TuplesBuffer.isEmpty();
+  }
 
-		in2buffer(tuple);
-		return processReadyTuples();
+  private boolean in2buffered() {
+    return !in2TuplesBuffer.isEmpty();
+  }
 
-	}
+  private void in1buffer(IN t) {
+    in1TuplesBuffer.add(t);
+  }
 
-	private boolean in1buffered() {
-		return !in1TuplesBuffer.isEmpty();
-	}
+  private void in2buffer(IN2 t) {
+    in2TuplesBuffer.add(t);
+  }
 
-	private boolean in2buffered() {
-		return !in2TuplesBuffer.isEmpty();
-	}
+  private IN buffer1Peek() {
+    return in1TuplesBuffer.peek();
+  }
 
-	private void in1buffer(IN t) {
-		in1TuplesBuffer.add(t);
-	}
+  private IN2 buffer2Peek() {
+    return in2TuplesBuffer.peek();
+  }
 
-	private void in2buffer(IN2 t) {
-		in2TuplesBuffer.add(t);
-	}
+  private IN buffer1Poll() {
+    return in1TuplesBuffer.poll();
+  }
 
-	private IN buffer1Peek() {
-		return in1TuplesBuffer.peek();
-	}
+  private IN2 buffer2Poll() {
+    return in2TuplesBuffer.poll();
+  }
 
-	private IN2 buffer2Peek() {
-		return in2TuplesBuffer.peek();
-	}
-
-	private IN buffer1Poll() {
-		return in1TuplesBuffer.poll();
-	}
-
-	private IN2 buffer2Poll() {
-		return in2TuplesBuffer.poll();
-	}
-
+  @Override
+  public boolean canRead() {
+    //FIXME: Vincenzo: Remove when input buffers are removed
+    return super.canRead() || !in1TuplesBuffer.isEmpty() || !in2TuplesBuffer.isEmpty();
+  }
 }

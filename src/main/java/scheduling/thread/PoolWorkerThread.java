@@ -25,60 +25,85 @@ package scheduling.thread;
 
 import common.component.Component;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import scheduling.TaskPool;
 
 public class PoolWorkerThread extends LiebreThread {
-	private final TaskPool<Component> taskPool;
-	private long quantumNanos;
-	protected volatile boolean executed;
 
-	public PoolWorkerThread(int index, TaskPool<Component> availableTasks, long quantum, TimeUnit unit) {
-		super(index);
-		this.taskPool = availableTasks;
-		this.quantumNanos = unit.toNanos(quantum);
-	}
+  private static final Logger LOGGER = LogManager.getLogger();
+  private final TaskPool<Component> taskPool;
+  protected boolean executed; //FIXME: Does this need to be volatile?
+  private long quantumNanos;
 
-	@Override
-	public void doRun() {
-		Component task = getTask();
-		if (task == null) {
-			System.err.format("[WARN] %s was not given a task to execute. Ignoring...%n", this);
-			return;
-		}
-		executeTask(task);
-		putTask(task);
-	}
+  public PoolWorkerThread(int index, TaskPool<Component> availableTasks, long quantum,
+      TimeUnit unit) {
+    super(index);
+    this.taskPool = availableTasks;
+    this.quantumNanos = unit.toNanos(quantum);
+  }
 
-	protected Component getTask() {
-		return taskPool.getNext(getIndex());
-	}
+  @Override
+  public void doRun() {
+    Component task = getTask();
+    if (task == null) {
+      LOGGER.warn("Was given a null task to execute. Ignoring...");
+      return;
+    }
+    executeTask(task);
+    putTask(task);
+  }
 
-	protected void executeTask(Component task) {
-		executed = false;
-		task.onScheduled();
-		final long runUntil = System.nanoTime() + quantumNanos;
-		while (System.nanoTime() < runUntil && task.canRun()) {
-			task.run();
-			executed = true;
-		}
-	}
+  protected Component getTask() {
+    return taskPool.getNext(getIndex());
+  }
 
-	protected void putTask(Component task) {
-		if (executed) {
-			task.onRun();
-		}
-		taskPool.put(task, getIndex());
-	}
+  protected void executeTask(Component task) {
+    executed = false;
+    task.onScheduled();
+    final long runUntil = System.nanoTime() + quantumNanos;
+    if (task.outputsNumber().isMultiple()) {
+      // Router Operators
+      runMultipleOutputTask(task, runUntil);
+    } else {
+      // Everything else
+      runSingleOutputTask(task, runUntil);
+    }
+  }
 
-	@Override
-	public void enable() {
-		super.enable();
-	}
+  private void runSingleOutputTask(Component task, long runUntil) {
+    while (System.nanoTime() < runUntil && task.canRun()) {
+      task.run();
+      executed = true;
+    }
+  }
 
-	@Override
-	public void disable() {
-		super.disable();
-	}
+  private void runMultipleOutputTask(Component task, long runUntil) {
+    while (System.nanoTime() < runUntil && task.canRead()) {
+      task.run();
+      executed = true;
+      if (!task.canWrite()) {
+        break;
+      }
+    }
+  }
+
+  protected void putTask(Component task) {
+    if (executed) {
+      task.onRun();
+    }
+    taskPool.put(task, getIndex());
+  }
+
+  @Override
+  public void enable() {
+    super.enable();
+  }
+
+  @Override
+  public void disable() {
+    super.disable();
+  }
 
 
 }

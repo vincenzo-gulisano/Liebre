@@ -38,10 +38,6 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends
   private final CountStatistic timesScheduledStatistic;
   private final CountStatistic timesRunStatistic;
 
-  public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder) {
-    this(operator, outputFolder, true);
-  }
-
   public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder,
       boolean autoFlush) {
     super(operator);

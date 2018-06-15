@@ -38,8 +38,7 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
   private static final Logger LOGGER = LogManager.getLogger();
   private final TextSourceFunction<T> function;
   private BufferedReader br;
-  private String nextLine = "";
-  private boolean hasNext = true;
+  private boolean done = false;
 
   public TextFileSource(String id, String filename, TextSourceFunction<T> function) {
     super(id);
@@ -52,34 +51,26 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
     }
   }
 
-  //FIXME: Refactor
-  public boolean hasNext() {
-    if (!isEnabled()) {
-      return false;
-    }
-    if (hasNext) {
-      try {
-        if ((nextLine = br.readLine()) == null) {
-          br.close();
-          hasNext = false;
-        }
-      } catch (IOException e) {
-        LOGGER.warn("Text Source failed to read", e);
-      }
-    } else {
-      // Prevent spinning
-      Util.sleep(1000);
-    }
-    return hasNext;
-  }
-
   @Override
   public T getNextTuple() {
-    if (hasNext()) {
-      return function.getNext(nextLine);
-    } else {
-      return null;
+    if (!done) {
+      return function.getNext(nextLine());
     }
+    // If done, prevent spinning
+    Util.sleep(1000);
+    return null;
+  }
+
+
+  private String nextLine() {
+    String nextLine = null;
+    try {
+      nextLine = br.readLine();
+    } catch (IOException e) {
+      LOGGER.warn("Text Source failed to read", e);
+    }
+    done = (nextLine == null);
+    return nextLine;
   }
 
   @Override
@@ -91,14 +82,12 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
   @Override
   public void disable() {
     function.disable();
-    if (hasNext) {
-      try {
-        br.close();
-      } catch (IOException e) {
-        LOGGER.warn("Text Source failed to close reader", e);
-      }
-    }
     super.disable();
+    try {
+      br.close();
+    } catch (IOException e) {
+      LOGGER.warn("Text Source failed to close file", e);
+    }
   }
-
 }
+

@@ -29,6 +29,7 @@ import java.util.List;
 import common.component.Component;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
+import org.apache.commons.lang3.Validate;
 import stream.Stream;
 
 public class StimulusMetric extends PriorityMetric {
@@ -60,14 +61,10 @@ public class StimulusMetric extends PriorityMetric {
     }
     long latency = 0;
     for (Stream<?> input : ((StreamConsumer<?>) task).getInputs()) {
-      // FIXME: Streams could save the latest ts in a volatile variable
-      // to remove the peek() call
       Tuple t = input.peek();
-      if (t instanceof RichTuple) {
-        //FIXME: ExtendedRichTuple that contains STIMULUS
-        long ts = ((RichTuple) t).getTimestamp();
-        latency = Math.max(System.nanoTime() - ts, latency);
-      }
+      Validate.isInstanceOf(RichTuple.class, t, "StimulusMetric only works with RichTuples");
+      long ts = ((RichTuple) t).getStimulus();
+      latency = Math.max(System.currentTimeMillis() - ts, latency);
     }
     return latency;
   }

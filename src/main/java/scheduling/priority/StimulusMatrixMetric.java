@@ -74,7 +74,7 @@ public class StimulusMatrixMetric extends PriorityMetric {
 	 * @param timestamps
 	 */
 	private void preprocessTimestamps(long[] timestamps) {
-		long t = System.nanoTime();
+		long t = System.currentTimeMillis();
 		for (int i = 0; i < timestamps.length; i++) {
 			long ts = timestamps[i];
 			ts = (ts > 0) ? (t - ts) : 0;
@@ -84,12 +84,12 @@ public class StimulusMatrixMetric extends PriorityMetric {
 
 	@Override
 	public <IN extends Tuple> void recordTupleRead(IN tuple, Stream<IN> input) {
-		matrix.put(threadIndex(), input.getIndex(), ((RichTuple) tuple).getTimestamp(), READ_TYPE);
+		matrix.put(threadIndex(), input.getIndex(), ((RichTuple) tuple).getStimulus(), READ_TYPE);
 	}
 
 	@Override
 	public <OUT extends Tuple> void recordTupleWrite(OUT tuple, Stream<OUT> output) {
-		matrix.put(threadIndex(), output.getIndex(), ((RichTuple) tuple).getTimestamp(), WRITE_TYPE);
+		matrix.put(threadIndex(), output.getIndex(), ((RichTuple) tuple).getStimulus(), WRITE_TYPE);
 	}
 
 }

@@ -75,11 +75,12 @@ public class QueueSizeMetric extends PriorityMetric {
   }
 
   private <IN extends Tuple> int getInputSize(StreamConsumer<IN> consumer) {
-    int size = 0;
+    int minSize = -1;
     for (Stream<?> input : consumer.getInputs()) {
-      size += input.size();
+      int size = input.size();
+      minSize = minSize >= 0 ? Math.min(minSize, size) : size;
     }
-    return size;
+    return Math.max(1, minSize);
   }
 
   private <OUT extends Tuple> int getOutputCapacity(StreamProducer<OUT> producer) {
@@ -87,7 +88,7 @@ public class QueueSizeMetric extends PriorityMetric {
     for (Stream<?> output : producer.getOutputs()) {
       int outputCapacity = output.remainingCapacity();
       minCapacity =
-          minCapacity >= 0 ? Math.min(minCapacity, outputCapacity) : output.remainingCapacity();
+          minCapacity >= 0 ? Math.min(minCapacity, outputCapacity) : outputCapacity;
     }
     return Math.max(1, minCapacity);
   }
