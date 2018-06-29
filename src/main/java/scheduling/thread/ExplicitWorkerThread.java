@@ -28,13 +28,14 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.concurrent.TimeUnit;
 
-public class PrescheduledThread extends LiebreThread {
+public class ExplicitWorkerThread extends LiebreThread {
 
+  private static final int BATCH_SIZE = 10;
   private final Deque<ExecutionEntry> schedule;
   private final long quantum;
   private final TimeUnit unit;
 
-  public PrescheduledThread(Collection<ExecutionEntry> schedule, long quantum,
+  public ExplicitWorkerThread(Collection<ExecutionEntry> schedule, long quantum,
       TimeUnit unit) {
     this.schedule = new ArrayDeque(schedule);
     this.quantum = quantum;
@@ -47,4 +48,5 @@ public class PrescheduledThread extends LiebreThread {
     task.run(quantum, unit);
     schedule.addLast(task);
   }
+
 }

@@ -23,10 +23,12 @@
 
 package scheduling.thread;
 
+import common.Active;
 import common.component.Component;
+import common.util.BinPacking.Packable;
 import java.util.concurrent.TimeUnit;
 
-public final class ExecutionEntry {
+public final class ExecutionEntry implements Active, Packable {
 
   private final Component component;
   private final double quantumPercentage;
@@ -70,4 +72,28 @@ public final class ExecutionEntry {
     return remainingTime;
   }
 
+  @Override
+  public void enable() {
+    component.enable();
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return component.isEnabled();
+  }
+
+  @Override
+  public void disable() {
+    component.disable();
+  }
+
+  @Override
+  public double getValue() {
+    return quantumPercentage;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("(%s, %4.3f)", component, quantumPercentage);
+  }
 }
