@@ -129,7 +129,7 @@ public class ThreadPoolScheduler implements Scheduler {
         workerThread.disable();
         workerThread.join();
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        LOGGER.warn("Interrupted", e);
         Thread.currentThread().interrupt();
       }
     }
