@@ -24,12 +24,10 @@
 package scheduling.priority;
 
 import common.StreamConsumer;
-import java.util.List;
-
 import common.component.Component;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
-import org.apache.commons.lang3.Validate;
+import java.util.List;
 import stream.Stream;
 
 public class StimulusMetric extends PriorityMetric {
@@ -62,7 +60,6 @@ public class StimulusMetric extends PriorityMetric {
     long latency = 0;
     for (Stream<?> input : ((StreamConsumer<?>) task).getInputs()) {
       Tuple t = input.peek();
-      Validate.isInstanceOf(RichTuple.class, t, "StimulusMetric only works with RichTuples");
       long ts = ((RichTuple) t).getStimulus();
       latency = Math.max(System.currentTimeMillis() - ts, latency);
     }

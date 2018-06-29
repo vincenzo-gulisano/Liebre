@@ -33,8 +33,8 @@ public class PoolWorkerThread extends LiebreThread {
 
   private static final Logger LOGGER = LogManager.getLogger();
   private final TaskPool<Component> taskPool;
+  private final long quantumNanos;
   protected boolean executed; //FIXME: Does this need to be volatile?
-  private long quantumNanos;
 
   public PoolWorkerThread(int index, TaskPool<Component> availableTasks, long quantum,
       TimeUnit unit) {
@@ -71,14 +71,14 @@ public class PoolWorkerThread extends LiebreThread {
     }
   }
 
-  private void runSingleOutputTask(Component task, long runUntil) {
+  private final void runSingleOutputTask(Component task, long runUntil) {
     while (System.nanoTime() < runUntil && task.canRun()) {
       task.run();
       executed = true;
     }
   }
 
-  private void runMultipleOutputTask(Component task, long runUntil) {
+  private final void runMultipleOutputTask(Component task, long runUntil) {
     while (System.nanoTime() < runUntil && task.canRead()) {
       task.run();
       executed = true;
@@ -94,16 +94,5 @@ public class PoolWorkerThread extends LiebreThread {
     }
     taskPool.put(task, getIndex());
   }
-
-  @Override
-  public void enable() {
-    super.enable();
-  }
-
-  @Override
-  public void disable() {
-    super.disable();
-  }
-
 
 }
