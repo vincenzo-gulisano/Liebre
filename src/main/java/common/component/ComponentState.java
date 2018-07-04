@@ -27,13 +27,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import stream.Stream;
+import sun.misc.Contended;
 
 /**
  * Object that represents the state of all common stream components such as operators, sinks and
@@ -53,8 +53,10 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   private final List<Stream<OUT>> outputs = new ArrayList<>();
 
 
-  private AtomicBoolean canWrite = new AtomicBoolean(true);
-  private AtomicBoolean canRead = new AtomicBoolean(false);
+  @Contended
+  private volatile boolean canWrite = true;
+  @Contended
+  private volatile boolean canRead = false;
 
   private volatile boolean enabled = false;
 
@@ -195,15 +197,15 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    * @return {@code true} if all input streams are not empty.
    */
   public boolean canRead() {
-    return canRead.get();
+    return canRead;
   }
 
   void waitForRead() {
-    canWrite.set(false);
+    canWrite = false;
   }
 
   void notifyForRead() {
-    canWrite.set(true);
+    canWrite = true;
   }
 
   /**
@@ -212,15 +214,15 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    * @return {@code true} if all output streams have non-zero capacity.
    */
   public boolean canWrite() {
-    return canWrite.get();
+    return canWrite;
   }
 
   void waitForWrite() {
-    canRead.set(false);
+    canRead = false;
   }
 
   void notifyForWrite() {
-    canRead.set(true);
+    canRead = true;
   }
 
   /**
