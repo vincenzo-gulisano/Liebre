@@ -38,7 +38,7 @@ import scheduling.thread.BasicWorkerThread;
  *
  * @author palivosd
  */
-public class NoopScheduler implements Scheduler {
+public class DefaultScheduler implements Scheduler {
 
   private static final Logger LOGGER = LogManager.getLogger();
 

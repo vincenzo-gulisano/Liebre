@@ -29,18 +29,20 @@ import common.Named;
 import operator.Operator;
 import scheduling.thread.LiebreThread;
 import sink.Sink;
+import sink.SinkFunction;
 import source.Source;
+import source.SourceFunction;
 import stream.Stream;
 
 public enum StatisticFilename {
 	INSTANCE;
 	public String get(String folder, Named entity, String type) {
-		String name = getPrefix(entity) + entity.getId();
+		String name = entity.getId();
 		return get(folder, name, type);
 	}
 
 	public String get(String folder, LiebreThread thread, String type) {
-		String name = getPrefix(thread) + thread.getId();
+		String name = String.valueOf(thread.getId());
 		return get(folder, name, type);
 	}
 
@@ -57,9 +59,9 @@ public enum StatisticFilename {
 	private String getPrefix(Object entity) {
 		if (entity instanceof Operator) {
 			return "OPERATOR_";
-		} else if (entity instanceof Source) {
+		} else if (entity instanceof Source || entity instanceof SourceFunction) {
 			return "SOURCE_";
-		} else if (entity instanceof Sink) {
+		} else if (entity instanceof Sink || entity instanceof SinkFunction) {
 			return "SINK_";
 		} else if (entity instanceof Stream) {
 			return "STREAM_";

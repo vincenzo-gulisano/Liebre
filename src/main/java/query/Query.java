@@ -57,7 +57,7 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
-import scheduling.impl.NoopScheduler;
+import scheduling.impl.DefaultScheduler;
 import sink.BaseSink;
 import sink.Sink;
 import sink.SinkFunction;
@@ -87,9 +87,10 @@ public final class Query {
   private final Map<StatisticType, StatisticsConfiguration> enabledStatistics = new HashMap<>();
   private StreamFactory streamFactory;
   private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
+  private boolean active;
 
   public Query() {
-    this(new NoopScheduler());
+    this(new DefaultScheduler());
   }
 
   public Query(Scheduler scheduler) {
@@ -103,41 +104,41 @@ public final class Query {
     }
   }
 
-  public void activateStatistics(String statisticsFolder) {
+  public synchronized void activateStatistics(String statisticsFolder) {
     activateStatistics(statisticsFolder, true);
   }
 
-  public void activateStatistics(String statisticsFolder, boolean autoFlush) {
+  public synchronized void activateStatistics(String statisticsFolder, boolean autoFlush) {
     for (StatisticType type : StatisticType.values()) {
       activateStatistic(statisticsFolder, autoFlush, type);
     }
   }
 
-  public void activateStatistic(String statisticsFolder, boolean autoFlush,
+  public synchronized void activateStatistic(String statisticsFolder, boolean autoFlush,
       StatisticType type) {
     Validate
         .isTrue(!enabledStatistics.containsKey(type), "Statistics for %s already enabled", type);
-    LOGGER.info("Statistics for {} will be saved at: {}", type.name().toLowerCase(), statisticsFolder);
+    LOGGER.info("Enabling statistics for {}", type.name().toLowerCase());
     enabledStatistics.put(type, new StatisticsConfiguration(statisticsFolder, autoFlush, type));
   }
 
 
-  public void setBackoff(int min, int max, int retries) {
+  public synchronized void setBackoff(int min, int max, int retries) {
     this.defaultBackoff = ExponentialBackoff.factory(min, max, retries);
   }
 
-  public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
+  public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
       Operator1In<IN, OUT> operator) {
-    Operator<IN, OUT> op = operator;
+    Operator<IN, OUT> decoratedOperator = operator;
     if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
-      op = new Operator1InStatistic<IN, OUT>(operator, statConfig.folder(), statConfig.autoFlush());
+      decoratedOperator = new Operator1InStatistic<IN, OUT>(operator, statConfig.folder(), statConfig.autoFlush());
     }
-    saveComponent(operators, operator, "operator");
-    return op;
+    saveComponent(operators, decoratedOperator, "operator");
+    return decoratedOperator;
   }
 
-  public <IN extends RichTuple, OUT extends RichTuple> Operator<IN, OUT> addAggregateOperator(
+  public synchronized <IN extends RichTuple, OUT extends RichTuple> Operator<IN, OUT> addAggregateOperator(
       String identifier,
       TimeBasedSingleWindow<IN, OUT> window, long windowSize, long windowSlide) {
 
@@ -146,23 +147,24 @@ public final class Query {
             windowSlide, window));
   }
 
-  public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(String identifier,
+  public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(
+      String identifier,
       MapFunction<IN, OUT> mapFunction) {
     return addOperator(new MapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
   }
 
-  public <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addFlatMapOperator(
+  public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addFlatMapOperator(
       String identifier,
       FlatMapFunction<IN, OUT> mapFunction) {
     return addOperator(new FlatMapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
   }
 
-  public <T extends Tuple> Operator<T, T> addFilterOperator(String identifier,
+  public synchronized <T extends Tuple> Operator<T, T> addFilterOperator(String identifier,
       FilterFunction<T> filterF) {
     return addOperator(new FilterOperator<T>(identifier, streamFactory, filterF));
   }
 
-  public <T extends Tuple> Operator<T, T> addRouterOperator(String identifier) {
+  public synchronized <T extends Tuple> Operator<T, T> addRouterOperator(String identifier) {
     RouterOperator<T> router = new BaseRouterOperator<T>(identifier, streamFactory);
     if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
@@ -172,77 +174,82 @@ public final class Query {
     return router;
   }
 
-  public <T extends Tuple> UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
+  public synchronized <T extends Tuple> UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
     saveComponent(operators, union, "operator");
     return union;
   }
 
-  public <T extends Tuple> UnionOperator<T> addUnionOperator(String identifier) {
+  public synchronized <T extends Tuple> UnionOperator<T> addUnionOperator(String identifier) {
     UnionOperator<T> union = new UnionOperator<>(identifier, streamFactory);
     return addUnionOperator(union);
   }
 
-  public <T extends Tuple> Source<T> addSource(Source<T> source) {
-    Source<T> s = source;
+  public synchronized <T extends Tuple> Source<T> addSource(Source<T> source) {
+    Source<T> decoratedSource = source;
     if (enabledStatistics.containsKey(StatisticType.SOURCES)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.SOURCES);
-      s = new SourceStatistic<T>(s, streamFactory, statConfig.folder(), statConfig.autoFlush());
+      decoratedSource = new SourceStatistic<T>(decoratedSource, streamFactory, statConfig.folder(), statConfig.autoFlush());
     }
-    saveComponent(sources, s, "source");
-    return s;
+    saveComponent(sources, decoratedSource, "source");
+    return decoratedSource;
   }
 
-  public <T extends Tuple> Source<T> addBaseSource(String id, SourceFunction<T> function) {
+  public synchronized <T extends Tuple> Source<T> addBaseSource(String id,
+      SourceFunction<T> function) {
     return addSource(new BaseSource<>(id, function));
   }
 
-  public <T extends Tuple> Source<T> addTextFileSource(String id, String filename,
+  public synchronized <T extends Tuple> Source<T> addTextFileSource(String id, String filename,
       TextSourceFunction<T> function) {
     return addSource(new TextFileSource(id, filename, function));
   }
 
-  public <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
-    Sink<T> s = sink;
+  public synchronized <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
+    Sink<T> decoratedSink = sink;
     if (enabledStatistics.containsKey(StatisticType.SINKS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.SINKS);
-      s = new SinkStatistic<T>(sink, statConfig.folder(), statConfig.autoFlush());
+      decoratedSink = new SinkStatistic<T>(sink, statConfig.folder(), statConfig.autoFlush());
     }
-    saveComponent(sinks, s, "sink");
-    return s;
+    saveComponent(sinks, decoratedSink, "sink");
+    return decoratedSink;
   }
 
-  public <T extends Tuple> Sink<T> addBaseSink(String id, SinkFunction<T> sinkFunction) {
+  public synchronized <T extends Tuple> Sink<T> addBaseSink(String id,
+      SinkFunction<T> sinkFunction) {
     return addSink(new BaseSink<>(id, sinkFunction));
   }
 
-  public <T extends Tuple> Sink<T> addTextFileSink(String id, String file,
+  public synchronized <T extends Tuple> Sink<T> addTextFileSink(String id, String file,
       TextSinkFunction<T> function) {
     return addSink(new TextFileSink<>(id, file, function));
   }
 
-  public <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
+  public synchronized <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN,
+      IN2, OUT> addOperator2In(
       Operator2In<IN, IN2, OUT> operator) {
-    Operator2In<IN, IN2, OUT> op = operator;
+    Operator2In<IN, IN2, OUT> decoratedOperator = operator;
     if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
-      op = new Operator2InStatistic<IN, IN2, OUT>(operator, statConfig.folder(),
+      decoratedOperator = new Operator2InStatistic<IN, IN2, OUT>(operator, statConfig.folder(),
           statConfig.autoFlush());
     }
-    saveComponent(operators, op, "operator2in");
-    return op;
+    saveComponent(operators, decoratedOperator, "operator2in");
+    return decoratedOperator;
   }
 
-  public <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
+  public synchronized <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
       String identifier, Predicate<IN, IN2, OUT> predicate, long windowSize) {
     return addOperator2In(
         new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, windowSize, predicate));
   }
 
-  public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination) {
+  public synchronized <T extends Tuple> Query connect(StreamProducer<T> source,
+      StreamConsumer<T> destination) {
     return connect(source, destination, defaultBackoff);
   }
 
-  public <T extends Tuple> Query connect(StreamProducer<T> source, StreamConsumer<T> destination,
+  public synchronized <T extends Tuple> Query connect(StreamProducer<T> source,
+      StreamConsumer<T> destination,
       BackoffFactory backoff) {
     Validate.isTrue(destination instanceof Operator2In == false,
         "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
@@ -253,12 +260,12 @@ public final class Query {
     return this;
   }
 
-  public <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
+  public synchronized <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
       Operator2In<T, ?, ?> destination) {
     return connect2inLeft(source, destination, defaultBackoff);
   }
 
-  public <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
+  public synchronized <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
       Operator2In<T, ?, ?> destination, BackoffFactory backoff) {
     Stream<T> stream = getStream(source, destination, backoff);
     source.addOutput(destination, stream);
@@ -266,12 +273,12 @@ public final class Query {
     return this;
   }
 
-  public <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
+  public synchronized <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
       Operator2In<?, T, ?> destination) {
     return connect2inRight(source, destination, defaultBackoff);
   }
 
-  public <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
+  public synchronized <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
       Operator2In<?, T, ?> destination, BackoffFactory backoff) {
     Stream<T> stream = getStream(source, destination.secondInputView(), backoff);
     source.addOutput(destination.secondInputView(), stream);
@@ -279,7 +286,7 @@ public final class Query {
     return this;
   }
 
-  private <T extends Tuple> Stream<T> getStream(StreamProducer<T> source,
+  private synchronized <T extends Tuple> Stream<T> getStream(StreamProducer<T> source,
       StreamConsumer<T> destination,
       BackoffFactory backoff) {
     Stream<T> stream = streamFactory
@@ -292,7 +299,7 @@ public final class Query {
     }
   }
 
-  public void activate() {
+  public synchronized void activate() {
 
     LOGGER.info("Activating query...");
     LOGGER.info("Components: {} Sources, {} Operators, {} Sinks, {} Streams", sources.size(),
@@ -302,14 +309,19 @@ public final class Query {
     scheduler.addTasks(sources.values());
     scheduler.enable();
     scheduler.startTasks();
+    active = true;
   }
 
-  public void deActivate() {
+  public synchronized void deActivate() {
+    if (!active) {
+      return;
+    }
     LOGGER.info("Deactivating query...");
     scheduler.disable();
     LOGGER.info("Waiting for threads to terminate...");
     scheduler.stopTasks();
     LOGGER.info("DONE!");
+    active = false;
   }
 
   private Set<Stream<?>> streams() {
