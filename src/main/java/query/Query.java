@@ -324,6 +324,10 @@ public final class Query {
     active = false;
   }
 
+  public int sourcesNumber() {
+    return sources.size();
+  }
+
   private Set<Stream<?>> streams() {
     Set<Stream<?>> streams = new HashSet<>();
     for (Operator<?, ?> op : operators.values()) {

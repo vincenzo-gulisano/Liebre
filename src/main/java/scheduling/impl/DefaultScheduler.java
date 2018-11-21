@@ -56,8 +56,9 @@ public class DefaultScheduler implements Scheduler {
     if (!isEnabled()) {
       throw new IllegalStateException();
     }
-    for (Runnable operator : tasks) {
-      BasicWorkerThread thread = new BasicWorkerThread(operator);
+    for (Runnable task : tasks) {
+      BasicWorkerThread thread = new BasicWorkerThread(task);
+      thread.setName(task.toString());
       threads.add(thread);
       thread.enable();
       thread.start();
