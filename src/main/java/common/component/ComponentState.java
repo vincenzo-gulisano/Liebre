@@ -33,7 +33,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import stream.Stream;
-import sun.misc.Contended;
 
 /**
  * Object that represents the state of all common stream components such as operators, sinks and
@@ -53,9 +52,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   private final List<Stream<OUT>> outputs = new ArrayList<>();
 
 
-  @Contended
   private volatile boolean canWrite = true;
-  @Contended
   private volatile boolean canRead = false;
 
   private volatile boolean enabled = false;

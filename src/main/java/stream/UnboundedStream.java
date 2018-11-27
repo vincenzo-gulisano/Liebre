@@ -32,7 +32,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import sun.misc.Contended;
 
 public class UnboundedStream<T extends Tuple> implements Stream<T> {
 
@@ -45,9 +44,7 @@ public class UnboundedStream<T extends Tuple> implements Stream<T> {
   private final Backoff readBackoff;
   private final Backoff writeBackoff;
   private volatile boolean enabled;
-  @Contended
   private volatile long tuplesRead;
-  @Contended
   private volatile long tuplesWritten;
 
   public UnboundedStream(String id, int index, StreamProducer<T> source,
