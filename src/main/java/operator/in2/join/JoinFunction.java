@@ -24,10 +24,10 @@
 package operator.in2.join;
 
 import common.tuple.Tuple;
+import java.util.function.BiFunction;
 
-@FunctionalInterface
-public interface Predicate<IN1 extends Tuple, IN2 extends Tuple, OUT extends Tuple> {
+public interface JoinFunction<IN1 extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends
+    BiFunction<IN1, IN2, OUT> {
 
-  public OUT compare(IN1 t1, IN2 t2);
 
 }

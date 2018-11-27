@@ -51,7 +51,7 @@ public class TextMap2 {
     Operator<InputTuple, OutputTuple> transform = q.addMapOperator("transform",
         new MapFunction<InputTuple, OutputTuple>() {
           @Override
-          public OutputTuple map(InputTuple tuple) {
+          public OutputTuple apply(InputTuple tuple) {
             return new OutputTuple(tuple);
           }
         });

@@ -47,7 +47,7 @@ public class SimpleQuery {
       private final Random r = new Random();
 
       @Override
-      public MyTuple getNextTuple() {
+      public MyTuple get() {
         Util.sleep(50);
         return new MyTuple(System.currentTimeMillis(), r.nextInt(5), r.nextInt(100));
       }

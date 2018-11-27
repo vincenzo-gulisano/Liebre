@@ -25,11 +25,9 @@ package sink;
 
 import common.Active;
 import common.tuple.Tuple;
+import java.util.function.Function;
 
-@FunctionalInterface
-public interface TextSinkFunction<T extends Tuple> extends Active {
-
-  String processTuple(T tuple);
+public interface TextSinkFunction<T extends Tuple> extends Active, Function<T, String> {
 
   @Override
   default void enable() {

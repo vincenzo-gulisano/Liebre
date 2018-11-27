@@ -52,7 +52,7 @@ public class TextMap1 {
     Operator<MyTuple, MyTuple> multiply = q
         .addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
           @Override
-          public MyTuple map(MyTuple tuple) {
+          public MyTuple apply(MyTuple tuple) {
             return new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2);
           }
         });

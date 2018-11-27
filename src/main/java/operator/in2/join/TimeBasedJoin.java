@@ -33,7 +33,7 @@ import stream.StreamFactory;
 public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple>
     extends BaseOperator2In<IN, IN2, OUT> {
 
-  Predicate<IN, IN2, OUT> predicate;
+  JoinFunction<IN, IN2, OUT> joinFunction;
   private long ws;
   private LinkedList<IN> in1Tuples;
   private LinkedList<IN2> in2Tuples;
@@ -42,10 +42,10 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
   private LinkedList<IN2> in2TuplesBuffer;
 
   public TimeBasedJoin(String id, StreamFactory streamFactory, long windowSize,
-      Predicate<IN, IN2, OUT> predicate) {
+      JoinFunction<IN, IN2, OUT> joinFunction) {
     super(id);
     this.ws = windowSize;
-    this.predicate = predicate;
+    this.joinFunction = joinFunction;
 
     in1Tuples = new LinkedList<IN>();
     in2Tuples = new LinkedList<IN2>();
@@ -77,7 +77,7 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
         if (in2Tuples.size() > 0) {
 
           for (IN2 t : in2Tuples) {
-            OUT result = predicate.compare(tuple, t);
+            OUT result = joinFunction.apply(tuple, t);
             if (result != null) {
               results.add(result);
             }
@@ -97,7 +97,7 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
         if (in1Tuples.size() > 0) {
 
           for (IN t : in1Tuples) {
-            OUT result = predicate.compare(t, tuple);
+            OUT result = joinFunction.apply(t, tuple);
             if (result != null) {
               results.add(result);
             }

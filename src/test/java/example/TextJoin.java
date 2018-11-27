@@ -28,7 +28,7 @@ import java.util.Random;
 import common.tuple.BaseRichTuple;
 import common.util.Util;
 import operator.in2.Operator2In;
-import operator.in2.join.Predicate;
+import operator.in2.join.JoinFunction;
 import query.Query;
 import sink.Sink;
 import sink.SinkFunction;
@@ -49,7 +49,7 @@ public class TextJoin {
       private final Random r = new Random();
 
       @Override
-      public InputTuple1 getNextTuple() {
+      public InputTuple1 get() {
         Util.sleep(1100);
         return new InputTuple1(System.currentTimeMillis(), r.nextInt(10));
       }
@@ -59,16 +59,16 @@ public class TextJoin {
       private final Random r = new Random();
 
       @Override
-      public InputTuple2 getNextTuple() {
+      public InputTuple2 get() {
         Util.sleep(1100);
         return new InputTuple2(System.currentTimeMillis(), r.nextInt(20));
       }
     });
 
     Operator2In<InputTuple1, InputTuple2, OutputTuple> join = q.addJoinOperator("join",
-        new Predicate<InputTuple1, InputTuple2, OutputTuple>() {
+        new JoinFunction<InputTuple1, InputTuple2, OutputTuple>() {
           @Override
-          public OutputTuple compare(InputTuple1 t1, InputTuple2 t2) {
+          public OutputTuple apply(InputTuple1 t1, InputTuple2 t2) {
             if (t1.a < t2.b) {
               return new OutputTuple(t1.getTimestamp(), t1, t2);
             }
@@ -78,7 +78,7 @@ public class TextJoin {
 
     Sink<OutputTuple> o1 = q.addBaseSink("o1", new SinkFunction<OutputTuple>() {
       @Override
-      public void processTuple(OutputTuple tuple) {
+      public void accept(OutputTuple tuple) {
         System.out.println(tuple.t1.a + " <--> " + tuple.t2.b);
       }
     });

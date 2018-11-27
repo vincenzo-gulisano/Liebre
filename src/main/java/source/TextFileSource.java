@@ -54,7 +54,7 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
   @Override
   public T getNextTuple() {
     if (!done) {
-      return function.getNext(nextLine());
+      return function.apply(nextLine());
     }
     // If done, prevent spinning
     Util.sleep(1000);

@@ -30,7 +30,7 @@ import java.util.List;
 @FunctionalInterface
 public interface FlatMapFunction<T1 extends Tuple, T2 extends Tuple> extends Active {
 
-  public List<T2> map(T1 tuple);
+  public List<T2> apply(T1 tuple);
 
   @Override
   default void enable() {

@@ -25,11 +25,10 @@ package operator.map;
 
 import common.Active;
 import common.tuple.Tuple;
+import java.util.function.Function;
 
-@FunctionalInterface
-public interface MapFunction<IN extends Tuple, OUT extends Tuple> extends Active {
-
-  public OUT map(IN tuple);
+public interface MapFunction<IN extends Tuple, OUT extends Tuple> extends Active, Function<IN,
+    OUT> {
 
   @Override
   default void enable() {

@@ -44,7 +44,7 @@ import operator.in1.Operator1In;
 import operator.in1.Operator1InStatistic;
 import operator.in2.Operator2In;
 import operator.in2.Operator2InStatistic;
-import operator.in2.join.Predicate;
+import operator.in2.join.JoinFunction;
 import operator.in2.join.TimeBasedJoin;
 import operator.map.FlatMapFunction;
 import operator.map.FlatMapOperator;
@@ -238,9 +238,9 @@ public final class Query {
   }
 
   public synchronized <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
-      String identifier, Predicate<IN, IN2, OUT> predicate, long windowSize) {
+      String identifier, JoinFunction<IN, IN2, OUT> joinFunction, long windowSize) {
     return addOperator2In(
-        new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, windowSize, predicate));
+        new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, windowSize, joinFunction));
   }
 
   public synchronized <T extends Tuple> Query connect(StreamProducer<T> source,

@@ -25,11 +25,9 @@ package source;
 
 import common.Active;
 import common.tuple.Tuple;
+import java.util.function.Supplier;
 
-@FunctionalInterface
-public interface SourceFunction<OUT extends Tuple> extends Active {
-
-  public abstract OUT getNextTuple();
+public interface SourceFunction<OUT extends Tuple> extends Active, Supplier<OUT> {
 
   @Override
   default void enable() {

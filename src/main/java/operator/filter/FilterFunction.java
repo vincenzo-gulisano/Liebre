@@ -25,11 +25,9 @@ package operator.filter;
 
 import common.Active;
 import common.tuple.Tuple;
+import java.util.function.Predicate;
 
-@FunctionalInterface
-public interface FilterFunction<T extends Tuple> extends Active {
-
-  boolean forward(T tuple);
+public interface FilterFunction<T extends Tuple> extends Active, Predicate<T> {
 
   @Override
   default void enable() {

@@ -55,7 +55,7 @@ public class TextFlatMap {
     Operator<MyTuple, MyTuple> multiply = q
         .addFlatMapOperator("multiply", new FlatMapFunction<MyTuple, MyTuple>() {
           @Override
-          public List<MyTuple> map(MyTuple tuple) {
+          public List<MyTuple> apply(MyTuple tuple) {
             List<MyTuple> result = new LinkedList<MyTuple>();
             result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
             result.add(new MyTuple(tuple.timestamp, tuple.key, tuple.value * 3));

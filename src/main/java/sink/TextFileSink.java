@@ -52,7 +52,7 @@ public class TextFileSink<T extends Tuple> extends AbstractSink<T> {
     if (!isEnabled()) {
       throw new IllegalStateException("Output stream is closed");
     }
-    pw.println(function.processTuple(tuple));
+    pw.println(function.apply(tuple));
   }
 
   @Override

@@ -56,7 +56,7 @@ public class FilterOperator<T extends Tuple> extends BaseOperator1In<T, T> {
   @Override
   public List<T> processTupleIn1(T tuple) {
     List<T> result = new LinkedList<T>();
-    if (filter.forward(tuple)) {
+    if (filter.test(tuple)) {
       result.add(tuple);
     }
     return result;

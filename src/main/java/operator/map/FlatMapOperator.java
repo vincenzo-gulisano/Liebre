@@ -54,6 +54,6 @@ public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOp
 
   @Override
   public List<OUT> processTupleIn1(IN tuple) {
-    return map.map(tuple);
+    return map.apply(tuple);
   }
 }

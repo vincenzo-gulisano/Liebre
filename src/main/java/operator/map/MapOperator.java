@@ -56,7 +56,7 @@ public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperat
   @Override
   public List<OUT> processTupleIn1(IN tuple) {
     List<OUT> result = new LinkedList<OUT>();
-    OUT t = map.map(tuple);
+    OUT t = map.apply(tuple);
     if (t != null) {
       result.add(t);
     }

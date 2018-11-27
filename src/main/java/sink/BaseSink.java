@@ -38,7 +38,7 @@ public class BaseSink<IN extends Tuple> extends AbstractSink<IN> {
 
   @Override
   public void processTuple(IN tuple) {
-    function.processTuple(tuple);
+    function.accept(tuple);
   }
 
   @Override

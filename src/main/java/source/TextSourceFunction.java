@@ -24,11 +24,9 @@
 package source;
 
 import common.Active;
+import java.util.function.Function;
 
-@FunctionalInterface
-public interface TextSourceFunction<T> extends Active {
-
-  T getNext(String text);
+public interface TextSourceFunction<T> extends Active, Function<String, T> {
 
   @Override
   default void enable() {

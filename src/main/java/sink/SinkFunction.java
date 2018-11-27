@@ -25,11 +25,10 @@ package sink;
 
 import common.Active;
 import common.tuple.Tuple;
+import java.util.function.Consumer;
 
 @FunctionalInterface
-public interface SinkFunction<T extends Tuple> extends Active {
-
-  void processTuple(T tuple);
+public interface SinkFunction<T extends Tuple> extends Active, Consumer<T> {
 
   @Override
   default void enable() {
