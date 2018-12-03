@@ -40,7 +40,7 @@ public class BaseRichTuple implements RichTuple {
   }
 
   public BaseRichTuple(long timestamp, String key) {
-    this(timestamp, System.currentTimeMillis(), key);
+    this(System.currentTimeMillis(), timestamp, key);
   }
 
   @Override
