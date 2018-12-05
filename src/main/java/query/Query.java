@@ -164,7 +164,7 @@ public final class Query {
     return addOperator(new FilterOperator<T>(identifier, streamFactory, filterF));
   }
 
-  public synchronized <T extends Tuple> Operator<T, T> addRouterOperator(String identifier) {
+  public synchronized <T extends Tuple> RouterOperator<T> addRouterOperator(String identifier) {
     RouterOperator<T> router = new BaseRouterOperator<T>(identifier, streamFactory);
     if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
