@@ -31,8 +31,6 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
 import operator.Operator;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
@@ -174,30 +172,6 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 
   public void setPriorityMetric(PriorityMetric metric) {
     decorated.setPriorityMetric(metric);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    Operator2InDecorator<?, ?, ?> that = (Operator2InDecorator<?, ?, ?>) o;
-
-    return new EqualsBuilder()
-        .append(decorated, that.decorated)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(decorated)
-        .toHashCode();
   }
 
   @Override

@@ -30,8 +30,6 @@ import common.component.ConnectionsNumber;
 import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
@@ -129,30 +127,6 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   @Override
   public void setPriorityMetric(PriorityMetric metric) {
     processCommand.setMetric(metric);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    AbstractSource<?> that = (AbstractSource<?>) o;
-
-    return new EqualsBuilder()
-        .append(state, that.state)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(state)
-        .toHashCode();
   }
 
   @Override

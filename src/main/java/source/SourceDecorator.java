@@ -28,8 +28,6 @@ import common.component.ConnectionsNumber;
 import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
@@ -131,30 +129,6 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   @Override
   public void setPriorityMetric(PriorityMetric metric) {
     decorated.setPriorityMetric(metric);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    SourceDecorator<?> that = (SourceDecorator<?>) o;
-
-    return new EqualsBuilder()
-        .append(decorated, that.decorated)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(decorated)
-        .toHashCode();
   }
 
   @Override

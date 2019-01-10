@@ -23,8 +23,6 @@
 
 package query;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class StatisticsConfiguration {
@@ -47,32 +45,6 @@ public class StatisticsConfiguration {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    StatisticsConfiguration that = (StatisticsConfiguration) o;
-
-    return new EqualsBuilder()
-        .append(autoFlush, that.autoFlush)
-        .append(folder, that.folder)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(folder)
-        .append(autoFlush)
-        .toHashCode();
-  }
-
-  @Override
   public String toString() {
     return new ToStringBuilder(this)
         .append("folder", folder)
@@ -80,8 +52,6 @@ public class StatisticsConfiguration {
         .appendSuper(super.toString())
         .toString();
   }
-
-
 
 
 }

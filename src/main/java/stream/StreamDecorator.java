@@ -26,8 +26,6 @@ package stream;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class StreamDecorator<T extends Tuple> implements Stream<T> {
 
@@ -95,30 +93,6 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
   @Override
   public T poll() {
     return decorated.poll();
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    StreamDecorator<?> that = (StreamDecorator<?>) o;
-
-    return new EqualsBuilder()
-        .append(decorated, that.decorated)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(decorated)
-        .toHashCode();
   }
 
   @Override

@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import stream.Stream;
 
@@ -231,39 +229,11 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
 
   /**
    * Get the ouput {@link ConnectionsNumber} for this component
-   * @return
    */
   public ConnectionsNumber outputsNumber() {
     return type.outputsNumber();
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    ComponentState<?, ?> that = (ComponentState<?, ?>) o;
-
-    return new EqualsBuilder()
-        .append(index, that.index)
-        .append(id, that.id)
-        .append(type, that.type)
-        .isEquals();
-  }
-
-  @Override
-  public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(id)
-        .append(index)
-        .append(type)
-        .toHashCode();
-  }
 
   @Override
   public String toString() {

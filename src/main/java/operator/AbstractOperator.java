@@ -31,7 +31,6 @@ import common.component.ConnectionsNumber;
 import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import java.util.Objects;
 import stream.Stream;
 
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements
@@ -124,11 +123,6 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(state);
-  }
-
-  @Override
   public void onScheduled() {
   }
 
@@ -146,19 +140,5 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
     return state.outputsNumber();
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (!(obj instanceof AbstractOperator)) {
-      return false;
-    }
-    AbstractOperator<?, ?> other = (AbstractOperator<?, ?>) obj;
-    return Objects.equals(state, other.state);
-  }
 
 }

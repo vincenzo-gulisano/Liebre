@@ -31,7 +31,6 @@ import common.component.ConnectionsNumber;
 import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import java.util.Objects;
 import operator.Operator;
 import scheduling.priority.PriorityMetric;
 import stream.Stream;
@@ -173,28 +172,6 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   @Override
   public String toString() {
     return getId();
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(state);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (!(obj instanceof BaseOperator2In)) {
-      // Give the other object a chance to check equality. Useful in the case of
-      // adapters
-      return obj.equals(this);
-    }
-    BaseOperator2In<?, ?, ?> other = (BaseOperator2In<?, ?, ?>) obj;
-    return Objects.equals(state, other.state);
   }
 
 }
