@@ -39,9 +39,7 @@ public class ProcessCommandRouter<T extends Tuple> extends
     Stream<T> input = operator.getInput();
     T inTuple = input.getNextTuple();
     if (inTuple != null) {
-      metric.recordTupleRead(inTuple, input);
       for (Stream<T> output : operator.chooseOutputs(inTuple)) {
-        metric.recordTupleWrite(inTuple, output);
         output.addTuple(inTuple);
       }
     }

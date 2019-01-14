@@ -27,10 +27,8 @@ import common.StreamConsumer;
 import common.component.ComponentState;
 import common.component.ComponentType;
 import common.component.ConnectionsNumber;
-import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
@@ -56,21 +54,6 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   @Override
   public Collection<? extends Stream<OUT>> getOutputs() {
     return state.getOutputs();
-  }
-
-  @Override
-  public boolean canWrite() {
-    return state.canWrite();
-  }
-
-  @Override
-  public void waitFor(EventType type) {
-    type.wait(state);
-  }
-
-  @Override
-  public void notifyFor(EventType type) {
-    type.notify(state);
   }
 
   @Override
@@ -122,11 +105,6 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
 
   @Override
   public void onRun() {
-  }
-
-  @Override
-  public void setPriorityMetric(PriorityMetric metric) {
-    processCommand.setMetric(metric);
   }
 
   @Override

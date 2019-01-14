@@ -26,7 +26,6 @@ package operator.in1;
 import common.component.ComponentType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
-import scheduling.priority.PriorityMetric;
 import stream.StreamFactory;
 
 public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> extends AbstractOperator<IN, OUT>
@@ -49,8 +48,4 @@ public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> exten
 		processCommand.run();
 	}
 
-	@Override
-	public void setPriorityMetric(PriorityMetric metric) {
-		processCommand.setMetric(metric);
-	}
 }

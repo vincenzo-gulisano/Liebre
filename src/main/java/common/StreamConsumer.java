@@ -35,15 +35,6 @@ import stream.Stream;
  */
 public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 
-  /**
-   * Heuristic that indicates that the {@link StreamConsumer} has some input
-   * <b>all</b> its input streams. Might not always be accurate in the case of
-   * operators with multiple input streams.
-   *
-   * @return {@code true} if the operator has some tuples available on all its input streams.
-   */
-  boolean canRead();
-
   void addInput(StreamProducer<IN> source, Stream<IN> stream);
 
   Stream<IN> getInput();

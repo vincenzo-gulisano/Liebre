@@ -26,10 +26,8 @@ package operator.router;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.ConnectionsNumber;
-import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<T> {
@@ -62,11 +60,6 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public boolean canRead() {
-    return decorated.canRead();
-  }
-
-  @Override
   public void addInput(StreamProducer<T> source, Stream<T> stream) {
     decorated.addInput(source, stream);
   }
@@ -74,21 +67,6 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   @Override
   public Stream<T> getInput() {
     return decorated.getInput();
-  }
-
-  @Override
-  public boolean canWrite() {
-    return decorated.canWrite();
-  }
-
-  @Override
-  public void waitFor(EventType type) {
-    decorated.waitFor(type);
-  }
-
-  @Override
-  public void notifyFor(EventType type) {
-    decorated.notifyFor(type);
   }
 
   @Override
@@ -149,10 +127,6 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   @Override
   public ConnectionsNumber outputsNumber() {
     return decorated.outputsNumber();
-  }
-
-  public void setPriorityMetric(PriorityMetric metric) {
-    decorated.setPriorityMetric(metric);
   }
 
 }

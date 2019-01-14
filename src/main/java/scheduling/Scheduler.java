@@ -60,6 +60,4 @@ public interface Scheduler extends Active {
    */
   void activateStatistics(String folder);
 
-  boolean usesNotifications();
-
 }

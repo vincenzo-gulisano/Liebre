@@ -23,6 +23,8 @@
 
 package common.tuple;
 
+//FIXME: The tuple class is not really useful
+@Deprecated
 public interface Tuple {
 
 }

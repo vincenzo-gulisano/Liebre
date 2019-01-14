@@ -25,10 +25,8 @@ package source;
 
 import common.StreamConsumer;
 import common.component.ConnectionsNumber;
-import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
@@ -58,21 +56,6 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   @Override
   public void run() {
     processCommand.run();
-  }
-
-  @Override
-  public boolean canWrite() {
-    return decorated.canWrite();
-  }
-
-  @Override
-  public void waitFor(EventType type) {
-    decorated.waitFor(type);
-  }
-
-  @Override
-  public void notifyFor(EventType type) {
-    decorated.notifyFor(type);
   }
 
   @Override
@@ -124,11 +107,6 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   @Override
   public ConnectionsNumber outputsNumber() {
     return decorated.outputsNumber();
-  }
-
-  @Override
-  public void setPriorityMetric(PriorityMetric metric) {
-    decorated.setPriorityMetric(metric);
   }
 
   @Override

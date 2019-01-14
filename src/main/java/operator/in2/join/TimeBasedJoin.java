@@ -163,9 +163,4 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
     return in2TuplesBuffer.poll();
   }
 
-  @Override
-  public boolean canRead() {
-    //FIXME: Vincenzo: Remove when input buffers are removed
-    return super.canRead() || !in1TuplesBuffer.isEmpty() || !in2TuplesBuffer.isEmpty();
-  }
 }

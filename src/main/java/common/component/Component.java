@@ -24,7 +24,6 @@ package common.component;
 
 import common.Active;
 import common.Named;
-import scheduling.priority.PriorityMetric;
 
 /**
  * Base interface for all stream components such as Sources, Sinks and Operators.
@@ -37,26 +36,8 @@ public interface Component extends Active, Runnable, Named {
 
   void onRun();
 
-  void setPriorityMetric(PriorityMetric metric);
-
   ConnectionsNumber inputsNumber();
 
   ConnectionsNumber outputsNumber();
-
-  void waitFor(EventType type);
-
-  void notifyFor(EventType type);
-
-  default boolean canRead() {
-    return true;
-  }
-
-  default boolean canWrite() {
-    return true;
-  }
-
-  default boolean canRun() {
-    return canRead() && canWrite();
-  }
 
 }

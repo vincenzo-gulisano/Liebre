@@ -26,12 +26,10 @@ package operator.in2;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.ConnectionsNumber;
-import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
 import operator.Operator;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements
@@ -48,20 +46,6 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public boolean canRead() {
-    return decorated.canRead();
-  }
-
-  @Override
-  public void waitFor(EventType type) {
-    decorated.waitFor(type);
-  }
-
-  @Override
-  public void notifyFor(EventType type) {
-    decorated.notifyFor(type);
-  }
-
   public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
     decorated.addInput2(source, stream);
   }
@@ -102,11 +86,6 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public void setPriorityMetric(PriorityMetric metric) {
-    decorated.setPriorityMetric(metric);
-  }
-
-  @Override
   public void enable() {
     decorated.enable();
   }
@@ -124,11 +103,6 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   @Override
   public void run() {
     decorated.run();
-  }
-
-  @Override
-  public boolean canWrite() {
-    return decorated.canWrite();
   }
 
   @Override

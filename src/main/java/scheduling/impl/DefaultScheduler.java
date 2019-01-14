@@ -108,8 +108,5 @@ public class DefaultScheduler implements Scheduler {
     LOGGER.info("No statistics available");
   }
 
-  @Override
-  public boolean usesNotifications() {
-    return false;
-  }
 }
+

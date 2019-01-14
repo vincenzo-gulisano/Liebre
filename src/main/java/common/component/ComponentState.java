@@ -49,10 +49,6 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   private final List<Stream<IN>> inputs = new ArrayList<>();
   private final List<Stream<OUT>> outputs = new ArrayList<>();
 
-
-  private volatile boolean canWrite = true;
-  private volatile boolean canRead = false;
-
   private volatile boolean enabled = false;
 
   /**
@@ -184,40 +180,6 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    */
   public Collection<Stream<OUT>> getOutputs() {
     return Collections.unmodifiableCollection(outputs);
-  }
-
-  /**
-   * Verify that this state has input streams with {@link Tuple}s which can be read.
-   *
-   * @return {@code true} if all input streams are not empty.
-   */
-  public boolean canRead() {
-    return canRead;
-  }
-
-  void waitForRead() {
-    canWrite = false;
-  }
-
-  void notifyForRead() {
-    canWrite = true;
-  }
-
-  /**
-   * Verify that this state has output streams with non-zero capacity.
-   *
-   * @return {@code true} if all output streams have non-zero capacity.
-   */
-  public boolean canWrite() {
-    return canWrite;
-  }
-
-  void waitForWrite() {
-    canRead = false;
-  }
-
-  void notifyForWrite() {
-    canRead = true;
   }
 
   /**

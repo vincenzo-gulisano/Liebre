@@ -26,11 +26,9 @@ package operator.in1;
 import common.StreamConsumer;
 import common.StreamProducer;
 import common.component.ConnectionsNumber;
-import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implements
@@ -89,27 +87,6 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
-  public boolean canRead() {
-    return decorated.canRead();
-  }
-
-  @Override
-  public boolean canWrite() {
-    return decorated.canWrite();
-  }
-
-
-  @Override
-  public void waitFor(EventType type) {
-    decorated.waitFor(type);
-  }
-
-  @Override
-  public void notifyFor(EventType type) {
-    decorated.notifyFor(type);
-  }
-
-  @Override
   public String toString() {
     return decorated.toString();
   }
@@ -152,10 +129,6 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   @Override
   public ConnectionsNumber outputsNumber() {
     return decorated.outputsNumber();
-  }
-
-  public void setPriorityMetric(PriorityMetric metric) {
-    decorated.setPriorityMetric(metric);
   }
 
 }

@@ -27,10 +27,8 @@ import common.StreamProducer;
 import common.component.ComponentState;
 import common.component.ComponentType;
 import common.component.ConnectionsNumber;
-import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
@@ -56,21 +54,6 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   @Override
   public Collection<? extends Stream<IN>> getInputs() {
     return state.getInputs();
-  }
-
-  @Override
-  public boolean canRead() {
-    return state.canRead();
-  }
-
-  @Override
-  public void waitFor(EventType type) {
-    type.wait(state);
-  }
-
-  @Override
-  public void notifyFor(EventType type) {
-    type.notify(state);
   }
 
   @Override
@@ -104,11 +87,6 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   }
 
   public abstract void processTuple(IN tuple);
-
-  @Override
-  public void setPriorityMetric(PriorityMetric metric) {
-    processCommand.setMetric(metric);
-  }
 
   @Override
   public void onScheduled() {

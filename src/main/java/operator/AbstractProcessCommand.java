@@ -24,7 +24,6 @@
 package operator;
 
 import common.component.ProcessCommand;
-import scheduling.priority.PriorityMetric;
 
 /**
  * Encapsulation of the execution logic for operators. This is required in order
@@ -41,7 +40,6 @@ import scheduling.priority.PriorityMetric;
  */
 public abstract class AbstractProcessCommand<OP extends Operator<?, ?>> implements ProcessCommand {
 	protected final OP operator;
-	protected PriorityMetric metric = PriorityMetric.noopMetric();
 
 	protected AbstractProcessCommand(OP operator) {
 		this.operator = operator;
@@ -56,9 +54,5 @@ public abstract class AbstractProcessCommand<OP extends Operator<?, ?>> implemen
 
 	@Override
 	public abstract void process();
-
-	public void setMetric(PriorityMetric metric) {
-		this.metric = metric;
-	}
 
 }

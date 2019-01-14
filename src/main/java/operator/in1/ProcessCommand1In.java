@@ -43,11 +43,9 @@ public class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
 
 		IN inTuple = input.getNextTuple();
 		if (inTuple != null) {
-			metric.recordTupleRead(inTuple, input);
 			List<OUT> outTuples = operator.processTupleIn1(inTuple);
 			if (outTuples != null) {
 				for (OUT t : outTuples) {
-					metric.recordTupleWrite(t, output);
 					output.addTuple(t);
 				}
 			}

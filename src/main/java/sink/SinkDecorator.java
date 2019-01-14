@@ -25,10 +25,8 @@ package sink;
 
 import common.StreamProducer;
 import common.component.ConnectionsNumber;
-import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
@@ -58,21 +56,6 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   @Override
   public void run() {
     processCommand.run();
-  }
-
-  @Override
-  public boolean canRead() {
-    return decorated.canRead();
-  }
-
-  @Override
-  public void waitFor(EventType type) {
-    decorated.waitFor(type);
-  }
-
-  @Override
-  public void notifyFor(EventType type) {
-    decorated.notifyFor(type);
   }
 
   @Override
@@ -128,10 +111,6 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   @Override
   public String toString() {
     return decorated.toString();
-  }
-
-  public void setPriorityMetric(PriorityMetric metric) {
-    decorated.setPriorityMetric(metric);
   }
 
 }

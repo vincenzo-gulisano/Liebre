@@ -27,13 +27,10 @@ import common.StreamProducer;
 import common.component.ComponentType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 import stream.StreamFactory;
 
 public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
-
-  private PriorityMetric metric = PriorityMetric.noopMetric();
 
   public UnionOperator(String id, StreamFactory streamFactory) {
     super(id, ComponentType.UNION);
@@ -63,18 +60,9 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
     for (Stream<T> in : state.getInputs()) {
       T inTuple = in.getNextTuple();
       if (inTuple != null) {
-        metric.recordTupleRead(inTuple, in);
-        metric.recordTupleWrite(inTuple, output);
         output.addTuple(inTuple);
       }
     }
   }
-
-
-  @Override
-  public void setPriorityMetric(PriorityMetric metric) {
-    this.metric = metric;
-  }
-
 
 }

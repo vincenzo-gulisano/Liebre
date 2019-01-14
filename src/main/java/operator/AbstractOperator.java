@@ -28,7 +28,6 @@ import common.StreamProducer;
 import common.component.ComponentState;
 import common.component.ComponentType;
 import common.component.ConnectionsNumber;
-import common.component.EventType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
@@ -70,26 +69,6 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
 
   public Collection<? extends Stream<OUT>> getOutputs() {
     return state.getOutputs();
-  }
-
-  @Override
-  public void waitFor(EventType type) {
-    type.wait(state);
-  }
-
-  @Override
-  public void notifyFor(EventType type) {
-    type.notify(state);
-  }
-
-  @Override
-  public boolean canRead() {
-    return state.canRead();
-  }
-
-  @Override
-  public boolean canWrite() {
-    return state.canWrite();
   }
 
   @Override

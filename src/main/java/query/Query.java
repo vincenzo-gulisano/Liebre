@@ -70,7 +70,6 @@ import source.SourceFunction;
 import source.SourceStatistic;
 import source.TextFileSource;
 import source.TextSourceFunction;
-import stream.NotifyingStream;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatistic;
@@ -97,11 +96,7 @@ public final class Query {
     this.scheduler = scheduler;
     // Set a default backoff value
     setBackoff(1, 20, 5);
-    if (scheduler.usesNotifications()) {
-      streamFactory = NotifyingStream.factory();
-    } else {
-      streamFactory = UnboundedStream.factory();
-    }
+    this.streamFactory = UnboundedStream.factory();
   }
 
   public synchronized void activateStatistics(String statisticsFolder) {

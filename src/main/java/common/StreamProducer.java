@@ -35,14 +35,6 @@ import stream.Stream;
  */
 public interface StreamProducer<OUT extends Tuple> extends Named, Component {
 
-  /**
-   * Heuristic that indicates if the {@link StreamProducer} can write tuples to all its output
-   * streams.
-   *
-   * @return {@code true} if the operator can write tuples to all its output streams
-   */
-  boolean canWrite();
-
   void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream);
 
   Stream<OUT> getOutput();

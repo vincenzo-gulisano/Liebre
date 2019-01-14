@@ -25,12 +25,10 @@ package source;
 
 import common.component.ProcessCommand;
 import common.tuple.Tuple;
-import scheduling.priority.PriorityMetric;
 import stream.Stream;
 
 public class ProcessCommandSource<T extends Tuple> implements ProcessCommand {
 	private final Source<T> source;
-	private PriorityMetric metric = PriorityMetric.noopMetric();
 
 	public ProcessCommandSource(Source<T> source) {
 		this.source = source;
@@ -48,13 +46,8 @@ public class ProcessCommandSource<T extends Tuple> implements ProcessCommand {
 		T tuple = source.getNextTuple();
 		Stream<T> output = source.getOutput();
 		if (tuple != null) {
-			metric.recordTupleWrite(tuple, output);
 			output.addTuple(tuple);
 		}
-	}
-
-	public void setMetric(PriorityMetric metric) {
-		this.metric = metric;
 	}
 
 }
