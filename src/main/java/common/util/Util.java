@@ -26,12 +26,31 @@ package common.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * General utilities
+ */
 public class Util {
 
   private static final Logger LOGGER = LogManager.getLogger();
 
   public static volatile long LOOPS_PER_MILLI = 100000;
 
+  private Util() {
+
+  }
+
+  /**
+   * Sleep for the specified amount of time. This function catches any {@link
+   * InterruptedException}s, logs the important part of the stack trace and sets {@code
+   * Thread.currentThread().interrupt()}. <br/>
+   *
+   * <emph>Note: Be careful when using this function because it will reset the interrupted
+   * status of the thread. In many cases this is a good default. However, in case you want to clear
+   * that, please use {@link Thread#sleep(long)} and handle any {@link InterruptedException}s
+   * manually* </emph>
+   *
+   * @param millis The time to sleep, in milliseconds.
+   */
   public static void sleep(long millis) {
     try {
       Thread.sleep(millis);

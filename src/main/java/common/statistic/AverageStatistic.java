@@ -23,6 +23,9 @@
 
 package common.statistic;
 
+/**
+ * Statistic that writes the per-second average of the recorded value.
+ */
 public class AverageStatistic extends AbstractCummulativeStatistic {
 
 	private long sum;

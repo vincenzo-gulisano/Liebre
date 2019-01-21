@@ -26,6 +26,14 @@ package common.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Since at the time of writing, this is an experimental SPE, it is useful to stop the whole
+ * system in case a processing thread crashes. This exception handler achieves just this. When
+ * used and a thread throws an uncaught exception, the whole JVM will stop to speed up bug
+ * detection and resolution.
+ *
+ * @author palivosd
+ */
 public enum StopJvmUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
   INSTANCE;
   private final Logger LOGGER = LogManager.getLogger();

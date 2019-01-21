@@ -75,6 +75,13 @@ import stream.StreamFactory;
 import stream.StreamStatistic;
 import stream.UnboundedStream;
 
+/**
+ * The main execution unit. Acts as a factory for the stream {@link Component}s such as {@link
+ * Operator}s, {@link Source}s and {@link Sink}s through various helper methods. It also handles the
+ * connections of the components with the correct types of {@link Stream}s and the
+ * activation/deactivation of the query. Activating the query also starts executing it by delegating
+ * this work to the provided {@link Scheduler} implementation.
+ */
 public final class Query {
 
   private static final Logger LOGGER = LogManager.getLogger();
@@ -88,10 +95,19 @@ public final class Query {
   private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
   private boolean active;
 
+  /**
+   * Construct.
+   */
   public Query() {
     this(new DefaultScheduler());
   }
 
+  /**
+   * Construct.
+   *
+   * @param scheduler The scheduler implementation to use when executing the query after Query{@link
+   * #activate()} is called.
+   */
   public Query(Scheduler scheduler) {
     this.scheduler = scheduler;
     // Set a default backoff value
@@ -99,16 +115,34 @@ public final class Query {
     this.streamFactory = UnboundedStream.factory();
   }
 
+  /**
+   * Activate all statistics.
+   *
+   * @param statisticsFolder The folder to save the statistics to.
+   */
   public synchronized void activateStatistics(String statisticsFolder) {
     activateStatistics(statisticsFolder, true);
   }
 
+  /**
+   * Activate all statistics.
+   *
+   * @param statisticsFolder The folder to save the statistics to.
+   * @param autoFlush Control whether the file bufferrs are autoFlushed or not.
+   */
   public synchronized void activateStatistics(String statisticsFolder, boolean autoFlush) {
     for (StatisticType type : StatisticType.values()) {
       activateStatistic(statisticsFolder, autoFlush, type);
     }
   }
 
+  /**
+   * Activate a specific statistic.
+   *
+   * @param statisticsFolder The folder to save the statistics to.
+   * @param autoFlush Control whether the file bufferrs are autoFlushed or not.
+   * @param type The type of statistic to activate.
+   */
   public synchronized void activateStatistic(String statisticsFolder, boolean autoFlush,
       StatisticType type) {
     Validate
@@ -118,6 +152,12 @@ public final class Query {
   }
 
 
+  /**
+   * Set the parameters for the default {@link ExponentialBackoff} strategy.
+   * @param min The minimum backoff limit
+   * @param max The maximum backoff limit
+   * @param retries The number of retries before the backoff limit is updated.
+   */
   public synchronized void setBackoff(int min, int max, int retries) {
     this.defaultBackoff = ExponentialBackoff.factory(min, max, retries);
   }
@@ -127,7 +167,8 @@ public final class Query {
     Operator<IN, OUT> decoratedOperator = operator;
     if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
-      decoratedOperator = new Operator1InStatistic<IN, OUT>(operator, statConfig.folder(), statConfig.autoFlush());
+      decoratedOperator = new Operator1InStatistic<IN, OUT>(operator, statConfig.folder(),
+          statConfig.autoFlush());
     }
     saveComponent(operators, decoratedOperator, "operator");
     return decoratedOperator;
@@ -183,7 +224,8 @@ public final class Query {
     Source<T> decoratedSource = source;
     if (enabledStatistics.containsKey(StatisticType.SOURCES)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.SOURCES);
-      decoratedSource = new SourceStatistic<T>(decoratedSource, streamFactory, statConfig.folder(), statConfig.autoFlush());
+      decoratedSource = new SourceStatistic<T>(decoratedSource, streamFactory, statConfig.folder(),
+          statConfig.autoFlush());
     }
     saveComponent(sources, decoratedSource, "source");
     return decoratedSource;
@@ -294,6 +336,9 @@ public final class Query {
     }
   }
 
+  /**
+   * Activate and start executing the query.
+   */
   public synchronized void activate() {
 
     LOGGER.info("Activating query...");
@@ -307,6 +352,9 @@ public final class Query {
     active = true;
   }
 
+  /**
+   * Deactivate and stop executing the query.
+   */
   public synchronized void deActivate() {
     if (!active) {
       return;
@@ -319,6 +367,10 @@ public final class Query {
     active = false;
   }
 
+  /**
+   * Get the number of sources in the query.
+   * @return The number of sources.
+   */
   public int sourcesNumber() {
     return sources.size();
   }

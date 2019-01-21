@@ -23,6 +23,9 @@
 
 package common.statistic;
 
+/**
+ * Statistic that records the per-second sum of the recorded value.
+ */
 public class CountStatistic extends AbstractCummulativeStatistic {
 	private long count;
 	long prevSec;

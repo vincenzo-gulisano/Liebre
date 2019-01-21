@@ -34,6 +34,11 @@ import source.Source;
 import source.SourceFunction;
 import stream.Stream;
 
+/**
+ * Helper class that forces a specific structure for the names of the files used by various
+ * entities.
+ * FIXME: Refactor, more intuitive strucutre.
+ */
 public enum StatisticFilename {
 	INSTANCE;
 	public String get(String folder, Named entity, String type) {

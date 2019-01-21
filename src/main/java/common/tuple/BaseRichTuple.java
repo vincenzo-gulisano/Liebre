@@ -27,6 +27,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+/**
+ * {@link RichTuple} default implementation.
+ */
 public class BaseRichTuple implements RichTuple {
 
   protected final long timestamp;

@@ -24,7 +24,7 @@
 package common;
 
 /**
- * Interface for all entities that can be enable dor disabled.
+ * Interface for all entities that can be enabled or disabled.
  *
  * @author palivosd
  */

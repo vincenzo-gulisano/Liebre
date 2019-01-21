@@ -31,6 +31,12 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Base class for implementing cummulative statistics that record values at arbitrary intervals
+ * and write summaries in a csv file.
+ *
+ * @author palivosd
+ */
 public abstract class AbstractCummulativeStatistic implements Active {
 
   private final PrintWriter out;

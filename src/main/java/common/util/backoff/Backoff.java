@@ -23,6 +23,10 @@
 
 package common.util.backoff;
 
+/**
+ * Interface for methods that implement backoff strategies to delay specific operations in order to
+ * match the speed of components with different throughputs.
+ */
 public interface Backoff {
 
   void backoff();
