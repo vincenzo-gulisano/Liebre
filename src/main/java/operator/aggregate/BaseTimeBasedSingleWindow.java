@@ -25,32 +25,36 @@ package operator.aggregate;
 
 import common.tuple.RichTuple;
 
-public abstract class BaseTimeBasedSingleWindow<T1 extends RichTuple, T2 extends RichTuple>
-		implements TimeBasedSingleWindow<T1, T2> {
+/**
+ * Default implementation of {@link TimeBasedSingleWindow}, maintaining the trivial state, including
+ * the {@code key} of the tuples and the {@code timestamp} of the earliest tuple of this window.
+ */
+public abstract class BaseTimeBasedSingleWindow<IN extends RichTuple, OUT extends RichTuple>
+    implements TimeBasedSingleWindow<IN, OUT> {
 
-	protected String key;
-	protected long startTimestamp;
+  protected String key;
+  protected long startTimestamp;
 
-	@Override
-	public abstract TimeBasedSingleWindow<T1, T2> factory();
+  @Override
+  public abstract TimeBasedSingleWindow<IN, OUT> factory();
 
-	@Override
-	public abstract void add(T1 t);
+  @Override
+  public abstract void add(IN t);
 
-	@Override
-	public abstract void remove(T1 t);
+  @Override
+  public abstract void remove(IN t);
 
-	@Override
-	public abstract T2 getAggregatedResult();
+  @Override
+  public abstract OUT getAggregatedResult();
 
-	@Override
-	public void setKey(String key) {
-		this.key = key;
-	}
+  @Override
+  public void setKey(String key) {
+    this.key = key;
+  }
 
-	@Override
-	public void setStartTimestamp(long startTimestamp) {
-		this.startTimestamp = startTimestamp;
-	}
+  @Override
+  public void setStartTimestamp(long startTimestamp) {
+    this.startTimestamp = startTimestamp;
+  }
 
 }

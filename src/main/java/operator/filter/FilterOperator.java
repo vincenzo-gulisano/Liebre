@@ -31,6 +31,13 @@ import operator.in1.BaseOperator1In;
 import org.apache.commons.lang3.Validate;
 import stream.StreamFactory;
 
+/**
+ * Operator implementation that applies {@link FilterFunction}s to streams. A {@link FilterOperator}
+ * decides whether tuples should be forwarded further or not in the stream by applying a boolean
+ * predicate to each one of them.
+ *
+ * @param <T> The type of the tuples.
+ */
 public class FilterOperator<T extends Tuple> extends BaseOperator1In<T, T> {
 
   protected FilterFunction<T> filter;

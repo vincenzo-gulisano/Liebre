@@ -25,18 +25,60 @@ package operator.aggregate;
 
 import common.tuple.RichTuple;
 
-public interface TimeBasedSingleWindow<T1 extends RichTuple, T2 extends RichTuple> {
+/**
+ * Time-based, stateful window of an aggregate function. The important functions which need to be
+ * implemented and define the aggregation logic are {@link TimeBasedSingleWindow#add(RichTuple)},
+ * {@link TimeBasedSingleWindow#remove(RichTuple)} and {@link TimeBasedSingleWindow#getAggregatedResult()}.
+ * The actual placement of tuples in the windows is done automatically by {@link
+ * TimeBasedSingleWindowAggregate}.
+ *
+ * @param <IN> The type of the input tuples.
+ * @param <OUT> The type of the output tuples.
+ */
+public interface TimeBasedSingleWindow<IN extends RichTuple, OUT extends RichTuple> {
 
-	public TimeBasedSingleWindow<T1, T2> factory();
+  /**
+   * Generate a new {@link TimeBasedSingleWindow} with the same configuration and probably a clear
+   * state.
+   *
+   * @return A new {@link TimeBasedSingleWindow} instance.
+   */
+  TimeBasedSingleWindow<IN, OUT> factory();
 
-	public void add(T1 t);
+  /**
+   * Called when a new tuple is added to the window. The state of the window can be updated.
+   *
+   * @param t The new tuple that is added to the window.
+   */
+  void add(IN t);
 
-	public void remove(T1 t);
+  /**
+   * Called when a tuple is no longer a part of the window. The state of the window can be updated.
+   *
+   * @param t The tuple that is removed from the window.
+   */
+  void remove(IN t);
 
-	public T2 getAggregatedResult();
+  /**
+   * Called when a window must produce a result based on its current state, i.e., the tuples
+   * currently present in it.
+   *
+   * @return The aggregation result.
+   */
+  OUT getAggregatedResult();
 
-	public void setKey(String key);
+  /**
+   * Setter for the key of the tuples that belong to this window.
+   *
+   * @param key The key of the tuples that belong to this window.
+   */
+  void setKey(String key);
 
-	public void setStartTimestamp(long startTimestamp);
+  /**
+   * Setter for the timestamp of the earliest tuple in this window.
+   *
+   * @param startTimestamp The timestamp of the earliest tuple in the window.
+   */
+  void setStartTimestamp(long startTimestamp);
 
 }

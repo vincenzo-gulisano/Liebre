@@ -27,6 +27,11 @@ import common.Active;
 import common.tuple.Tuple;
 import java.util.function.Predicate;
 
+/**
+ * A boolean predicate that decides whether tuples should be forwarded further or not.
+ *
+ * @param <T> The type of tuples handled by the predicate.
+ */
 public interface FilterFunction<T extends Tuple> extends Active, Predicate<T> {
 
   @Override
