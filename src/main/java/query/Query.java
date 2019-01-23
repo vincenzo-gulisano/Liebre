@@ -35,7 +35,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import operator.Operator;
-import operator.Union.UnionOperator;
+import operator.union.UnionOperator;
 import operator.aggregate.TimeBasedSingleWindow;
 import operator.aggregate.TimeBasedSingleWindowAggregate;
 import operator.filter.FilterFunction;
@@ -179,29 +179,29 @@ public final class Query {
       TimeBasedSingleWindow<IN, OUT> window, long windowSize, long windowSlide) {
 
     return addOperator(
-        new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, streamFactory, windowSize,
+        new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize,
             windowSlide, window));
   }
 
   public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(
       String identifier,
       MapFunction<IN, OUT> mapFunction) {
-    return addOperator(new MapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
+    return addOperator(new MapOperator<IN, OUT>(identifier, mapFunction));
   }
 
   public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addFlatMapOperator(
       String identifier,
       FlatMapFunction<IN, OUT> mapFunction) {
-    return addOperator(new FlatMapOperator<IN, OUT>(identifier, streamFactory, mapFunction));
+    return addOperator(new FlatMapOperator<IN, OUT>(identifier, mapFunction));
   }
 
   public synchronized <T extends Tuple> Operator<T, T> addFilterOperator(String identifier,
       FilterFunction<T> filterF) {
-    return addOperator(new FilterOperator<T>(identifier, streamFactory, filterF));
+    return addOperator(new FilterOperator<T>(identifier, filterF));
   }
 
   public synchronized <T extends Tuple> RouterOperator<T> addRouterOperator(String identifier) {
-    RouterOperator<T> router = new BaseRouterOperator<T>(identifier, streamFactory);
+    RouterOperator<T> router = new BaseRouterOperator<T>(identifier);
     if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
       router = new RouterOperatorStatistic<T>(router, statConfig.folder(), statConfig.autoFlush());
@@ -216,7 +216,7 @@ public final class Query {
   }
 
   public synchronized <T extends Tuple> UnionOperator<T> addUnionOperator(String identifier) {
-    UnionOperator<T> union = new UnionOperator<>(identifier, streamFactory);
+    UnionOperator<T> union = new UnionOperator<>(identifier);
     return addUnionOperator(union);
   }
 

@@ -24,20 +24,32 @@
 package operator.in1;
 
 import common.statistic.AverageStatistic;
-import java.util.List;
-
-import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
+import java.util.List;
 
+/**
+ * Statistic decorator for {@link Operator1In}.
+ * <p>Records, in separate CSV files:
+ * <ul><li>The processing time per tuple: How much time to apply the operator function to the tuple.
+ * </li><li>The execution time per tuple: How much time it takes to fully process a tuple,
+ * including any queueing or other delays.
+ * </li></ul></p>
+ *
+ * @see StatisticFilename
+ */
 public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends
     Operator1InDecorator<IN, OUT> {
 
   private final AverageStatistic processingTimeStatistic;
   private final AverageStatistic executionTimeStatistic;
-  private final CountStatistic timesScheduledStatistic;
-  private final CountStatistic timesRunStatistic;
 
+  /**
+   * Add statistics to the given operator.
+   * @param operator The operator to add statistics to
+   * @param outputFolder The folder where the statistics will be saved as CSV files
+   * @param autoFlush The autoFlush parameter for the file buffers
+   */
   public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder,
       boolean autoFlush) {
     super(operator);
@@ -45,11 +57,6 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends
         StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
         StatisticFilename.INSTANCE.get(outputFolder, operator, "exec"), autoFlush);
-    this.timesScheduledStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "sched"), autoFlush);
-    this.timesRunStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "runs"),
-        autoFlush);
   }
 
   @Override
@@ -57,29 +64,13 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends
     super.enable();
     processingTimeStatistic.enable();
     executionTimeStatistic.enable();
-    timesScheduledStatistic.enable();
-    timesRunStatistic.enable();
   }
 
   @Override
   public void disable() {
     processingTimeStatistic.disable();
     executionTimeStatistic.disable();
-    timesScheduledStatistic.disable();
-    timesRunStatistic.disable();
     super.disable();
-  }
-
-  @Override
-  public void onScheduled() {
-    timesScheduledStatistic.append(1L);
-    super.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    timesRunStatistic.append(1L);
-    super.onRun();
   }
 
   @Override

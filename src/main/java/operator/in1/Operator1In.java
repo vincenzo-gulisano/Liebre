@@ -28,6 +28,20 @@ import java.util.List;
 import common.tuple.Tuple;
 import operator.Operator;
 
+/**
+ * {@link Operator} with one input and one output. Can produce multiple output tuples for every
+ * input tuples.
+ *
+ * @param <IN> The type of input tuples.
+ * @param <OUT> The type of output tuples.
+ */
 public interface Operator1In<IN extends Tuple, OUT extends Tuple> extends Operator<IN, OUT> {
-	List<OUT> processTupleIn1(IN tuple);
+
+  /**
+   * Apply a function to the input tuple, transforming it into zero or more output tuples.
+   *
+   * @param tuple The tuple to be processed.
+   * @return A list of zero or more output tuples.
+   */
+  List<OUT> processTupleIn1(IN tuple);
 }

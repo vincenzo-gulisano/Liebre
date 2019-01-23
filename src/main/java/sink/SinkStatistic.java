@@ -24,15 +24,12 @@
 package sink;
 
 import common.statistic.AverageStatistic;
-import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 
 public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
   private final AverageStatistic processingTimeStatistic;
-  private final CountStatistic timesScheduledStatistic;
-  private final CountStatistic timesRunStatistic;
   private final AverageStatistic executionTimeStatistic;
 
   public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
@@ -42,12 +39,6 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
         autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
         StatisticFilename.INSTANCE.get(outputFolder, sink, "exec"), autoFlush);
-    this.timesScheduledStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, sink, "sched"),
-        autoFlush);
-    this.timesRunStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, sink, "runs"),
-        autoFlush);
   }
 
   @Override
@@ -55,29 +46,13 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
     super.enable();
     processingTimeStatistic.enable();
     executionTimeStatistic.enable();
-    timesScheduledStatistic.enable();
-    timesRunStatistic.enable();
   }
 
   @Override
   public void disable() {
     processingTimeStatistic.disable();
     executionTimeStatistic.disable();
-    timesScheduledStatistic.disable();
-    timesRunStatistic.disable();
     super.disable();
-  }
-
-  @Override
-  public void onScheduled() {
-    timesScheduledStatistic.append(1L);
-    super.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    timesRunStatistic.append(1L);
-    super.onRun();
   }
 
   @Override

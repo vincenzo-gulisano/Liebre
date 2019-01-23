@@ -24,7 +24,6 @@
 package operator.in2;
 
 import common.statistic.AverageStatistic;
-import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 import java.util.List;
@@ -33,13 +32,7 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
     extends Operator2InDecorator<IN, IN2, OUT> {
 
   private final AverageStatistic processingTimeStatistic;
-  private final CountStatistic timesScheduledStatistic;
-  private final CountStatistic timesRunStatistic;
   private final AverageStatistic executionTimeStatistic;
-
-  public Operator2InStatistic(Operator2In<IN, IN2, OUT> operator, String outputFolder) {
-    this(operator, outputFolder, true);
-  }
 
   public Operator2InStatistic(Operator2In<IN, IN2, OUT> operator, String outputFolder,
       boolean autoFlush) {
@@ -48,11 +41,6 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
         StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
         StatisticFilename.INSTANCE.get(outputFolder, operator, "exec"), autoFlush);
-    this.timesScheduledStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "sched"), autoFlush);
-    this.timesRunStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "runs"),
-        autoFlush);
   }
 
   @Override
@@ -60,29 +48,13 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
     super.enable();
     processingTimeStatistic.enable();
     executionTimeStatistic.enable();
-    timesScheduledStatistic.enable();
-    timesRunStatistic.enable();
   }
 
   @Override
   public void disable() {
     processingTimeStatistic.disable();
     executionTimeStatistic.disable();
-    timesScheduledStatistic.disable();
-    timesRunStatistic.disable();
     super.disable();
-  }
-
-  @Override
-  public void onScheduled() {
-    timesScheduledStatistic.append(1L);
-    super.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    timesRunStatistic.append(1L);
-    super.onRun();
   }
 
   @Override

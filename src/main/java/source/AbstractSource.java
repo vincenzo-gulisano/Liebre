@@ -100,14 +100,6 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public void onScheduled() {
-  }
-
-  @Override
-  public void onRun() {
-  }
-
-  @Override
   public String toString() {
     return getId();
   }

@@ -89,16 +89,6 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public void onScheduled() {
-    decorated.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    decorated.onRun();
-  }
-
-  @Override
   public ConnectionsNumber inputsNumber() {
     return decorated.inputsNumber();
   }

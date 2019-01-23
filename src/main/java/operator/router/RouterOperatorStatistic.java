@@ -24,7 +24,6 @@
 package operator.router;
 
 import common.statistic.AverageStatistic;
-import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 import java.util.Collection;
@@ -33,9 +32,6 @@ import stream.Stream;
 public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDecorator<T> {
 
   private final AverageStatistic processingTimeStatistic;
-  private final CountStatistic processedTuplesStatistic;
-  private final CountStatistic timesScheduledStatistic;
-  private final CountStatistic timesRunStatistic;
   private final AverageStatistic executionTimeStatistic;
 
   public RouterOperatorStatistic(RouterOperator<T> operator, String outputFolder,
@@ -45,13 +41,6 @@ public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDeco
         StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
         StatisticFilename.INSTANCE.get(outputFolder, operator, "exec"), autoFlush);
-    this.processedTuplesStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "tuples"), autoFlush);
-    this.timesScheduledStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "sched"), autoFlush);
-    this.timesRunStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "runs"),
-        autoFlush);
   }
 
   public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFolder) {
@@ -63,31 +52,13 @@ public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDeco
     super.enable();
     processingTimeStatistic.enable();
     executionTimeStatistic.enable();
-    timesScheduledStatistic.enable();
-    timesRunStatistic.enable();
-    processedTuplesStatistic.enable();
   }
 
   @Override
   public void disable() {
     processingTimeStatistic.disable();
     executionTimeStatistic.disable();
-    processedTuplesStatistic.disable();
-    timesScheduledStatistic.disable();
-    timesRunStatistic.disable();
     super.disable();
-  }
-
-  @Override
-  public void onScheduled() {
-    timesScheduledStatistic.append(1L);
-    super.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    timesRunStatistic.append(1L);
-    super.onRun();
   }
 
   @Override
@@ -95,7 +66,6 @@ public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDeco
     long start = System.nanoTime();
     Collection<? extends Stream<T>> chosenOutputs = super.chooseOutputs(tuple);
     processingTimeStatistic.append(System.nanoTime() - start);
-    processedTuplesStatistic.append(1L);
     return chosenOutputs;
   }
 

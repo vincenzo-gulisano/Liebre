@@ -89,14 +89,6 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   public abstract void processTuple(IN tuple);
 
   @Override
-  public void onScheduled() {
-  }
-
-  @Override
-  public void onRun() {
-  }
-
-  @Override
   public ConnectionsNumber inputsNumber() {
     return state.inputsNumber();
   }

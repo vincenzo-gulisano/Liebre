@@ -29,27 +29,32 @@ import common.tuple.Tuple;
 import operator.AbstractProcessCommand;
 import stream.Stream;
 
+/**
+ * Process command implementation for {@link Operator1In}.
+ *
+ * @see AbstractProcessCommand
+ */
 public class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
-		extends AbstractProcessCommand<Operator1In<IN, OUT>> {
+    extends AbstractProcessCommand<Operator1In<IN, OUT>> {
 
-	protected ProcessCommand1In(Operator1In<IN, OUT> operator) {
-		super(operator);
-	}
+  protected ProcessCommand1In(Operator1In<IN, OUT> operator) {
+    super(operator);
+  }
 
-	@Override
-	public final void process() {
-		Stream<IN> input = operator.getInput();
-		Stream<OUT> output = operator.getOutput();
+  @Override
+  public final void process() {
+    Stream<IN> input = operator.getInput();
+    Stream<OUT> output = operator.getOutput();
 
-		IN inTuple = input.getNextTuple();
-		if (inTuple != null) {
-			List<OUT> outTuples = operator.processTupleIn1(inTuple);
-			if (outTuples != null) {
-				for (OUT t : outTuples) {
-					output.addTuple(t);
-				}
-			}
-		}
-	}
+    IN inTuple = input.getNextTuple();
+    if (inTuple != null) {
+      List<OUT> outTuples = operator.processTupleIn1(inTuple);
+      if (outTuples != null) {
+        for (OUT t : outTuples) {
+          output.addTuple(t);
+        }
+      }
+    }
+  }
 
 }

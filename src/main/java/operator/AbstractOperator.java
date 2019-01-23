@@ -102,14 +102,6 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
-  public void onScheduled() {
-  }
-
-  @Override
-  public void onRun() {
-  }
-
-  @Override
   public ConnectionsNumber inputsNumber() {
     return state.inputsNumber();
   }

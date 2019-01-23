@@ -29,14 +29,13 @@ import java.util.List;
 import common.tuple.Tuple;
 import operator.in1.BaseOperator1In;
 import org.apache.commons.lang3.Validate;
-import stream.StreamFactory;
 
 public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator1In<IN, OUT> {
 
   private MapFunction<IN, OUT> map;
 
-  public MapOperator(String id, StreamFactory streamFactory, MapFunction<IN, OUT> map) {
-    super(id, streamFactory);
+  public MapOperator(String id, MapFunction<IN, OUT> map) {
+    super(id);
     Validate.notNull(map, "map");
     this.map = map;
   }

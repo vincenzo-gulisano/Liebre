@@ -30,7 +30,6 @@ import java.util.TreeMap;
 
 import common.tuple.RichTuple;
 import operator.in1.BaseOperator1In;
-import stream.StreamFactory;
 
 /**
  * Aggregate implementation for sliding time-based windows. Decides which tuples belong to which
@@ -52,10 +51,10 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
   private long latestTimestamp;
   private boolean firstTuple = true;
 
-  public TimeBasedSingleWindowAggregate(String id, StreamFactory streamFactory, long windowSize,
+  public TimeBasedSingleWindowAggregate(String id, long windowSize,
       long windowSlide,
       TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
-    super(id, streamFactory);
+    super(id);
     tuples = new LinkedList<IN>();
     windows = new TreeMap<Long, HashMap<String, TimeBasedSingleWindow<IN, OUT>>>();
     windowsCounters = new TreeMap<Long, HashMap<String, WinCounter>>();

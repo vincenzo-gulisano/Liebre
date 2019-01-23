@@ -89,17 +89,6 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public void onScheduled() {
-    decorated.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    decorated.onRun();
-  }
-
-
-  @Override
   public ConnectionsNumber inputsNumber() {
     return decorated.inputsNumber();
   }

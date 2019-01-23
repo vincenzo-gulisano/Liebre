@@ -33,6 +33,13 @@ import java.util.Collection;
 import operator.Operator;
 import stream.Stream;
 
+/**
+ * Base abstract {@link Operator2In} implementation.
+ *
+ * @param <IN> The type of the tuples in the first input.
+ * @param <IN2> The type of the tuples in the second input.
+ * @param <OUT> The type of the tuples in the output.
+ */
 public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
     implements Operator2In<IN, IN2, OUT> {
 
@@ -123,13 +130,6 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   @Override
   public int getIndex() {
     return state.getIndex();
-  }
-
-  @Override
-  public void onScheduled() {
-  }
-
-  public void onRun() {
   }
 
   @Override

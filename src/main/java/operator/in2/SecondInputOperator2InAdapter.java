@@ -76,16 +76,6 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public void onScheduled() {
-    decorated.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    decorated.onRun();
-  }
-
-  @Override
   public void enable() {
     decorated.enable();
   }

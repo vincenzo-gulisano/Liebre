@@ -32,10 +32,6 @@ import common.Named;
  */
 public interface Component extends Active, Runnable, Named {
 
-  void onScheduled();
-
-  void onRun();
-
   ConnectionsNumber inputsNumber();
 
   ConnectionsNumber outputsNumber();

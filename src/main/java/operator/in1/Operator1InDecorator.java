@@ -31,12 +31,24 @@ import java.util.Collection;
 import java.util.List;
 import stream.Stream;
 
+/**
+ * Base decorator for {@link Operator1In}. Delegates all function calls to the decorated object.
+ *
+ * @param <IN> The type of input tuples.
+ * @param <OUT> The type of output tuples.
+ * @author palivosd
+ */
 public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implements
     Operator1In<IN, OUT> {
 
   private final Operator1In<IN, OUT> decorated;
   private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(this);
 
+  /**
+   * Create a decorator for the given operator.
+   *
+   * @param decorated The operator to be decorated.
+   */
   public Operator1InDecorator(Operator1In<IN, OUT> decorated) {
     this.decorated = decorated;
   }
@@ -109,16 +121,6 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   @Override
   public void disable() {
     decorated.disable();
-  }
-
-  @Override
-  public void onScheduled() {
-    decorated.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    decorated.onRun();
   }
 
   @Override

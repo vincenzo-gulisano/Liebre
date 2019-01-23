@@ -29,15 +29,13 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import operator.AbstractOperator;
 import stream.Stream;
-import stream.StreamFactory;
 
 public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> implements
     RouterOperator<T> {
 
-  private static final int INPUT_KEY = 0;
   private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
 
-  public BaseRouterOperator(String id, StreamFactory streamFactory) {
+  public BaseRouterOperator(String id) {
     super(id, ComponentType.ROUTER);
   }
 

@@ -29,7 +29,6 @@ import java.util.List;
 import common.tuple.Tuple;
 import operator.in1.BaseOperator1In;
 import org.apache.commons.lang3.Validate;
-import stream.StreamFactory;
 
 /**
  * Operator implementation that applies {@link FilterFunction}s to streams. A {@link FilterOperator}
@@ -42,8 +41,8 @@ public class FilterOperator<T extends Tuple> extends BaseOperator1In<T, T> {
 
   protected FilterFunction<T> filter;
 
-  public FilterOperator(String id, StreamFactory streamFactory, FilterFunction<T> filter) {
-    super(id, streamFactory);
+  public FilterOperator(String id, FilterFunction<T> filter) {
+    super(id);
     Validate.notNull(filter, "filter");
     this.filter = filter;
   }

@@ -24,7 +24,6 @@
 package source;
 
 import common.statistic.AverageStatistic;
-import common.statistic.CountStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticFilename;
 import stream.StreamFactory;
@@ -33,8 +32,6 @@ public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 
 
   private final AverageStatistic processingTimeStatistic;
-  private final CountStatistic timesScheduledStatistic;
-  private final CountStatistic timesRunStatistic;
   private final AverageStatistic executionTimeStatistic;
 
   public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFolder,
@@ -45,42 +42,20 @@ public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
         autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
         StatisticFilename.INSTANCE.get(outputFolder, source, "exec"), autoFlush);
-    this.timesScheduledStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, source, "sched"),
-        autoFlush);
-    this.timesRunStatistic = new CountStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, source, "runs"),
-        autoFlush);
   }
 
   @Override
   public void enable() {
     super.enable();
     processingTimeStatistic.enable();
-    timesScheduledStatistic.enable();
     executionTimeStatistic.enable();
-    timesRunStatistic.enable();
   }
 
   @Override
   public void disable() {
     processingTimeStatistic.disable();
     executionTimeStatistic.disable();
-    timesScheduledStatistic.disable();
-    timesRunStatistic.disable();
     super.disable();
-  }
-
-  @Override
-  public void onScheduled() {
-    timesScheduledStatistic.append(1L);
-    super.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    timesRunStatistic.append(1L);
-    super.onRun();
   }
 
   @Override

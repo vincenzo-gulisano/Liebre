@@ -23,7 +23,6 @@
 
 package example;
 
-import common.component.ComponentType;
 import common.tuple.Tuple;
 import common.util.Util;
 import java.util.LinkedList;
@@ -54,8 +53,7 @@ public class SimpleQuery {
     });
 
     Operator<MyTuple, MyTuple> multiply = q
-        .addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", ComponentType.OPERATOR
-        ) {
+        .addOperator(new BaseOperator1In<MyTuple, MyTuple>("M") {
           @Override
           public List<MyTuple> processTupleIn1(MyTuple tuple) {
             List<MyTuple> result = new LinkedList<MyTuple>();

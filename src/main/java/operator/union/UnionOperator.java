@@ -21,18 +21,17 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package operator.Union;
+package operator.union;
 
 import common.StreamProducer;
 import common.component.ComponentType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
 import stream.Stream;
-import stream.StreamFactory;
 
 public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 
-  public UnionOperator(String id, StreamFactory streamFactory) {
+  public UnionOperator(String id) {
     super(id, ComponentType.UNION);
   }
 

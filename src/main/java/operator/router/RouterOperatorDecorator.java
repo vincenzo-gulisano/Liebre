@@ -110,16 +110,6 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public void onScheduled() {
-    decorated.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    decorated.onRun();
-  }
-
-  @Override
   public ConnectionsNumber inputsNumber() {
     return decorated.inputsNumber();
   }

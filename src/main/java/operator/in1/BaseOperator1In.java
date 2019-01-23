@@ -26,26 +26,33 @@ package operator.in1;
 import common.component.ComponentType;
 import common.tuple.Tuple;
 import operator.AbstractOperator;
-import stream.StreamFactory;
 
-public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> extends AbstractOperator<IN, OUT>
-		implements Operator1In<IN, OUT> {
+/**
+ * Default abstract implementation of {@link Operator1In}.
+ *
+ * @param <IN> The type of input tuples.
+ * @param <OUT> The type of output tuples.
+ *
+ * @author palivosd
+ */
+public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> extends
+    AbstractOperator<IN, OUT>
+    implements Operator1In<IN, OUT> {
 
-	private final String INPUT_KEY = "INPUT";
-	private final String OUTPUT_KEY = "OUTPUT";
-	private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(this);
+  private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(this);
 
-	protected BaseOperator1In(String id, ComponentType type) {
-		super(id, type);
-	}
+  /**
+   * Construct.
+   *
+   * @param id The unique id of this component.
+   */
+  public BaseOperator1In(String id) {
+    super(id, ComponentType.OPERATOR);
+  }
 
-	public BaseOperator1In(String id, StreamFactory streamFactory) {
-		this(id, ComponentType.OPERATOR);
-	}
-
-	@Override
-	public void run() {
-		processCommand.run();
-	}
+  @Override
+  public void run() {
+    processCommand.run();
+  }
 
 }

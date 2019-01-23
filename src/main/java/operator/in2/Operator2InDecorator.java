@@ -129,16 +129,6 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public void onScheduled() {
-    decorated.onScheduled();
-  }
-
-  @Override
-  public void onRun() {
-    decorated.onRun();
-  }
-
-  @Override
   public ConnectionsNumber inputsNumber() {
     return decorated.inputsNumber();
   }
