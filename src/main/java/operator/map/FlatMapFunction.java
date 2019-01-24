@@ -27,10 +27,23 @@ import common.Active;
 import common.tuple.Tuple;
 import java.util.List;
 
+/**
+ * Function that maps a tuple to zero or more output tuples.
+ *
+ * @param <IN> The type of the input tuple.
+ * @param <OUT> The type of the output tuple(s).
+ */
 @FunctionalInterface
-public interface FlatMapFunction<T1 extends Tuple, T2 extends Tuple> extends Active {
+public interface FlatMapFunction<IN extends Tuple, OUT extends Tuple> extends Active {
 
-  public List<T2> apply(T1 tuple);
+  /**
+   * Apply a function mapping the input to zero or more output tuples. If no tuples are to be
+   * produced, an empty or null list is acceptable.
+   *
+   * @param tuple The tuple to be mapped.
+   * @return The result of the function.
+   */
+  List<OUT> apply(IN tuple);
 
   @Override
   default void enable() {

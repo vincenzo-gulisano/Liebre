@@ -32,11 +32,21 @@ import java.util.List;
 import operator.Operator;
 import stream.Stream;
 
+
+/**
+ * An adapter of this operator that looks like a regular {@link operator.in1.Operator1In} with its
+ * main input being the second input of this {@link Operator2In}.
+ */
 class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements
     Operator<IN, OUT> {
 
   private final Operator2In<?, IN, OUT> decorated;
 
+  /**
+   * Construct an adapter for the given operator.
+   *
+   * @param operator The operator to be adapted.
+   */
   public SecondInputOperator2InAdapter(Operator2In<?, IN, OUT> operator) {
     this.decorated = operator;
   }

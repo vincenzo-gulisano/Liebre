@@ -35,10 +35,33 @@ import stream.Stream;
  */
 public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 
+  /**
+   * Connect this consumer with the given {@link StreamProducer} using the provided stream.
+   * Different implementations allow one or more calls to this function.
+   *
+   * @param source The producer feeding this consumer.
+   * @param stream The {@link Stream} that forms the data connection.
+   * @see common.component.ConnectionsNumber
+   */
   void addInput(StreamProducer<IN> source, Stream<IN> stream);
 
-  Stream<IN> getInput();
+  /**
+   * Get the input {@link Stream} of this consumer, if is the type of consumer that always has a
+   * unique input. {@link StreamConsumer}s that cannot conform to this interface can throw {@link
+   * UnsupportedOperationException} (this is done for example in {@link
+   * operator.union.UnionOperator})
+   *
+   * @return The unique input stream of this consumer.
+   */
+  Stream<IN> getInput() throws UnsupportedOperationException;
 
+  /**
+   * Get all the input {@link Stream}s of this consumer.
+   *
+   * @param <T> The superclass of all input contents (in the case of input streams of different
+   * types, as in {@link operator.in2.Operator2In}.
+   * @return All the input streams of this consumer.
+   */
   <T extends Tuple> Collection<? extends Stream<T>> getInputs();
 
 }

@@ -29,37 +29,42 @@ import common.tuple.Tuple;
 import operator.AbstractProcessCommand;
 import stream.Stream;
 
+/**
+ * Process command implementation for {@link Operator2In}.
+ *
+ * @see AbstractProcessCommand
+ */
 public class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
-		extends AbstractProcessCommand<Operator2In<IN, IN2, OUT>> {
+    extends AbstractProcessCommand<Operator2In<IN, IN2, OUT>> {
 
-	public ProcessCommand2In(Operator2In<IN, IN2, OUT> operator) {
-		super(operator);
-	}
+  public ProcessCommand2In(Operator2In<IN, IN2, OUT> operator) {
+    super(operator);
+  }
 
-	@Override
-	public final void process() {
-		Stream<IN> input1 = operator.getInput();
-		Stream<IN2> input2 = operator.getInput2();
-		Stream<OUT> output = operator.getOutput();
+  @Override
+  public final void process() {
+    Stream<IN> input1 = operator.getInput();
+    Stream<IN2> input2 = operator.getInput2();
+    Stream<OUT> output = operator.getOutput();
 
-		IN inTuple1 = input1.getNextTuple();
-		IN2 inTuple2 = input2.getNextTuple();
-		if (inTuple1 != null) {
-			List<OUT> outTuples = operator.processTupleIn1(inTuple1);
-			if (outTuples != null) {
-				for (OUT t : outTuples) {
-					output.addTuple(t);
-				}
-			}
-		}
-		if (inTuple2 != null) {
-			List<OUT> outTuples = operator.processTupleIn2(inTuple2);
-			if (outTuples != null) {
-				for (OUT t : outTuples) {
-					output.addTuple(t);
-				}
-			}
-		}
-	}
+    IN inTuple1 = input1.getNextTuple();
+    IN2 inTuple2 = input2.getNextTuple();
+    if (inTuple1 != null) {
+      List<OUT> outTuples = operator.processTupleIn1(inTuple1);
+      if (outTuples != null) {
+        for (OUT t : outTuples) {
+          output.addTuple(t);
+        }
+      }
+    }
+    if (inTuple2 != null) {
+      List<OUT> outTuples = operator.processTupleIn2(inTuple2);
+      if (outTuples != null) {
+        for (OUT t : outTuples) {
+          output.addTuple(t);
+        }
+      }
+    }
+  }
 
 }

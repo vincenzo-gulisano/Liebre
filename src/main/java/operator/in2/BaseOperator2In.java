@@ -52,6 +52,11 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
   private final ProcessCommand2In<IN, IN2, OUT> processCommand = new ProcessCommand2In<>(this);
 
+  /**
+   * Construct.
+   *
+   * @param id The unique ID of this operator.
+   */
   public BaseOperator2In(String id) {
     this.state = new ComponentState<>(id, ComponentType.OPERATOR2IN);
     this.secondInputView = new SecondInputOperator2InAdapter<>(this);

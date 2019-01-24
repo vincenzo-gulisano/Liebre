@@ -26,6 +26,14 @@ package operator.in2.join;
 import common.tuple.Tuple;
 import java.util.function.BiFunction;
 
+/**
+ * Function that is applied to two tuples (with possibly different data types) and generates a new
+ * tuple or null.
+ *
+ * @param <IN1> The input type of the first tuple.
+ * @param <IN2> The input type of the second tuple.
+ * @param <OUT> The resulting tuple type.
+ */
 public interface JoinFunction<IN1 extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends
     BiFunction<IN1, IN2, OUT> {
 

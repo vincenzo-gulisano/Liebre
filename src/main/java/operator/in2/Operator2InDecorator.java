@@ -32,12 +32,25 @@ import java.util.List;
 import operator.Operator;
 import stream.Stream;
 
+/**
+ * Base decorator for {@link Operator2In}. Delegates all function calls to the decorated object.
+ *
+ * @param <IN> The type of input tuples in the first input stream.
+ * @param <IN2> The type of input tuples in the second input stream.
+ * @param <OUT> The type of output tuples.
+ * @author palivosd
+ */
 public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
     implements Operator2In<IN, IN2, OUT> {
 
   private final Operator2In<IN, IN2, OUT> decorated;
   private final ProcessCommand2In<IN, IN2, OUT> processingCommand = new ProcessCommand2In<>(this);
 
+  /**
+   * Create a decorator for the given operator.
+   *
+   * @param decorated The operator to be decorated.
+   */
   public Operator2InDecorator(Operator2In<IN, IN2, OUT> decorated) {
     this.decorated = decorated;
   }

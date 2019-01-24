@@ -28,12 +28,30 @@ import common.tuple.Tuple;
 import common.util.StatisticFilename;
 import java.util.List;
 
+/**
+ * Statistic decorator for {@link Operator2In}.
+ * <p>Records, in separate CSV files:
+ * <ul><li>The processing time per tuple: How much time to apply the operator function to the
+ * tuple.
+ * </li><li>The execution time per tuple: How much time it takes to fully process a tuple,
+ * including any queueing or other delays.
+ * </li></ul></p>
+ *
+ * @see StatisticFilename
+ */
 public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
     extends Operator2InDecorator<IN, IN2, OUT> {
 
   private final AverageStatistic processingTimeStatistic;
   private final AverageStatistic executionTimeStatistic;
 
+  /**
+   * Add statistics to the given operator.
+   *
+   * @param operator The operator to add statistics to
+   * @param outputFolder The folder where the statistics will be saved as CSV files
+   * @param autoFlush The autoFlush parameter for the file buffers
+   */
   public Operator2InStatistic(Operator2In<IN, IN2, OUT> operator, String outputFolder,
       boolean autoFlush) {
     super(operator);

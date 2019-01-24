@@ -277,7 +277,7 @@ public final class Query {
   public synchronized <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
       String identifier, JoinFunction<IN, IN2, OUT> joinFunction, long windowSize) {
     return addOperator2In(
-        new TimeBasedJoin<IN, IN2, OUT>(identifier, streamFactory, windowSize, joinFunction));
+        new TimeBasedJoin<IN, IN2, OUT>(identifier, windowSize, joinFunction));
   }
 
   public synchronized <T extends Tuple> Query connect(StreamProducer<T> source,

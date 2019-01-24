@@ -29,8 +29,19 @@ import common.tuple.Tuple;
 import operator.AbstractOperator;
 import stream.Stream;
 
+/**
+ * Operator that unites multiple input streams into one. No guarantee on the ordering of the output
+ * tuples.
+ *
+ * @param <T> The type of input/output tuples.
+ */
 public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 
+  /**
+   * Construct.
+   *
+   * @param id The unique ID of the operator.
+   */
   public UnionOperator(String id) {
     super(id, ComponentType.UNION);
   }
@@ -40,6 +51,11 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
     state.addInput(stream);
   }
 
+  /**
+   * Not meaningful in this operator, use {@link #getInputs()} instead.
+   *
+   * @throws UnsupportedOperationException always, since {@link UnionOperator} has multiple inputs.
+   */
   @Override
   public Stream<T> getInput() {
     throw new UnsupportedOperationException(

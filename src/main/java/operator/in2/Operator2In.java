@@ -31,14 +31,46 @@ import operator.Operator;
 import operator.in1.Operator1In;
 import stream.Stream;
 
-public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends Operator1In<IN, OUT> {
+/**
+ * An {@link Operator} with two inputs (of possibly different types) and one output.
+ *
+ * @param <IN> The type of the tuples in the first input stream.
+ * @param <IN2> The type of the tuples in the second input stream.
+ * @param <OUT> The type of the tuples in the output stream.
+ */
+public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends
+    Operator1In<IN, OUT> {
 
-	List<OUT> processTupleIn2(IN2 tuple);
+  /**
+   * Apply a function to the input tuple, transforming it into zero or more output tuples.
+   *
+   * @param tuple The tuple to be processed.
+   * @return A list of zero or more output tuples.
+   */
+  List<OUT> processTupleIn2(IN2 tuple);
 
-	void addInput2(StreamProducer<IN2> source, Stream<IN2> stream);
+  /**
+   * Set the second input {@link Stream} for this operator.
+   *
+   * @param source The {@link StreamProducer} feeding this operator.
+   * @param stream The stream that forms the data connection.
+   */
+  void addInput2(StreamProducer<IN2> source, Stream<IN2> stream);
 
+  /**
+   * Get the second input {@link Stream} for this operator.
+   *
+   * @return The second input stream.
+   */
   Stream<IN2> getInput2();
 
-	Operator<IN2, OUT> secondInputView();
+  /**
+   * Get an adapter of this operator that looks like a regular {@link Operator1In} with its main
+   * input being the second input of this {@link Operator2In}.
+   *
+   * @return An {@link Operator} instance which has {@link #getInput2()} as its input.
+   * @see SecondInputOperator2InAdapter
+   */
+  Operator<IN2, OUT> secondInputView();
 
 }

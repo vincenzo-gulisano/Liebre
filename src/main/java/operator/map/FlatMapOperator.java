@@ -29,10 +29,23 @@ import common.tuple.Tuple;
 import operator.in1.BaseOperator1In;
 import org.apache.commons.lang3.Validate;
 
+/**
+ * {@link operator.Operator} that applies a given {@link FlatMapFunction} to the tuples of a
+ * stream.
+ *
+ * @param <IN> The type of input tuples.
+ * @param <OUT> The type of output tuples.
+ */
 public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator1In<IN, OUT> {
 
   private FlatMapFunction<IN, OUT> map;
 
+  /**
+   * Construct.
+   *
+   * @param id The unique id of this operator.
+   * @param map The {@link FlatMapFunction} that will be applied to each input tuple.
+   */
   public FlatMapOperator(String id, FlatMapFunction<IN, OUT> map) {
     super(id);
     Validate.notNull(map, "map");
