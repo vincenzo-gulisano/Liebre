@@ -31,6 +31,7 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
 
+
 public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
 
   private static final int OUTPUT_KEY = 0;

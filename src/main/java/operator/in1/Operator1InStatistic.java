@@ -25,18 +25,16 @@ package operator.in1;
 
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
-import common.util.StatisticFilename;
+import common.util.StatisticPath;
+import common.util.StatisticType;
 import java.util.List;
 
 /**
  * Statistic decorator for {@link Operator1In}.
- * <p>Records, in separate CSV files:
- * <ul><li>The processing time per tuple: How much time to apply the operator function to the tuple.
- * </li><li>The execution time per tuple: How much time it takes to fully process a tuple,
- * including any queueing or other delays.
- * </li></ul></p>
+ * Records, in separate CSV files, {@link StatisticType#PROC} and {@link StatisticType#EXEC}.
  *
- * @see StatisticFilename
+ * @see StatisticType
+ * @see StatisticPath
  */
 public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends
     Operator1InDecorator<IN, OUT> {
@@ -46,6 +44,7 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends
 
   /**
    * Add statistics to the given operator.
+   *
    * @param operator The operator to add statistics to
    * @param outputFolder The folder where the statistics will be saved as CSV files
    * @param autoFlush The autoFlush parameter for the file buffers
@@ -54,9 +53,9 @@ public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends
       boolean autoFlush) {
     super(operator);
     this.processingTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
+        StatisticPath.get(outputFolder, operator, StatisticType.PROC), autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "exec"), autoFlush);
+        StatisticPath.get(outputFolder, operator, StatisticType.EXEC), autoFlush);
   }
 
   @Override

@@ -27,10 +27,21 @@ import common.StreamConsumer;
 import common.StreamProducer;
 import common.tuple.Tuple;
 
+/**
+ * Basic decorator for {@link Stream} instances. Delegates all function cals to the decorated
+ * instance.
+ *
+ * @param <T> The type of tuples transferred by the stream.
+ */
 public class StreamDecorator<T extends Tuple> implements Stream<T> {
 
   private final Stream<T> decorated;
 
+  /**
+   * Construct.
+   *
+   * @param decorated The stream to be decorated.
+   */
   public StreamDecorator(Stream<T> decorated) {
     this.decorated = decorated;
   }

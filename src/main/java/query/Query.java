@@ -73,7 +73,7 @@ import source.TextSourceFunction;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatistic;
-import stream.UnboundedStream;
+import stream.BackoffStream;
 
 /**
  * The main execution unit. Acts as a factory for the stream {@link Component}s such as {@link
@@ -112,7 +112,7 @@ public final class Query {
     this.scheduler = scheduler;
     // Set a default backoff value
     setBackoff(1, 20, 5);
-    this.streamFactory = UnboundedStream.factory();
+    this.streamFactory = BackoffStream.factory();
   }
 
   /**
@@ -148,7 +148,7 @@ public final class Query {
     Validate
         .isTrue(!enabledStatistics.containsKey(type), "Statistics for %s already enabled", type);
     LOGGER.info("Enabling statistics for {}", type.name().toLowerCase());
-    enabledStatistics.put(type, new StatisticsConfiguration(statisticsFolder, autoFlush, type));
+    enabledStatistics.put(type, new StatisticsConfiguration(statisticsFolder, autoFlush));
   }
 
 
@@ -224,7 +224,7 @@ public final class Query {
     Source<T> decoratedSource = source;
     if (enabledStatistics.containsKey(StatisticType.SOURCES)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.SOURCES);
-      decoratedSource = new SourceStatistic<T>(decoratedSource, streamFactory, statConfig.folder(),
+      decoratedSource = new SourceStatistic<T>(decoratedSource, statConfig.folder(),
           statConfig.autoFlush());
     }
     saveComponent(sources, decoratedSource, "source");

@@ -30,11 +30,22 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
 
+/**
+ * Base decorator for {@link RouterOperator}. Delegates all function calls to the decorated object.
+ *
+ * @param <T> The type of input/output tuples.
+ * @author palivosd
+ */
 public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<T> {
 
   private final RouterOperator<T> decorated;
   private final ProcessCommandRouter<T> processingCommand = new ProcessCommandRouter<>(this);
 
+  /**
+   * Construct a decorator for the given object.
+   *
+   * @param decorated The object to be decorated.
+   */
   public RouterOperatorDecorator(RouterOperator<T> decorated) {
     this.decorated = decorated;
   }

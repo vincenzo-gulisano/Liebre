@@ -25,23 +25,35 @@ package source;
 
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
-import common.util.StatisticFilename;
-import stream.StreamFactory;
+import common.util.StatisticPath;
+import common.util.StatisticType;
 
+/**
+ * Statistic decorator for {@link Source}.
+ * Records, in separate CSV files, {@link StatisticType#PROC} and {@link StatisticType#EXEC}
+ *
+ * @see StatisticPath
+ */
 public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 
 
   private final AverageStatistic processingTimeStatistic;
   private final AverageStatistic executionTimeStatistic;
 
-  public SourceStatistic(Source<T> source, StreamFactory streamFactory, String outputFolder,
+  /**
+   * Add statistics to the given source.
+   *
+   * @param source The source to add statistics to
+   * @param outputFolder The folder where the statistics will be saved as CSV files
+   * @param autoFlush The autoFlush parameter for the file buffers
+   */
+  public SourceStatistic(Source<T> source, String outputFolder,
       boolean autoFlush) {
     super(source);
     this.processingTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, source, "proc"),
-        autoFlush);
+        StatisticPath.get(outputFolder, source, StatisticType.PROC), autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, source, "exec"), autoFlush);
+        StatisticPath.get(outputFolder, source, StatisticType.EXEC), autoFlush);
   }
 
   @Override

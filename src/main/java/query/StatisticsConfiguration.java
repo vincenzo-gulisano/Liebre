@@ -25,13 +25,23 @@ package query;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+/**
+ * Settings for the recording of a specific statistic.
+ *
+ * @see StatisticType
+ */
 public class StatisticsConfiguration {
 
   private final String folder;
   private final boolean autoFlush;
 
-  public StatisticsConfiguration(String folder, boolean autoFlush,
-      StatisticType type) {
+  /**
+   * Construct.
+   *
+   * @param folder The folder to save the statistics to.
+   * @param autoFlush The autoFlush parameter for the file writer.
+   */
+  public StatisticsConfiguration(String folder, boolean autoFlush) {
     this.folder = folder;
     this.autoFlush = autoFlush;
   }

@@ -23,16 +23,19 @@
 
 package scheduling.thread;
 
+/**
+ * Thread that runs forever (until interrupted).
+ */
 public class BasicWorkerThread extends LiebreThread {
 
-	private final Runnable task;
+  private final Runnable task;
 
-	public BasicWorkerThread(Runnable task) {
-		this.task = task;
-	}
+  public BasicWorkerThread(Runnable task) {
+    this.task = task;
+  }
 
-	@Override
-	public void doRun() {
-		task.run();
-	}
+  @Override
+  public void doRun() {
+    task.run();
+  }
 }

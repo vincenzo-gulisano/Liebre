@@ -28,6 +28,9 @@ import common.StreamProducer;
 import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
 
+/**
+ * Factory for {@link Stream}s.
+ */
 public interface StreamFactory {
 
   <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,

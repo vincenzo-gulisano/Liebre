@@ -27,6 +27,11 @@ import common.Active;
 import common.tuple.Tuple;
 import java.util.function.Supplier;
 
+/**
+ * Supplier of new tuples for a {@link BaseSource}.
+ *
+ * @param <OUT> The type of supplied tuples.
+ */
 public interface SourceFunction<OUT extends Tuple> extends Active, Supplier<OUT> {
 
   @Override

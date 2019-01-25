@@ -30,6 +30,11 @@ import java.util.Collection;
 import operator.AbstractOperator;
 import stream.Stream;
 
+/**
+ * Default implementation for {@link RouterOperator}.
+ *
+ * @param <T> The type of input/output tuples.
+ */
 public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> implements
     RouterOperator<T> {
 

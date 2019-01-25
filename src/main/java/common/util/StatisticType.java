@@ -21,16 +21,43 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package query;
+package common.util;
 
 /**
- * Different types of statistics that can be recorded by a {@link Query}.
+ * Predefined types of component statistics that can be recorded automatically in liebre. This
+ * enum is only used to provide consistent naming, together with {@link StatisticPath}.
+ *
+ * @see common.statistic.AverageStatistic
+ * @see common.statistic.CountStatistic
  */
 public enum StatisticType {
-  STREAMS,
-  SOURCES,
-  SINKS,
-  OPERATORS,
-  SCHEDULING,
-  PRIORITIES;
+  /**
+   * Processing time, in nanosec, per tuple. Average per second.
+   *
+   * @see operator.Operator
+   * @see source.Source
+   * @see sink.Sink
+   */
+  PROC,
+  /**
+   * Execution time, in nanosec, per tuple (processing time + queueing/other delays). Average
+   * per second.
+   *
+   * @see operator.Operator
+   * @see source.Source
+   * @see sink.Sink
+   */
+  EXEC,
+  /**
+   * Tuples written to a {@link stream.Stream}. Sum per second.
+   *
+   * @see stream.Stream
+   */
+  IN,
+  /**
+   * Tuples read from a {@link stream.Stream}. Sum per second.
+   *
+   * @see stream.Stream
+   */
+  OUT;
 }

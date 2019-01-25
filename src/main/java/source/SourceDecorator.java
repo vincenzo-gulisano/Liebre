@@ -29,6 +29,12 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
 
+/**
+ * Base decorator for {@link Source}. Delegates all function calls to the decorated object.
+ *
+ * @param <OUT> The type of output tuples.
+ * @author palivosd
+ */
 public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
 
   private final Source<OUT> decorated;

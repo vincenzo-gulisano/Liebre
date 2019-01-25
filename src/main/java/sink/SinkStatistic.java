@@ -25,20 +25,33 @@ package sink;
 
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
-import common.util.StatisticFilename;
+import common.util.StatisticPath;
+import common.util.StatisticType;
 
+/**
+ * Statistic decorator for {@link Sink}.
+ * Records, in separate CSV files, {@link StatisticType#PROC} and {@link StatisticType#EXEC}
+ *
+ * @see StatisticPath
+ */
 public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
   private final AverageStatistic processingTimeStatistic;
   private final AverageStatistic executionTimeStatistic;
 
+  /**
+   * Add statistics to the given sink.
+   *
+   * @param sink The sink to add statistics to
+   * @param outputFolder The folder where the statistics will be saved as CSV files
+   * @param autoFlush The autoFlush parameter for the file buffers
+   */
   public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
     super(sink);
     this.processingTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, sink, "proc"),
-        autoFlush);
+        StatisticPath.get(outputFolder, sink, StatisticType.PROC), autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, sink, "exec"), autoFlush);
+        StatisticPath.get(outputFolder, sink, StatisticType.EXEC), autoFlush);
   }
 
   @Override

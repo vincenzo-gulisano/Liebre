@@ -29,6 +29,12 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
 
+/**
+ * Base decorator for {@link Sink}. Delegates all function calls to the decorated object.
+ *
+ * @param <IN> The type of input tuples.
+ * @author palivosd
+ */
 public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 
   private final Sink<IN> decorated;

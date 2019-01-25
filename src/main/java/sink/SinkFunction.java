@@ -27,8 +27,11 @@ import common.Active;
 import common.tuple.Tuple;
 import java.util.function.Consumer;
 
-@FunctionalInterface
-public interface SinkFunction<T extends Tuple> extends Active, Consumer<T> {
+/**
+ * Function that works on all tuples accepted by a {@link BaseSink}.
+ * @param <IN> The type of input tuples.
+ */
+public interface SinkFunction<IN extends Tuple> extends Active, Consumer<IN> {
 
   @Override
   default void enable() {

@@ -25,19 +25,15 @@ package operator.in2;
 
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
-import common.util.StatisticFilename;
+import common.util.StatisticPath;
+import common.util.StatisticType;
 import java.util.List;
 
 /**
  * Statistic decorator for {@link Operator2In}.
- * <p>Records, in separate CSV files:
- * <ul><li>The processing time per tuple: How much time to apply the operator function to the
- * tuple.
- * </li><li>The execution time per tuple: How much time it takes to fully process a tuple,
- * including any queueing or other delays.
- * </li></ul></p>
+ * Records, in separate CSV files, {@link StatisticType#PROC} and {@link StatisticType#EXEC}
  *
- * @see StatisticFilename
+ * @see StatisticPath
  */
 public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
     extends Operator2InDecorator<IN, IN2, OUT> {
@@ -56,9 +52,9 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
       boolean autoFlush) {
     super(operator);
     this.processingTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
+        StatisticPath.get(outputFolder, operator, StatisticType.PROC), autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "exec"), autoFlush);
+        StatisticPath.get(outputFolder, operator, StatisticType.EXEC), autoFlush);
   }
 
   @Override

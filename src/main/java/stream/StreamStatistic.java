@@ -25,18 +25,32 @@ package stream;
 
 import common.statistic.CountStatistic;
 import common.tuple.Tuple;
-import common.util.StatisticFilename;
+import common.util.StatisticPath;
+import common.util.StatisticType;
 
+/**
+ * Statistic recorder for {@link Stream}s. Records the statistics {@link StatisticType#IN} and
+ * {@link StatisticType#OUT}.
+ *
+ * @param <T> The type of tuples transferred by the stream.
+ */
 public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
 
   private final CountStatistic inRate;
   private final CountStatistic outRate;
 
+  /**
+   * Construct.
+   *
+   * @param stream The stream to record the statistics for.
+   * @param outputFolder The path of the file where the statistics are written to.
+   * @param autoFlush The autoflush parameter for the file writer.
+   */
   public StreamStatistic(Stream<T> stream, String outputFolder, boolean autoFlush) {
     super(stream);
-    inRate = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, stream, "in"),
+    inRate = new CountStatistic(StatisticPath.get(outputFolder, stream, StatisticType.IN),
         autoFlush);
-    outRate = new CountStatistic(StatisticFilename.INSTANCE.get(outputFolder, stream, "out"),
+    outRate = new CountStatistic(StatisticPath.get(outputFolder, stream, StatisticType.OUT),
         autoFlush);
   }
 

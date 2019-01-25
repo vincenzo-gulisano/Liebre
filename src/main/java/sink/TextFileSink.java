@@ -28,16 +28,30 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class TextFileSink<T extends Tuple> extends AbstractSink<T> {
+/**
+ * {@link Sink} implementation that writes values to text files. Every input tuple is mapped to a
+ * line in the output file produced by a {@link TextSinkFunction}.
+ *
+ * @param <IN> The type of input tuples.
+ * @see TextSinkFunction
+ */
+public class TextFileSink<IN extends Tuple> extends AbstractSink<IN> {
 
-  private final TextSinkFunction<T> function;
+  private final TextSinkFunction<IN> function;
   private PrintWriter pw;
 
-  public TextFileSink(String id, String filename, TextSinkFunction<T> function) {
+  /**
+   * Construct.
+   *
+   * @param id The unique ID of this component.
+   * @param filename The file path to write the data to.
+   * @param function The {@link TextSinkFunction} that will map every input tuple to a string.
+   */
+  public TextFileSink(String id, String filename, TextSinkFunction<IN> function) {
     this(id, filename, function, true);
   }
 
-  protected TextFileSink(String id, String filename, TextSinkFunction<T> function,
+  protected TextFileSink(String id, String filename, TextSinkFunction<IN> function,
       boolean autoFlush) {
     super(id);
     try {
@@ -48,7 +62,7 @@ public class TextFileSink<T extends Tuple> extends AbstractSink<T> {
     this.function = function;
   }
 
-  public final void processTuple(T tuple) {
+  public final void processTuple(IN tuple) {
     if (!isEnabled()) {
       throw new IllegalStateException("Output stream is closed");
     }

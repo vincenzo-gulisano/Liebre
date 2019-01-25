@@ -24,14 +24,14 @@
 package stream;
 
 import common.Active;
+import common.Named;
 import common.StreamConsumer;
 import common.StreamProducer;
-import common.component.Component;
-import common.Named;
 import common.tuple.Tuple;
 
 /**
- * A physical "stream" that connects to {@link Component}s
+ * An ordered one-on-one stream that connects exactly one {@link StreamProducer} and one {@link
+ * StreamConsumer}.
  *
  * @param <T> The type of values that can be transfered inside the stream
  */

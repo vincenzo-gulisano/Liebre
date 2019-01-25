@@ -25,26 +25,36 @@ package operator.router;
 
 import common.statistic.AverageStatistic;
 import common.tuple.Tuple;
-import common.util.StatisticFilename;
+import common.util.StatisticPath;
+import common.util.StatisticType;
 import java.util.Collection;
 import stream.Stream;
 
+/**
+ * Statistic decorator for {@link RouterOperator}.
+ * Records, in separate CSV files, {@link StatisticType#PROC} and {@link StatisticType#EXEC}
+ *
+ * @see StatisticPath
+ */
 public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDecorator<T> {
 
   private final AverageStatistic processingTimeStatistic;
   private final AverageStatistic executionTimeStatistic;
 
+  /**
+   * Add statistics to the given operator.
+   *
+   * @param operator The operator to add statistics to
+   * @param outputFolder The folder where the statistics will be saved as CSV files
+   * @param autoFlush The autoFlush parameter for the file buffers
+   */
   public RouterOperatorStatistic(RouterOperator<T> operator, String outputFolder,
       boolean autoFlush) {
     super(operator);
     this.processingTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "proc"), autoFlush);
+        StatisticPath.get(outputFolder, operator, StatisticType.PROC), autoFlush);
     this.executionTimeStatistic = new AverageStatistic(
-        StatisticFilename.INSTANCE.get(outputFolder, operator, "exec"), autoFlush);
-  }
-
-  public RouterOperatorStatistic(RouterOperator<T> decorated, String outputFolder) {
-    this(decorated, outputFolder, true);
+        StatisticPath.get(outputFolder, operator, StatisticType.EXEC), autoFlush);
   }
 
   @Override

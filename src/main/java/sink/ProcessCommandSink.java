@@ -27,28 +27,33 @@ import common.component.ProcessCommand;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class ProcessCommandSink<T extends Tuple> implements ProcessCommand {
+/**
+ * {@link ProcessCommand} implementation for {@link Sink}s.
+ *
+ * @param <T> The type of input tuples.
+ */
+class ProcessCommandSink<T extends Tuple> implements ProcessCommand {
 
-	private final Sink<T> sink;
+  private final Sink<T> sink;
 
-	public ProcessCommandSink(Sink<T> sink) {
-		this.sink = sink;
-	}
+  public ProcessCommandSink(Sink<T> sink) {
+    this.sink = sink;
+  }
 
-	@Override
-	public void run() {
-		if (sink.isEnabled()) {
-			process();
-		}
-	}
+  @Override
+  public void run() {
+    if (sink.isEnabled()) {
+      process();
+    }
+  }
 
-	@Override
-	public final void process() {
-		Stream<T> input = sink.getInput();
-		T tuple = input.getNextTuple();
-		if (tuple != null) {
-			sink.processTuple(tuple);
-		}
-	}
+  @Override
+  public final void process() {
+    Stream<T> input = sink.getInput();
+    T tuple = input.getNextTuple();
+    if (tuple != null) {
+      sink.processTuple(tuple);
+    }
+  }
 
 }

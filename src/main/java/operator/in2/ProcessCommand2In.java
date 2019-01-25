@@ -34,7 +34,7 @@ import stream.Stream;
  *
  * @see AbstractProcessCommand
  */
-public class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
+class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
     extends AbstractProcessCommand<Operator2In<IN, IN2, OUT>> {
 
   public ProcessCommand2In(Operator2In<IN, IN2, OUT> operator) {

@@ -26,6 +26,12 @@ package source;
 import common.Active;
 import java.util.function.Function;
 
+/**
+ * A function that converts text strings to tuples of a specific type to be used by a {@link
+ * TextFileSource}.
+ *
+ * @param <T> The type of produced tuples.
+ */
 public interface TextSourceFunction<T> extends Active, Function<String, T> {
 
   @Override

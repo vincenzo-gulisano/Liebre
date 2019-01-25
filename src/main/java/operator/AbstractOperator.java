@@ -32,6 +32,13 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
 
+/**
+ * Abstract implementation of {@link Operator} that handles basic changes to the state of the
+ * component.
+ *
+ * @param <IN> The type of input tuples.
+ * @param <OUT> The type of output tuples.
+ */
 public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements
     Operator<IN, OUT> {
 

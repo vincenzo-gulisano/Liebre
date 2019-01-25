@@ -26,10 +26,21 @@ package source;
 import common.tuple.Tuple;
 import org.apache.commons.lang3.Validate;
 
+/**
+ * Base implementation of {@link Source} that generates data through a {@link SourceFunction}l
+ *
+ * @param <OUT> The type of output tuples.
+ */
 public class BaseSource<OUT extends Tuple> extends AbstractSource<OUT> {
 
   private final SourceFunction<OUT> function;
 
+  /**
+   * Construct.
+   *
+   * @param id The unique ID of this component.
+   * @param function The {@link SourceFunction} that generates the output tuples.
+   */
   public BaseSource(String id, SourceFunction<OUT> function) {
     super(id);
     Validate.notNull(function, "function");

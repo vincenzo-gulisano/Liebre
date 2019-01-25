@@ -33,14 +33,26 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
+/**
+ * Source that reads lines from a text file and converts them to tuples.
+ *
+ * @param <OUT> The type of produced tuples.
+ */
+public class TextFileSource<OUT extends Tuple> extends AbstractSource<OUT> {
 
   private static final Logger LOGGER = LogManager.getLogger();
-  private final TextSourceFunction<T> function;
+  private final TextSourceFunction<OUT> function;
   private BufferedReader br;
   private boolean done = false;
 
-  public TextFileSource(String id, String filename, TextSourceFunction<T> function) {
+  /**
+   * Construct.
+   *
+   * @param id The unique ID of this component.
+   * @param filename The file path where the data is read from.
+   * @param function The {@link TextSourceFunction} that converts raw text lines to tuples.
+   */
+  public TextFileSource(String id, String filename, TextSourceFunction<OUT> function) {
     super(id);
     Validate.notNull(function, "function");
     this.function = function;
@@ -52,7 +64,7 @@ public class TextFileSource<T extends Tuple> extends AbstractSource<T> {
   }
 
   @Override
-  public T getNextTuple() {
+  public OUT getNextTuple() {
     if (!done) {
       return function.apply(nextLine());
     }

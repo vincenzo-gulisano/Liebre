@@ -31,12 +31,22 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
 
+/**
+ * Abstract implementation of a {@link Sink}, controlling basic changes to the state.
+ *
+ * @param <IN> The type of input tuples
+ */
 public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
 
   private static final int INPUT_KEY = 0;
   protected final ComponentState<IN, Tuple> state;
   private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
 
+  /**
+   * Construct.
+   *
+   * @param id The unique ID of this component.
+   */
   public AbstractSink(String id) {
     state = new ComponentState<>(id, ComponentType.SINK);
   }

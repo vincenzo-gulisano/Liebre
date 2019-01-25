@@ -26,7 +26,7 @@ package common.util.backoff;
 /**
  * {@link Backoff} implementation that does nothing.
  */
-enum NoopBackoff implements Backoff {
+public enum NoopBackoff implements Backoff {
   INSTANCE;
 
   @Override

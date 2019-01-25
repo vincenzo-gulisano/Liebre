@@ -27,7 +27,12 @@ import common.tuple.Tuple;
 import operator.AbstractProcessCommand;
 import stream.Stream;
 
-public class ProcessCommandRouter<T extends Tuple> extends
+/**
+ * {@link common.component.ProcessCommand} implementation for {@link BaseRouterOperator}.
+ *
+ * @param <T> The type of input/output tuples.
+ */
+class ProcessCommandRouter<T extends Tuple> extends
     AbstractProcessCommand<RouterOperator<T>> {
 
   protected ProcessCommandRouter(RouterOperator<T> operator) {

@@ -33,7 +33,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class UnboundedStream<T extends Tuple> implements Stream<T> {
+/**
+ * Stream implementation that has an (optional) approximate capacity that is enforced by an optional
+ * provided {@link Backoff} strategy. The backoff strategy is also activated in case the reader is
+ * faster than the writer, to prevent spinning.
+ *
+ * @param <T> The type of tuples transferred by this {@link Stream}.
+ * @see StreamFactory
+ * @see common.util.backoff.ExponentialBackoff
+ * @see common.util.backoff.NoopBackoff
+ */
+public class BackoffStream<T extends Tuple> implements Stream<T> {
 
   private final Queue<T> stream = new ConcurrentLinkedQueue<>();
   private final int capacity;
@@ -47,7 +57,18 @@ public class UnboundedStream<T extends Tuple> implements Stream<T> {
   private volatile long tuplesRead;
   private volatile long tuplesWritten;
 
-  public UnboundedStream(String id, int index, StreamProducer<T> source,
+  /**
+   * Construct.
+   *
+   * @param id The unique ID of the stream.
+   * @param index The unique index of the stream.
+   * @param source The producer
+   * @param destination The consumer
+   * @param capacity The capacity that the stream will try to enforce with the {@link Backoff}
+   * strategy.
+   * @param backoff The backoff strategy.
+   */
+  BackoffStream(String id, int index, StreamProducer<T> source,
       StreamConsumer<T> destination,
       int capacity, BackoffFactory backoff) {
     this.capacity = capacity;
@@ -59,6 +80,11 @@ public class UnboundedStream<T extends Tuple> implements Stream<T> {
     this.writeBackoff = backoff.newInstance();
   }
 
+  /**
+   * Get a {@link StreamFactory} implementation for {@link BackoffStream}s.
+   *
+   * @return A factory that generates {@link BackoffStream}s.
+   */
   public static StreamFactory factory() {
     return Factory.INSTANCE;
   }
@@ -164,7 +190,10 @@ public class UnboundedStream<T extends Tuple> implements Stream<T> {
         .toString();
   }
 
-  private static enum Factory implements StreamFactory {
+  /**
+   * Default factory implementation, that enforces unique increasing integer indexes.
+   */
+  private enum Factory implements StreamFactory {
     INSTANCE;
 
     private final AtomicInteger indexes = new AtomicInteger();
@@ -172,7 +201,7 @@ public class UnboundedStream<T extends Tuple> implements Stream<T> {
     @Override
     public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
         int capacity, BackoffFactory backoff) {
-      return new UnboundedStream<>(getStreamId(from, to), indexes.getAndIncrement(), from, to,
+      return new BackoffStream<>(getStreamId(from, to), indexes.getAndIncrement(), from, to,
           capacity, backoff);
     }
   }

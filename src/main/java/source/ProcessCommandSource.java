@@ -27,7 +27,7 @@ import common.component.ProcessCommand;
 import common.tuple.Tuple;
 import stream.Stream;
 
-public class ProcessCommandSource<T extends Tuple> implements ProcessCommand {
+class ProcessCommandSource<T extends Tuple> implements ProcessCommand {
 	private final Source<T> source;
 
 	public ProcessCommandSource(Source<T> source) {
