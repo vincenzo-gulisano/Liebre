@@ -25,8 +25,8 @@ package stream;
 
 import common.Active;
 import common.Named;
-import common.StreamConsumer;
-import common.StreamProducer;
+import component.StreamConsumer;
+import component.StreamProducer;
 import common.tuple.Tuple;
 
 /**

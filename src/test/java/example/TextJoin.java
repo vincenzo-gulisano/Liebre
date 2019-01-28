@@ -27,13 +27,13 @@ import java.util.Random;
 
 import common.tuple.BaseRichTuple;
 import common.util.Util;
-import operator.in2.Operator2In;
-import operator.in2.join.JoinFunction;
+import component.operator.in2.Operator2In;
+import component.operator.in2.join.JoinFunction;
 import query.Query;
-import sink.Sink;
-import sink.SinkFunction;
-import source.Source;
-import source.SourceFunction;
+import component.sink.Sink;
+import component.sink.SinkFunction;
+import component.source.Source;
+import component.source.SourceFunction;
 
 public class TextJoin {
 

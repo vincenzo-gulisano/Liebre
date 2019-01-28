@@ -28,11 +28,11 @@ import common.util.Util;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
-import operator.Operator;
-import operator.map.FlatMapFunction;
+import component.operator.Operator;
+import component.operator.in1.map.FlatMapFunction;
 import query.Query;
-import sink.Sink;
-import source.Source;
+import component.sink.Sink;
+import component.source.Source;
 
 public class TextFlatMap {
 

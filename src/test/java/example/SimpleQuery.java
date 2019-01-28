@@ -28,12 +28,12 @@ import common.util.Util;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import operator.Operator;
-import operator.in1.BaseOperator1In;
+import component.operator.Operator;
+import component.operator.in1.BaseOperator1In;
 import query.Query;
-import sink.Sink;
-import source.Source;
-import source.SourceFunction;
+import component.sink.Sink;
+import component.source.Source;
+import component.source.SourceFunction;
 
 public class SimpleQuery {
 

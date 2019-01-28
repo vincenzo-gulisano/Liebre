@@ -23,8 +23,8 @@
 
 package stream;
 
-import common.StreamConsumer;
-import common.StreamProducer;
+import component.StreamConsumer;
+import component.StreamProducer;
 import common.tuple.Tuple;
 import common.util.backoff.Backoff;
 import common.util.backoff.BackoffFactory;
@@ -183,7 +183,7 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
         .append("index", index)
         .append("capacity", capacity)
         .append("size", size())
-        .append("source", source)
+        .append("component/source", source)
         .append("destination", destination)
         .append("enabled", enabled)
         .appendSuper(super.toString())

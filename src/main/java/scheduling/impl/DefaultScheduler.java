@@ -23,7 +23,7 @@
 
 package scheduling.impl;
 
-import common.component.Component;
+import component.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +34,7 @@ import scheduling.thread.BasicWorkerThread;
 
 /**
  * Scheduler implementation in case no scheduling is actually needed and the requirement is just one
- * thread per operator.
+ * thread per component.operator.
  *
  * @author palivosd
  */

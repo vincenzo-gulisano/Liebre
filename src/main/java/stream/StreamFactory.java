@@ -23,8 +23,8 @@
 
 package stream;
 
-import common.StreamConsumer;
-import common.StreamProducer;
+import component.StreamConsumer;
+import component.StreamProducer;
 import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
 

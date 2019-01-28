@@ -23,9 +23,9 @@
 
 package query;
 
-import common.StreamConsumer;
-import common.StreamProducer;
-import common.component.Component;
+import component.StreamConsumer;
+import component.StreamProducer;
+import component.Component;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
@@ -34,42 +34,42 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import operator.Operator;
-import operator.union.UnionOperator;
-import operator.aggregate.TimeBasedSingleWindow;
-import operator.aggregate.TimeBasedSingleWindowAggregate;
-import operator.filter.FilterFunction;
-import operator.filter.FilterOperator;
-import operator.in1.Operator1In;
-import operator.in1.Operator1InStatistic;
-import operator.in2.Operator2In;
-import operator.in2.Operator2InStatistic;
-import operator.in2.join.JoinFunction;
-import operator.in2.join.TimeBasedJoin;
-import operator.map.FlatMapFunction;
-import operator.map.FlatMapOperator;
-import operator.map.MapFunction;
-import operator.map.MapOperator;
-import operator.router.BaseRouterOperator;
-import operator.router.RouterOperator;
-import operator.router.RouterOperatorStatistic;
+import component.operator.Operator;
+import component.operator.union.UnionOperator;
+import component.operator.in1.aggregate.TimeBasedSingleWindow;
+import component.operator.in1.aggregate.TimeBasedSingleWindowAggregate;
+import component.operator.in1.filter.FilterFunction;
+import component.operator.in1.filter.FilterOperator;
+import component.operator.in1.Operator1In;
+import component.operator.in1.Operator1InStatistic;
+import component.operator.in2.Operator2In;
+import component.operator.in2.Operator2InStatistic;
+import component.operator.in2.join.JoinFunction;
+import component.operator.in2.join.TimeBasedJoin;
+import component.operator.in1.map.FlatMapFunction;
+import component.operator.in1.map.FlatMapOperator;
+import component.operator.in1.map.MapFunction;
+import component.operator.in1.map.MapOperator;
+import component.operator.router.BaseRouterOperator;
+import component.operator.router.RouterOperator;
+import component.operator.router.RouterOperatorStatistic;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
 import scheduling.impl.DefaultScheduler;
-import sink.BaseSink;
-import sink.Sink;
-import sink.SinkFunction;
-import sink.SinkStatistic;
-import sink.TextFileSink;
-import sink.TextSinkFunction;
-import source.BaseSource;
-import source.Source;
-import source.SourceFunction;
-import source.SourceStatistic;
-import source.TextFileSource;
-import source.TextSourceFunction;
+import component.sink.BaseSink;
+import component.sink.Sink;
+import component.sink.SinkFunction;
+import component.sink.SinkStatistic;
+import component.sink.TextFileSink;
+import component.sink.TextSinkFunction;
+import component.source.BaseSource;
+import component.source.Source;
+import component.source.SourceFunction;
+import component.source.SourceStatistic;
+import component.source.TextFileSource;
+import component.source.TextSourceFunction;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatistic;
@@ -170,7 +170,7 @@ public final class Query {
       decoratedOperator = new Operator1InStatistic<IN, OUT>(operator, statConfig.folder(),
           statConfig.autoFlush());
     }
-    saveComponent(operators, decoratedOperator, "operator");
+    saveComponent(operators, decoratedOperator, "component/operator");
     return decoratedOperator;
   }
 
@@ -206,12 +206,12 @@ public final class Query {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.OPERATORS);
       router = new RouterOperatorStatistic<T>(router, statConfig.folder(), statConfig.autoFlush());
     }
-    saveComponent(operators, router, "operator");
+    saveComponent(operators, router, "component/operator");
     return router;
   }
 
   public synchronized <T extends Tuple> UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
-    saveComponent(operators, union, "operator");
+    saveComponent(operators, union, "component/operator");
     return union;
   }
 
@@ -227,7 +227,7 @@ public final class Query {
       decoratedSource = new SourceStatistic<T>(decoratedSource, statConfig.folder(),
           statConfig.autoFlush());
     }
-    saveComponent(sources, decoratedSource, "source");
+    saveComponent(sources, decoratedSource, "component/source");
     return decoratedSource;
   }
 
@@ -247,7 +247,7 @@ public final class Query {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.SINKS);
       decoratedSink = new SinkStatistic<T>(sink, statConfig.folder(), statConfig.autoFlush());
     }
-    saveComponent(sinks, decoratedSink, "sink");
+    saveComponent(sinks, decoratedSink, "component/sink");
     return decoratedSink;
   }
 

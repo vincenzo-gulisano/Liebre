@@ -27,10 +27,10 @@ import common.tuple.Tuple;
 import common.util.Util;
 import common.util.backoff.BackoffFactory;
 import java.io.File;
-import operator.Operator;
+import component.operator.Operator;
 import query.Query;
-import sink.Sink;
-import source.Source;
+import component.sink.Sink;
+import component.source.Source;
 
 public class TextUnion {
 

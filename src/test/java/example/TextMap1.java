@@ -26,11 +26,11 @@ package example;
 import common.tuple.Tuple;
 import common.util.Util;
 import java.io.File;
-import operator.Operator;
-import operator.map.MapFunction;
+import component.operator.Operator;
+import component.operator.in1.map.MapFunction;
 import query.Query;
-import sink.Sink;
-import source.Source;
+import component.sink.Sink;
+import component.source.Source;
 
 public class TextMap1 {
 

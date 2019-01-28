@@ -34,18 +34,18 @@ public enum StatisticType {
   /**
    * Processing time, in nanosec, per tuple. Average per second.
    *
-   * @see operator.Operator
-   * @see source.Source
-   * @see sink.Sink
+   * @see component.operator.Operator
+   * @see component.source.Source
+   * @see component.sink.Sink
    */
   PROC,
   /**
    * Execution time, in nanosec, per tuple (processing time + queueing/other delays). Average
    * per second.
    *
-   * @see operator.Operator
-   * @see source.Source
-   * @see sink.Sink
+   * @see component.operator.Operator
+   * @see component.source.Source
+   * @see component.sink.Sink
    */
   EXEC,
   /**

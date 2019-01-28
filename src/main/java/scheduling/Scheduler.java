@@ -26,7 +26,7 @@ package scheduling;
 import java.util.Collection;
 
 import common.Active;
-import common.component.Component;
+import component.Component;
 
 /**
  * Scheduler for streaming operators.

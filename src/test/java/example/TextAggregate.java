@@ -26,12 +26,12 @@ package example;
 import common.tuple.BaseRichTuple;
 import common.util.Util;
 import java.io.File;
-import operator.Operator;
-import operator.aggregate.BaseTimeBasedSingleWindow;
-import operator.aggregate.TimeBasedSingleWindow;
+import component.operator.Operator;
+import component.operator.in1.aggregate.BaseTimeBasedSingleWindow;
+import component.operator.in1.aggregate.TimeBasedSingleWindow;
 import query.Query;
-import sink.Sink;
-import source.Source;
+import component.sink.Sink;
+import component.source.Source;
 
 public class TextAggregate {
 
