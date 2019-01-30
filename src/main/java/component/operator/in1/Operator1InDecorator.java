@@ -133,4 +133,8 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
     return decorated.outputsNumber();
   }
 
+  @Override
+  public boolean canRun() {
+    return decorated.canRun();
+  }
 }

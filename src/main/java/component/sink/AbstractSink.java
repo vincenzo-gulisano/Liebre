@@ -67,6 +67,11 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
+  public boolean canRun() {
+    return getInput().size() > 0;
+  }
+
+  @Override
   public void run() {
     processCommand.run();
   }

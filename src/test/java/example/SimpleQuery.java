@@ -25,15 +25,15 @@ package example;
 
 import common.tuple.Tuple;
 import common.util.Util;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
 import component.operator.Operator;
 import component.operator.in1.BaseOperator1In;
-import query.Query;
 import component.sink.Sink;
 import component.source.Source;
 import component.source.SourceFunction;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import query.Query;
 
 public class SimpleQuery {
 

@@ -21,21 +21,14 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package component.sink;
+package scheduling.toolkit;
 
-import component.StreamConsumer;
-import common.tuple.Tuple;
+public interface ExecutableComponent {
 
-/**
- * A component.sink is a terminal component that consumes tuples but does not output a new stream.
- *
- * @param <IN> The type of input tuples.
- */
-public interface Sink<IN extends Tuple> extends StreamConsumer<IN> {
-	void processTuple(IN tuple);
+  void runFor(final int rounds);
 
-	@Override
-	default double[] getFeatures() {
-		return new double[] {1};
-	}
+  boolean canRun();
+
+  double[] getFeatures();
+
 }

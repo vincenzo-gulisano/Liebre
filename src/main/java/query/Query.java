@@ -162,6 +162,10 @@ public final class Query {
     this.defaultBackoff = ExponentialBackoff.factory(min, max, retries);
   }
 
+  public synchronized void setBackoff(BackoffFactory backoffFactory) {
+    this.defaultBackoff = backoffFactory;
+  }
+
   public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
       Operator1In<IN, OUT> operator) {
     Operator<IN, OUT> decoratedOperator = operator;

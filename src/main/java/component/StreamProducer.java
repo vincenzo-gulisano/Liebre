@@ -61,4 +61,14 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
    * @return All the output streams of this producer.
    */
   Collection<? extends Stream<OUT>> getOutputs();
+
+  @Override
+  default double[] getFeatures() {
+    for (Stream<?> output : getOutputs()) {
+      double[] outputFeatures = output.getDestination().getFeatures().clone();
+      outputFeatures[0]++;
+      return outputFeatures;
+    }
+    return new double[] {0};
+  }
 }

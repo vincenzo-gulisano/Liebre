@@ -63,6 +63,11 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
   }
 
   @Override
+  public boolean canRun() {
+    return getOutput().remainingCapacity() > 0;
+  }
+
+  @Override
   public void run() {
     if (isEnabled()) {
       process();

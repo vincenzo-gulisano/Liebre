@@ -58,6 +58,11 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
+  public boolean canRun() {
+    return getOutput().remainingCapacity() > 0;
+  }
+
+  @Override
   public void run() {
     processCommand.run();
   }

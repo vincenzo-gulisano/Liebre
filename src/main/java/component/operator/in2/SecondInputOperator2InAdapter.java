@@ -34,7 +34,8 @@ import stream.Stream;
 
 
 /**
- * An adapter of this component.operator that looks like a regular {@link component.operator.in1.Operator1In} with its
+ * An adapter of this component.operator that looks like a regular {@link
+ * component.operator.in1.Operator1In} with its
  * main input being the second input of this {@link Operator2In}.
  */
 class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements
@@ -98,6 +99,11 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   @Override
   public void disable() {
     decorated.disable();
+  }
+
+  @Override
+  public boolean canRun() {
+    return decorated.canRun();
   }
 
   @Override

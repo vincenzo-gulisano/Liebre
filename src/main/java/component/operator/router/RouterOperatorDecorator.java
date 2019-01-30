@@ -130,4 +130,8 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
     return decorated.outputsNumber();
   }
 
+  @Override
+  public boolean canRun() {
+    return decorated.canRun();
+  }
 }

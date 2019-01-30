@@ -75,6 +75,11 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
+  public boolean canRun() {
+    return decorated.canRun();
+  }
+
+  @Override
   public Stream<OUT> getOutput() {
     return decorated.getOutput();
   }

@@ -109,4 +109,8 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
     return decorated.toString();
   }
 
+  @Override
+  public boolean canRun() {
+    return decorated.canRun();
+  }
 }

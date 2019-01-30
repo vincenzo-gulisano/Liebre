@@ -60,6 +60,11 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
   }
 
   @Override
+  public boolean canRun() {
+    return getInput().size() > 0;
+  }
+
+  @Override
   public void run() {
     processCommand.run();
   }

@@ -79,6 +79,11 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
+  public boolean canRun() {
+    return getInput().size() > 0 && getOutput().remainingCapacity() > 0;
+  }
+
+  @Override
   public void enable() {
     state.enable();
   }

@@ -24,6 +24,7 @@ package component;
 
 import common.Active;
 import common.Named;
+import scheduling.toolkit.ExecutableComponent;
 
 /**
  * Base interface for all stream components such as Sources, Sinks and Operators.
@@ -34,7 +35,7 @@ import common.Named;
  * @see Named
  * @see ConnectionsNumber
  */
-public interface Component extends Active, Runnable, Named {
+public interface Component extends Active, Runnable, Named, ExecutableComponent {
 
   /**
    * The input {@link ConnectionsNumber} of this component. Used to enforce invariants during
@@ -52,4 +53,12 @@ public interface Component extends Active, Runnable, Named {
    */
   ConnectionsNumber outputsNumber();
 
+  @Override
+  default void runFor(final int rounds) {
+    int executions = 0;
+    while (isEnabled() && executions < rounds) {
+      run();
+      executions += 1;
+    }
+  }
 }
