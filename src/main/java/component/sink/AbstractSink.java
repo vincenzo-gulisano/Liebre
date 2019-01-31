@@ -67,8 +67,8 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public void runFor(int rounds) {
-    processCommand.runFor(rounds);
+  public void runFor(int times) {
+    processCommand.runFor(times);
   }
 
   @Override

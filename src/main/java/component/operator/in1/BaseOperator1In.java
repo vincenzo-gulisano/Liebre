@@ -51,8 +51,8 @@ public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> exten
   }
 
   @Override
-  public void runFor(int rounds) {
-    processCommand.runFor(rounds);
+  public void runFor(int times) {
+    processCommand.runFor(times);
   }
 
   @Override

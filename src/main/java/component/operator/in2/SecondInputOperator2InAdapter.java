@@ -102,8 +102,8 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public void runFor(int rounds) {
-    decorated.runFor(rounds);
+  public void runFor(int times) {
+    decorated.runFor(times);
   }
 
   @Override

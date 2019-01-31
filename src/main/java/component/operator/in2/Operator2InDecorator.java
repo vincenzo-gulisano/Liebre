@@ -96,8 +96,8 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public void runFor(int rounds) {
-    decorated.runFor(rounds);
+  public void runFor(int times) {
+    decorated.runFor(times);
   }
 
   @Override

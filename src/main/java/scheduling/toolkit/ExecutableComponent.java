@@ -25,7 +25,7 @@ package scheduling.toolkit;
 
 public interface ExecutableComponent {
 
-  void runFor(final int rounds);
+  void runFor(final int times);
 
   boolean canRun();
 

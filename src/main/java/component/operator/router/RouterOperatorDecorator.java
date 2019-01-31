@@ -131,8 +131,8 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public void runFor(int rounds) {
-    decorated.runFor(rounds);
+  public void runFor(int times) {
+    decorated.runFor(times);
   }
 
   @Override
