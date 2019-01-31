@@ -58,6 +58,11 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
+  public void runFor(int rounds) {
+    processCommand.runFor(rounds);
+  }
+
+  @Override
   public boolean canRun() {
     return getOutput().remainingCapacity() > 0;
   }

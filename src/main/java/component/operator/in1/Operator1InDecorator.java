@@ -134,6 +134,11 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
+  public void runFor(int rounds) {
+    decorated.runFor(rounds);
+  }
+
+  @Override
   public boolean canRun() {
     return decorated.canRun();
   }

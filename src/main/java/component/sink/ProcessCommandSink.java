@@ -25,6 +25,7 @@ package component.sink;
 
 import component.ProcessCommand;
 import common.tuple.Tuple;
+import component.AbstractProcessCommand;
 import stream.Stream;
 
 /**
@@ -32,27 +33,19 @@ import stream.Stream;
  *
  * @param <T> The type of input tuples.
  */
-class ProcessCommandSink<T extends Tuple> implements ProcessCommand {
-
-  private final Sink<T> sink;
+class ProcessCommandSink<T extends Tuple> extends AbstractProcessCommand<Sink<T>> {
 
   public ProcessCommandSink(Sink<T> sink) {
-    this.sink = sink;
+    super(sink);
   }
 
-  @Override
-  public void run() {
-    if (sink.isEnabled()) {
-      process();
-    }
-  }
 
   @Override
   public final void process() {
-    Stream<T> input = sink.getInput();
+    Stream<T> input = component.getInput();
     T tuple = input.getNextTuple();
     if (tuple != null) {
-      sink.processTuple(tuple);
+      component.processTuple(tuple);
     }
   }
 

@@ -25,7 +25,7 @@ package component.operator.router;
 
 import common.tuple.Tuple;
 import component.ProcessCommand;
-import component.operator.AbstractProcessCommand;
+import component.AbstractProcessCommand;
 import stream.Stream;
 
 /**
@@ -42,10 +42,10 @@ class ProcessCommandRouter<T extends Tuple> extends
 
   @Override
   public final void process() {
-    Stream<T> input = operator.getInput();
+    Stream<T> input = component.getInput();
     T inTuple = input.getNextTuple();
     if (inTuple != null) {
-      for (Stream<T> output : operator.chooseOutputs(inTuple)) {
+      for (Stream<T> output : component.chooseOutputs(inTuple)) {
         output.addTuple(inTuple);
       }
     }

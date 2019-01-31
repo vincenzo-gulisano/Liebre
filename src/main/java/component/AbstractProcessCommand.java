@@ -21,38 +21,42 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package component.operator;
-
-import component.ProcessCommand;
+package component;
 
 /**
- * Encapsulation of the execution logic for operators. This is required in order
+ * Encapsulation of the basic execution logic for all {@link Component}s. This is required in order
  * to have reusable decorators without the need to duplicate code (i.e. the
  * process() function) and without having to resort to method interceptors.
  * <br/>
- * Note that similar classes exist for sources and sinks but for technical
- * reasons do not extend this.
- * 
- * @author palivosd
  *
- * @param <OP>
- *            The component.operator subclass used.
+ * @param <T> The component.operator subclass used.
+ * @author palivosd
  */
-public abstract class AbstractProcessCommand<OP extends Operator<?, ?>> implements ProcessCommand {
-	protected final OP operator;
+public abstract class AbstractProcessCommand<T extends Component> implements ProcessCommand {
 
-	protected AbstractProcessCommand(OP operator) {
-		this.operator = operator;
-	}
+  protected final T component;
 
-	@Override
-	public final void run() {
-		if (operator.isEnabled()) {
-			process();
-		}
-	}
+  protected AbstractProcessCommand(T component) {
+    this.component = component;
+  }
 
-	@Override
-	public abstract void process();
+  @Override
+  public final void run() {
+    if (component.isEnabled()) {
+      process();
+    }
+  }
+
+  @Override
+  public void runFor(int rounds) {
+    int executions = 0;
+    while (component.isEnabled() && executions < rounds) {
+      run();
+      executions += 1;
+    }
+  }
+
+  @Override
+  public abstract void process();
 
 }

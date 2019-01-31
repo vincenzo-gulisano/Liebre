@@ -37,6 +37,8 @@ import stream.Stream;
  */
 public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 
+  private final UnionProcessCommand<T> processCommand = new UnionProcessCommand<>(this);
+
   /**
    * Construct.
    *
@@ -54,7 +56,8 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
   /**
    * Not meaningful in this component.operator, use {@link #getInputs()} instead.
    *
-   * @throws UnsupportedOperationException always, since {@link UnionOperator} has multiple inputs.
+   * @throws UnsupportedOperationException always, since {@link UnionOperator} has multiple
+   *     inputs.
    */
   @Override
   public Stream<T> getInput() {
@@ -69,20 +72,11 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 
   @Override
   public void run() {
-    if (isEnabled()) {
-      process();
-    }
+    processCommand.run();
   }
 
-  // TODO: Convert to command like the other operators
-  public final void process() {
-    Stream<T> output = getOutput();
-    for (Stream<T> in : state.getInputs()) {
-      T inTuple = in.getNextTuple();
-      if (inTuple != null) {
-        output.addTuple(inTuple);
-      }
-    }
+  @Override
+  public void runFor(int rounds) {
+    processCommand.runFor(rounds);
   }
-
 }

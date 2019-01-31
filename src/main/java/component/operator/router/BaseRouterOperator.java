@@ -78,4 +78,9 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
   public void disable() {
     super.disable();
   }
+
+  @Override
+  public void runFor(int rounds) {
+    processCommand.runFor(rounds);
+  }
 }

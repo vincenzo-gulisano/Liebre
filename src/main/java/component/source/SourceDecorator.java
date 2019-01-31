@@ -75,6 +75,11 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
+  public void runFor(int rounds) {
+    processCommand.runFor(rounds);
+  }
+
+  @Override
   public boolean canRun() {
     return decorated.canRun();
   }

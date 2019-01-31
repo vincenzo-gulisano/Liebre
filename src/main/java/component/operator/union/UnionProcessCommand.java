@@ -21,25 +21,26 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package component;
+package component.operator.union;
 
-/**
- * Command pattern to decouple the processing logic of components from the specific subclasses.
- *
- * @author palivosd
- */
-public interface ProcessCommand extends Runnable {
+import common.tuple.Tuple;
+import component.AbstractProcessCommand;
+import stream.Stream;
 
-  /**
-   * The main processing function of the component
-   */
-  void process();
+public class UnionProcessCommand<T extends Tuple> extends AbstractProcessCommand<UnionOperator<T>> {
 
-  /**
-   * Execute {@link #run()} for the given number of repetitions.
-   *
-   * @param rounds The number of times that this command will be run.
-   */
-  void runFor(int rounds);
+  protected UnionProcessCommand(UnionOperator<T> component) {
+    super(component);
+  }
 
+  @Override
+  public void process() {
+    Stream<T> output = component.getOutput();
+    for (Stream<T> in : component.getInputs()) {
+      T inTuple = in.getNextTuple();
+      if (inTuple != null) {
+        output.addTuple(inTuple);
+      }
+    }
+  }
 }

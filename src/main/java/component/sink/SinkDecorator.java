@@ -110,6 +110,11 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
+  public void runFor(int rounds) {
+    processCommand.runFor(rounds);
+  }
+
+  @Override
   public boolean canRun() {
     return decorated.canRun();
   }

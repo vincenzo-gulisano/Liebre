@@ -53,12 +53,4 @@ public interface Component extends Active, Runnable, Named, ExecutableComponent 
    */
   ConnectionsNumber outputsNumber();
 
-  @Override
-  default void runFor(final int rounds) {
-    int executions = 0;
-    while (isEnabled() && executions < rounds) {
-      run();
-      executions += 1;
-    }
-  }
 }

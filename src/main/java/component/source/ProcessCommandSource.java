@@ -23,28 +23,20 @@
 
 package component.source;
 
-import component.ProcessCommand;
 import common.tuple.Tuple;
+import component.AbstractProcessCommand;
 import stream.Stream;
 
-class ProcessCommandSource<T extends Tuple> implements ProcessCommand {
-	private final Source<T> source;
+class ProcessCommandSource<T extends Tuple> extends AbstractProcessCommand<Source<T>> {
 
 	public ProcessCommandSource(Source<T> source) {
-		this.source = source;
-	}
-
-	@Override
-	public void run() {
-		if (source.isEnabled()) {
-			process();
-		}
+    super(source);
 	}
 
 	@Override
 	public final void process() {
-		T tuple = source.getNextTuple();
-		Stream<T> output = source.getOutput();
+		T tuple = component.getNextTuple();
+		Stream<T> output = component.getOutput();
 		if (tuple != null) {
 			output.addTuple(tuple);
 		}

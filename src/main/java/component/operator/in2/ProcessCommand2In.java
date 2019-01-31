@@ -26,7 +26,7 @@ package component.operator.in2;
 import java.util.List;
 
 import common.tuple.Tuple;
-import component.operator.AbstractProcessCommand;
+import component.AbstractProcessCommand;
 import stream.Stream;
 
 /**
@@ -43,14 +43,14 @@ class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
 
   @Override
   public final void process() {
-    Stream<IN> input1 = operator.getInput();
-    Stream<IN2> input2 = operator.getInput2();
-    Stream<OUT> output = operator.getOutput();
+    Stream<IN> input1 = component.getInput();
+    Stream<IN2> input2 = component.getInput2();
+    Stream<OUT> output = component.getOutput();
 
     IN inTuple1 = input1.getNextTuple();
     IN2 inTuple2 = input2.getNextTuple();
     if (inTuple1 != null) {
-      List<OUT> outTuples = operator.processTupleIn1(inTuple1);
+      List<OUT> outTuples = component.processTupleIn1(inTuple1);
       if (outTuples != null) {
         for (OUT t : outTuples) {
           output.addTuple(t);
@@ -58,7 +58,7 @@ class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
       }
     }
     if (inTuple2 != null) {
-      List<OUT> outTuples = operator.processTupleIn2(inTuple2);
+      List<OUT> outTuples = component.processTupleIn2(inTuple2);
       if (outTuples != null) {
         for (OUT t : outTuples) {
           output.addTuple(t);

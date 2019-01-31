@@ -131,6 +131,11 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
+  public void runFor(int rounds) {
+    decorated.runFor(rounds);
+  }
+
+  @Override
   public boolean canRun() {
     return decorated.canRun();
   }
