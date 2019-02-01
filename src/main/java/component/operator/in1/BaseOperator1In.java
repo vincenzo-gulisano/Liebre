@@ -60,4 +60,18 @@ public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> exten
     processCommand.run();
   }
 
+  @Override
+  public double getSelectivity() {
+    return processCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processCommand.getCost();
+  }
+
+  @Override
+  public void updateMetrics() {
+    processCommand.updateMetrics();
+  }
 }

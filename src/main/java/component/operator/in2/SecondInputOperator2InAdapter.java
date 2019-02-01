@@ -102,6 +102,21 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
+  public double getCost() {
+    return decorated.getCost();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return decorated.getSelectivity();
+  }
+
+  @Override
+  public void updateMetrics() {
+    decorated.updateMetrics();
+  }
+
+  @Override
   public void runFor(int times) {
     decorated.runFor(times);
   }

@@ -103,6 +103,21 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   }
 
   @Override
+  public void updateMetrics() {
+    processCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processCommand.getCost();
+  }
+
+  @Override
   public void runFor(int times) {
     processCommand.runFor(times);
   }

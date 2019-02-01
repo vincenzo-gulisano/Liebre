@@ -60,8 +60,28 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
+  public void updateMetrics() {
+    processCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processCommand.getCost();
+  }
+
+  @Override
   public void run() {
     processCommand.run();
+  }
+
+  @Override
+  public void runFor(int times) {
+    processCommand.runFor(times);
   }
 
   @Override
@@ -72,11 +92,6 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   @Override
   public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
     decorated.addOutput(destination, stream);
-  }
-
-  @Override
-  public void runFor(int times) {
-    processCommand.runFor(times);
   }
 
   @Override

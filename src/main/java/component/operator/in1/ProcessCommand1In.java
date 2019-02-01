@@ -48,9 +48,11 @@ class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
 
     IN inTuple = input.getNextTuple();
     if (inTuple != null) {
+      increaseTuplesRead();
       List<OUT> outTuples = component.processTupleIn1(inTuple);
       if (outTuples != null) {
         for (OUT t : outTuples) {
+          increaseTuplesWritten();
           output.addTuple(t);
         }
       }

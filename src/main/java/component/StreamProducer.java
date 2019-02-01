@@ -63,12 +63,12 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
   Collection<? extends Stream<OUT>> getOutputs();
 
   @Override
-  default double[] getFeatures() {
+  default int getTopologicalOrder() {
     for (Stream<?> output : getOutputs()) {
-      double[] outputFeatures = output.getDestination().getFeatures().clone();
-      outputFeatures[0]++;
-      return outputFeatures;
+      int downstreamOrder = output.getDestination().getTopologicalOrder();
+      return downstreamOrder+1;
     }
-    return new double[] {0};
+    throw new IllegalStateException("StreamProducer with no outputs!");
   }
+
 }

@@ -54,11 +54,6 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
-  public void run() {
-    processCommand.run();
-  }
-
-  @Override
   public String getId() {
     return decorated.getId();
   }
@@ -99,11 +94,6 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
-  public String toString() {
-    return decorated.toString();
-  }
-
-  @Override
   public List<OUT> processTupleIn1(IN tuple) {
     return decorated.processTupleIn1(tuple);
   }
@@ -124,6 +114,31 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
+  public void run() {
+    processCommand.run();
+  }
+
+  @Override
+  public void runFor(int times) {
+    processCommand.runFor(times);
+  }
+
+  @Override
+  public void updateMetrics() {
+    processCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processCommand.getCost();
+  }
+
+  @Override
   public ConnectionsNumber inputsNumber() {
     return decorated.inputsNumber();
   }
@@ -134,12 +149,12 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
-  public void runFor(int times) {
-    decorated.runFor(times);
+  public boolean canRun() {
+    return decorated.canRun();
   }
 
   @Override
-  public boolean canRun() {
-    return decorated.canRun();
+  public String toString() {
+    return decorated.toString();
   }
 }

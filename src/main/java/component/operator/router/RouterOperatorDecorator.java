@@ -91,11 +91,6 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public void run() {
-    processingCommand.run();
-  }
-
-  @Override
   public Collection<? extends Stream<T>> chooseOutputs(T tuple) {
     return decorated.chooseOutputs(tuple);
   }
@@ -131,8 +126,28 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public void runFor(int times) {
-    decorated.runFor(times);
+  public void run() {
+    processingCommand.run();
+  }
+
+  @Override
+  public void runFor(int rounds) {
+    processingCommand.runFor(rounds);
+  }
+
+  @Override
+  public void updateMetrics() {
+    processingCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processingCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processingCommand.getCost();
   }
 
   @Override

@@ -79,4 +79,19 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
   public void runFor(int times) {
     processCommand.runFor(times);
   }
+
+  @Override
+  public void updateMetrics() {
+    processCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processCommand.getCost();
+  }
 }

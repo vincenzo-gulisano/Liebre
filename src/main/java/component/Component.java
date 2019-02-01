@@ -25,6 +25,7 @@ package component;
 import common.Active;
 import common.Named;
 import scheduling.toolkit.ExecutableComponent;
+import scheduling.toolkit.Features;
 
 /**
  * Base interface for all stream components such as Sources, Sinks and Operators.
@@ -53,4 +54,21 @@ public interface Component extends Active, Runnable, Named, ExecutableComponent 
    */
   ConnectionsNumber outputsNumber();
 
+  int getTopologicalOrder();
+
+  double getCost();
+
+  double getSelectivity();
+
+  void updateMetrics();
+
+  @Override
+  default double[] getFeatures() {
+    double[] features = Features.create();
+    updateMetrics();
+    features[Features.F_TOPOLOGICAL_ORDER] = getTopologicalOrder();
+    features[Features.F_COST] = getCost();
+    features[Features.F_SELECTIVITY] = getSelectivity();
+    return features;
+  }
 }

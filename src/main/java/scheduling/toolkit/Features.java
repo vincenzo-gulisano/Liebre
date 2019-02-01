@@ -21,28 +21,21 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package component.operator.union;
+package scheduling.toolkit;
 
-import common.tuple.Tuple;
-import component.AbstractProcessCommand;
-import stream.Stream;
+public final class Features {
 
-public class UnionProcessCommand<T extends Tuple> extends AbstractProcessCommand<UnionOperator<T>> {
+  private static int FEATURES_NUMBER = 3;
+  public static int F_TOPOLOGICAL_ORDER = 0;
+  public static int F_SELECTIVITY = 1;
+  public static int F_COST = 2;
 
-  protected UnionProcessCommand(UnionOperator<T> component) {
-    super(component);
+
+  public static double[] create() {
+    return new double[FEATURES_NUMBER];
   }
 
-  @Override
-  public void process() {
-    Stream<T> output = component.getOutput();
-    for (Stream<T> in : component.getInputs()) {
-      T inTuple = in.getNextTuple();
-      if (inTuple != null) {
-        increaseTuplesRead();
-        increaseTuplesWritten();
-        output.addTuple(inTuple);
-      }
-    }
+  private Features() {
   }
+
 }

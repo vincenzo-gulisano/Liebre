@@ -39,12 +39,13 @@ class ProcessCommandSink<T extends Tuple> extends AbstractProcessCommand<Sink<T>
     super(sink);
   }
 
-
   @Override
   public final void process() {
     Stream<T> input = component.getInput();
     T tuple = input.getNextTuple();
     if (tuple != null) {
+      increaseTuplesRead();
+      increaseTuplesWritten();
       component.processTuple(tuple);
     }
   }

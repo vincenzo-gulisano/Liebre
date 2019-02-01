@@ -58,6 +58,21 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
+  public void updateMetrics() {
+    processCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processCommand.getCost();
+  }
+
+  @Override
   public void runFor(int times) {
     processCommand.runFor(times);
   }

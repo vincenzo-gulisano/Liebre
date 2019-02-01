@@ -60,11 +60,6 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public void run() {
-    processCommand.run();
-  }
-
-  @Override
   public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
     decorated.addInput(source, stream);
   }
@@ -105,8 +100,8 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public String toString() {
-    return decorated.toString();
+  public void run() {
+    processCommand.run();
   }
 
   @Override
@@ -115,7 +110,27 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
+  public void updateMetrics() {
+    processCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processCommand.getCost();
+  }
+
+  @Override
   public boolean canRun() {
     return decorated.canRun();
+  }
+
+  @Override
+  public String toString() {
+    return decorated.toString();
   }
 }

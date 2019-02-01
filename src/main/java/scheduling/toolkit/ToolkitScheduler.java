@@ -26,7 +26,6 @@ package scheduling.toolkit;
 import component.Component;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
@@ -116,43 +115,6 @@ public class ToolkitScheduler implements Scheduler {
   public void disable() {
     for (ExecutableComponent task : tasks) {
       ((Component) task).disable();
-    }
-  }
-
-  private static class AlwaysFirstExecutor implements Runnable {
-
-    private final List<ExecutableComponent> tasks = new ArrayList<>();
-    private final int nRounds;
-
-    public AlwaysFirstExecutor(int nRounds) {
-      this(Collections.emptyList(), nRounds);
-    }
-
-    public AlwaysFirstExecutor(List<ExecutableComponent> tasks, int nRounds) {
-      this.tasks.addAll(tasks);
-      this.nRounds = nRounds;
-    }
-
-    public void addTask(ExecutableComponent task) {
-      tasks.add(task);
-    }
-
-    @Override
-    public void run() {
-      while (!Thread.currentThread().isInterrupted()) {
-        for (ExecutableComponent task : tasks) {
-          if (task.canRun()) {
-//            LOG.info("Running {}", task);
-            task.runFor(nRounds);
-            break;
-          }
-        }
-      }
-    }
-
-    @Override
-    public String toString() {
-      return "EXECUTOR: " + tasks.toString() +  "\n";
     }
   }
 

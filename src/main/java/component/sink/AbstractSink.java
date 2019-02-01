@@ -122,4 +122,19 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   public String toString() {
     return getId();
   }
+
+  @Override
+  public void updateMetrics() {
+    processCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processCommand.getCost();
+  }
 }

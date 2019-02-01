@@ -38,6 +38,8 @@ class ProcessCommandSource<T extends Tuple> extends AbstractProcessCommand<Sourc
 		T tuple = component.getNextTuple();
 		Stream<T> output = component.getOutput();
 		if (tuple != null) {
+			increaseTuplesRead();
+			increaseTuplesWritten();
 			output.addTuple(tuple);
 		}
 	}

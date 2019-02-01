@@ -71,11 +71,6 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public void run() {
-    processingCommand.run();
-  }
-
-  @Override
   public Collection<? extends Stream<Tuple>> getInputs() {
     return decorated.getInputs();
   }
@@ -96,11 +91,6 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public void runFor(int times) {
-    decorated.runFor(times);
-  }
-
-  @Override
   public boolean canRun() {
     return decorated.canRun();
   }
@@ -108,6 +98,31 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   @Override
   public Collection<? extends Stream<OUT>> getOutputs() {
     return decorated.getOutputs();
+  }
+
+  @Override
+  public void run() {
+    processingCommand.run();
+  }
+
+  @Override
+  public void runFor(int times) {
+    processingCommand.runFor(times);
+  }
+
+  @Override
+  public void updateMetrics() {
+    processingCommand.updateMetrics();
+  }
+
+  @Override
+  public double getSelectivity() {
+    return processingCommand.getSelectivity();
+  }
+
+  @Override
+  public double getCost() {
+    return processingCommand.getCost();
   }
 
   @Override

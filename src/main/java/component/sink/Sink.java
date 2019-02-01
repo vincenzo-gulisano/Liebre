@@ -35,7 +35,8 @@ public interface Sink<IN extends Tuple> extends StreamConsumer<IN> {
 	void processTuple(IN tuple);
 
 	@Override
-	default double[] getFeatures() {
-		return new double[] {1};
+	default int getTopologicalOrder() {
+		return 0;
 	}
+
 }

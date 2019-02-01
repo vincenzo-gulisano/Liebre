@@ -45,7 +45,9 @@ class ProcessCommandRouter<T extends Tuple> extends
     Stream<T> input = component.getInput();
     T inTuple = input.getNextTuple();
     if (inTuple != null) {
+      increaseTuplesRead();
       for (Stream<T> output : component.chooseOutputs(inTuple)) {
+        increaseTuplesWritten();
         output.addTuple(inTuple);
       }
     }
