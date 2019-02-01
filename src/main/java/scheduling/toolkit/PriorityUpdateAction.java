@@ -48,11 +48,10 @@ public class PriorityUpdateAction implements Runnable {
   public void run() {
     Validate.isTrue(components.size() >= executors.size());
     components.sort(Comparator.comparingDouble(c -> function.apply(c.getFeatures())));
-    LOG.info("Sorted components");
+    LOG.debug("Sorted components");
     for (ExecutableComponent component : components) {
-      System.out.format("[%s, %3.2f]", component, function.apply(component.getFeatures()));
+      LOG.debug("[{}, {}]", component, function.apply(component.getFeatures()));
     }
-    System.out.println();
     List<List<ExecutableComponent>> assignment = new ArrayList<>();
     for (int i = 0; i < executors.size(); i++) {
       assignment.add(new ArrayList<>());
@@ -69,7 +68,7 @@ public class PriorityUpdateAction implements Runnable {
     long currentTime = System.currentTimeMillis();
     for (ExecutableComponent task : components) {
       double[] features = task.getFeatures();
-      System.out.format("%s: (%4.3f, %8.7f, %5.0f, %1.0f)\n", task, features[Features.F_COST],
+      LOG.debug("{}: ({}, {}, {}, {})\n", task, features[Features.F_COST],
           features[Features.F_SELECTIVITY],
           Features.getHeadLatency(features, currentTime), features[Features.F_COMPONENT_TYPE]);
     }

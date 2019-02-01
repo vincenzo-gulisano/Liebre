@@ -54,7 +54,7 @@ public class ToolkitScheduler implements Scheduler {
 
   @Override
   public void startTasks() {
-    tasks.sort(Comparator.comparingDouble(c -> c.getFeatures()[0]));
+    tasks.sort(Comparator.comparingDouble(c -> c.getFeatures()[Features.F_HEAD_ARRIVAL_TIME]));
     LOG.info("Sorted tasks: {}", tasks);
     Validate.isTrue(tasks.size() >= nThreads);
     final List<AlwaysFirstExecutor> executors = new ArrayList<>();
@@ -63,7 +63,6 @@ public class ToolkitScheduler implements Scheduler {
     for (int i = 0; i < nThreads; i++) {
       executors.add(new AlwaysFirstExecutor(nRounds, barrier));
     }
-    LOG.info("Executors\n {}", executors);
     LOG.info("Using {} threads", executors.size());
     for (Runnable executor : executors) {
       Thread t = new Thread(executor);

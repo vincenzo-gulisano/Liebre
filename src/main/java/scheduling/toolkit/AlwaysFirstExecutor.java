@@ -53,12 +53,12 @@ class AlwaysFirstExecutor implements Runnable {
   public void run() {
     int ctr = 0;
     try {
-      LOG.info("WAITING on initial barrier");
+      LOG.debug("WAITING on initial barrier");
       barrier.await();
     } catch (InterruptedException | BrokenBarrierException e) {
       return;
     }
-    LOG.info("PASSED on initial barrier");
+    LOG.debug("PASSED on initial barrier");
     while (!Thread.currentThread().isInterrupted()) {
       for (ExecutableComponent task : tasks) {
         if (task.canRun()) {
@@ -69,12 +69,12 @@ class AlwaysFirstExecutor implements Runnable {
       ctr = (ctr + 1) % UPDATE_PERIOD_EXECUTIONS;
       if (ctr == 0) {
         try {
-          LOG.info("WAITING on loop barrier");
+          LOG.debug("WAITING on loop barrier");
           barrier.await();
         } catch (InterruptedException | BrokenBarrierException e) {
           return;
         }
-        LOG.info("PASSED on loop barrier");
+        LOG.debug("PASSED on loop barrier");
       }
     }
   }
