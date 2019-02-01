@@ -34,15 +34,15 @@ package component;
  */
 public abstract class AbstractProcessCommand<T extends Component> implements ProcessCommand {
 
-  private static final int NANOSEC_TO_MICROSEC = 1000;
   // Exponential moving average alpha parameter
   // for cost and selectivity moving averages
   private static final double EMA_ALPHA = 0.1;
+  private static final int NANOSEC_TO_MICROSEC = 1000;
   protected final T component;
 
   protected long tuplesWritten;
   protected long tuplesRead;
-  protected long processingTimeMillis;
+  protected long processingTimeNanos;
 
   private volatile double selectivity = 1;
   private volatile double cost = 1;
@@ -68,7 +68,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     }
     long endTime = System.nanoTime();
     // Update processing time
-    processingTimeMillis += (endTime - startTime) * NANOSEC_TO_MICROSEC;
+    processingTimeNanos += (endTime - startTime) * NANOSEC_TO_MICROSEC;
   }
 
   protected final void increaseTuplesRead() {
@@ -80,14 +80,14 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   }
 
   public void updateMetrics() {
-    if (tuplesRead == 0 || processingTimeMillis == 0) {
+    if (tuplesRead == 0 || processingTimeNanos == 0) {
       return;
     }
     double currentSelectivity = tuplesWritten / (double) tuplesRead;
-    double currentCost = tuplesRead / (double) processingTimeMillis;
+    double currentCost = processingTimeNanos / (double) tuplesRead;
     this.selectivity = (EMA_ALPHA * currentSelectivity) + ((1-EMA_ALPHA) * selectivity);
     this.cost = (EMA_ALPHA * currentCost) + ((1-EMA_ALPHA) * cost);
-    this.tuplesRead = this.tuplesWritten = this.processingTimeMillis = 0;
+    this.tuplesRead = this.tuplesWritten = this.processingTimeNanos = 0;
   }
 
   public double getSelectivity() {
