@@ -48,6 +48,11 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
+  public ComponentType getType() {
+    return state.getType();
+  }
+
+  @Override
   public Stream<OUT> getOutput() {
     return state.getOutput(OUTPUT_KEY);
   }

@@ -23,6 +23,7 @@
 
 package component.sink;
 
+import component.ComponentType;
 import component.StreamProducer;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
@@ -42,6 +43,11 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
 
   public SinkDecorator(Sink<IN> decorated) {
     this.decorated = decorated;
+  }
+
+  @Override
+  public ComponentType getType() {
+    return decorated.getType();
   }
 
   @Override

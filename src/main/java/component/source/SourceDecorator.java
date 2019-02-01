@@ -23,6 +23,7 @@
 
 package component.source;
 
+import component.ComponentType;
 import component.StreamConsumer;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
@@ -75,13 +76,18 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public void run() {
-    processCommand.run();
+  public ComponentType getType() {
+    return decorated.getType();
   }
 
   @Override
   public void runFor(int times) {
     processCommand.runFor(times);
+  }
+
+  @Override
+  public void run() {
+    processCommand.run();
   }
 
   @Override

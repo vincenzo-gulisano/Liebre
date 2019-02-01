@@ -65,6 +65,10 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
     this.index = nextIndex.getAndIncrement();
   }
 
+  public ComponentType getType() {
+    return type;
+  }
+
   public void addOutput(int index, Stream<OUT> stream) {
     outputs.add(index, stream);
   }

@@ -23,31 +23,42 @@
 
 package scheduling.toolkit;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 class AlwaysFirstExecutor implements Runnable {
 
-  private final List<ExecutableComponent> tasks = new ArrayList<>();
+  /**
+   * Number of operator executions before the {@link PriorityUpdateAction} is evoked.
+   */
+  public static final int UPDATE_PERIOD_EXECUTIONS = 1000;
+  private static final Logger LOG = LogManager.getLogger();
   private final int nRounds;
+  private final CyclicBarrier barrier;
+  private volatile List<ExecutableComponent> tasks;
 
-  public AlwaysFirstExecutor(int nRounds) {
-    this(Collections.emptyList(), nRounds);
-  }
-
-  public AlwaysFirstExecutor(List<ExecutableComponent> tasks, int nRounds) {
-    this.tasks.addAll(tasks);
+  public AlwaysFirstExecutor(int nRounds, CyclicBarrier barrier) {
     this.nRounds = nRounds;
+    this.barrier = barrier;
   }
 
-  public void addTask(ExecutableComponent task) {
-    tasks.add(task);
+  public void setTasks(List<ExecutableComponent> tasks) {
+    this.tasks = tasks;
   }
 
   @Override
   public void run() {
     int ctr = 0;
+    try {
+      LOG.info("WAITING on initial barrier");
+      barrier.await();
+    } catch (InterruptedException | BrokenBarrierException e) {
+      return;
+    }
+    LOG.info("PASSED on initial barrier");
     while (!Thread.currentThread().isInterrupted()) {
       for (ExecutableComponent task : tasks) {
         if (task.canRun()) {
@@ -55,19 +66,21 @@ class AlwaysFirstExecutor implements Runnable {
           break;
         }
       }
-      ctr = (ctr + 1) % 1000;
+      ctr = (ctr + 1) % UPDATE_PERIOD_EXECUTIONS;
       if (ctr == 0) {
-        for (ExecutableComponent task : tasks) {
-          double[] features = task.getFeatures();
-          System.out.format("%s: (%4.3f, %8.7f)\n", task, features[Features.F_COST],
-              features[Features.F_SELECTIVITY]);
+        try {
+          LOG.info("WAITING on loop barrier");
+          barrier.await();
+        } catch (InterruptedException | BrokenBarrierException e) {
+          return;
         }
+        LOG.info("PASSED on loop barrier");
       }
     }
   }
 
   @Override
   public String toString() {
-    return "EXECUTOR: " + tasks.toString() +  "\n";
+    return "EXECUTOR: " + tasks + "\n";
   }
 }

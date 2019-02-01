@@ -63,6 +63,11 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   }
 
   @Override
+  public ComponentType getType() {
+    return state.getType();
+  }
+
+  @Override
   public Stream<IN> getInput() {
     return (Stream<IN>) state.getInput(INPUT1_KEY);
   }

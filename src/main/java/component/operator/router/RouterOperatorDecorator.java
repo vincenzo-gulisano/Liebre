@@ -23,6 +23,7 @@
 
 package component.operator.router;
 
+import component.ComponentType;
 import component.StreamConsumer;
 import component.StreamProducer;
 import component.ConnectionsNumber;
@@ -48,6 +49,11 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
    */
   public RouterOperatorDecorator(RouterOperator<T> decorated) {
     this.decorated = decorated;
+  }
+
+  @Override
+  public ComponentType getType() {
+    return decorated.getType();
   }
 
   @Override

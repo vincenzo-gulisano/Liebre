@@ -51,6 +51,11 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
+  public ComponentType getType() {
+    return state.getType();
+  }
+
+  @Override
   public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }

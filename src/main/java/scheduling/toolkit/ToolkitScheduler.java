@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CyclicBarrier;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,11 +58,10 @@ public class ToolkitScheduler implements Scheduler {
     LOG.info("Sorted tasks: {}", tasks);
     Validate.isTrue(tasks.size() >= nThreads);
     final List<AlwaysFirstExecutor> executors = new ArrayList<>();
+    CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors
+        , features -> features[Features.F_TOPOLOGICAL_ORDER]));
     for (int i = 0; i < nThreads; i++) {
-      executors.add(new AlwaysFirstExecutor(nRounds));
-    }
-    for (int i = 0; i < tasks.size(); i++) {
-     executors.get(i % executors.size()).addTask(tasks.get(i));
+      executors.add(new AlwaysFirstExecutor(nRounds, barrier));
     }
     LOG.info("Executors\n {}", executors);
     LOG.info("Using {} threads", executors.size());
@@ -70,16 +70,6 @@ public class ToolkitScheduler implements Scheduler {
       threads.add(t);
       t.start();
     }
-//    int groupSize = (int) Math.ceil(tasks.size() / (double) nThreads);
-//    int taskIndex = 0;
-//    while (taskIndex < tasks.size()) {
-//      int startIndex = taskIndex;
-//      int endIndex = Math.min(taskIndex + groupSize, tasks.size());
-//      Thread t = new Thread(new AlwaysFirstExecutor(tasks.subList(startIndex, endIndex), nRounds));
-//      threads.add(t);
-//      t.start();
-//      taskIndex = endIndex;
-//    }
   }
 
   @Override

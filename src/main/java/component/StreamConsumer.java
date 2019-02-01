@@ -24,6 +24,7 @@
 package component;
 
 import common.Named;
+import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
@@ -64,4 +65,21 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
    */
   <T extends Tuple> Collection<? extends Stream<T>> getInputs();
 
+  /**
+   * Get the latency at the head of the queue of the component.
+   * Warning: This will fail if the component is not processing {@link common.tuple.RichTuple}s.
+   *
+   * @return The head latency of the Component (averaged over all the inputs).
+   */
+  default double getHeadArrivalTime() {
+    Collection<? extends Stream<?>> inputs = getInputs();
+    double latencySum = -1;
+    for (Stream<?> input : inputs) {
+      RichTuple head = (RichTuple) input.peek();
+      if (head != null) {
+        latencySum += head.getStimulus();
+      }
+    }
+    return latencySum / inputs.size();
+  }
 }

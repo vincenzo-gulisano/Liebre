@@ -52,6 +52,11 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
+  public ComponentType getType() {
+    return state.getType();
+  }
+
+  @Override
   public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
     state.addInput(INPUT_KEY, stream);
   }

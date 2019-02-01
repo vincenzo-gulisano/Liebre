@@ -62,6 +62,8 @@ public interface Component extends Active, Runnable, Named, ExecutableComponent 
 
   void updateMetrics();
 
+  ComponentType getType();
+
   @Override
   default double[] getFeatures() {
     double[] features = Features.create();
@@ -69,6 +71,36 @@ public interface Component extends Active, Runnable, Named, ExecutableComponent 
     features[Features.F_TOPOLOGICAL_ORDER] = getTopologicalOrder();
     features[Features.F_COST] = getCost();
     features[Features.F_SELECTIVITY] = getSelectivity();
+    features[Features.F_HEAD_ARRIVAL_TIME] = -1; // Negative value means no data
+    if (this instanceof StreamConsumer) {
+      features[Features.F_HEAD_ARRIVAL_TIME] = ((StreamConsumer) this).getHeadArrivalTime();
+    }
+    int translatedType = -1;
+    switch (getType()) {
+      case SOURCE:
+        translatedType = Features.CTYPE_SOURCE;
+        break;
+      case SINK:
+        translatedType = Features.CTYPE_SINK;
+        break;
+      case OPERATOR:
+        translatedType = Features.CTYPE_OPERATOR;
+        break;
+      case OPERATOR2IN:
+        translatedType = Features.CTYPE_JOIN;
+        break;
+      case ROUTER:
+        translatedType = Features.CTYPE_ROUTER;
+        break;
+      case UNION:
+        translatedType = Features.CTYPE_UNION;
+        break;
+      default:
+        throw new IllegalStateException("Unknown component type " + getType());
+    }
+    features[Features.F_COMPONENT_TYPE] = translatedType;
     return features;
   }
+
+
 }

@@ -23,6 +23,7 @@
 
 package component.operator.in2;
 
+import component.ComponentType;
 import component.StreamConsumer;
 import component.StreamProducer;
 import component.ConnectionsNumber;
@@ -99,6 +100,11 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   @Override
   public void disable() {
     decorated.disable();
+  }
+
+  @Override
+  public ComponentType getType() {
+    return decorated.getType();
   }
 
   @Override

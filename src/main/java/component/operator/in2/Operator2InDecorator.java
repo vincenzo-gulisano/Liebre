@@ -23,6 +23,7 @@
 
 package component.operator.in2;
 
+import component.ComponentType;
 import component.StreamConsumer;
 import component.StreamProducer;
 import component.ConnectionsNumber;
@@ -98,6 +99,11 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   @Override
   public Collection<? extends Stream<OUT>> getOutputs() {
     return decorated.getOutputs();
+  }
+
+  @Override
+  public ComponentType getType() {
+    return decorated.getType();
   }
 
   @Override
