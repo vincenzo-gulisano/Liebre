@@ -24,6 +24,8 @@ package component;
 
 import common.Active;
 import common.Named;
+import java.util.Collections;
+import java.util.List;
 import scheduling.toolkit.ExecutableComponent;
 import scheduling.toolkit.Features;
 
@@ -102,5 +104,13 @@ public interface Component extends Active, Runnable, Named, ExecutableComponent 
     return features;
   }
 
+  @Override
+  default List<ExecutableComponent> getUpstream() {
+    return Collections.emptyList();
+  }
 
+  @Override
+  default List<ExecutableComponent> getDownstream() {
+    return Collections.emptyList();
+  }
 }

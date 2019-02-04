@@ -26,7 +26,10 @@ package component;
 import common.Named;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import scheduling.toolkit.ExecutableComponent;
 import stream.Stream;
 
 /**
@@ -64,6 +67,15 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
    * @return All the input streams of this consumer.
    */
   <T extends Tuple> Collection<? extends Stream<T>> getInputs();
+
+  @Override
+  default List<ExecutableComponent> getUpstream() {
+    List<ExecutableComponent> upstream = new ArrayList<>();
+    for (Stream<?> input : getInputs()) {
+     upstream.add(input.getSource());
+    }
+    return upstream;
+  }
 
   /**
    * Get the latency at the head of the queue of the component.

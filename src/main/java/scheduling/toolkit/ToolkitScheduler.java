@@ -26,7 +26,6 @@ package scheduling.toolkit;
 import component.Component;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import org.apache.commons.lang3.Validate;
@@ -41,6 +40,8 @@ public class ToolkitScheduler implements Scheduler {
   private final int nThreads;
   private final List<ExecutableComponent> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
+  private int[] queries; //FIXME: Be careful of thread safety
+  private int nQueries = 0;
 
   public ToolkitScheduler(int nRounds, int nThreads) {
     this.nRounds = nRounds;
@@ -54,10 +55,9 @@ public class ToolkitScheduler implements Scheduler {
 
   @Override
   public void startTasks() {
-    tasks.sort(Comparator.comparingDouble(c -> c.getFeatures()[Features.F_HEAD_ARRIVAL_TIME]));
-    LOG.info("Sorted tasks: {}", tasks);
     Validate.isTrue(tasks.size() >= nThreads);
-    final List<AlwaysFirstExecutor> executors = new ArrayList<>();
+    new QueryResolver(tasks);
+    final List<AbstractExecutor> executors = new ArrayList<>();
     CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors
         , features -> features[Features.F_TOPOLOGICAL_ORDER]));
     for (int i = 0; i < nThreads; i++) {
@@ -107,27 +107,5 @@ public class ToolkitScheduler implements Scheduler {
     }
   }
 
-  private static class RoundRobinExecutor implements Runnable {
 
-    private final List<ExecutableComponent> tasks = new ArrayList<>();
-    private final int nRounds;
-
-    public RoundRobinExecutor(List<ExecutableComponent> tasks, int nRounds) {
-      this.tasks.addAll(tasks);
-      this.nRounds = nRounds;
-    }
-
-    @Override
-    public void run() {
-      int index = 0;
-      final int size = tasks.size();
-      while (!Thread.currentThread().isInterrupted()) {
-        ExecutableComponent task = tasks.get(index++ % size);
-        if (task.canRun()) {
-//          LOG.info("Running {}", task);
-          task.runFor(nRounds);
-        }
-      }
-    }
-  }
 }

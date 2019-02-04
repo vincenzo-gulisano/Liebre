@@ -23,20 +23,26 @@
 
 package scheduling.toolkit;
 
-import java.util.List;
+import java.util.concurrent.CyclicBarrier;
 
-public interface ExecutableComponent {
+public class RoundRobinExecutor extends AbstractExecutor {
 
-  void runFor(final int times);
+  private int index;
+  private int nTasks;
 
-  boolean canRun();
+  public RoundRobinExecutor(int nRounds, CyclicBarrier barrier) {
+    super(nRounds, barrier);
+  }
 
-  double[] getFeatures();
+  @Override
+  protected void runNextComponent() {
+    index = (index + 1) % nTasks;
+    tasks.get(index).runFor(UPDATE_PERIOD_EXECUTIONS);
+  }
 
-  int getIndex();
-
-  List<? extends ExecutableComponent> getUpstream();
-
-  List<? extends ExecutableComponent> getDownstream();
-
+  @Override
+  protected void onUpdatedComponents() {
+    index = 0;
+    nTasks = tasks.size();
+  }
 }

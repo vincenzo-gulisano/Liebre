@@ -23,64 +23,25 @@
 
 package scheduling.toolkit;
 
-import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-class AlwaysFirstExecutor implements Runnable {
-
-  /**
-   * Number of operator executions before the {@link PriorityUpdateAction} is evoked.
-   */
-  public static final int UPDATE_PERIOD_EXECUTIONS = 1000;
-  private static final Logger LOG = LogManager.getLogger();
-  private final int nRounds;
-  private final CyclicBarrier barrier;
-  private volatile List<ExecutableComponent> tasks;
+class AlwaysFirstExecutor extends AbstractExecutor {
 
   public AlwaysFirstExecutor(int nRounds, CyclicBarrier barrier) {
-    this.nRounds = nRounds;
-    this.barrier = barrier;
+    super(nRounds, barrier);
   }
 
-  public void setTasks(List<ExecutableComponent> tasks) {
-    this.tasks = tasks;
-  }
-
-  @Override
-  public void run() {
-    int ctr = 0;
-    try {
-      LOG.debug("WAITING on initial barrier");
-      barrier.await();
-    } catch (InterruptedException | BrokenBarrierException e) {
-      return;
-    }
-    LOG.debug("PASSED on initial barrier");
-    while (!Thread.currentThread().isInterrupted()) {
-      for (ExecutableComponent task : tasks) {
-        if (task.canRun()) {
-          task.runFor(nRounds);
-          break;
-        }
-      }
-      ctr = (ctr + 1) % UPDATE_PERIOD_EXECUTIONS;
-      if (ctr == 0) {
-        try {
-          LOG.debug("WAITING on loop barrier");
-          barrier.await();
-        } catch (InterruptedException | BrokenBarrierException e) {
-          return;
-        }
-        LOG.debug("PASSED on loop barrier");
+  protected void runNextComponent() {
+    for (ExecutableComponent task : tasks) {
+      if (task.canRun()) {
+        task.runFor(nRounds);
+        break;
       }
     }
   }
 
   @Override
-  public String toString() {
-    return "EXECUTOR: " + tasks + "\n";
+  protected void onUpdatedComponents() {
+
   }
 }

@@ -34,11 +34,11 @@ public class PriorityUpdateAction implements Runnable {
 
   private static final Logger LOG = LogManager.getLogger();
   private final List<ExecutableComponent> components;
-  private final List<AlwaysFirstExecutor> executors;
+  private final List<AbstractExecutor> executors;
   private final PriorityFunction function;
 
   public PriorityUpdateAction(List<ExecutableComponent> components,
-      List<AlwaysFirstExecutor> executors, PriorityFunction function) {
+      List<AbstractExecutor> executors, PriorityFunction function) {
     this.components = components;
     this.executors = executors;
     this.function = function;
