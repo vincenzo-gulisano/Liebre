@@ -24,18 +24,32 @@
 package scheduling.toolkit;
 
 import java.util.concurrent.CyclicBarrier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 class AlwaysFirstExecutor extends AbstractExecutor {
+
+  private static final Logger LOG = LogManager.getLogger();
 
   public AlwaysFirstExecutor(int nRounds, CyclicBarrier barrier) {
     super(nRounds, barrier);
   }
 
   protected void runNextComponent() {
+    boolean executedSource = false;
     for (ExecutableComponent task : tasks) {
+//      LOG.debug("Trying to execute {}", task);
       if (task.canRun()) {
+        LOG.debug("Executing {}", task);
         task.runFor(nRounds);
-        break;
+        // Prevent starvation: If one source runs, then everything will be traversed until
+        // we run out of components (enabling executedSource)
+        boolean taskWasSource =
+            task.getFeatures()[Features.F_COMPONENT_TYPE] == Features.CTYPE_SOURCE;
+        executedSource = executedSource || taskWasSource;
+        if (!executedSource) {
+          break;
+        }
       }
     }
   }

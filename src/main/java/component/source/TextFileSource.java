@@ -43,7 +43,7 @@ public class TextFileSource<OUT extends Tuple> extends AbstractSource<OUT> {
   private static final Logger LOGGER = LogManager.getLogger();
   private final TextSourceFunction<OUT> function;
   private BufferedReader br;
-  private boolean done = false;
+  private volatile boolean done = false;
 
   /**
    * Construct.
@@ -68,11 +68,21 @@ public class TextFileSource<OUT extends Tuple> extends AbstractSource<OUT> {
     if (!done) {
       return function.apply(nextLine());
     }
+    LOGGER.debug("Text Source {} has finished processing input. Sleeping...", getId());
     // If done, prevent spinning
     Util.sleep(1000);
     return null;
   }
 
+  @Override
+  public boolean canRun() {
+    return !done && super.canRun();
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return !done && super.isEnabled();
+  }
 
   private String nextLine() {
     String nextLine = null;

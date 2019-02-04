@@ -27,7 +27,8 @@ import component.StreamProducer;
 import common.tuple.Tuple;
 
 /**
- * The component.source is the first component in a query. It generates the tuples that are processed by the
+ * The component.source is the first component in a query. It generates the tuples that are
+ * processed by the
  * stream processing system.
  *
  * @param <OUT> The type of output tuples.
@@ -35,4 +36,9 @@ import common.tuple.Tuple;
 public interface Source<OUT extends Tuple> extends StreamProducer<OUT> {
 
   OUT getNextTuple();
+
+  @Override
+  default int getTopologicalOrder() {
+    return 1;
+  }
 }

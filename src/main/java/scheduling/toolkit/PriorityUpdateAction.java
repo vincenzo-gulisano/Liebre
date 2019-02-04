@@ -36,18 +36,22 @@ public class PriorityUpdateAction implements Runnable {
   private final List<ExecutableComponent> components;
   private final List<AbstractExecutor> executors;
   private final PriorityFunction function;
+  private final Comparator<ExecutableComponent> comparator;
 
   public PriorityUpdateAction(List<ExecutableComponent> components,
       List<AbstractExecutor> executors, PriorityFunction function) {
-    this.components = components;
+    this.components = new ArrayList(components);
     this.executors = executors;
     this.function = function;
+    this.comparator =
+        Comparator.<ExecutableComponent>comparingDouble(c -> function.apply(c.getFeatures()))
+            .reversed();
   }
 
   @Override
   public void run() {
     Validate.isTrue(components.size() >= executors.size());
-    components.sort(Comparator.comparingDouble(c -> function.apply(c.getFeatures())));
+    components.sort(comparator);
     LOG.debug("Sorted components");
     for (ExecutableComponent component : components) {
       LOG.debug("[{}, {}]", component, function.apply(component.getFeatures()));

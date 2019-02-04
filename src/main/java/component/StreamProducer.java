@@ -65,14 +65,7 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
    */
   Collection<? extends Stream<OUT>> getOutputs();
 
-  @Override
-  default int getTopologicalOrder() {
-    for (Stream<?> output : getOutputs()) {
-      int downstreamOrder = output.getDestination().getTopologicalOrder();
-      return downstreamOrder+1;
-    }
-    throw new IllegalStateException("StreamProducer with no outputs!");
-  }
+
 
   @Override
   default List<ExecutableComponent> getDownstream() {

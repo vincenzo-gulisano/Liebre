@@ -45,13 +45,12 @@ public class QueryResolver {
   }
 
   private void resolveQueries(List<ExecutableComponent> components) {
-    final int[] queries = new int[components.size()];
     for (ExecutableComponent component : components) {
       traverseComponentGraph(component);
     }
     LOG.info("{} queries found", nQueries);
     for (ExecutableComponent component : components) {
-      LOG.info("{} -> {}", component, queries[component.getIndex()]);
+      LOG.info("{} -> {}", component, componentToQuery[component.getIndex()]);
     }
     for (int queryNumber : queryToComponents.keySet()) {
       LOG.info("Query #{} -> {}", queryNumber, queryToComponents.get(queryNumber));

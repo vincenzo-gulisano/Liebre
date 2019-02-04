@@ -40,8 +40,6 @@ public class ToolkitScheduler implements Scheduler {
   private final int nThreads;
   private final List<ExecutableComponent> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
-  private int[] queries; //FIXME: Be careful of thread safety
-  private int nQueries = 0;
 
   public ToolkitScheduler(int nRounds, int nThreads) {
     this.nRounds = nRounds;

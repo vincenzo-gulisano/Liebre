@@ -67,7 +67,15 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
 
   @Override
   public boolean canRun() {
-    return getOutput().remainingCapacity() > 0;
+    if (getOutput().remainingCapacity() == 0) {
+      return false;
+    }
+    for (Stream<?> input : getInputs()) {
+      if (input.size() > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override

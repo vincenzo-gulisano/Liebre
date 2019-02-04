@@ -34,9 +34,4 @@ import common.tuple.Tuple;
 public interface Sink<IN extends Tuple> extends StreamConsumer<IN> {
 	void processTuple(IN tuple);
 
-	@Override
-	default int getTopologicalOrder() {
-		return 0;
-	}
-
 }

@@ -69,6 +69,15 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
   <T extends Tuple> Collection<? extends Stream<T>> getInputs();
 
   @Override
+  default int getTopologicalOrder() {
+    for (Stream<?> input : getInputs()) {
+      int upstreamOrder = input.getSource().getTopologicalOrder();
+      return upstreamOrder + 1;
+    }
+    throw new IllegalStateException("StreamConsumer with no inputs!");
+  }
+
+  @Override
   default List<ExecutableComponent> getUpstream() {
     List<ExecutableComponent> upstream = new ArrayList<>();
     for (Stream<?> input : getInputs()) {
@@ -87,9 +96,14 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
     Collection<? extends Stream<?>> inputs = getInputs();
     double latencySum = -1;
     for (Stream<?> input : inputs) {
-      RichTuple head = (RichTuple) input.peek();
+      Object head = input.peek();
       if (head != null) {
-        latencySum += head.getStimulus();
+        if (head instanceof RichTuple == false) {
+          // This stream has no latency info
+          continue;
+        }
+        RichTuple headTuple = (RichTuple) head;
+        latencySum += headTuple.getStimulus();
       }
     }
     return latencySum / inputs.size();

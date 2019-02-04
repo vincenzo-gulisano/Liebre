@@ -61,7 +61,15 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 
   @Override
   public boolean canRun() {
-    return getInput().size() > 0;
+    if (getInput().size() == 0) {
+      return false;
+    }
+    for (Stream<?> output: getOutputs()) {
+      if (output.remainingCapacity() > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
