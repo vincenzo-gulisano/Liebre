@@ -38,7 +38,7 @@ public abstract class AbstractExecutor implements Runnable {
   private static final Logger LOG = LogManager.getLogger();
   protected final int nRounds;
   protected final CyclicBarrier barrier;
-  protected volatile List<ExecutableComponent> tasks;
+  protected volatile List<Task> tasks;
   private int executions;
 
   public AbstractExecutor(
@@ -47,36 +47,36 @@ public abstract class AbstractExecutor implements Runnable {
     this.barrier = barrier;
   }
 
-  public void setTasks(List<ExecutableComponent> tasks) {
+  public void setTasks(List<Task> tasks) {
     this.tasks = tasks;
   }
 
   @Override
   public void run() {
-    if (!updateComponents()) {
+    if (!updateTasks()) {
       return;
     }
     while (!Thread.currentThread().isInterrupted()) {
-      runNextComponent();
+      runNextTask();
       executions = (executions + 1) % UPDATE_PERIOD_EXECUTIONS;
       if (executions == 0) {
-        if (!updateComponents()) {
+        if (!updateTasks()) {
           return;
         }
       }
     }
   }
 
-  protected abstract void onUpdatedComponents();
+  protected abstract void onUpdatedTasks();
 
-  protected abstract void runNextComponent();
+  protected abstract void runNextTask();
 
-  private boolean updateComponents() {
+  private boolean updateTasks() {
     try {
       LOG.debug("WAITING on barrier");
       barrier.await();
       LOG.debug("PASSED barrier");
-      onUpdatedComponents();
+      onUpdatedTasks();
       return true;
     } catch (InterruptedException | BrokenBarrierException e) {
       LOG.debug("Barrier INTERRUPTED!");

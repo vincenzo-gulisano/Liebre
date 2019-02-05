@@ -25,6 +25,7 @@ package scheduling.toolkit;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -35,46 +36,50 @@ import org.apache.logging.log4j.Logger;
 public class QueryResolver {
 
   private static final Logger LOG = LogManager.getLogger();
-  private final Map<Integer, List<ExecutableComponent>> queryToComponents = new HashMap<>();
-  private final int[] componentToQuery;
+  private final Map<Integer, List<Task>> queryToTasks = new HashMap<>();
+  private final int[] taskToQuery;
   private int nQueries;
 
-  public QueryResolver(List<ExecutableComponent> components) {
-    componentToQuery = new int[components.size()];
-    resolveQueries(components);
+  public QueryResolver(List<Task> tasks) {
+    taskToQuery = new int[tasks.size()];
+    resolveQueries(tasks);
   }
 
-  private void resolveQueries(List<ExecutableComponent> components) {
-    for (ExecutableComponent component : components) {
-      traverseComponentGraph(component);
+  public Collection<List<Task>> getQueries() {
+    return queryToTasks.values();
+  }
+
+  private void resolveQueries(List<Task> tasks) {
+    for (Task task : tasks) {
+      traverseTaskGraph(task);
     }
     LOG.info("{} queries found", nQueries);
-    for (ExecutableComponent component : components) {
-      LOG.info("{} -> {}", component, componentToQuery[component.getIndex()]);
+    for (Task task : tasks) {
+      LOG.info("{} -> {}", task, taskToQuery[task.getIndex()]);
     }
-    for (int queryNumber : queryToComponents.keySet()) {
-      LOG.info("Query #{} -> {}", queryNumber, queryToComponents.get(queryNumber));
+    for (int queryNumber : queryToTasks.keySet()) {
+      LOG.info("Query #{} -> {}", queryNumber, queryToTasks.get(queryNumber));
     }
   }
 
-  private void traverseComponentGraph(ExecutableComponent component) {
-    if (componentToQuery[component.getIndex()] > 0) { // Visited
+  private void traverseTaskGraph(Task task) {
+    if (taskToQuery[task.getIndex()] > 0) { // Visited
       return;
     }
     nQueries += 1;
-    final Deque<ExecutableComponent> q = new ArrayDeque<>();
-    q.addLast(component);
-    queryToComponents.put(nQueries, new ArrayList<>());
+    final Deque<Task> q = new ArrayDeque<>();
+    q.addLast(task);
+    queryToTasks.put(nQueries, new ArrayList<>());
     while (!q.isEmpty()) {
-      ExecutableComponent current = q.removeFirst();
+      Task current = q.removeFirst();
       final int currentIndex = current.getIndex();
-      if (componentToQuery[currentIndex] == 0) { // Not visited
+      if (taskToQuery[currentIndex] == 0) { // Not visited
         // Update both representations
-        queryToComponents.get(nQueries).add(current);
-        componentToQuery[currentIndex] = nQueries;
+        queryToTasks.get(nQueries).add(current);
+        taskToQuery[currentIndex] = nQueries;
         // Recursively for the rest of the graph
-        current.getDownstream().forEach(c -> q.addLast(c));
-        current.getUpstream().forEach(c -> q.addLast(c));
+        current.getDownstream().forEach(t -> q.addLast(t));
+        current.getUpstream().forEach(t -> q.addLast(t));
       }
     }
   }

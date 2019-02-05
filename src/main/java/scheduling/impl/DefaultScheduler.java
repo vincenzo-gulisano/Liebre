@@ -38,7 +38,7 @@ import scheduling.thread.BasicWorkerThread;
  *
  * @author palivosd
  */
-public class DefaultScheduler implements Scheduler {
+public class DefaultScheduler implements Scheduler<Component> {
 
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -47,7 +47,7 @@ public class DefaultScheduler implements Scheduler {
   private volatile boolean enabled;
 
   @Override
-  public void addTasks(Collection<? extends Component> tasks) {
+  public void addTasks(Collection<Component> tasks) {
     this.tasks.addAll(tasks);
   }
 

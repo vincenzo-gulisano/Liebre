@@ -27,17 +27,17 @@ import java.util.concurrent.CyclicBarrier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-class AlwaysFirstExecutor extends AbstractExecutor {
+class HighestPriorityExecutor extends AbstractExecutor {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  public AlwaysFirstExecutor(int nRounds, CyclicBarrier barrier) {
+  public HighestPriorityExecutor(int nRounds, CyclicBarrier barrier) {
     super(nRounds, barrier);
   }
 
-  protected void runNextComponent() {
+  protected void runNextTask() {
     boolean executedSource = false;
-    for (ExecutableComponent task : tasks) {
+    for (Task task : tasks) {
 //      LOG.debug("Trying to execute {}", task);
       if (task.canRun()) {
         LOG.debug("Executing {}", task);
@@ -55,7 +55,7 @@ class AlwaysFirstExecutor extends AbstractExecutor {
   }
 
   @Override
-  protected void onUpdatedComponents() {
+  protected void onUpdatedTasks() {
 
   }
 }

@@ -33,12 +33,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
 
-public class ToolkitScheduler implements Scheduler {
+public class ToolkitScheduler implements Scheduler<Task> {
 
   private static final Logger LOG = LogManager.getLogger();
   private final int nRounds;
   private final int nThreads;
-  private final List<ExecutableComponent> tasks = new ArrayList<>();
+  private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
 
   public ToolkitScheduler(int nRounds, int nThreads) {
@@ -47,7 +47,7 @@ public class ToolkitScheduler implements Scheduler {
   }
 
   @Override
-  public void addTasks(Collection<? extends Component> tasks) {
+  public void addTasks(Collection<Task> tasks) {
     this.tasks.addAll(tasks);
   }
 
@@ -59,7 +59,7 @@ public class ToolkitScheduler implements Scheduler {
     CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors
         , features -> features[Features.F_TOPOLOGICAL_ORDER]));
     for (int i = 0; i < nThreads; i++) {
-      executors.add(new AlwaysFirstExecutor(nRounds, barrier));
+      executors.add(new HighestPriorityExecutor(nRounds, barrier));
     }
     LOG.info("Using {} threads", executors.size());
     for (Runnable executor : executors) {
@@ -88,7 +88,8 @@ public class ToolkitScheduler implements Scheduler {
 
   @Override
   public void enable() {
-    for (ExecutableComponent task : tasks) {
+    //FIXME: Liebre specific code, not needed for final toolkit
+    for (Task task : tasks) {
       ((Component) task).enable();
     }
   }
@@ -100,7 +101,8 @@ public class ToolkitScheduler implements Scheduler {
 
   @Override
   public void disable() {
-    for (ExecutableComponent task : tasks) {
+    //FIXME: Liebre specific code, not needed for final toolkit
+    for (Task task : tasks) {
       ((Component) task).disable();
     }
   }

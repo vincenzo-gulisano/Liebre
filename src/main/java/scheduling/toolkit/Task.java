@@ -25,7 +25,7 @@ package scheduling.toolkit;
 
 import java.util.List;
 
-public interface ExecutableComponent {
+public interface Task extends Runnable {
 
   void runFor(final int times);
 
@@ -35,8 +35,8 @@ public interface ExecutableComponent {
 
   int getIndex();
 
-  List<? extends ExecutableComponent> getUpstream();
+  List<? extends Task> getUpstream();
 
-  List<? extends ExecutableComponent> getDownstream();
+  List<? extends Task> getDownstream();
 
 }

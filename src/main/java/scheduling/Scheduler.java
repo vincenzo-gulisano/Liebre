@@ -23,17 +23,15 @@
 
 package scheduling;
 
-import java.util.Collection;
-
 import common.Active;
-import component.Component;
+import java.util.Collection;
 
 /**
  * Scheduler for streaming operators.
  *
  * @author palivosd
  */
-public interface Scheduler extends Active {
+public interface Scheduler<T extends Runnable> extends Active {
 
   /**
    * Set the {@link Runnable}s that are going to be scheduled by this entity. These should generally
@@ -41,7 +39,7 @@ public interface Scheduler extends Active {
    *
    * @param tasks The operators to be scheduled
    */
-  void addTasks(Collection<? extends Component> tasks);
+  void addTasks(Collection<T> tasks);
 
   /**
    * Start and schedule the tasks according to the actual scheduler implementation.

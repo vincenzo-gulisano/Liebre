@@ -28,7 +28,7 @@ import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import scheduling.toolkit.ExecutableComponent;
+import scheduling.toolkit.Task;
 import stream.Stream;
 
 /**
@@ -68,8 +68,8 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
 
 
   @Override
-  default List<ExecutableComponent> getDownstream() {
-    List<ExecutableComponent> downstream = new ArrayList<>();
+  default List<Task> getDownstream() {
+    List<Task> downstream = new ArrayList<>();
     for (Stream<?> output : getOutputs()) {
       downstream.add(output.getDestination());
     }

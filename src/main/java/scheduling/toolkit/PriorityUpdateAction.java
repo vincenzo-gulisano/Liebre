@@ -33,46 +33,52 @@ import org.apache.logging.log4j.Logger;
 public class PriorityUpdateAction implements Runnable {
 
   private static final Logger LOG = LogManager.getLogger();
-  private final List<ExecutableComponent> components;
+  private final List<Task> tasks;
+  private final QueryResolver queries;
   private final List<AbstractExecutor> executors;
   private final PriorityFunction function;
-  private final Comparator<ExecutableComponent> comparator;
+  private final Comparator<Task> comparator;
 
-  public PriorityUpdateAction(List<ExecutableComponent> components,
+  public PriorityUpdateAction(List<Task> inputTasks,
       List<AbstractExecutor> executors, PriorityFunction function) {
-    this.components = new ArrayList(components);
+    this.tasks = new ArrayList(inputTasks);
+    this.queries = new QueryResolver(this.tasks);
     this.executors = executors;
     this.function = function;
     this.comparator =
-        Comparator.<ExecutableComponent>comparingDouble(c -> function.apply(c.getFeatures()))
+        Comparator.<Task>comparingDouble(c -> function.apply(c.getFeatures()))
             .reversed();
   }
 
   @Override
   public void run() {
-    Validate.isTrue(components.size() >= executors.size());
-    components.sort(comparator);
-    LOG.debug("Sorted components");
-    for (ExecutableComponent component : components) {
-      LOG.debug("[{}, {}]", component, function.apply(component.getFeatures()));
-    }
-    List<List<ExecutableComponent>> assignment = new ArrayList<>();
+    Validate.isTrue(tasks.size() >= executors.size());
+    List<List<Task>> assignments = new ArrayList<>();
     for (int i = 0; i < executors.size(); i++) {
-      assignment.add(new ArrayList<>());
+      assignments.add(new ArrayList<>());
     }
-    for (int i = 0; i < components.size(); i++) {
-      assignment.get(i % assignment.size()).add(components.get(i));
+    int assignmentIndex = 0;
+    for (List<Task> query : queries.getQueries()) {
+      assignments.get(assignmentIndex % assignments.size()).addAll(query);
+      assignmentIndex++;
     }
     for (int i = 0; i < executors.size(); i++) {
-      executors.get(i).setTasks(assignment.get(i));
+      List<Task> assignment = assignments.get(i);
+      assignment.sort(comparator);
+      LOG.debug("-----Thread {} assignment-----", i);
+      for (Task task : assignment) {
+        LOG.debug("[{}, {}]", task, function.apply(task.getFeatures()));
+      }
+      executors.get(i).setTasks(assignment);
     }
     //
     // Debugging code - WILL (RE)MOVE!
     //
     long currentTime = System.currentTimeMillis();
-    for (ExecutableComponent task : components) {
+    LOG.debug("--------ALL FEATURES--------");
+    for (Task task : tasks) {
       double[] features = task.getFeatures();
-      LOG.debug("{}: ({}, {}, {}, {})\n", task, features[Features.F_COST],
+      LOG.debug("{}: ({}, {}, {}, {})", task, features[Features.F_COST],
           features[Features.F_SELECTIVITY],
           Features.getHeadLatency(features, currentTime), features[Features.F_COMPONENT_TYPE]);
     }

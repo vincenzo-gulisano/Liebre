@@ -35,13 +35,13 @@ public class RoundRobinExecutor extends AbstractExecutor {
   }
 
   @Override
-  protected void runNextComponent() {
+  protected void runNextTask() {
     index = (index + 1) % nTasks;
     tasks.get(index).runFor(UPDATE_PERIOD_EXECUTIONS);
   }
 
   @Override
-  protected void onUpdatedComponents() {
+  protected void onUpdatedTasks() {
     index = 0;
     nTasks = tasks.size();
   }

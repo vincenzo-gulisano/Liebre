@@ -26,7 +26,7 @@ import common.Active;
 import common.Named;
 import java.util.Collections;
 import java.util.List;
-import scheduling.toolkit.ExecutableComponent;
+import scheduling.toolkit.Task;
 import scheduling.toolkit.Features;
 
 /**
@@ -38,7 +38,7 @@ import scheduling.toolkit.Features;
  * @see Named
  * @see ConnectionsNumber
  */
-public interface Component extends Active, Runnable, Named, ExecutableComponent {
+public interface Component extends Active, Runnable, Named, Task {
 
   /**
    * The input {@link ConnectionsNumber} of this component. Used to enforce invariants during
@@ -105,12 +105,12 @@ public interface Component extends Active, Runnable, Named, ExecutableComponent 
   }
 
   @Override
-  default List<ExecutableComponent> getUpstream() {
+  default List<Task> getUpstream() {
     return Collections.emptyList();
   }
 
   @Override
-  default List<ExecutableComponent> getDownstream() {
+  default List<Task> getDownstream() {
     return Collections.emptyList();
   }
 }
