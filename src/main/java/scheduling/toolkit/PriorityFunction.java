@@ -26,6 +26,10 @@ package scheduling.toolkit;
 @FunctionalInterface
 public interface PriorityFunction {
 
-  double apply(double[] features);
+  double apply(Task task);
+
+  default PriorityFunction reciprocal() {
+    return PriorityFunctions.reciprocalFunction(this);
+  }
 
 }

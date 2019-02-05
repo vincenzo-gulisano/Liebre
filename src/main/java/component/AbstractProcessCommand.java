@@ -40,9 +40,9 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   private static final int NANOSEC_TO_MICROSEC = 1000;
   protected final T component;
 
-  protected long tuplesWritten;
-  protected long tuplesRead;
-  protected long processingTimeNanos;
+  protected volatile long tuplesWritten;
+  protected volatile long tuplesRead;
+  protected volatile long processingTimeNanos;
 
   private volatile double selectivity = 1;
   private volatile double cost = 1;

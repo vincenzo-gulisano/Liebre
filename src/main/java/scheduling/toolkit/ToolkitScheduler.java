@@ -57,7 +57,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
     new QueryResolver(tasks);
     final List<AbstractExecutor> executors = new ArrayList<>();
     CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors
-        , features -> features[Features.F_TOPOLOGICAL_ORDER]));
+        , PriorityFunctions.averageLatency()));
     for (int i = 0; i < nThreads; i++) {
       executors.add(new HighestPriorityExecutor(nRounds, barrier));
     }

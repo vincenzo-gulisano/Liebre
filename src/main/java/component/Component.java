@@ -69,13 +69,14 @@ public interface Component extends Active, Runnable, Named, Task {
   @Override
   default double[] getFeatures() {
     double[] features = Features.create();
-    updateMetrics();
     features[Features.F_TOPOLOGICAL_ORDER] = getTopologicalOrder();
     features[Features.F_COST] = getCost();
     features[Features.F_SELECTIVITY] = getSelectivity();
     features[Features.F_HEAD_ARRIVAL_TIME] = -1; // Negative value means no data
+    features[Features.F_AVERAGE_ARRIVAL_TIME] = -1; // Negative value means no data
     if (this instanceof StreamConsumer) {
       features[Features.F_HEAD_ARRIVAL_TIME] = ((StreamConsumer) this).getHeadArrivalTime();
+      features[Features.F_AVERAGE_ARRIVAL_TIME] = ((StreamConsumer) this).getAverageArrivalTime();
     }
     int translatedType = -1;
     switch (getType()) {
@@ -102,6 +103,11 @@ public interface Component extends Active, Runnable, Named, Task {
     }
     features[Features.F_COMPONENT_TYPE] = translatedType;
     return features;
+  }
+
+  @Override
+  default void updateFeatures() {
+    updateMetrics();
   }
 
   @Override

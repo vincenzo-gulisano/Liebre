@@ -25,20 +25,22 @@ package scheduling.toolkit;
 
 public final class Features {
 
-  private static int FEATURES_NUMBER = 5;
-
   public static int F_TOPOLOGICAL_ORDER = 0;
   public static int F_SELECTIVITY = 1;
   public static int F_COST = 2;
   public static int F_HEAD_ARRIVAL_TIME = 3;
-  public static int F_COMPONENT_TYPE = 4;
-
+  public static int F_AVERAGE_ARRIVAL_TIME = 4;
+  public static int F_COMPONENT_TYPE = 5;
   public static int CTYPE_SOURCE = 0;
   public static int CTYPE_SINK = 1;
   public static int CTYPE_OPERATOR = 2;
   public static int CTYPE_ROUTER = 3;
   public static int CTYPE_UNION = 4;
   public static int CTYPE_JOIN = 5;
+  private static int FEATURES_NUMBER = 6;
+
+  private Features() {
+  }
 
   public static double getLatency(double arrivalTime, long currentTime) {
     return (arrivalTime < 0) ? 0 : currentTime - arrivalTime;
@@ -47,12 +49,12 @@ public final class Features {
   public static double getHeadLatency(double[] features, long currentTime) {
     return getLatency(features[F_HEAD_ARRIVAL_TIME], currentTime);
   }
+  public static double getAverageLatency(double[] features, long currentTime) {
+    return getLatency(features[F_AVERAGE_ARRIVAL_TIME], currentTime);
+  }
 
   public static double[] create() {
     return new double[FEATURES_NUMBER];
-  }
-
-  private Features() {
   }
 
 }

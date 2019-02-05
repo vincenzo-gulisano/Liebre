@@ -33,6 +33,8 @@ public interface Task extends Runnable {
 
   double[] getFeatures();
 
+  void updateFeatures();
+
   int getIndex();
 
   List<? extends Task> getUpstream();

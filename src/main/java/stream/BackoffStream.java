@@ -23,6 +23,7 @@
 
 package stream;
 
+import common.tuple.RichTuple;
 import component.StreamConsumer;
 import component.StreamProducer;
 import common.tuple.Tuple;
@@ -45,6 +46,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  */
 public class BackoffStream<T extends Tuple> implements Stream<T> {
 
+  private static final double EMA_ALPHA = 0.01;
   private final Queue<T> stream = new ConcurrentLinkedQueue<>();
   private final int capacity;
   private final String id;
@@ -57,6 +59,8 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
   private volatile long tuplesRead;
   private volatile long tuplesWritten;
 
+  private volatile double averageArrivalTime = -1;
+
   /**
    * Construct.
    *
@@ -65,7 +69,7 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
    * @param source The producer
    * @param destination The consumer
    * @param capacity The capacity that the stream will try to enforce with the {@link Backoff}
-   * strategy.
+   *     strategy.
    * @param backoff The backoff strategy.
    */
   BackoffStream(String id, int index, StreamProducer<T> source,
@@ -103,6 +107,12 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
   public final boolean offer(T tuple) {
     stream.offer(tuple);
     tuplesWritten++;
+    //FIXME: This should only run when scheduling is enabled!!
+    if (tuple instanceof RichTuple) {
+      long arrivalTime = ((RichTuple) tuple).getStimulus();
+      averageArrivalTime = averageArrivalTime < 0 ? arrivalTime :
+          ((EMA_ALPHA * arrivalTime) + ((1 - EMA_ALPHA) * averageArrivalTime));
+    }
     return remainingCapacity() > 0;
   }
 
@@ -149,6 +159,16 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
   @Override
   public StreamConsumer<T> getDestination() {
     return destination;
+  }
+
+  @Override
+  public void resetArrivalTime() {
+    averageArrivalTime = -1;
+  }
+
+  @Override
+  public double getAverageArrivalTime() {
+    return averageArrivalTime;
   }
 
   @Override

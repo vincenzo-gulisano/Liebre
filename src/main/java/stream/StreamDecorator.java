@@ -119,4 +119,13 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
     return decorated.getDestination();
   }
 
+  @Override
+  public void resetArrivalTime() {
+    decorated.resetArrivalTime();
+  }
+
+  @Override
+  public double getAverageArrivalTime() {
+    return decorated.getAverageArrivalTime();
+  }
 }

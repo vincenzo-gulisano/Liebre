@@ -46,13 +46,17 @@ public class PriorityUpdateAction implements Runnable {
     this.executors = executors;
     this.function = function;
     this.comparator =
-        Comparator.<Task>comparingDouble(c -> function.apply(c.getFeatures()))
-            .reversed();
+        Comparator.<Task>comparingDouble(c -> function.apply(c)).reversed();
   }
 
   @Override
   public void run() {
     Validate.isTrue(tasks.size() >= executors.size());
+    // Update features
+    for (Task task : tasks) {
+      task.updateFeatures();
+    }
+    // Choose assignment of tasks -> threads
     List<List<Task>> assignments = new ArrayList<>();
     for (int i = 0; i < executors.size(); i++) {
       assignments.add(new ArrayList<>());
@@ -67,7 +71,7 @@ public class PriorityUpdateAction implements Runnable {
       assignment.sort(comparator);
       LOG.debug("-----Thread {} assignment-----", i);
       for (Task task : assignment) {
-        LOG.debug("[{}, {}]", task, function.apply(task.getFeatures()));
+        LOG.debug("[{}, {}]", task, function.apply(task));
       }
       executors.get(i).setTasks(assignment);
     }
@@ -78,9 +82,11 @@ public class PriorityUpdateAction implements Runnable {
     LOG.debug("--------ALL FEATURES--------");
     for (Task task : tasks) {
       double[] features = task.getFeatures();
-      LOG.debug("{}: ({}, {}, {}, {})", task, features[Features.F_COST],
+      LOG.debug("{}: ({}, {}, {}, {}, {})", task, features[Features.F_COST],
           features[Features.F_SELECTIVITY],
-          Features.getHeadLatency(features, currentTime), features[Features.F_COMPONENT_TYPE]);
+          Features.getHeadLatency(features, currentTime),
+          features[Features.F_AVERAGE_ARRIVAL_TIME], features[Features.F_COMPONENT_TYPE]
+          );
     }
   }
 }

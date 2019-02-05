@@ -63,7 +63,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
    * Get all the input {@link Stream}s of this consumer.
    *
    * @param <T> The superclass of all input contents (in the case of input streams of different
-   * types, as in {@link component.operator.in2.Operator2In}.
+   *     types, as in {@link component.operator.in2.Operator2In}.
    * @return All the input streams of this consumer.
    */
   <T extends Tuple> Collection<? extends Stream<T>> getInputs();
@@ -81,7 +81,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
   default List<Task> getUpstream() {
     List<Task> upstream = new ArrayList<>();
     for (Stream<?> input : getInputs()) {
-     upstream.add(input.getSource());
+      upstream.add(input.getSource());
     }
     return upstream;
   }
@@ -107,5 +107,20 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
       }
     }
     return latencySum / inputs.size();
+  }
+
+  default double getAverageArrivalTime() {
+    Collection<? extends Stream<?>> inputs = getInputs();
+    double latencySum = -1;
+    for (Stream<?> input : inputs) {
+      latencySum += input.getAverageArrivalTime();
+    }
+    return latencySum / inputs.size();
+  }
+
+  default void resetArrivalTimes() {
+    for (Stream<?> input : getInputs()) {
+      input.resetArrivalTime();
+    }
   }
 }

@@ -36,6 +36,8 @@ public class RoundRobinExecutor extends AbstractExecutor {
 
   @Override
   protected void runNextTask() {
+    //FIXME: Need while loop
+    //FIXME: Need to respect barrier trick
     index = (index + 1) % nTasks;
     tasks.get(index).runFor(UPDATE_PERIOD_EXECUTIONS);
   }

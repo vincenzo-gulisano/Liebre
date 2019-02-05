@@ -55,4 +55,8 @@ public interface Stream<T extends Tuple> extends Active, Named {
 
   StreamConsumer<T> getDestination();
 
+  void resetArrivalTime();
+
+  double getAverageArrivalTime();
+
 }
