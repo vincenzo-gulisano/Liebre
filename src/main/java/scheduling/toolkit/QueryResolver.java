@@ -54,11 +54,8 @@ public class QueryResolver {
       traverseTaskGraph(task);
     }
     LOG.info("{} queries found", nQueries);
-    for (Task task : tasks) {
-      LOG.info("{} -> {}", task, taskToQuery[task.getIndex()]);
-    }
     for (int queryNumber : queryToTasks.keySet()) {
-      LOG.info("Query #{} -> {}", queryNumber, queryToTasks.get(queryNumber));
+      LOG.debug("Query #{} -> {}", queryNumber, queryToTasks.get(queryNumber));
     }
   }
 

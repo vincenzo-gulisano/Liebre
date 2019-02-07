@@ -333,7 +333,6 @@ public final class Query {
       BackoffFactory backoff) {
     Stream<T> stream = streamFactory
         .newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
-    System.out.println("Generated stream " + stream);
     if (enabledStatistics.containsKey(StatisticType.STREAMS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.STREAMS);
       return new StreamStatistic<>(stream, statConfig.folder(), statConfig.autoFlush());
