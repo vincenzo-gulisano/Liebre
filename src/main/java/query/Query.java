@@ -23,41 +23,32 @@
 
 package query;
 
-import component.StreamConsumer;
-import component.StreamProducer;
-import component.Component;
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
 import common.util.backoff.ExponentialBackoff;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import component.Component;
+import component.StreamConsumer;
+import component.StreamProducer;
 import component.operator.Operator;
-import component.operator.union.UnionOperator;
+import component.operator.in1.Operator1In;
+import component.operator.in1.Operator1InStatistic;
 import component.operator.in1.aggregate.TimeBasedSingleWindow;
 import component.operator.in1.aggregate.TimeBasedSingleWindowAggregate;
 import component.operator.in1.filter.FilterFunction;
 import component.operator.in1.filter.FilterOperator;
-import component.operator.in1.Operator1In;
-import component.operator.in1.Operator1InStatistic;
-import component.operator.in2.Operator2In;
-import component.operator.in2.Operator2InStatistic;
-import component.operator.in2.join.JoinFunction;
-import component.operator.in2.join.TimeBasedJoin;
 import component.operator.in1.map.FlatMapFunction;
 import component.operator.in1.map.FlatMapOperator;
 import component.operator.in1.map.MapFunction;
 import component.operator.in1.map.MapOperator;
+import component.operator.in2.Operator2In;
+import component.operator.in2.Operator2InStatistic;
+import component.operator.in2.join.JoinFunction;
+import component.operator.in2.join.TimeBasedJoin;
 import component.operator.router.BaseRouterOperator;
 import component.operator.router.RouterOperator;
 import component.operator.router.RouterOperatorStatistic;
-import org.apache.commons.lang3.Validate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import scheduling.Scheduler;
-import scheduling.impl.DefaultScheduler;
+import component.operator.union.UnionOperator;
 import component.sink.BaseSink;
 import component.sink.Sink;
 import component.sink.SinkFunction;
@@ -70,10 +61,19 @@ import component.source.SourceFunction;
 import component.source.SourceStatistic;
 import component.source.TextFileSource;
 import component.source.TextSourceFunction;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import scheduling.Scheduler;
+import scheduling.impl.DefaultScheduler;
+import stream.BlockingStream;
 import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatistic;
-import stream.BackoffStream;
 
 /**
  * The main execution unit. Acts as a factory for the stream {@link Component}s such as {@link
@@ -91,7 +91,7 @@ public final class Query {
   private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
   private final Scheduler scheduler;
   private final Map<StatisticType, StatisticsConfiguration> enabledStatistics = new HashMap<>();
-  private StreamFactory streamFactory;
+  private final StreamFactory streamFactory;
   private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
   private boolean active;
 
@@ -99,7 +99,7 @@ public final class Query {
    * Construct.
    */
   public Query() {
-    this(new DefaultScheduler());
+    this(new DefaultScheduler(), BlockingStream.factory());
   }
 
   /**
@@ -108,11 +108,11 @@ public final class Query {
    * @param scheduler The scheduler implementation to use when executing the query after Query{@link
    * #activate()} is called.
    */
-  public Query(Scheduler scheduler) {
+  public Query(Scheduler scheduler, StreamFactory streamFactory) {
     this.scheduler = scheduler;
     // Set a default backoff value
     setBackoff(1, 20, 5);
-    this.streamFactory = BackoffStream.factory();
+    this.streamFactory = streamFactory;
   }
 
   /**
@@ -135,6 +135,7 @@ public final class Query {
       activateStatistic(statisticsFolder, autoFlush, type);
     }
   }
+
 
   /**
    * Activate a specific statistic.
@@ -332,6 +333,7 @@ public final class Query {
       BackoffFactory backoff) {
     Stream<T> stream = streamFactory
         .newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
+    System.out.println("Generated stream " + stream);
     if (enabledStatistics.containsKey(StatisticType.STREAMS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.STREAMS);
       return new StreamStatistic<>(stream, statConfig.folder(), statConfig.autoFlush());

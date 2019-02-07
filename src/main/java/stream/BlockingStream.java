@@ -24,37 +24,25 @@
 package stream;
 
 import common.tuple.RichTuple;
+import common.tuple.Tuple;
+import common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
-import common.tuple.Tuple;
-import common.util.backoff.Backoff;
-import common.util.backoff.BackoffFactory;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-/**
- * Stream implementation that has an (optional) approximate capacity that is enforced by an optional
- * provided {@link Backoff} strategy. The backoff strategy is also activated in case the reader is
- * faster than the writer, to prevent spinning.
- *
- * @param <T> The type of tuples transferred by this {@link Stream}.
- * @see StreamFactory
- * @see common.util.backoff.ExponentialBackoff
- * @see common.util.backoff.NoopBackoff
- */
-public class BackoffStream<T extends Tuple> implements Stream<T> {
+public class BlockingStream<T extends Tuple> implements Stream<T> {
 
   private static final double EMA_ALPHA = 0.01;
-  private final Queue<T> stream = new ConcurrentLinkedQueue<>();
+  private final BlockingQueue<T> stream;
   private final int capacity;
   private final String id;
   private final int index;
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
-  private final Backoff readBackoff;
-  private final Backoff writeBackoff;
   private volatile boolean enabled;
   private volatile long tuplesRead;
   private volatile long tuplesWritten;
@@ -68,20 +56,17 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
    * @param index The unique index of the stream.
    * @param source The producer
    * @param destination The consumer
-   * @param capacity The capacity that the stream will try to enforce with the {@link Backoff}
-   *     strategy.
-   * @param backoff The backoff strategy.
+   * @param capacity The capacity that the stream will enforce.
    */
-  BackoffStream(String id, int index, StreamProducer<T> source,
+  BlockingStream(String id, int index, StreamProducer<T> source,
       StreamConsumer<T> destination,
-      int capacity, BackoffFactory backoff) {
+      int capacity) {
     this.capacity = capacity;
+    this.stream = new ArrayBlockingQueue<>(capacity);
     this.id = id;
     this.index = index;
     this.source = source;
     this.destination = destination;
-    this.readBackoff = backoff.newInstance();
-    this.writeBackoff = backoff.newInstance();
   }
 
   /**
@@ -90,50 +75,44 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
    * @return A factory that generates {@link BackoffStream}s.
    */
   public static StreamFactory factory() {
-    return Factory.INSTANCE;
+    return BlockingStream.Factory.INSTANCE;
   }
 
   @Override
   public void addTuple(T tuple) {
-    if (offer(tuple)) {
-      writeBackoff.relax();
-      return;
+    try {
+      stream.put(tuple);
+      if (tuple instanceof RichTuple) {
+        long arrivalTime = ((RichTuple) tuple).getStimulus();
+        averageArrivalTime = averageArrivalTime < 0 ? arrivalTime :
+            ((EMA_ALPHA * arrivalTime) + ((1 - EMA_ALPHA) * averageArrivalTime));
+      }
+    } catch (InterruptedException e) {
+      disable();
+      Thread.currentThread().interrupt();
     }
-    writeBackoff.backoff();
   }
 
 
   @Override
   public final boolean offer(T tuple) {
-    stream.offer(tuple);
-    tuplesWritten++;
-    //FIXME: This should only run when scheduling is enabled!!
-    if (tuple instanceof RichTuple) {
-      long arrivalTime = ((RichTuple) tuple).getStimulus();
-      averageArrivalTime = averageArrivalTime < 0 ? arrivalTime :
-          ((EMA_ALPHA * arrivalTime) + ((1 - EMA_ALPHA) * averageArrivalTime));
-    }
-    return remainingCapacity() > 0;
+    throw new UnsupportedOperationException("Use BackoffStream for non-blocking behavior");
   }
 
   @Override
   public T getNextTuple() {
-    T tuple = poll();
-    if (tuple != null) {
-      readBackoff.relax();
-      return tuple;
+    try {
+      return stream.take();
+    } catch (InterruptedException e) {
+      disable();
+      Thread.currentThread().interrupt();
+      return null;
     }
-    readBackoff.backoff();
-    return null;
   }
 
   @Override
   public final T poll() {
-    T tuple = stream.poll();
-    if (tuple != null) {
-      tuplesRead++;
-    }
-    return tuple;
+    throw new UnsupportedOperationException("Use BackoffStream for non-blocking behavior");
   }
 
   @Override
@@ -220,8 +199,9 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
     @Override
     public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
         int capacity, BackoffFactory backoff) {
-      return new BackoffStream<>(getStreamId(from, to), indexes.getAndIncrement(), from, to,
-          capacity, backoff);
+      Validate.isTrue(backoff == BackoffFactory.NOOP, "This stream does not support Backoff!");
+      return new BlockingStream<>(getStreamId(from, to), indexes.getAndIncrement(), from, to,
+          capacity);
     }
   }
 }

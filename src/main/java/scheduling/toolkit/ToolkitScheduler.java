@@ -57,13 +57,14 @@ public class ToolkitScheduler implements Scheduler<Task> {
     new QueryResolver(tasks);
     final List<AbstractExecutor> executors = new ArrayList<>();
     CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors
-        , PriorityFunctions.averageLatency()));
+        , PriorityFunctions.globalAverageCost()));
     for (int i = 0; i < nThreads; i++) {
       executors.add(new HighestPriorityExecutor(nRounds, barrier));
     }
     LOG.info("Using {} threads", executors.size());
-    for (Runnable executor : executors) {
-      Thread t = new Thread(executor);
+    for (int i = 0; i < executors.size(); i++) {
+      Thread t = new Thread(executors.get(i));
+      t.setName(String.format("Scheduler-Worker-%d", i));
       threads.add(t);
       t.start();
     }
