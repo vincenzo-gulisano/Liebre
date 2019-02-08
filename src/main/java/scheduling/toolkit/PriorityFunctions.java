@@ -25,60 +25,94 @@ package scheduling.toolkit;
 
 public class PriorityFunctions {
 
-  private static final PriorityFunction TUPLE_PROCESSING_TIME = new PriorityFunction() {
+  private static final PriorityFunction TUPLE_PROCESSING_TIME = new AbstractPriorityFunction(
+      Feature.COST) {
     @Override
-    public double apply(Task task) {
-      double totalProcessingTime = task.getFeatures()[Features.F_COST];
+    public double apply(Task task, double[][] features) {
+      double totalProcessingTime = Feature.COST.get(task, features);
       for (Task downstream : task.getDownstream()) {
-        totalProcessingTime += apply(downstream);
+        totalProcessingTime += apply(downstream, features);
       }
       return totalProcessingTime;
     }
+
+    @Override
+    public boolean reverseOrder() {
+      return true;
+    }
   };
 
-  private static final PriorityFunction GLOBAL_SELECTIVITY = new PriorityFunction() {
+  private static final PriorityFunction GLOBAL_SELECTIVITY = new AbstractPriorityFunction(
+      Feature.SELECTIVITY) {
     @Override
-    public double apply(Task task) {
-      double globalSelectivity = task.getFeatures()[Features.F_SELECTIVITY];
+    public double apply(Task task, double[][] features) {
+      double globalSelectivity = Feature.SELECTIVITY.get(task, features);
       for (Task downstream : task.getDownstream()) {
-        globalSelectivity *= apply(downstream);
+        globalSelectivity *= apply(downstream, features);
       }
       return globalSelectivity;
     }
   };
 
-  private static final PriorityFunction GLOBAL_AVERAGE_COST = new PriorityFunction() {
+  private static final PriorityFunction GLOBAL_AVERAGE_COST = new AbstractPriorityFunction(
+      Feature.COST,
+      Feature.SELECTIVITY) {
     @Override
-    public double apply(Task task) {
-      double globalAverageCost = task.getFeatures()[Features.F_COST];
-      double selectivity = task.getFeatures()[Features.F_SELECTIVITY];
+    public double apply(Task task, double[][] features) {
+      double globalAverageCost = Feature.COST.get(task, features);
+      double selectivity = Feature.SELECTIVITY.get(task, features);
       for (Task downstream : task.getDownstream()) {
-        globalAverageCost += selectivity * apply(downstream);
+        globalAverageCost += selectivity * apply(downstream, features);
       }
       return globalAverageCost;
     }
+
+    @Override
+    public boolean reverseOrder() {
+      return true;
+    }
   };
 
-  private static final PriorityFunction GLOBAL_RATE = task ->
-      GLOBAL_SELECTIVITY.apply(task) / GLOBAL_AVERAGE_COST.apply(task);
+  private static final PriorityFunction GLOBAL_RATE =
+      new AbstractPriorityFunction(GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
+    @Override
+    public double apply(Task task, double[][] features) {
+      return GLOBAL_SELECTIVITY.apply(task, features) / GLOBAL_AVERAGE_COST.apply(task, features);
+    }
+
+  };
 
   private static final PriorityFunction GLOBAL_NORMALIZED_RATE =
-      task -> GLOBAL_SELECTIVITY.apply(task) / (GLOBAL_AVERAGE_COST.apply(task)
-          * TUPLE_PROCESSING_TIME
-          .apply(task));
+      new AbstractPriorityFunction(GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST, TUPLE_PROCESSING_TIME) {
+        @Override
+        public double apply(Task task, double[][] features) {
+          return GLOBAL_SELECTIVITY.apply(task, features) / (GLOBAL_AVERAGE_COST.apply(task,
+              features)
+              * TUPLE_PROCESSING_TIME.apply(task, features));
+        }
+      };
 
-  private static final PriorityFunction AVERAGE_LATENCY =
-      task -> Features.getAverageLatency(task.getFeatures(), System.currentTimeMillis());
+
+  private static final PriorityFunction HEAD_LATENCY = new AbstractPriorityFunction(
+      Feature.HEAD_ARRIVAL_TIME) {
+    @Override
+    public double apply(Task task, double[][] features) {
+      return Feature.HEAD_ARRIVAL_TIME.get(task, features);
+    }
+
+    @Override
+    public boolean reverseOrder() {
+      return true;
+    }
+  };
 
   private PriorityFunctions() {
 
   }
 
-  public static PriorityFunction averageLatency() {
-    //FIXME: Not a correct way to compute latency, use decreasing arrival time instead
-    System.err.println(">>>>>> [WARNING] Average lantecy is an approximation. Should use "
-        + "decreasing arrival time instead!!!!!!");
-    return AVERAGE_LATENCY;
+  public static PriorityFunction headLatency() {
+    System.err.println("HEAD LATENCY FOR SOURCES IS NOT CORRECT YET. IT NEEDS TO BE INFINITY!!!!!");
+    return HEAD_LATENCY;
   }
 
   public static PriorityFunction globalNormalizedRate() {
@@ -110,8 +144,13 @@ public class PriorityFunctions {
     }
 
     @Override
-    public double apply(Task task) {
-      return 1 / original.apply(task);
+    public double apply(Task task, double[][] features) {
+      return 1 / original.apply(task, features);
+    }
+
+    @Override
+    public Feature[] features() {
+      return original.features();
     }
   }
 

@@ -23,18 +23,21 @@
 
 package scheduling.toolkit;
 
-public interface PriorityFunction {
+public final class FeatureDependency {
 
-  double apply(Task task, double[][] features);
+  final Feature feature;
+  final TaskDependency[] dependencies;
 
-  Feature[] features();
-
-  // True if lower values of priority imply higher priority
-  default boolean reverseOrder() {
-   return false;
+  public static FeatureDependency of(Feature feature, TaskDependency ...dependencies) {
+    return new FeatureDependency(feature, dependencies);
   }
 
-  default PriorityFunction reciprocal() {
-    return PriorityFunctions.reciprocalFunction(this);
+  public static FeatureDependency of(Feature feature) {
+    return new FeatureDependency(feature, TaskDependency.UPSTREAM, TaskDependency.DOWNSTREAM);
+  }
+
+  private FeatureDependency(Feature feature, TaskDependency... dependencies) {
+    this.feature = feature;
+    this.dependencies = dependencies == null ? new TaskDependency[0] : dependencies;
   }
 }

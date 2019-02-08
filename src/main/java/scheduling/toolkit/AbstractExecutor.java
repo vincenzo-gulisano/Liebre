@@ -23,32 +23,60 @@
 
 package scheduling.toolkit;
 
+import static scheduling.toolkit.PriorityUpdateAction.STATISTIC_TIME;
+
+import common.statistic.CountStatistic;
+import common.util.StatisticPath;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractExecutor implements Runnable {
 
+  public static final int UPDATE_PERIOD_EXECUTIONS = 1000;
   /**
    * Number of operator executions before the {@link PriorityUpdateAction} is evoked.
+   * TODO: Make variable
    */
-  public static final int UPDATE_PERIOD_EXECUTIONS = 1000;
+  private static final AtomicInteger indexGenerator = new AtomicInteger();
   private static final Logger LOG = LogManager.getLogger();
   protected final int nRounds;
   protected final CyclicBarrier barrier;
-  protected volatile List<Task> tasks;
+  protected final SchedulerState state;
+  private final Set<Integer> runTasks = new HashSet<>();
+  private final Set<TaskDependency> taskDependencies = new HashSet<>();
+  private final CountStatistic markTime;
+  protected volatile List<Task> executorTasks;
   private int executions;
 
-  public AbstractExecutor(
-      int nRounds, CyclicBarrier barrier) {
+
+  public AbstractExecutor(int nRounds, CyclicBarrier barrier, SchedulerState state) {
     this.nRounds = nRounds;
     this.barrier = barrier;
+    this.state = state;
+    this.markTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
+        "AbstractExecutor-%d-markTime", indexGenerator.getAndIncrement()), STATISTIC_TIME), true);
+    markTime.enable();
+    initTaskDependencies(state.priorityFunction.features());
+  }
+
+  private void initTaskDependencies(Feature[] features) {
+    // Merge feature dependencies, i.e. upstream, downstream, ...
+    for (Feature feature : features) {
+      for (FeatureDependency dependency : feature.dependencies()) {
+        taskDependencies.addAll(Arrays.asList(dependency.dependencies));
+      }
+    }
   }
 
   public void setTasks(List<Task> tasks) {
-    this.tasks = tasks;
+    this.executorTasks = tasks;
   }
 
   @Override
@@ -58,7 +86,7 @@ public abstract class AbstractExecutor implements Runnable {
     }
     while (!Thread.currentThread().isInterrupted()) {
       runNextTask();
-      executions = (executions + 1) % UPDATE_PERIOD_EXECUTIONS;
+      executions = (executions + 1) % nRounds;
       if (executions == 0) {
         if (!updateTasks()) {
           return;
@@ -73,19 +101,32 @@ public abstract class AbstractExecutor implements Runnable {
 
   private boolean updateTasks() {
     try {
-      LOG.debug("WAITING on barrier");
+      markUpdated();
       barrier.await();
-      LOG.debug("PASSED barrier");
       onUpdatedTasks();
       return true;
     } catch (InterruptedException | BrokenBarrierException e) {
-      LOG.debug("Barrier INTERRUPTED!");
       return false;
     }
   }
 
+  private void markUpdated() {
+    long startTime = System.currentTimeMillis();
+    for (int taskIndex : runTasks) {
+      Task task = executorTasks.get(taskIndex);
+      state.updated[task.getIndex()].set(true);
+      for (TaskDependency taskDependency : taskDependencies) {
+        for (Task dependent : taskDependency.dependents(task)) {
+          state.updated[dependent.getIndex()].set(true);
+        }
+      }
+    }
+    runTasks.clear();
+    markTime.append(System.currentTimeMillis() - startTime);
+  }
+
   @Override
   public String toString() {
-    return "EXECUTOR: " + tasks + "\n";
+    return "EXECUTOR: " + executorTasks + "\n";
   }
 }

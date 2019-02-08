@@ -40,10 +40,12 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private final int nThreads;
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
+  private final String statisticsFolder;
 
-  public ToolkitScheduler(int nRounds, int nThreads) {
+  public ToolkitScheduler(int nRounds, int nThreads, String statisticsFolder) {
     this.nRounds = nRounds;
     this.nThreads = nThreads;
+    this.statisticsFolder = statisticsFolder;
   }
 
   @Override
@@ -53,12 +55,14 @@ public class ToolkitScheduler implements Scheduler<Task> {
 
   @Override
   public void startTasks() {
-    Validate.isTrue(tasks.size() >= nThreads);
+    Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
+    final SchedulerState state = new SchedulerState(tasks.size(),
+        PriorityFunctions.globalAverageCost(), statisticsFolder);
     final List<AbstractExecutor> executors = new ArrayList<>();
-    CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors
-        , PriorityFunctions.globalAverageCost()));
+    CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors,
+        state));
     for (int i = 0; i < nThreads; i++) {
-      executors.add(new HighestPriorityExecutor(nRounds, barrier));
+      executors.add(new HighestPriorityExecutor(nRounds, barrier, state));
     }
     LOG.info("Using {} threads", executors.size());
     for (int i = 0; i < executors.size(); i++) {

@@ -23,18 +23,23 @@
 
 package scheduling.toolkit;
 
-public interface PriorityFunction {
+import java.util.concurrent.atomic.AtomicBoolean;
 
-  double apply(Task task, double[][] features);
+public final class SchedulerState {
 
-  Feature[] features();
+  final AtomicBoolean[] updated;
+  final double[][] taskFeatures;
+  final PriorityFunction priorityFunction;
+  final String statisticsFolder;
 
-  // True if lower values of priority imply higher priority
-  default boolean reverseOrder() {
-   return false;
+  public SchedulerState(int nTasks, PriorityFunction priorityFunction, String statisticsFolder) {
+    updated = new AtomicBoolean[nTasks];
+    taskFeatures = new double[nTasks][Feature.length()];
+    for (int i = 0; i < updated.length; i++) {
+      updated[i] = new AtomicBoolean(false);
+    }
+    this.priorityFunction = priorityFunction;
+    this.statisticsFolder = statisticsFolder;
   }
 
-  default PriorityFunction reciprocal() {
-    return PriorityFunctions.reciprocalFunction(this);
-  }
 }

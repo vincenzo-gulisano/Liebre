@@ -31,13 +31,14 @@ class HighestPriorityExecutor extends AbstractExecutor {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  public HighestPriorityExecutor(int nRounds, CyclicBarrier barrier) {
-    super(nRounds, barrier);
+  public HighestPriorityExecutor(int nRounds, CyclicBarrier barrier,
+      SchedulerState state) {
+    super(nRounds, barrier, state);
   }
 
   protected void runNextTask() {
     boolean executedSource = false;
-    for (Task task : tasks) {
+    for (Task task : executorTasks) {
 //      LOG.debug("Trying to execute {}", task);
       if (task.canRun()) {
         LOG.debug("Executing {}", task);
@@ -45,7 +46,7 @@ class HighestPriorityExecutor extends AbstractExecutor {
         // Prevent starvation: If one source runs, then everything will be traversed until
         // we run out of components (enabling executedSource)
         boolean taskWasSource =
-            task.getFeatures()[Features.F_COMPONENT_TYPE] == Features.CTYPE_SOURCE;
+            Feature.COMPONENT_TYPE.get(task, state.taskFeatures) == FeatureHelper.CTYPE_SOURCE;
         executedSource = executedSource || taskWasSource;
         if (!executedSource) {
           break;

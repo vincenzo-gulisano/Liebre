@@ -23,6 +23,8 @@
 
 package scheduling.toolkit;
 
+import common.statistic.CountStatistic;
+import common.util.StatisticPath;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -32,30 +34,103 @@ import org.apache.logging.log4j.Logger;
 
 public class PriorityUpdateAction implements Runnable {
 
+  static final String STATISTIC_CALLS = "priocalls";
+  static final String STATISTIC_TIME = "priotime";
   private static final Logger LOG = LogManager.getLogger();
+  private final CountStatistic totalCalls;
+  private final CountStatistic updateTime;
   private final List<Task> tasks;
   private final QueryResolver queries;
   private final List<AbstractExecutor> executors;
-  private final PriorityFunction function;
+  private final double[] priorities;
+  private final SchedulerState state;
   private final Comparator<Task> comparator;
+  private final CountStatistic priorityTime;
+  private final CountStatistic distributionTime;
+  private final CountStatistic sortTime;
+
 
   public PriorityUpdateAction(List<Task> inputTasks,
-      List<AbstractExecutor> executors, PriorityFunction function) {
+      List<AbstractExecutor> executors,
+      SchedulerState state) {
     this.tasks = new ArrayList(inputTasks);
-    this.queries = new QueryResolver(this.tasks);
     this.executors = executors;
-    this.function = function;
-    this.comparator =
-        Comparator.<Task>comparingDouble(c -> function.apply(c)).reversed();
+    this.state = state;
+    this.priorities = new double[tasks.size()];
+    this.queries = new QueryResolver(this.tasks);
+    this.comparator = createComparator(state);
+    this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
+        "total"), STATISTIC_CALLS), true);
+    totalCalls.enable();
+    this.updateTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
+        "updateFeatures"), STATISTIC_TIME), true);
+    updateTime.enable();
+    this.priorityTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
+        "calculatePriorities"), STATISTIC_TIME), true);
+    priorityTime.enable();
+    this.distributionTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
+        "distributeTasks"), STATISTIC_TIME), true);
+    distributionTime.enable();
+    this.sortTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
+        "sortPriorities"), STATISTIC_TIME), true);
+    sortTime.enable();
+  }
+
+  static String statisticName(String action) {
+    return String.format("Priority-Update-%s", action);
+  }
+
+  private Comparator<Task> createComparator(SchedulerState state) {
+    Comparator<Task> baseComparator = Comparator.comparingDouble(t -> priorities[t.getIndex()]);
+    // Default sorting order for comparators is lowest to highest
+    // Default sorting order for priorities is highest to lowest
+    // So when reverseOrder() is true, we do not reverse the comparator and vice-versa
+    return state.priorityFunction.reverseOrder() ? baseComparator : baseComparator.reversed();
   }
 
   @Override
   public void run() {
-    Validate.isTrue(tasks.size() >= executors.size());
+    Validate.isTrue(tasks.size() > 0, "No tasks given!");
+    updateFeatures();
+    calculatePriorities();
+    List<List<Task>> assignments = distributeTasks();
+    sortAndAssignTasks(assignments);
+    totalCalls.append(1);
+  }
+
+  private void updateFeatures() {
+    long startTime = System.currentTimeMillis();
     // Update features
     for (Task task : tasks) {
-      task.updateFeatures();
+      if (!state.updated[task.getIndex()].getAndSet(false)) {
+        //TODO: Maybe selectively do this on specific features
+        task.updateFeatures();
+        double[] taskFeatures = task.getFeatures(state.priorityFunction.features());
+        storeTaskFeatures(task, taskFeatures);
+      }
     }
+    updateTime.append(System.currentTimeMillis() - startTime);
+  }
+
+  private void storeTaskFeatures(Task task, double[] taskFeatures) {
+    final double[] row = state.taskFeatures[task.getIndex()];
+    Validate.isTrue(row.length == taskFeatures.length);
+    //TODO: Only copy the "live" features
+    for (int j = 0; j < row.length; j++) {
+      row[j] = taskFeatures[j];
+    }
+  }
+
+  private void calculatePriorities() {
+    long startTime = System.currentTimeMillis();
+    for (Task task : tasks) {
+      priorities[task.getIndex()] = state.priorityFunction.apply(task, state.taskFeatures);
+    }
+    priorityTime.append(System.currentTimeMillis() - startTime);
+  }
+
+  private List<List<Task>> distributeTasks() {
+    long startTime = System.currentTimeMillis();
     // Choose assignment of tasks -> threads
     List<List<Task>> assignments = new ArrayList<>();
     for (int i = 0; i < executors.size(); i++) {
@@ -66,27 +141,32 @@ public class PriorityUpdateAction implements Runnable {
       assignments.get(assignmentIndex % assignments.size()).addAll(query);
       assignmentIndex++;
     }
+    distributionTime.append(System.currentTimeMillis() - startTime);
+    return assignments;
+  }
+
+  private void sortAndAssignTasks(List<List<Task>> assignments) {
+    long startTime = System.currentTimeMillis();
     for (int i = 0; i < executors.size(); i++) {
       List<Task> assignment = assignments.get(i);
       assignment.sort(comparator);
-      LOG.debug("-----Thread {} assignment-----", i);
-      for (Task task : assignment) {
-        LOG.debug("[{}, {}]", task, function.apply(task));
-      }
+//      LOG.debug("-----Thread {} assignment-----", i);
+//      for (Task task : assignment) {
+//        LOG.debug("[{}, {}]", task, Arrays.toString(state.taskFeatures[task.getIndex()]));
+//      }
       executors.get(i).setTasks(assignment);
     }
-    //
-    // Debugging code - WILL (RE)MOVE!
-    //
-    long currentTime = System.currentTimeMillis();
-    LOG.debug("--------ALL FEATURES--------");
-    for (Task task : tasks) {
-      double[] features = task.getFeatures();
-      LOG.debug("{}: ({}, {}, {}, {}, {})", task, features[Features.F_COST],
-          features[Features.F_SELECTIVITY],
-          Features.getHeadLatency(features, currentTime),
-          features[Features.F_AVERAGE_ARRIVAL_TIME], features[Features.F_COMPONENT_TYPE]
-          );
-    }
+    sortTime.append(System.currentTimeMillis() - startTime);
   }
+
+  // Helper, to be removed
+  private double featureValue(Task task, Feature feature) {
+    return state.taskFeatures[task.getIndex()][feature.index()];
+  }
+
+  private void recordUpdateFinished(long updateStartTime) {
+    totalCalls.append(1);
+    updateTime.append(System.currentTimeMillis() - updateStartTime);
+  }
+
 }

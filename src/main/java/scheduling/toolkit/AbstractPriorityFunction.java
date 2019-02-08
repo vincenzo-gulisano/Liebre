@@ -23,18 +23,31 @@
 
 package scheduling.toolkit;
 
-public interface PriorityFunction {
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import org.apache.commons.lang3.Validate;
 
-  double apply(Task task, double[][] features);
+public abstract class AbstractPriorityFunction implements PriorityFunction {
 
-  Feature[] features();
+  private final Feature[] features;
 
-  // True if lower values of priority imply higher priority
-  default boolean reverseOrder() {
-   return false;
+  public AbstractPriorityFunction(Feature... features) {
+    Validate.notEmpty(features, "Priority function has not features!");
+    this.features = features;
   }
 
-  default PriorityFunction reciprocal() {
-    return PriorityFunctions.reciprocalFunction(this);
+  public AbstractPriorityFunction(PriorityFunction ...dependentFunctions) {
+    Set<Feature> features = new HashSet<>();
+    for (PriorityFunction function : dependentFunctions) {
+      features.addAll(Arrays.asList(function.features()));
+    }
+    this.features = features.toArray(new Feature[0]);
   }
+
+  @Override
+  public final Feature[] features() {
+    return features.clone();
+  }
+
 }

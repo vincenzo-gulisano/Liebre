@@ -41,6 +41,7 @@ public abstract class AbstractCummulativeStatistic implements Active {
 
   private final PrintWriter out;
   private volatile boolean enabled;
+  private volatile boolean initialized;
   private final Logger LOGGER = LogManager.getLogger();
 
   public AbstractCummulativeStatistic(String outputFile, boolean autoFlush) {
@@ -55,7 +56,7 @@ public abstract class AbstractCummulativeStatistic implements Active {
 
   protected void writeCommaSeparatedValues(Object... values) {
     if (!isEnabled()) {
-      LOGGER.debug("Ignoring append, statistic is disabled");
+      checkInitialized();
       return;
     }
     StringBuilder sb = new StringBuilder();
@@ -66,12 +67,26 @@ public abstract class AbstractCummulativeStatistic implements Active {
     writeLine(sb.toString());
   }
 
+  public final void append(long value) {
+    if (!isEnabled()) {
+      checkInitialized();
+      return;
+    }
+    doAppend(value);
+  }
+
   protected void writeLine(String line) {
     if (!isEnabled()) {
-      LOGGER.debug("Ignoring append, statistic is disabled");
+      checkInitialized();
       return;
     }
     out.println(line);
+  }
+
+  private void checkInitialized() {
+    if (!initialized) {
+      LOGGER.warn("Ignoring append, statistic is disabled");
+    }
   }
 
   protected long currentTimeSeconds() {
@@ -81,6 +96,7 @@ public abstract class AbstractCummulativeStatistic implements Active {
   @Override
   public void enable() {
     this.enabled = true;
+    this.initialized = true;
   }
 
   @Override
@@ -93,14 +109,6 @@ public abstract class AbstractCummulativeStatistic implements Active {
     this.enabled = false;
     out.flush();
     out.close();
-  }
-
-  public final void append(long value) {
-    if (!isEnabled()) {
-      LOGGER.debug("Ignoring append, statistic is disabled");
-      return;
-    }
-    doAppend(value);
   }
 
   protected abstract void doAppend(long value);

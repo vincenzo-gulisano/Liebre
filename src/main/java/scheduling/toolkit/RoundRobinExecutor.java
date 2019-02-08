@@ -30,8 +30,9 @@ public class RoundRobinExecutor extends AbstractExecutor {
   private int index;
   private int nTasks;
 
-  public RoundRobinExecutor(int nRounds, CyclicBarrier barrier) {
-    super(nRounds, barrier);
+  public RoundRobinExecutor(int nRounds, CyclicBarrier barrier,
+      SchedulerState state) {
+    super(nRounds, barrier, state);
   }
 
   @Override
@@ -39,12 +40,12 @@ public class RoundRobinExecutor extends AbstractExecutor {
     //FIXME: Need while loop
     //FIXME: Need to respect barrier trick
     index = (index + 1) % nTasks;
-    tasks.get(index).runFor(UPDATE_PERIOD_EXECUTIONS);
+    executorTasks.get(index).runFor(UPDATE_PERIOD_EXECUTIONS);
   }
 
   @Override
   protected void onUpdatedTasks() {
     index = 0;
-    nTasks = tasks.size();
+    nTasks = executorTasks.size();
   }
 }

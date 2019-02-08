@@ -23,18 +23,29 @@
 
 package scheduling.toolkit;
 
-public interface PriorityFunction {
+import java.util.Collections;
+import java.util.List;
 
-  double apply(Task task, double[][] features);
+public enum TaskDependency {
+  UPSTREAM {
+    @Override
+    public List<? extends Task> dependents(Task task) {
+      return task.getUpstream();
+    }
+  },
+  DOWNSTREAM {
+    @Override
+    public List<? extends Task> dependents(Task task) {
+      return task.getDownstream();
+    }
+  },
+  NONE {
+    @Override
+    public List<Task> dependents(Task task) {
+      return Collections.emptyList();
+    }
+  };
 
-  Feature[] features();
+  public abstract List<? extends Task> dependents(Task task);
 
-  // True if lower values of priority imply higher priority
-  default boolean reverseOrder() {
-   return false;
-  }
-
-  default PriorityFunction reciprocal() {
-    return PriorityFunctions.reciprocalFunction(this);
-  }
 }

@@ -31,7 +31,7 @@ public interface Task extends Runnable {
 
   boolean canRun();
 
-  double[] getFeatures();
+  double[] getFeatures(Feature... features);
 
   void updateFeatures();
 

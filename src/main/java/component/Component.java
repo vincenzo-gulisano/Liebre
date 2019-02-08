@@ -26,8 +26,9 @@ import common.Active;
 import common.Named;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.Validate;
+import scheduling.toolkit.Feature;
 import scheduling.toolkit.Task;
-import scheduling.toolkit.Features;
 
 /**
  * Base interface for all stream components such as Sources, Sinks and Operators.
@@ -71,38 +72,13 @@ public interface Component extends Active, Runnable, Named, Task {
   double getHeadArrivalTime();
 
   @Override
-  default double[] getFeatures() {
-    double[] features = Features.create();
-    features[Features.F_TOPOLOGICAL_ORDER] = getTopologicalOrder();
-    features[Features.F_COST] = getCost();
-    features[Features.F_SELECTIVITY] = getSelectivity();
-      features[Features.F_HEAD_ARRIVAL_TIME] = getHeadArrivalTime();
-      features[Features.F_AVERAGE_ARRIVAL_TIME] = getAverageArrivalTime();
-    int translatedType = -1;
-    switch (getType()) {
-      case SOURCE:
-        translatedType = Features.CTYPE_SOURCE;
-        break;
-      case SINK:
-        translatedType = Features.CTYPE_SINK;
-        break;
-      case OPERATOR:
-        translatedType = Features.CTYPE_OPERATOR;
-        break;
-      case OPERATOR2IN:
-        translatedType = Features.CTYPE_JOIN;
-        break;
-      case ROUTER:
-        translatedType = Features.CTYPE_ROUTER;
-        break;
-      case UNION:
-        translatedType = Features.CTYPE_UNION;
-        break;
-      default:
-        throw new IllegalStateException("Unknown component type " + getType());
-    }
-    features[Features.F_COMPONENT_TYPE] = translatedType;
-    return features;
+  default double[] getFeatures(Feature... features) {
+    Validate.notEmpty(features, "No features requested!");
+    double[] featureArray = Feature.createArray();
+    for (Feature feature : features) {
+      featureArray[feature.index()] = FeatureTranslator.get(feature, this);
+      }
+    return featureArray;
   }
 
   @Override
