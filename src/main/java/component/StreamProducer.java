@@ -65,8 +65,6 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
    */
   Collection<? extends Stream<OUT>> getOutputs();
 
-
-
   @Override
   default List<Task> getDownstream() {
     List<Task> downstream = new ArrayList<>();

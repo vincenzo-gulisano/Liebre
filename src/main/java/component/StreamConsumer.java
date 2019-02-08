@@ -92,6 +92,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
    *
    * @return The head latency of the Component (averaged over all the inputs).
    */
+  @Override
   default double getHeadArrivalTime() {
     Collection<? extends Stream<?>> inputs = getInputs();
     double latencySum = -1;
@@ -109,6 +110,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
     return latencySum / inputs.size();
   }
 
+  @Override
   default double getAverageArrivalTime() {
     Collection<? extends Stream<?>> inputs = getInputs();
     double latencySum = -1;

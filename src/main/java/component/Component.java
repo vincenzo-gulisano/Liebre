@@ -66,18 +66,18 @@ public interface Component extends Active, Runnable, Named, Task {
 
   ComponentType getType();
 
+  double getAverageArrivalTime();
+
+  double getHeadArrivalTime();
+
   @Override
   default double[] getFeatures() {
     double[] features = Features.create();
     features[Features.F_TOPOLOGICAL_ORDER] = getTopologicalOrder();
     features[Features.F_COST] = getCost();
     features[Features.F_SELECTIVITY] = getSelectivity();
-    features[Features.F_HEAD_ARRIVAL_TIME] = -1; // Negative value means no data
-    features[Features.F_AVERAGE_ARRIVAL_TIME] = -1; // Negative value means no data
-    if (this instanceof StreamConsumer) {
-      features[Features.F_HEAD_ARRIVAL_TIME] = ((StreamConsumer) this).getHeadArrivalTime();
-      features[Features.F_AVERAGE_ARRIVAL_TIME] = ((StreamConsumer) this).getAverageArrivalTime();
-    }
+      features[Features.F_HEAD_ARRIVAL_TIME] = getHeadArrivalTime();
+      features[Features.F_AVERAGE_ARRIVAL_TIME] = getAverageArrivalTime();
     int translatedType = -1;
     switch (getType()) {
       case SOURCE:

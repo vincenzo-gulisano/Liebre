@@ -41,4 +41,14 @@ public interface Source<OUT extends Tuple> extends StreamProducer<OUT> {
   default int getTopologicalOrder() {
     return 1;
   }
+
+  @Override
+  default double getHeadArrivalTime() {
+    return -1;
+  }
+
+  @Override
+  default double getAverageArrivalTime() {
+    return -1;
+  }
 }

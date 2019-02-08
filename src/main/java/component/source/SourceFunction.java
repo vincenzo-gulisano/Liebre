@@ -47,4 +47,7 @@ public interface SourceFunction<OUT extends Tuple> extends Active, Supplier<OUT>
   default void disable() {
   }
 
+  default double getHeadArrivalTime() {
+    return -1;
+  }
 }

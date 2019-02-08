@@ -48,6 +48,11 @@ public class BaseSource<OUT extends Tuple> extends AbstractSource<OUT> {
   }
 
   @Override
+  public double getHeadArrivalTime() {
+    return function.getHeadArrivalTime();
+  }
+
+  @Override
   public OUT getNextTuple() {
     return function.get();
   }
