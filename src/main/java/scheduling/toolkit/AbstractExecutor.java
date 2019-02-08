@@ -39,7 +39,6 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractExecutor implements Runnable {
 
-  public static final int UPDATE_PERIOD_EXECUTIONS = 1000;
   /**
    * Number of operator executions before the {@link PriorityUpdateAction} is evoked.
    * TODO: Make variable
