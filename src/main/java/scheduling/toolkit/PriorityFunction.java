@@ -37,4 +37,15 @@ public interface PriorityFunction {
   default PriorityFunction reciprocal() {
     return PriorityFunctions.reciprocalFunction(this);
   }
+
+  default double apply(Task task, double[][] features, double[][] cache) {
+    System.err.println("Caching not implemented for this function");
+    return apply(task, features);
+  }
+
+  default double[][] newCache(int nTasks) {
+    System.err.println("Caching not implemented for this function");
+    return new double[0][0];
+  }
+
 }

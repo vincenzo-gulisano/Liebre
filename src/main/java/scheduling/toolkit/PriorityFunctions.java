@@ -68,6 +68,22 @@ public class PriorityFunctions {
     }
 
     @Override
+    public double[][] newCache(int nTasks) {
+      return new double[1][nTasks];
+    }
+
+    @Override
+    public double apply(Task task, double[][] features, double[][] cache) {
+      double cached = cache[0][task.getIndex()];
+      if (cached > 0) {
+        return cached;
+      }
+      double result = apply(task, features);
+      cache[0][task.getIndex()] = result;
+      return result;
+    }
+
+    @Override
     public boolean reverseOrder() {
       return true;
     }
