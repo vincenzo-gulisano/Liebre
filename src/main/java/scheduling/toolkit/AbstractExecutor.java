@@ -25,6 +25,7 @@ package scheduling.toolkit;
 
 import static scheduling.toolkit.PriorityUpdateAction.STATISTIC_TIME;
 
+import common.statistic.AbstractCummulativeStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticPath;
 import java.util.Arrays;
@@ -39,24 +40,23 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractExecutor implements Runnable {
 
-  /**
-   * Number of operator executions before the {@link PriorityUpdateAction} is evoked.
-   * TODO: Make variable
-   */
   private static final AtomicInteger indexGenerator = new AtomicInteger();
   private static final Logger LOG = LogManager.getLogger();
-  protected final int nRounds;
+  protected final int batchSize;
+  private final int schedulingPeriodMillis;
+  private final int schedulingPeriodExecutions;
   protected final CyclicBarrier barrier;
   protected final SchedulerState state;
   private final Set<Integer> runTasks = new HashSet<>();
   private final Set<TaskDependency> taskDependencies = new HashSet<>();
-  private final CountStatistic markTime;
+  private final AbstractCummulativeStatistic markTime;
   protected volatile List<Task> executorTasks;
-  private int executions;
 
-
-  public AbstractExecutor(int nRounds, CyclicBarrier barrier, SchedulerState state) {
-    this.nRounds = nRounds;
+  public AbstractExecutor(int batchSize, int schedulingPeriodMillis, int schedulingPeriodExecutions,
+      CyclicBarrier barrier, SchedulerState state) {
+    this.batchSize = batchSize;
+    this.schedulingPeriodMillis = schedulingPeriodMillis;
+    this.schedulingPeriodExecutions = schedulingPeriodExecutions;
     this.barrier = barrier;
     this.state = state;
     this.markTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
@@ -83,10 +83,16 @@ public abstract class AbstractExecutor implements Runnable {
     if (!updateTasks()) {
       return;
     }
+    int executions = 0;
+    long executionTimeMillis = 0;
     while (!Thread.currentThread().isInterrupted()) {
+      long startTime = System.currentTimeMillis();
       runNextTask();
-      executions = (executions + 1) % nRounds;
-      if (executions == 0) {
+      executions = (executions + 1) % schedulingPeriodExecutions;
+      executionTimeMillis += System.currentTimeMillis() - startTime;
+      if (executions == 0 || executionTimeMillis > schedulingPeriodMillis) {
+        executionTimeMillis = 0;
+        executions = 0;
         if (!updateTasks()) {
           return;
         }

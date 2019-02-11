@@ -36,17 +36,24 @@ import scheduling.Scheduler;
 public class ToolkitScheduler implements Scheduler<Task> {
 
   private static final Logger LOG = LogManager.getLogger();
-  private final int nRounds;
+  private final int batchSize;
+  private final int schedulingPeriodMillis;
+  private final int schedulingPeriodExecutions;
   private final int nThreads;
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
   private final String statisticsFolder;
 
-  public ToolkitScheduler(int nRounds, int nThreads, String statisticsFolder) {
-    this.nRounds = nRounds;
+  public ToolkitScheduler(int nThreads, int batchSize, int schedulingPeriodMillis,
+      int schedulingPeriodExecutions,
+      String statisticsFolder) {
     this.nThreads = nThreads;
+    this.batchSize = batchSize;
+    this.schedulingPeriodExecutions = schedulingPeriodExecutions;
+    this.schedulingPeriodMillis = schedulingPeriodMillis;
     this.statisticsFolder = statisticsFolder;
   }
+
 
   @Override
   public void addTasks(Collection<Task> tasks) {
@@ -62,7 +69,8 @@ public class ToolkitScheduler implements Scheduler<Task> {
     CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors,
         state));
     for (int i = 0; i < nThreads; i++) {
-      executors.add(new HighestPriorityExecutor(nRounds, barrier, state));
+      executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriodMillis,
+          schedulingPeriodExecutions, barrier, state));
     }
     LOG.info("Using {} threads", executors.size());
     for (int i = 0; i < executors.size(); i++) {

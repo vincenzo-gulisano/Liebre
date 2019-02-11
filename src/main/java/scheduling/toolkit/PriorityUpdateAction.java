@@ -23,6 +23,7 @@
 
 package scheduling.toolkit;
 
+import common.statistic.AbstractCummulativeStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticPath;
 import java.util.ArrayList;
@@ -37,17 +38,17 @@ public class PriorityUpdateAction implements Runnable {
   static final String STATISTIC_CALLS = "priocalls";
   static final String STATISTIC_TIME = "priotime";
   private static final Logger LOG = LogManager.getLogger();
-  private final CountStatistic totalCalls;
-  private final CountStatistic updateTime;
   private final List<Task> tasks;
   private final QueryResolver queries;
   private final List<AbstractExecutor> executors;
   private final double[] priorities;
   private final SchedulerState state;
   private final Comparator<Task> comparator;
-  private final CountStatistic priorityTime;
-  private final CountStatistic distributionTime;
-  private final CountStatistic sortTime;
+  private final AbstractCummulativeStatistic totalCalls;
+  private final AbstractCummulativeStatistic updateTime;
+  private final AbstractCummulativeStatistic priorityTime;
+  private final AbstractCummulativeStatistic distributionTime;
+  private final AbstractCummulativeStatistic sortTime;
 
 
   public PriorityUpdateAction(List<Task> inputTasks,
@@ -68,8 +69,9 @@ public class PriorityUpdateAction implements Runnable {
     this.priorityTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "calculatePriorities"), STATISTIC_TIME), true);
     priorityTime.enable();
-    this.distributionTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "distributeTasks"), STATISTIC_TIME), true);
+    this.distributionTime = new CountStatistic(
+        StatisticPath.get(state.statisticsFolder, statisticName(
+            "distributeTasks"), STATISTIC_TIME), true);
     distributionTime.enable();
     this.sortTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "sortPriorities"), STATISTIC_TIME), true);
@@ -115,9 +117,9 @@ public class PriorityUpdateAction implements Runnable {
   private void storeTaskFeatures(Task task, double[] taskFeatures) {
     final double[] row = state.taskFeatures[task.getIndex()];
     Validate.isTrue(row.length == taskFeatures.length);
-    //TODO: Only copy the "live" features
-    for (int j = 0; j < row.length; j++) {
-      row[j] = taskFeatures[j];
+    for (Feature feature : state.priorityFunction.features()) {
+      int featureIndex = feature.index();
+      row[featureIndex] = taskFeatures[featureIndex];
     }
   }
 

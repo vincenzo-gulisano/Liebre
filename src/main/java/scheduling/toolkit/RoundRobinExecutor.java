@@ -30,9 +30,10 @@ public class RoundRobinExecutor extends AbstractExecutor {
   private int index;
   private int nTasks;
 
-  public RoundRobinExecutor(int nRounds, CyclicBarrier barrier,
-      SchedulerState state) {
-    super(nRounds, barrier, state);
+  public RoundRobinExecutor(int batchSize, int schedulingPeriodMillis,
+      int schedulingPeriodExecutions,
+      CyclicBarrier barrier, SchedulerState state) {
+    super(batchSize, schedulingPeriodMillis, schedulingPeriodExecutions, barrier, state);
   }
 
   @Override
@@ -40,7 +41,7 @@ public class RoundRobinExecutor extends AbstractExecutor {
     //FIXME: Need while loop
     //FIXME: Need to respect barrier trick
     index = (index + 1) % nTasks;
-    executorTasks.get(index).runFor(nRounds);
+    executorTasks.get(index).runFor(batchSize);
   }
 
   @Override

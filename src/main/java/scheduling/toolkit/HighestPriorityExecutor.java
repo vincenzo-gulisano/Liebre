@@ -31,9 +31,9 @@ class HighestPriorityExecutor extends AbstractExecutor {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  public HighestPriorityExecutor(int nRounds, CyclicBarrier barrier,
-      SchedulerState state) {
-    super(nRounds, barrier, state);
+  public HighestPriorityExecutor(int batchSize, int schedulingPeriodMillis,
+      int schedulingPeriodExecutions, CyclicBarrier barrier, SchedulerState state) {
+    super(batchSize, schedulingPeriodMillis, schedulingPeriodExecutions, barrier, state);
   }
 
   protected void runNextTask() {
@@ -42,7 +42,7 @@ class HighestPriorityExecutor extends AbstractExecutor {
 //      LOG.debug("Trying to execute {}", task);
       if (task.canRun()) {
         LOG.debug("Executing {}", task);
-        task.runFor(nRounds);
+        task.runFor(batchSize);
         // Prevent starvation: If one source runs, then everything will be traversed until
         // we run out of components (enabling executedSource)
         boolean taskWasSource =
