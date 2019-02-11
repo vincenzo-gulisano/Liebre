@@ -49,8 +49,6 @@ public class PriorityUpdateAction implements Runnable {
   private final AbstractCummulativeStatistic priorityTime;
   private final AbstractCummulativeStatistic distributionTime;
   private final AbstractCummulativeStatistic sortTime;
-  private final double[][] priorityCache;
-
 
   public PriorityUpdateAction(List<Task> inputTasks,
       List<AbstractExecutor> executors,
@@ -61,7 +59,6 @@ public class PriorityUpdateAction implements Runnable {
     this.priorities = new double[tasks.size()];
     this.queries = new QueryResolver(this.tasks);
     this.comparator = createComparator(state);
-    this.priorityCache = state.priorityFunction.newCache(tasks.size());
     this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "total"), STATISTIC_CALLS), true);
     totalCalls.enable();
@@ -128,17 +125,10 @@ public class PriorityUpdateAction implements Runnable {
   private void calculatePriorities() {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
-      priorities[task.getIndex()] = state.priorityFunction.apply(task, state.taskFeatures, priorityCache);
+      priorities[task.getIndex()] = state.priorityFunction.apply(task, state.taskFeatures);
     }
-    clearCache();
+    state.priorityFunction.clearCache();
     priorityTime.append(System.currentTimeMillis() - startTime);
-  }
-  private void clearCache() {
-    for (int i = 0; i < priorityCache.length; i++) {
-      for (int j = 0; j < priorityCache[i].length; j++) {
-       priorityCache[i][j] = -1;
-      }
-    }
   }
 
   private List<List<Task>> distributeTasks() {

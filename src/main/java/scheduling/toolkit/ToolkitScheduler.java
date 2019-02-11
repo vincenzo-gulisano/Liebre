@@ -64,7 +64,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
   public void startTasks() {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
     final SchedulerState state = new SchedulerState(tasks.size(),
-        PriorityFunctions.globalAverageCost(), statisticsFolder);
+        PriorityFunctions.globalAverageCost().enableCaching(tasks.size()), statisticsFolder);
     final List<AbstractExecutor> executors = new ArrayList<>();
     CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors,
         state));

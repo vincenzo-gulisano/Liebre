@@ -53,62 +53,6 @@ public class PriorityFunctions {
       return globalSelectivity;
     }
   };
-
-  private static final PriorityFunction GLOBAL_AVERAGE_COST = new AbstractPriorityFunction(
-      Feature.COST,
-      Feature.SELECTIVITY) {
-    @Override
-    public double apply(Task task, double[][] features) {
-      double globalAverageCost = Feature.COST.get(task, features);
-      double selectivity = Feature.SELECTIVITY.get(task, features);
-      for (Task downstream : task.getDownstream()) {
-        globalAverageCost += selectivity * apply(downstream, features);
-      }
-      return globalAverageCost;
-    }
-
-    @Override
-    public double[][] newCache(int nTasks) {
-      return new double[1][nTasks];
-    }
-
-    @Override
-    public double apply(Task task, double[][] features, double[][] cache) {
-      double cached = cache[0][task.getIndex()];
-      if (cached > 0) {
-        return cached;
-      }
-      double result = apply(task, features);
-      cache[0][task.getIndex()] = result;
-      return result;
-    }
-
-    @Override
-    public boolean reverseOrder() {
-      return true;
-    }
-  };
-
-  private static final PriorityFunction GLOBAL_RATE =
-      new AbstractPriorityFunction(GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
-    @Override
-    public double apply(Task task, double[][] features) {
-      return GLOBAL_SELECTIVITY.apply(task, features) / GLOBAL_AVERAGE_COST.apply(task, features);
-    }
-
-  };
-
-  private static final PriorityFunction GLOBAL_NORMALIZED_RATE =
-      new AbstractPriorityFunction(GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST, TUPLE_PROCESSING_TIME) {
-        @Override
-        public double apply(Task task, double[][] features) {
-          return GLOBAL_SELECTIVITY.apply(task, features) / (GLOBAL_AVERAGE_COST.apply(task,
-              features)
-              * TUPLE_PROCESSING_TIME.apply(task, features));
-        }
-      };
-
-
   private static final PriorityFunction HEAD_LATENCY = new AbstractPriorityFunction(
       Feature.HEAD_ARRIVAL_TIME) {
     @Override
@@ -121,6 +65,42 @@ public class PriorityFunctions {
       return true;
     }
   };
+  private static final PriorityFunction GLOBAL_AVERAGE_COST =
+      new AbstractPriorityFunction(Feature.COST, Feature.SELECTIVITY) {
+
+        @Override
+        public double applyWithCaching(Task task, double[][] features) {
+          double globalAverageCost = Feature.COST.get(task, features);
+          double selectivity = Feature.SELECTIVITY.get(task, features);
+          for (Task downstream : task.getDownstream()) {
+            globalAverageCost += selectivity * apply(downstream, features);
+          }
+          return globalAverageCost;
+        }
+
+        @Override
+        public boolean reverseOrder() {
+          return true;
+        }
+      };
+  private static final PriorityFunction GLOBAL_RATE =
+      new AbstractPriorityFunction(GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
+        @Override
+        public double apply(Task task, double[][] features) {
+          return GLOBAL_SELECTIVITY.apply(task, features) / GLOBAL_AVERAGE_COST
+              .apply(task, features);
+        }
+
+      };
+  private static final PriorityFunction GLOBAL_NORMALIZED_RATE =
+      new AbstractPriorityFunction(GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST, TUPLE_PROCESSING_TIME) {
+        @Override
+        public double apply(Task task, double[][] features) {
+          return GLOBAL_SELECTIVITY.apply(task, features) / (GLOBAL_AVERAGE_COST.apply(task,
+              features)
+              * TUPLE_PROCESSING_TIME.apply(task, features));
+        }
+      };
 
   private PriorityFunctions() {
 
@@ -167,6 +147,16 @@ public class PriorityFunctions {
     @Override
     public Feature[] features() {
       return original.features();
+    }
+
+    @Override
+    public PriorityFunction enableCaching(int nTasks) {
+      return original.enableCaching(nTasks);
+    }
+
+    @Override
+    public void clearCache() {
+      original.clearCache();
     }
   }
 

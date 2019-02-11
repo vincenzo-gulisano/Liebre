@@ -31,18 +31,54 @@ import org.apache.commons.lang3.Validate;
 public abstract class AbstractPriorityFunction implements PriorityFunction {
 
   private final Feature[] features;
+  private double[] cache;
+  private boolean caching;
 
   public AbstractPriorityFunction(Feature... features) {
     Validate.notEmpty(features, "Priority function has not features!");
     this.features = features;
   }
 
-  public AbstractPriorityFunction(PriorityFunction ...dependentFunctions) {
+  public AbstractPriorityFunction(PriorityFunction... dependentFunctions) {
     Set<Feature> features = new HashSet<>();
     for (PriorityFunction function : dependentFunctions) {
       features.addAll(Arrays.asList(function.features()));
     }
     this.features = features.toArray(new Feature[0]);
+  }
+
+  @Override
+  public double apply(Task task, double[][] features) {
+    if (caching) {
+      if (cache[task.getIndex()] < 0) {
+        double result = applyWithCaching(task, features);
+        cache[task.getIndex()] = result;
+        return result;
+      }
+      return cache[task.getIndex()];
+    }
+    return applyWithCaching(task, features);
+  }
+
+  @Override
+  public PriorityFunction enableCaching(int nTasks) {
+    this.cache = new double[nTasks];
+    this.caching = true;
+    return this;
+  }
+
+  @Override
+  public void clearCache() {
+    if (caching) {
+      for (int i = 0; i < cache.length; i++) {
+        cache[i] = -1;
+      }
+    }
+  }
+
+  protected double applyWithCaching(Task task, double[][] features) {
+    throw new UnsupportedOperationException("Caching is enabled but applyWithCaching is not "
+        + "implemented!");
   }
 
   @Override
