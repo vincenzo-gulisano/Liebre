@@ -30,16 +30,16 @@ public interface PriorityFunction {
   Feature[] features();
 
   // True if lower values of priority imply higher priority
+  PriorityFunction enableCaching(int nTasks);
+
+  void clearCache();
+
   default boolean reverseOrder() {
-   return false;
+    return false;
   }
 
   default PriorityFunction reciprocal() {
     return PriorityFunctions.reciprocalFunction(this);
   }
-
-  PriorityFunction enableCaching(int nTasks);
-
-  void clearCache();
 
 }

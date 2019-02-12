@@ -25,10 +25,10 @@ package scheduling.toolkit;
 
 public class PriorityFunctions {
 
-  private static final PriorityFunction TUPLE_PROCESSING_TIME = new AbstractPriorityFunction(
+  private static final PriorityFunction TUPLE_PROCESSING_TIME = new CachingPriorityFunction(
       Feature.COST) {
     @Override
-    public double apply(Task task, double[][] features) {
+    public double applyWithCachingSupport(Task task, double[][] features) {
       double totalProcessingTime = Feature.COST.get(task, features);
       for (Task downstream : task.getDownstream()) {
         totalProcessingTime += apply(downstream, features);
@@ -42,10 +42,10 @@ public class PriorityFunctions {
     }
   };
 
-  private static final PriorityFunction GLOBAL_SELECTIVITY = new AbstractPriorityFunction(
+  private static final PriorityFunction GLOBAL_SELECTIVITY = new CachingPriorityFunction(
       Feature.SELECTIVITY) {
     @Override
-    public double apply(Task task, double[][] features) {
+    public double applyWithCachingSupport(Task task, double[][] features) {
       double globalSelectivity = Feature.SELECTIVITY.get(task, features);
       for (Task downstream : task.getDownstream()) {
         globalSelectivity *= apply(downstream, features);
@@ -66,10 +66,10 @@ public class PriorityFunctions {
     }
   };
   private static final PriorityFunction GLOBAL_AVERAGE_COST =
-      new AbstractPriorityFunction(Feature.COST, Feature.SELECTIVITY) {
+      new CachingPriorityFunction(Feature.COST, Feature.SELECTIVITY) {
 
         @Override
-        public double applyWithCaching(Task task, double[][] features) {
+        public double applyWithCachingSupport(Task task, double[][] features) {
           double globalAverageCost = Feature.COST.get(task, features);
           double selectivity = Feature.SELECTIVITY.get(task, features);
           for (Task downstream : task.getDownstream()) {
