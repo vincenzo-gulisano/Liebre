@@ -53,8 +53,8 @@ public class PriorityFunctions {
       return globalSelectivity;
     }
   };
-  private static final PriorityFunction HEAD_LATENCY = new AbstractPriorityFunction(
-      "HEAD_LATENCY", Feature.HEAD_ARRIVAL_TIME) {
+  private static final PriorityFunction HEAD_ARRIVAL_TIME = new AbstractPriorityFunction(
+      "HEAD_ARRIVAL_TIME", Feature.HEAD_ARRIVAL_TIME) {
     @Override
     public double apply(Task task, double[][] features) {
       return Feature.HEAD_ARRIVAL_TIME.get(task, features);
@@ -107,9 +107,8 @@ public class PriorityFunctions {
 
   }
 
-  public static PriorityFunction headLatency() {
-    System.err.println("HEAD LATENCY FOR SOURCES IS NOT CORRECT YET. IT NEEDS TO BE INFINITY!!!!!");
-    return HEAD_LATENCY;
+  public static PriorityFunction headArrivalTime() {
+    return HEAD_ARRIVAL_TIME;
   }
 
   public static PriorityFunction globalNormalizedRate() {

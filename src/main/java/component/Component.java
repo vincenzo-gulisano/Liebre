@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
 import scheduling.toolkit.Feature;
+import scheduling.toolkit.FeatureHelper;
 import scheduling.toolkit.Task;
 
 /**
@@ -67,9 +68,13 @@ public interface Component extends Active, Runnable, Named, Task {
 
   ComponentType getType();
 
-  double getAverageArrivalTime();
+  default double getAverageArrivalTime() {
+    return FeatureHelper.NO_ARRIVAL_TIME;
+  }
 
-  double getHeadArrivalTime();
+  default double getHeadArrivalTime() {
+    return FeatureHelper.NO_ARRIVAL_TIME;
+  }
 
   @Override
   default double[] getFeatures(Feature... features) {

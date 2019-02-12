@@ -23,8 +23,8 @@
 
 package component.source;
 
-import component.StreamProducer;
 import common.tuple.Tuple;
+import component.StreamProducer;
 
 /**
  * The component.source is the first component in a query. It generates the tuples that are
@@ -42,13 +42,4 @@ public interface Source<OUT extends Tuple> extends StreamProducer<OUT> {
     return 1;
   }
 
-  @Override
-  default double getHeadArrivalTime() {
-    return -1;
-  }
-
-  @Override
-  default double getAverageArrivalTime() {
-    return -1;
-  }
 }

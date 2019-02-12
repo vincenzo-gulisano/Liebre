@@ -35,6 +35,8 @@ public final class FeatureHelper {
   private FeatureHelper() {
   }
 
+  public static final double NO_ARRIVAL_TIME = Double.MAX_VALUE;
+
   public static double getLatency(double arrivalTime, long currentTime) {
     return (arrivalTime < 0) ? 0 : currentTime - arrivalTime;
   }

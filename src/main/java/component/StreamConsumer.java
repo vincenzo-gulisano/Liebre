@@ -95,7 +95,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
   @Override
   default double getHeadArrivalTime() {
     Collection<? extends Stream<?>> inputs = getInputs();
-    double latencySum = -1;
+    long latencySum = 0;
     for (Stream<?> input : inputs) {
       Object head = input.peek();
       if (head != null) {
@@ -107,17 +107,17 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
         latencySum += headTuple.getStimulus();
       }
     }
-    return latencySum / inputs.size();
+    return latencySum == 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
   }
 
   @Override
   default double getAverageArrivalTime() {
     Collection<? extends Stream<?>> inputs = getInputs();
-    double latencySum = -1;
+    long latencySum = 0;
     for (Stream<?> input : inputs) {
       latencySum += input.getAverageArrivalTime();
     }
-    return latencySum / inputs.size();
+    return latencySum == 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
   }
 
   default void resetArrivalTimes() {
