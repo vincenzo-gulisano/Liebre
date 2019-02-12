@@ -32,12 +32,13 @@ public abstract class CachingPriorityFunction extends AbstractPriorityFunction {
   private boolean caching;
   private static final Logger LOG = LogManager.getLogger();
 
-  public CachingPriorityFunction(Feature... features) {
-    super(features);
+  public CachingPriorityFunction(String name, Feature... features) {
+    super(name, features);
   }
 
-  public CachingPriorityFunction(PriorityFunction... dependentFunctions) {
-    super(dependentFunctions);
+  public CachingPriorityFunction(String name,
+      PriorityFunction... dependentFunctions) {
+    super(name, dependentFunctions);
   }
 
   @Override
@@ -57,7 +58,7 @@ public abstract class CachingPriorityFunction extends AbstractPriorityFunction {
 
   @Override
   public PriorityFunction enableCaching(int nTasks) {
-    LOG.info("Caching enabled");
+    LOG.info("Caching enabled for {}", name());
     super.enableCaching(nTasks);
     this.cache = new double[nTasks];
     this.caching = true;

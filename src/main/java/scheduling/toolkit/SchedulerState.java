@@ -32,13 +32,15 @@ public final class SchedulerState {
   final PriorityFunction priorityFunction;
   final String statisticsFolder;
 
-  public SchedulerState(int nTasks, PriorityFunction priorityFunction, String statisticsFolder) {
+  public SchedulerState(int nTasks, PriorityFunction priorityFunction, boolean priorityCachning,
+      String statisticsFolder) {
     updated = new AtomicBoolean[nTasks];
     taskFeatures = new double[nTasks][Feature.length()];
     for (int i = 0; i < updated.length; i++) {
       updated[i] = new AtomicBoolean(false);
     }
-    this.priorityFunction = priorityFunction;
+    this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
+        priorityFunction;
     this.statisticsFolder = statisticsFolder;
   }
 

@@ -30,24 +30,25 @@ import org.apache.commons.lang3.Validate;
 
 public abstract class AbstractPriorityFunction implements PriorityFunction {
 
-  private final Feature[] features;
   protected final PriorityFunction[] dependentFunctions;
+  private final Feature[] features;
+  private final String name;
 
-
-
-  public AbstractPriorityFunction(Feature... features) {
+  public AbstractPriorityFunction(String name, Feature... features) {
     Validate.notEmpty(features, "Priority function has not features!");
     this.features = features;
     this.dependentFunctions = new PriorityFunction[0];
+    this.name = name;
   }
 
-  public AbstractPriorityFunction(PriorityFunction... dependentFunctions) {
+  public AbstractPriorityFunction(String name, PriorityFunction... dependentFunctions) {
     Set<Feature> features = new HashSet<>();
     for (PriorityFunction function : dependentFunctions) {
       features.addAll(Arrays.asList(function.features()));
     }
     this.features = features.toArray(new Feature[0]);
     this.dependentFunctions = dependentFunctions;
+    this.name = name;
   }
 
   @Override
@@ -68,6 +69,10 @@ public abstract class AbstractPriorityFunction implements PriorityFunction {
   @Override
   public final Feature[] features() {
     return features.clone();
+  }
+
+  public final String name() {
+    return name;
   }
 
 }

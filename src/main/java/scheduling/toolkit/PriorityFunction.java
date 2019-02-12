@@ -38,6 +38,8 @@ public interface PriorityFunction {
     return false;
   }
 
+  String name();
+
   default PriorityFunction reciprocal() {
     return PriorityFunctions.reciprocalFunction(this);
   }

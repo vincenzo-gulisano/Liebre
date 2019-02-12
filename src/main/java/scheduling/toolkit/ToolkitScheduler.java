@@ -43,11 +43,16 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
   private final String statisticsFolder;
+  private final PriorityFunction priorityFunction;
+  private final boolean priorityCaching;
 
-  public ToolkitScheduler(int nThreads, int batchSize, int schedulingPeriodMillis,
-      int schedulingPeriodExecutions,
+  public ToolkitScheduler(int nThreads, PriorityFunction priorityFunction,
+      boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
+      int schedulingPeriodMillis,
       String statisticsFolder) {
     this.nThreads = nThreads;
+    this.priorityFunction = priorityFunction;
+    this.priorityCaching = priorityCaching;
     this.batchSize = batchSize;
     this.schedulingPeriodExecutions = schedulingPeriodExecutions;
     this.schedulingPeriodMillis = schedulingPeriodMillis;
@@ -63,8 +68,8 @@ public class ToolkitScheduler implements Scheduler<Task> {
   @Override
   public void startTasks() {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
-    final SchedulerState state = new SchedulerState(tasks.size(),
-        PriorityFunctions.globalNormalizedRate().enableCaching(tasks.size()), statisticsFolder);
+    final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction, priorityCaching,
+        statisticsFolder);
     final List<AbstractExecutor> executors = new ArrayList<>();
     CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors,
         state));
