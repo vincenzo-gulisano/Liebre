@@ -25,7 +25,7 @@ package scheduling.toolkit;
 
 public class PriorityFunctions {
 
-  private static final PriorityFunction TUPLE_PROCESSING_TIME = new CachingPriorityFunction(
+  private static final SinglePriorityFunction TUPLE_PROCESSING_TIME = new CachingPriorityFunction(
       "TUPLE_PROCESSING_TIME", Feature.COST) {
     @Override
     public double applyWithCachingSupport(Task task, double[][] features) {
@@ -42,7 +42,7 @@ public class PriorityFunctions {
     }
   };
 
-  private static final PriorityFunction GLOBAL_SELECTIVITY = new CachingPriorityFunction(
+  private static final SinglePriorityFunction GLOBAL_SELECTIVITY = new CachingPriorityFunction(
       "GLOBAL_SELECTIVITY", Feature.SELECTIVITY) {
     @Override
     public double applyWithCachingSupport(Task task, double[][] features) {
@@ -53,7 +53,7 @@ public class PriorityFunctions {
       return globalSelectivity;
     }
   };
-  private static final PriorityFunction HEAD_ARRIVAL_TIME = new AbstractPriorityFunction(
+  private static final SinglePriorityFunction HEAD_ARRIVAL_TIME = new AbstractPriorityFunction(
       "HEAD_ARRIVAL_TIME", Feature.HEAD_ARRIVAL_TIME) {
     @Override
     public double apply(Task task, double[][] features) {
@@ -65,7 +65,7 @@ public class PriorityFunctions {
       return true;
     }
   };
-  private static final PriorityFunction GLOBAL_AVERAGE_COST =
+  private static final SinglePriorityFunction GLOBAL_AVERAGE_COST =
       new CachingPriorityFunction("GLOBAL_AVERAGE_COST", Feature.COST, Feature.SELECTIVITY) {
 
         @Override
@@ -83,7 +83,7 @@ public class PriorityFunctions {
           return true;
         }
       };
-  private static final PriorityFunction GLOBAL_RATE =
+  private static final SinglePriorityFunction GLOBAL_RATE =
       new AbstractPriorityFunction("GLOBAL_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
         @Override
         public double apply(Task task, double[][] features) {
@@ -92,7 +92,7 @@ public class PriorityFunctions {
         }
 
       };
-  private static final PriorityFunction GLOBAL_NORMALIZED_RATE =
+  private static final SinglePriorityFunction GLOBAL_NORMALIZED_RATE =
       new AbstractPriorityFunction("GLOBAL_NORMALIZED_RATE", GLOBAL_SELECTIVITY,
           GLOBAL_AVERAGE_COST, TUPLE_PROCESSING_TIME) {
         @Override
@@ -107,35 +107,35 @@ public class PriorityFunctions {
 
   }
 
-  public static PriorityFunction headArrivalTime() {
+  public static SinglePriorityFunction headArrivalTime() {
     return HEAD_ARRIVAL_TIME;
   }
 
-  public static PriorityFunction globalNormalizedRate() {
+  public static SinglePriorityFunction globalNormalizedRate() {
     return GLOBAL_NORMALIZED_RATE;
   }
 
-  public static PriorityFunction globalRate() {
+  public static SinglePriorityFunction globalRate() {
     return GLOBAL_RATE;
   }
 
-  public static PriorityFunction tupleProcessingTime() {
+  public static SinglePriorityFunction tupleProcessingTime() {
     return TUPLE_PROCESSING_TIME;
   }
 
-  public static PriorityFunction globalAverageCost() {
+  public static SinglePriorityFunction globalAverageCost() {
     return GLOBAL_AVERAGE_COST;
   }
 
-  public static PriorityFunction reciprocalFunction(PriorityFunction function) {
+  public static SinglePriorityFunction reciprocalFunction(SinglePriorityFunction function) {
     return new ReciprocalPriorityFunction(function);
   }
 
-  private static class ReciprocalPriorityFunction implements PriorityFunction {
+  private static class ReciprocalPriorityFunction implements SinglePriorityFunction {
 
-    private final PriorityFunction original;
+    private final SinglePriorityFunction original;
 
-    private ReciprocalPriorityFunction(PriorityFunction original) {
+    private ReciprocalPriorityFunction(SinglePriorityFunction original) {
       this.original = original;
     }
 
@@ -150,7 +150,7 @@ public class PriorityFunctions {
     }
 
     @Override
-    public PriorityFunction enableCaching(int nTasks) {
+    public SinglePriorityFunction enableCaching(int nTasks) {
       return original.enableCaching(nTasks);
     }
 

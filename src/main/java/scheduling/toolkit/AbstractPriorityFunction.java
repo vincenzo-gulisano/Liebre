@@ -28,22 +28,22 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
-public abstract class AbstractPriorityFunction implements PriorityFunction {
+public abstract class AbstractPriorityFunction implements SinglePriorityFunction {
 
-  protected final PriorityFunction[] dependentFunctions;
+  protected final SinglePriorityFunction[] dependentFunctions;
   private final Feature[] features;
   private final String name;
 
   public AbstractPriorityFunction(String name, Feature... features) {
     Validate.notEmpty(features, "Priority function has not features!");
     this.features = features;
-    this.dependentFunctions = new PriorityFunction[0];
+    this.dependentFunctions = new SinglePriorityFunction[0];
     this.name = name;
   }
 
-  public AbstractPriorityFunction(String name, PriorityFunction... dependentFunctions) {
+  public AbstractPriorityFunction(String name, SinglePriorityFunction... dependentFunctions) {
     Set<Feature> features = new HashSet<>();
-    for (PriorityFunction function : dependentFunctions) {
+    for (SinglePriorityFunction function : dependentFunctions) {
       features.addAll(Arrays.asList(function.features()));
     }
     this.features = features.toArray(new Feature[0]);
@@ -52,8 +52,8 @@ public abstract class AbstractPriorityFunction implements PriorityFunction {
   }
 
   @Override
-  public PriorityFunction enableCaching(int nTasks) {
-    for (PriorityFunction function : dependentFunctions) {
+  public SinglePriorityFunction enableCaching(int nTasks) {
+    for (SinglePriorityFunction function : dependentFunctions) {
       function.enableCaching(nTasks);
     }
     return this;
@@ -61,7 +61,7 @@ public abstract class AbstractPriorityFunction implements PriorityFunction {
 
   @Override
   public void clearCache() {
-    for (PriorityFunction function : dependentFunctions) {
+    for (SinglePriorityFunction function : dependentFunctions) {
       function.clearCache();
     }
   }

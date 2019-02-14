@@ -61,6 +61,7 @@ import component.source.SourceFunction;
 import component.source.SourceStatistic;
 import component.source.TextFileSource;
 import component.source.TextSourceFunction;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -378,6 +379,10 @@ public final class Query {
    */
   public int sourcesNumber() {
     return sources.size();
+  }
+
+  Collection<Source<?>> sources() {
+    return sources.values();
   }
 
   private Set<Stream<?>> streams() {

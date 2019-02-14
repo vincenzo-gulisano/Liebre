@@ -29,7 +29,6 @@ import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import scheduling.toolkit.Task;
 import stream.Stream;
 
 /**
@@ -78,8 +77,8 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
   }
 
   @Override
-  default List<Task> getUpstream() {
-    List<Task> upstream = new ArrayList<>();
+  default List<Component> getUpstream() {
+    List<Component> upstream = new ArrayList<>();
     for (Stream<?> input : getInputs()) {
       upstream.add(input.getSource());
     }

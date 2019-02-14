@@ -23,26 +23,21 @@
 
 package scheduling.toolkit;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+public interface SinglePriorityFunction extends PriorityFunction {
 
-public final class SchedulerState {
+  double apply(Task task, double[][] features);
 
-  final AtomicBoolean[] updated;
-  final double[][] taskFeatures;
-  final MultiPriorityFunction priorityFunction;
-  final String statisticsFolder;
-
-  public SchedulerState(int nTasks, MultiPriorityFunction priorityFunction,
-      boolean priorityCachning,
-      String statisticsFolder) {
-    updated = new AtomicBoolean[nTasks];
-    taskFeatures = new double[nTasks][Feature.length()];
-    for (int i = 0; i < updated.length; i++) {
-      updated[i] = new AtomicBoolean(false);
-    }
-    this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
-        priorityFunction;
-    this.statisticsFolder = statisticsFolder;
+  /**
+   * @return {@code true} if lower values of priority imply higher priority
+   */
+  default boolean reverseOrder() {
+    return false;
   }
 
+  default SinglePriorityFunction reciprocal() {
+    return PriorityFunctions.reciprocalFunction(this);
+  }
+
+  @Override
+  SinglePriorityFunction enableCaching(int nTasks);
 }

@@ -37,7 +37,6 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   // Exponential moving average alpha parameter
   // for cost and selectivity moving averages
   private static final double EMA_ALPHA = 0.1;
-  private static final int NANOSEC_TO_MICROSEC = 1000;
   protected final T component;
 
   protected volatile long tuplesWritten;
@@ -68,7 +67,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     }
     long endTime = System.nanoTime();
     // Update processing time
-    processingTimeNanos += (endTime - startTime) * NANOSEC_TO_MICROSEC;
+    processingTimeNanos += (endTime - startTime);
   }
 
   protected final void increaseTuplesRead() {
@@ -79,22 +78,31 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     tuplesWritten++;
   }
 
-  public void updateMetrics() {
+  /**
+   * Update the cost and selectivity based on the tuples processed and the time it took.
+   * <br/>
+   * <b>WARNING: The variables for the metrics are available only the execution happens with
+   * {@link #runFor(int)}
+   * !</b> <br/>
+   * <b>WARNING: This is not thread safe! It should either be run from the operator thread or
+   * from another thread while the operator is stopped. The results are visible to all threads.</b>
+   */
+  public final void updateMetrics() {
     if (tuplesRead == 0 || processingTimeNanos == 0) {
       return;
     }
     double currentSelectivity = tuplesWritten / (double) tuplesRead;
     double currentCost = processingTimeNanos / (double) tuplesRead;
-    this.selectivity = (EMA_ALPHA * currentSelectivity) + ((1-EMA_ALPHA) * selectivity);
-    this.cost = (EMA_ALPHA * currentCost) + ((1-EMA_ALPHA) * cost);
+    this.selectivity = (EMA_ALPHA * currentSelectivity) + ((1 - EMA_ALPHA) * selectivity);
+    this.cost = (EMA_ALPHA * currentCost) + ((1 - EMA_ALPHA) * cost);
     this.tuplesRead = this.tuplesWritten = this.processingTimeNanos = 0;
   }
 
-  public double getSelectivity() {
+  public final double getSelectivity() {
     return selectivity;
   }
 
-  public double getCost() {
+  public final double getCost() {
     return cost;
   }
 

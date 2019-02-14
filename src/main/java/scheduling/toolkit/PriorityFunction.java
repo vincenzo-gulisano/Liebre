@@ -25,23 +25,11 @@ package scheduling.toolkit;
 
 public interface PriorityFunction {
 
-  double apply(Task task, double[][] features);
-
   Feature[] features();
 
-  // True if lower values of priority imply higher priority
   PriorityFunction enableCaching(int nTasks);
 
   void clearCache();
 
-  default boolean reverseOrder() {
-    return false;
-  }
-
   String name();
-
-  default PriorityFunction reciprocal() {
-    return PriorityFunctions.reciprocalFunction(this);
-  }
-
 }

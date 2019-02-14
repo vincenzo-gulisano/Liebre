@@ -41,7 +41,7 @@ public class PriorityUpdateAction implements Runnable {
   private final List<Task> tasks;
   private final QueryResolver queries;
   private final List<AbstractExecutor> executors;
-  private final double[] priorities;
+  private final double[][] priorities;
   private final SchedulerState state;
   private final Comparator<Task> comparator;
   private final AbstractCummulativeStatistic totalCalls;
@@ -50,15 +50,14 @@ public class PriorityUpdateAction implements Runnable {
   private final AbstractCummulativeStatistic distributionTime;
   private final AbstractCummulativeStatistic sortTime;
 
-  public PriorityUpdateAction(List<Task> inputTasks,
-      List<AbstractExecutor> executors,
+  public PriorityUpdateAction(List<Task> inputTasks, List<AbstractExecutor> executors,
       SchedulerState state) {
     this.tasks = new ArrayList(inputTasks);
     this.executors = executors;
     this.state = state;
-    this.priorities = new double[tasks.size()];
+    this.priorities = new double[tasks.size()][state.priorityFunction.dimensions()];
     this.queries = new QueryResolver(this.tasks);
-    this.comparator = createComparator(state);
+    this.comparator = new MultiPriorityComparator(state.priorityFunction, priorities);
     this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "total"), STATISTIC_CALLS), true);
     totalCalls.enable();
@@ -81,14 +80,6 @@ public class PriorityUpdateAction implements Runnable {
     return String.format("Priority-Update-%s", action);
   }
 
-  private Comparator<Task> createComparator(SchedulerState state) {
-    Comparator<Task> baseComparator = Comparator.comparingDouble(t -> priorities[t.getIndex()]);
-    // Default sorting order for comparators is lowest to highest
-    // Default sorting order for priorities is highest to lowest
-    // So when reverseOrder() is true, we do not reverse the comparator and vice-versa
-    return state.priorityFunction.reverseOrder() ? baseComparator : baseComparator.reversed();
-  }
-
   @Override
   public void run() {
     Validate.isTrue(tasks.size() > 0, "No tasks given!");
@@ -101,13 +92,11 @@ public class PriorityUpdateAction implements Runnable {
 
   private void updateFeatures() {
     long startTime = System.currentTimeMillis();
-    // Update features
     for (Task task : tasks) {
       if (!state.updated[task.getIndex()].getAndSet(false)) {
-        //TODO: Maybe selectively do this on specific features
         task.updateFeatures();
         double[] taskFeatures = task.getFeatures(state.priorityFunction.features());
-        storeTaskFeatures(task, taskFeatures);
+        state.taskFeatures[task.getIndex()] = taskFeatures;
       }
     }
     updateTime.append(System.currentTimeMillis() - startTime);
@@ -159,16 +148,6 @@ public class PriorityUpdateAction implements Runnable {
       executors.get(i).setTasks(assignment);
     }
     sortTime.append(System.currentTimeMillis() - startTime);
-  }
-
-  // Helper, to be removed
-  private double featureValue(Task task, Feature feature) {
-    return state.taskFeatures[task.getIndex()][feature.index()];
-  }
-
-  private void recordUpdateFinished(long updateStartTime) {
-    totalCalls.append(1);
-    updateTime.append(System.currentTimeMillis() - updateStartTime);
   }
 
 }

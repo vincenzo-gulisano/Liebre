@@ -64,6 +64,16 @@ public interface Component extends Active, Runnable, Named, Task {
 
   double getSelectivity();
 
+  /**
+   * Update the metrics  (e.g. cost and selectivity) based on the execution statistics of the
+   * operator.
+   * <br/>
+   * <b>WARNING: The variables for the metrics are available only the execution happens with
+   * {@link #runFor(int)}
+   * !</b> <br/>
+   * <b>WARNING: This is not thread safe! It should either be run from the operator thread or
+   * from another thread while the operator is stopped. The results are visible to all threads.</b>
+   */
   void updateMetrics();
 
   ComponentType getType();
@@ -82,7 +92,7 @@ public interface Component extends Active, Runnable, Named, Task {
     double[] featureArray = Feature.createArray();
     for (Feature feature : features) {
       featureArray[feature.index()] = FeatureTranslator.get(feature, this);
-      }
+    }
     return featureArray;
   }
 
@@ -92,12 +102,12 @@ public interface Component extends Active, Runnable, Named, Task {
   }
 
   @Override
-  default List<Task> getUpstream() {
+  default List<Component> getUpstream() {
     return Collections.emptyList();
   }
 
   @Override
-  default List<Task> getDownstream() {
+  default List<Component> getDownstream() {
     return Collections.emptyList();
   }
 }

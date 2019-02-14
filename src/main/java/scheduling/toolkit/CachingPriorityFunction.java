@@ -37,7 +37,7 @@ public abstract class CachingPriorityFunction extends AbstractPriorityFunction {
   }
 
   public CachingPriorityFunction(String name,
-      PriorityFunction... dependentFunctions) {
+      SinglePriorityFunction... dependentFunctions) {
     super(name, dependentFunctions);
   }
 
@@ -57,7 +57,7 @@ public abstract class CachingPriorityFunction extends AbstractPriorityFunction {
   protected abstract double applyWithCachingSupport(Task task, double[][] features);
 
   @Override
-  public PriorityFunction enableCaching(int nTasks) {
+  public SinglePriorityFunction enableCaching(int nTasks) {
     LOG.info("Caching enabled for {}", name());
     super.enableCaching(nTasks);
     this.cache = new double[nTasks];

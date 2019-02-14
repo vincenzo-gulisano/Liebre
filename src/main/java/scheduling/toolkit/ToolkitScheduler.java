@@ -43,10 +43,10 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
   private final String statisticsFolder;
-  private final PriorityFunction priorityFunction;
+  private final MultiPriorityFunction priorityFunction;
   private final boolean priorityCaching;
 
-  public ToolkitScheduler(int nThreads, PriorityFunction priorityFunction,
+  public ToolkitScheduler(int nThreads, MultiPriorityFunction priorityFunction,
       boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
       int schedulingPeriodMillis,
       String statisticsFolder) {
@@ -57,6 +57,24 @@ public class ToolkitScheduler implements Scheduler<Task> {
     this.schedulingPeriodExecutions = schedulingPeriodExecutions;
     this.schedulingPeriodMillis = schedulingPeriodMillis;
     this.statisticsFolder = statisticsFolder;
+  }
+
+  public ToolkitScheduler(int nThreads, SinglePriorityFunction priorityFunction,
+      boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
+      int schedulingPeriodMillis,
+      String statisticsFolder) {
+    this(nThreads, new CombinedPriorityFunction(
+            new AbstractPriorityFunction("min selecitivy", Feature.SELECTIVITY) {
+              @Override
+              public double apply(Task task, double[][] features) {
+                if (Feature.SELECTIVITY.get(task, features) > 0.8) {
+                  return 0;
+                }
+                return 1;
+              }
+            }, priorityFunction),
+        priorityCaching, batchSize,
+        schedulingPeriodExecutions, schedulingPeriodMillis, statisticsFolder);
   }
 
 
