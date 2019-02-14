@@ -63,16 +63,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
       boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
       int schedulingPeriodMillis,
       String statisticsFolder) {
-    this(nThreads, new CombinedPriorityFunction(
-            new AbstractPriorityFunction("min selecitivy", Feature.SELECTIVITY) {
-              @Override
-              public double apply(Task task, double[][] features) {
-                if (Feature.SELECTIVITY.get(task, features) > 0.8) {
-                  return 0;
-                }
-                return 1;
-              }
-            }, priorityFunction),
+    this(nThreads, new CombinedPriorityFunction(priorityFunction),
         priorityCaching, batchSize,
         schedulingPeriodExecutions, schedulingPeriodMillis, statisticsFolder);
   }
