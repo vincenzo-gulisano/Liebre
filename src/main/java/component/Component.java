@@ -87,17 +87,15 @@ public interface Component extends Active, Runnable, Named, Task {
   }
 
   @Override
-  default double[] getFeatures(Feature... features) {
+  default void updateFeatures(Feature[] features, double[] output) {
     Validate.notEmpty(features, "No features requested!");
-    double[] featureArray = Feature.createArray();
     for (Feature feature : features) {
-      featureArray[feature.index()] = FeatureTranslator.get(feature, this);
+      output[feature.index()] = FeatureTranslator.get(feature, this);
     }
-    return featureArray;
   }
 
   @Override
-  default void updateFeatures() {
+  default void refreshFeatures() {
     updateMetrics();
   }
 

@@ -63,8 +63,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
       boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
       int schedulingPeriodMillis,
       String statisticsFolder) {
-    this(nThreads, new CombinedPriorityFunction(priorityFunction),
-        priorityCaching, batchSize,
+    this(nThreads, new CombinedPriorityFunction(priorityFunction), priorityCaching, batchSize,
         schedulingPeriodExecutions, schedulingPeriodMillis, statisticsFolder);
   }
 

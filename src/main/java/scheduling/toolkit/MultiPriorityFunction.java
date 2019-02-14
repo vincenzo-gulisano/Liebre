@@ -25,7 +25,7 @@ package scheduling.toolkit;
 
 public interface MultiPriorityFunction extends PriorityFunction {
 
-  double[] apply(Task task, double[][] features);
+  void apply(Task task, double[][] features, double[] output);
 
   int dimensions();
 

@@ -48,12 +48,11 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
   }
 
   @Override
-  public double[] apply(Task task, double[][] features) {
-    double[] priority = new double[functions.length];
-    for (int k = 0; k < priority.length; k++) {
-      priority[k] = functions[k].apply(task, features);
+  public void apply(Task task, double[][] features, double[] output) {
+    Validate.isTrue(output.length == functions.length);
+    for (int k = 0; k < output.length; k++) {
+      output[k] = functions[k].apply(task, features);
     }
-    return priority;
   }
 
   @Override
