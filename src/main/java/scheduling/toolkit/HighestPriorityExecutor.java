@@ -38,11 +38,13 @@ class HighestPriorityExecutor extends AbstractExecutor {
 
   protected void runNextTask() {
     boolean executedSource = false;
-    for (Task task : executorTasks) {
+    for (int localIndex = 0; localIndex < executorTasks.size(); localIndex++) {
+      Task task = executorTasks.get(localIndex);
 //      LOG.debug("Trying to execute {}", task);
       if (task.canRun()) {
         LOG.debug("Executing {}", task);
         task.runFor(batchSize);
+        mark(localIndex);
         // Prevent starvation: If one source runs, then everything will be traversed until
         // we run out of components (enabling executedSource)
         boolean taskWasSource =

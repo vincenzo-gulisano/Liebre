@@ -43,10 +43,10 @@ public abstract class AbstractExecutor implements Runnable {
   private static final AtomicInteger indexGenerator = new AtomicInteger();
   private static final Logger LOG = LogManager.getLogger();
   protected final int batchSize;
-  private final int schedulingPeriodMillis;
-  private final int schedulingPeriodExecutions;
   protected final CyclicBarrier barrier;
   protected final SchedulerState state;
+  private final int schedulingPeriodMillis;
+  private final int schedulingPeriodExecutions;
   private final Set<Integer> runTasks = new HashSet<>();
   private final Set<TaskDependency> taskDependencies = new HashSet<>();
   private final AbstractCummulativeStatistic markTime;
@@ -113,6 +113,17 @@ public abstract class AbstractExecutor implements Runnable {
     } catch (InterruptedException | BrokenBarrierException e) {
       return false;
     }
+  }
+
+  /**
+   * Mark the task with that has the given index in the <b>LOCAL task list</b> as executed. Do
+   * NOT use {@link Task#getIndex()} in this function, except if it matches the local index
+   * (which it usually does not).
+   *
+   * @param localIndex The index of the task in executorTasks
+   */
+  protected final void mark(int localIndex) {
+    runTasks.add(localIndex);
   }
 
   private void markUpdated() {

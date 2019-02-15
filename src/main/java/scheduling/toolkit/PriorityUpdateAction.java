@@ -93,7 +93,7 @@ public class PriorityUpdateAction implements Runnable {
   private void updateFeatures() {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
-      if (!state.updated[task.getIndex()].getAndSet(false)) {
+      if (state.updated[task.getIndex()].getAndSet(false)) {
         task.refreshFeatures();
         task.updateFeatures(state.priorityFunction.features(), state.taskFeatures[task.getIndex()]);
       }
