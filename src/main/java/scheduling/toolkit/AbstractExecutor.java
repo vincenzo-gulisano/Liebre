@@ -45,17 +45,18 @@ public abstract class AbstractExecutor implements Runnable {
   protected final int batchSize;
   protected final CyclicBarrier barrier;
   protected final SchedulerState state;
-  private final int schedulingPeriodMillis;
+  private final long schedulingPeriod;
   private final int schedulingPeriodExecutions;
   private final Set<Integer> runTasks = new HashSet<>();
   private final Set<TaskDependency> taskDependencies = new HashSet<>();
   private final AbstractCummulativeStatistic markTime;
+  private long backoffTime = 1;
   protected volatile List<Task> executorTasks;
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, int schedulingPeriodExecutions,
       CyclicBarrier barrier, SchedulerState state) {
     this.batchSize = batchSize;
-    this.schedulingPeriodMillis = schedulingPeriodMillis;
+    this.schedulingPeriod = schedulingPeriodMillis;
     this.schedulingPeriodExecutions = schedulingPeriodExecutions;
     this.barrier = barrier;
     this.state = state;
@@ -84,31 +85,47 @@ public abstract class AbstractExecutor implements Runnable {
       return;
     }
     int executions = 0;
-    long executionTimeMillis = 0;
+    long startTime = System.currentTimeMillis();
     while (!Thread.currentThread().isInterrupted()) {
-      long startTime = System.currentTimeMillis();
-      runNextTask();
+      long taskExecutionNanos = runNextTask();
+      final long remainingTime = schedulingPeriod - (System.currentTimeMillis() - startTime);
+      adjustUtilization(taskExecutionNanos, remainingTime);
       executions = (executions + 1) % schedulingPeriodExecutions;
-      executionTimeMillis += System.currentTimeMillis() - startTime;
-      if (executions == 0 || executionTimeMillis > schedulingPeriodMillis) {
-        executionTimeMillis = 0;
-        executions = 0;
+      if (remainingTime <= 0) {
         if (!updateTasks()) {
           return;
         }
+        executions = 0;
+        startTime = System.currentTimeMillis();
       }
     }
   }
 
-  protected abstract void onUpdatedTasks();
+  private void adjustUtilization(long taskExecutionNanos, long remainingTime) {
+    if (remainingTime <= 0) {
+      return;
+    }
+    if (taskExecutionNanos <= 0) {
+      try {
+        long sleepTime = Math.min(backoffTime, remainingTime);
+        Thread.sleep(sleepTime);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return;
+      }
+      backoffTime = Math.min(backoffTime * 2, schedulingPeriod);
+    }
+    else {
+      backoffTime = Math.max(backoffTime / 2, 1);
+    }
+  }
 
-  protected abstract void runNextTask();
+  protected abstract long runNextTask();
 
   private boolean updateTasks() {
     try {
       markUpdated();
       barrier.await();
-      onUpdatedTasks();
       return true;
     } catch (InterruptedException | BrokenBarrierException e) {
       return false;
