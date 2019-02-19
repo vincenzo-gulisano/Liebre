@@ -46,7 +46,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  */
 public class BackoffStream<T extends Tuple> implements Stream<T> {
 
-  private static final double EMA_ALPHA = 0.01;
+  private static final double EMA_ALPHA = 0.5;
   private final Queue<T> stream = new ConcurrentLinkedQueue<>();
   private final int capacity;
   private final String id;

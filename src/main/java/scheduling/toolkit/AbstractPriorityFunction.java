@@ -31,22 +31,25 @@ import org.apache.commons.lang3.Validate;
 public abstract class AbstractPriorityFunction implements SinglePriorityFunction {
 
   protected final SinglePriorityFunction[] dependentFunctions;
-  private final Feature[] features;
+  private final Feature[] requiredFeatures;
   private final String name;
 
-  public AbstractPriorityFunction(String name, Feature... features) {
-    Validate.notEmpty(features, "Priority function has not features!");
-    this.features = features;
+  public AbstractPriorityFunction(String name, Feature... requiredFeatures) {
+    Validate.notEmpty(requiredFeatures, "Priority function has not features!");
+    Validate.notEmpty(name);
+    this.requiredFeatures = requiredFeatures;
     this.dependentFunctions = new SinglePriorityFunction[0];
     this.name = name;
   }
 
   public AbstractPriorityFunction(String name, SinglePriorityFunction... dependentFunctions) {
+    Validate.notEmpty(name);
+    Validate.notEmpty(dependentFunctions, "Priority function depends on no other function!");
     Set<Feature> features = new HashSet<>();
     for (SinglePriorityFunction function : dependentFunctions) {
-      features.addAll(Arrays.asList(function.features()));
+      features.addAll(Arrays.asList(function.requiredFeatures()));
     }
-    this.features = features.toArray(new Feature[0]);
+    this.requiredFeatures = features.toArray(new Feature[0]);
     this.dependentFunctions = dependentFunctions;
     this.name = name;
   }
@@ -67,8 +70,8 @@ public abstract class AbstractPriorityFunction implements SinglePriorityFunction
   }
 
   @Override
-  public final Feature[] features() {
-    return features.clone();
+  public final Feature[] requiredFeatures() {
+    return requiredFeatures.clone();
   }
 
   public final String name() {

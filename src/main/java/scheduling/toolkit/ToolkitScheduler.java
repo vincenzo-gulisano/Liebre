@@ -45,13 +45,16 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private final String statisticsFolder;
   private final MultiPriorityFunction priorityFunction;
   private final boolean priorityCaching;
+  private final DeploymentFunction deploymentFunction;
 
   public ToolkitScheduler(int nThreads, MultiPriorityFunction priorityFunction,
+      DeploymentFunction deploymentFunction,
       boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
       int schedulingPeriodMillis,
       String statisticsFolder) {
     this.nThreads = nThreads;
     this.priorityFunction = priorityFunction;
+    this.deploymentFunction = deploymentFunction;
     this.priorityCaching = priorityCaching;
     this.batchSize = batchSize;
     this.schedulingPeriodExecutions = schedulingPeriodExecutions;
@@ -60,10 +63,12 @@ public class ToolkitScheduler implements Scheduler<Task> {
   }
 
   public ToolkitScheduler(int nThreads, SinglePriorityFunction priorityFunction,
+      DeploymentFunction deploymentFunction,
       boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
       int schedulingPeriodMillis,
       String statisticsFolder) {
-    this(nThreads, new CombinedPriorityFunction(priorityFunction), priorityCaching, batchSize,
+    this(nThreads, new CombinedPriorityFunction(priorityFunction), deploymentFunction,
+        priorityCaching, batchSize,
         schedulingPeriodExecutions, schedulingPeriodMillis, statisticsFolder);
   }
 
@@ -76,7 +81,8 @@ public class ToolkitScheduler implements Scheduler<Task> {
   @Override
   public void startTasks() {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
-    final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction, priorityCaching,
+    final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction,
+        deploymentFunction, priorityCaching,
         statisticsFolder);
     final List<AbstractExecutor> executors = new ArrayList<>();
     CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors,

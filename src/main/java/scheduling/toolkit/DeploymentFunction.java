@@ -23,13 +23,16 @@
 
 package scheduling.toolkit;
 
-public interface PriorityFunction {
+import java.util.List;
+
+public interface DeploymentFunction {
+
+  void init(List<Task> tasks, double[][] features);
+
+  List<List<Task>> getDeployment(int nThreads);
 
   Feature[] requiredFeatures();
 
-  PriorityFunction enableCaching(int nTasks);
-
-  void clearCache();
-
   String name();
+
 }

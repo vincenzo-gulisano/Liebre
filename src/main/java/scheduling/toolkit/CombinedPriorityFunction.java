@@ -31,7 +31,7 @@ import org.apache.commons.lang3.Validate;
 public class CombinedPriorityFunction implements MultiPriorityFunction {
 
   private final SinglePriorityFunction[] functions;
-  private final Feature[] features;
+  private final Feature[] requiredFeatures;
   private final String name;
 
   public CombinedPriorityFunction(SinglePriorityFunction... functions) {
@@ -40,11 +40,11 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
     Set<Feature> functionFeatures = new HashSet<>();
     StringBuilder nameBuilder = new StringBuilder("Composite:");
     for (SinglePriorityFunction function : functions) {
-      functionFeatures.addAll(Arrays.asList(function.features()));
+      functionFeatures.addAll(Arrays.asList(function.requiredFeatures()));
       nameBuilder.append(function.name());
     }
     this.name = nameBuilder.toString();
-    this.features = functionFeatures.toArray(new Feature[0]);
+    this.requiredFeatures = functionFeatures.toArray(new Feature[0]);
   }
 
   @Override
@@ -56,8 +56,8 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
   }
 
   @Override
-  public Feature[] features() {
-    return features;
+  public Feature[] requiredFeatures() {
+    return requiredFeatures;
   }
 
   @Override

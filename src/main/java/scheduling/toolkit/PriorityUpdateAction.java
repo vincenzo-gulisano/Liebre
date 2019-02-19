@@ -27,6 +27,7 @@ import common.statistic.AbstractCummulativeStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticPath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
@@ -55,11 +56,14 @@ public class PriorityUpdateAction implements Runnable {
     this.tasks = new ArrayList(inputTasks);
     this.executors = executors;
     this.state = state;
-    this.priorities = new double[tasks.size()][state.priorityFunction.dimensions()];
+    this.state.init(inputTasks);
+    this.priorities = new double[tasks.size()][state.priorityFunction().dimensions()];
     this.queries = new QueryResolver(this.tasks);
-    this.comparator = new MultiPriorityComparator(state.priorityFunction, priorities);
+    this.comparator = new MultiPriorityComparator(state.priorityFunction(), priorities);
     this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "total"), STATISTIC_CALLS), true);
+
+    // Statistics Initialization
     totalCalls.enable();
     this.updateTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "updateFeatures"), STATISTIC_TIME), true);
@@ -95,56 +99,41 @@ public class PriorityUpdateAction implements Runnable {
     for (Task task : tasks) {
       if (state.updated[task.getIndex()].getAndSet(false)) {
         task.refreshFeatures();
-        task.updateFeatures(state.priorityFunction.features(), state.taskFeatures[task.getIndex()]);
+        task.updateFeatures(state.requiredFeatures(), state.taskFeatures[task.getIndex()]);
       }
     }
     updateTime.append(System.currentTimeMillis() - startTime);
   }
 
-  private void storeTaskFeatures(Task task, double[] taskFeatures) {
-    final double[] row = state.taskFeatures[task.getIndex()];
-    Validate.isTrue(row.length == taskFeatures.length);
-    for (Feature feature : state.priorityFunction.features()) {
-      int featureIndex = feature.index();
-      row[featureIndex] = taskFeatures[featureIndex];
-    }
-  }
-
   private void calculatePriorities() {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
-      state.priorityFunction.apply(task, state.taskFeatures, priorities[task.getIndex()]);
+      state.priorityFunction().apply(task, state.taskFeatures, priorities[task.getIndex()]);
     }
-    state.priorityFunction.clearCache();
+    state.priorityFunction().clearCache();
     priorityTime.append(System.currentTimeMillis() - startTime);
   }
 
   private List<List<Task>> distributeTasks() {
     long startTime = System.currentTimeMillis();
-    // Choose assignment of tasks -> threads
-    List<List<Task>> assignments = new ArrayList<>();
-    for (int i = 0; i < executors.size(); i++) {
-      assignments.add(new ArrayList<>());
-    }
-    int assignmentIndex = 0;
-    for (List<Task> query : queries.getQueries()) {
-      assignments.get(assignmentIndex % assignments.size()).addAll(query);
-      assignmentIndex++;
-    }
+    List<List<Task>> assignments = state.deploymentFunction().getDeployment(executors.size());
     distributionTime.append(System.currentTimeMillis() - startTime);
     return assignments;
   }
 
   private void sortAndAssignTasks(List<List<Task>> assignments) {
+    Validate.isTrue(assignments.size() <= executors.size(), "#assignments > #threads");
     long startTime = System.currentTimeMillis();
-    for (int i = 0; i < executors.size(); i++) {
-      List<Task> assignment = assignments.get(i);
+    for (int threadId = 0; threadId < executors.size(); threadId++) {
+      // Give no work to executors with no assignment
+      List<Task> assignment =
+          threadId < assignments.size() ? assignments.get(threadId) : Collections.emptyList();
       assignment.sort(comparator);
-//      LOG.debug("-----Thread {} assignment-----", i);
+//      LOG.debug("-----Thread {} assignment-----", threadId);
 //      for (Task task : assignment) {
 //        LOG.debug("[{}, {}]", task, Arrays.toString(state.taskFeatures[task.getIndex()]));
 //      }
-      executors.get(i).setTasks(assignment);
+      executors.get(threadId).setTasks(assignment);
     }
     sortTime.append(System.currentTimeMillis() - startTime);
   }

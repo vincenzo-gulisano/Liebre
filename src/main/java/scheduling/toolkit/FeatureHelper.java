@@ -25,6 +25,7 @@ package scheduling.toolkit;
 
 public final class FeatureHelper {
 
+  public static final double NO_ARRIVAL_TIME = -1;
   public static int CTYPE_SOURCE = 0;
   public static int CTYPE_SINK = 1;
   public static int CTYPE_OPERATOR = 2;
@@ -35,8 +36,6 @@ public final class FeatureHelper {
   private FeatureHelper() {
   }
 
-  public static final double NO_ARRIVAL_TIME = Double.MAX_VALUE;
-
   public static double getLatency(double arrivalTime, long currentTime) {
     return (arrivalTime < 0) ? 0 : currentTime - arrivalTime;
   }
@@ -44,8 +43,17 @@ public final class FeatureHelper {
   public static double getHeadLatency(double[] features, long currentTime) {
     return getLatency(features[Feature.HEAD_ARRIVAL_TIME.index()], currentTime);
   }
+
   public static double getAverageLatency(double[] features, long currentTime) {
     return getLatency(features[Feature.AVERAGE_ARRIVAL_TIME.index()], currentTime);
+  }
+
+  public static boolean noArrivalTime(double arrivalTime) {
+    return arrivalTime < 0;
+  }
+
+  public static boolean noArrivalTime(long arrivalTime) {
+    return arrivalTime < 0;
   }
 
 }

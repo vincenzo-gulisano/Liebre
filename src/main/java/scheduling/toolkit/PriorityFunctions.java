@@ -145,8 +145,8 @@ public class PriorityFunctions {
     }
 
     @Override
-    public Feature[] features() {
-      return original.features();
+    public Feature[] requiredFeatures() {
+      return original.requiredFeatures();
     }
 
     @Override

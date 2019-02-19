@@ -23,16 +23,23 @@
 
 package scheduling.toolkit;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class SchedulerState {
 
   final AtomicBoolean[] updated;
   final double[][] taskFeatures;
-  final MultiPriorityFunction priorityFunction;
   final String statisticsFolder;
+  private final MultiPriorityFunction priorityFunction;
+  private final DeploymentFunction deploymentFunction;
+  private final Feature[] requiredFeatures;
 
   public SchedulerState(int nTasks, MultiPriorityFunction priorityFunction,
+      DeploymentFunction deploymentFunction,
       boolean priorityCachning,
       String statisticsFolder) {
     updated = new AtomicBoolean[nTasks];
@@ -42,7 +49,36 @@ public final class SchedulerState {
     }
     this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
         priorityFunction;
+    this.deploymentFunction = deploymentFunction;
     this.statisticsFolder = statisticsFolder;
+    this.requiredFeatures = getAllFeatures(priorityFunction, deploymentFunction);
   }
 
+  private Feature[] getAllFeatures(PriorityFunction priorityFunction, DeploymentFunction deploymentFunction) {
+    Set<Feature> allFeatures = new HashSet<>();
+    allFeatures.addAll(Arrays.asList(priorityFunction.requiredFeatures()));
+    allFeatures.addAll(Arrays.asList(deploymentFunction.requiredFeatures()));
+    return allFeatures.toArray(new Feature[0]);
+  }
+
+  void init(List<Task> tasks) {
+    deploymentFunction.init(tasks, taskFeatures);
+  }
+
+  /**
+   * Required features for the priority and deployment functions.
+   *
+   * @return An array of all the (unique) required features.
+   */
+  Feature[] requiredFeatures() {
+    return requiredFeatures;
+  }
+
+  MultiPriorityFunction priorityFunction() {
+    return priorityFunction;
+  }
+
+  DeploymentFunction deploymentFunction() {
+    return deploymentFunction;
+  }
 }

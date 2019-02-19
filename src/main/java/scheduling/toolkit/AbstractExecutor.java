@@ -63,7 +63,7 @@ public abstract class AbstractExecutor implements Runnable {
     this.markTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "AbstractExecutor-%d-markTime", indexGenerator.getAndIncrement()), STATISTIC_TIME), true);
     markTime.enable();
-    initTaskDependencies(state.priorityFunction.features());
+    initTaskDependencies(state.requiredFeatures());
   }
 
   private void initTaskDependencies(Feature[] features) {
