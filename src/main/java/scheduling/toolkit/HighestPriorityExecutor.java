@@ -32,8 +32,8 @@ class HighestPriorityExecutor extends AbstractExecutor {
   private static final Logger LOG = LogManager.getLogger();
 
   public HighestPriorityExecutor(int batchSize, int schedulingPeriodMillis,
-      int schedulingPeriodExecutions, CyclicBarrier barrier, SchedulerState state) {
-    super(batchSize, schedulingPeriodMillis, schedulingPeriodExecutions, barrier, state);
+      CyclicBarrier barrier, SchedulerState state) {
+    super(batchSize, schedulingPeriodMillis, barrier, state);
   }
 
   protected boolean runNextTask() {

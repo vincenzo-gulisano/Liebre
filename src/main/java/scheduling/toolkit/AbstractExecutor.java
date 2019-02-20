@@ -42,25 +42,25 @@ public abstract class AbstractExecutor implements Runnable {
 
   private static final AtomicInteger indexGenerator = new AtomicInteger();
   private static final Logger LOG = LogManager.getLogger();
+  private static final int BACKOFF_RETRIES = 3;
+  public static final int BACKOFF_MIN_MILLIS = 1;
   protected final int batchSize;
   protected final CyclicBarrier barrier;
   protected final SchedulerState state;
   private final long schedulingPeriod;
-  private final int schedulingPeriodExecutions;
   private final Set<Integer> runTasks = new HashSet<>();
   private final Set<TaskDependency> taskDependencies = new HashSet<>();
   private final AbstractCummulativeStatistic markTime;
   private final SchedulerBackoff backoff;
   protected volatile List<Task> executorTasks;
 
-  public AbstractExecutor(int batchSize, int schedulingPeriodMillis, int schedulingPeriodExecutions,
-      CyclicBarrier barrier, SchedulerState state) {
+  public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
+      SchedulerState state) {
     this.batchSize = batchSize;
     this.schedulingPeriod = schedulingPeriodMillis;
-    this.schedulingPeriodExecutions = schedulingPeriodExecutions;
     this.barrier = barrier;
     this.state = state;
-    this.backoff = new SchedulerBackoff(1, schedulingPeriodMillis, 3);
+    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis, BACKOFF_RETRIES);
     this.markTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "AbstractExecutor-%d-markTime", indexGenerator.getAndIncrement()), STATISTIC_TIME), true);
     markTime.enable();
@@ -85,18 +85,15 @@ public abstract class AbstractExecutor implements Runnable {
     if (!updateTasks()) {
       return;
     }
-    int executions = 0;
     long startTime = System.currentTimeMillis();
     while (!Thread.currentThread().isInterrupted()) {
       boolean didRun = runNextTask();
       final long remainingTime = schedulingPeriod - (System.currentTimeMillis() - startTime);
       adjustUtilization(didRun, remainingTime);
-      executions = (executions + 1) % schedulingPeriodExecutions;
       if (remainingTime <= 0) {
         if (!updateTasks()) {
           return;
         }
-        executions = 0;
         startTime = System.currentTimeMillis();
       }
     }

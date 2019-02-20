@@ -38,7 +38,6 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private static final Logger LOG = LogManager.getLogger();
   private final int batchSize;
   private final int schedulingPeriodMillis;
-  private final int schedulingPeriodExecutions;
   private final int nThreads;
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
@@ -49,7 +48,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
 
   public ToolkitScheduler(int nThreads, MultiPriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
-      boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
+      boolean priorityCaching, int batchSize,
       int schedulingPeriodMillis,
       String statisticsFolder) {
     this.nThreads = nThreads;
@@ -57,19 +56,18 @@ public class ToolkitScheduler implements Scheduler<Task> {
     this.deploymentFunction = deploymentFunction;
     this.priorityCaching = priorityCaching;
     this.batchSize = batchSize;
-    this.schedulingPeriodExecutions = schedulingPeriodExecutions;
     this.schedulingPeriodMillis = schedulingPeriodMillis;
     this.statisticsFolder = statisticsFolder;
   }
 
   public ToolkitScheduler(int nThreads, SinglePriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
-      boolean priorityCaching, int batchSize, int schedulingPeriodExecutions,
+      boolean priorityCaching, int batchSize,
       int schedulingPeriodMillis,
       String statisticsFolder) {
     this(nThreads, new CombinedPriorityFunction(priorityFunction), deploymentFunction,
         priorityCaching, batchSize,
-        schedulingPeriodExecutions, schedulingPeriodMillis, statisticsFolder);
+        schedulingPeriodMillis, statisticsFolder);
   }
 
 
@@ -89,7 +87,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
         state));
     for (int i = 0; i < nThreads; i++) {
       executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriodMillis,
-          schedulingPeriodExecutions, barrier, state));
+          barrier, state));
     }
     LOG.info("Using {} threads", executors.size());
     for (int i = 0; i < executors.size(); i++) {
