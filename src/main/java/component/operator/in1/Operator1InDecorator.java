@@ -145,6 +145,11 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
+  public double getRate() {
+    return processCommand.getRate();
+  }
+
+  @Override
   public ConnectionsNumber inputsNumber() {
     return decorated.inputsNumber();
   }

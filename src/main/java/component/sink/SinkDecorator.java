@@ -131,6 +131,11 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
+  public double getRate() {
+    return processCommand.getRate();
+  }
+
+  @Override
   public boolean canRun() {
     return decorated.canRun();
   }

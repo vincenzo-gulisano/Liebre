@@ -157,6 +157,11 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
+  public double getRate() {
+    return processingCommand.getRate();
+  }
+
+  @Override
   public boolean canRun() {
     return decorated.canRun();
   }

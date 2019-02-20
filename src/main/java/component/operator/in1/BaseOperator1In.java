@@ -71,6 +71,11 @@ public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> exten
   }
 
   @Override
+  public double getRate() {
+    return processCommand.getRate();
+  }
+
+  @Override
   public void updateMetrics() {
     processCommand.updateMetrics();
   }

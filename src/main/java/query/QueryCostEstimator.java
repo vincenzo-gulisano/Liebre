@@ -54,12 +54,17 @@ public class QueryCostEstimator implements Runnable {
       }
       Collection<Source<?>> sources = query.sources();
       double totalCost = 0;
+      double totalUtilization = 0;
       for (Source<?> source : sources) {
         double sourceCost = globalAverageCost(source) / 1000000000;
+        double sourceThroughput = source.getRate()*1000;
         LOG.info("Source {} max rate = {} t/s", source, 1 / sourceCost);
+        LOG.info("Source {} current rate = {} t/s", source, sourceThroughput);
         totalCost += sourceCost;
+        totalUtilization += 100*(sourceThroughput * sourceCost);
       }
       LOG.info("TOTAL Maximum rate = {} t/s", 1 / totalCost);
+      LOG.info("TOTAL Utilization = {}%", String.format("%3.2f", totalUtilization));
     }
   }
 

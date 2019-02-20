@@ -123,6 +123,11 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   }
 
   @Override
+  public double getRate() {
+    return processCommand.getRate();
+  }
+
+  @Override
   public boolean runFor(int times) {
     return processCommand.runFor(times);
   }

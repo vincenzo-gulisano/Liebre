@@ -103,6 +103,11 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
   }
 
   @Override
+  public double getRate() {
+    return processCommand.getRate();
+  }
+
+  @Override
   public boolean runFor(int times) {
     return processCommand.runFor(times);
   }

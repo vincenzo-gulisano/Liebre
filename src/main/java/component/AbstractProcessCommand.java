@@ -36,15 +36,17 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
 
   // Exponential moving average alpha parameter
   // for cost and selectivity moving averages
-  private static final double EMA_ALPHA = 0.1;
+  private static final double EMA_ALPHA = 0.5;
   protected final T component;
 
-  protected volatile long tuplesWritten;
-  protected volatile long tuplesRead;
-  protected volatile long processingTimeNanos;
+  private volatile long tuplesWritten;
+  private volatile long tuplesRead;
+  private volatile long processingTimeNanos;
+  private volatile long lastUpdateTime;
 
   private volatile double selectivity = 1;
   private volatile double cost = 1;
+  private volatile double rate = 0;
 
   protected AbstractProcessCommand(T component) {
     this.component = component;
@@ -94,11 +96,15 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     if (tuplesRead == 0 || processingTimeNanos == 0) {
       return;
     }
-    double currentSelectivity = tuplesWritten / (double) tuplesRead;
-    double currentCost = processingTimeNanos / (double) tuplesRead;
+    final long currentTime = System.currentTimeMillis();
+    final double currentSelectivity = tuplesWritten / (double) tuplesRead;
+    final double currentCost = processingTimeNanos / (double) tuplesRead;
+    final double currentThroughput = tuplesRead / (currentTime - lastUpdateTime);
     this.selectivity = (EMA_ALPHA * currentSelectivity) + ((1 - EMA_ALPHA) * selectivity);
     this.cost = (EMA_ALPHA * currentCost) + ((1 - EMA_ALPHA) * cost);
+    this.rate = currentThroughput;
     this.tuplesRead = this.tuplesWritten = this.processingTimeNanos = 0;
+    this.lastUpdateTime = currentTime;
   }
 
   public final double getSelectivity() {
@@ -107,6 +113,10 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
 
   public final double getCost() {
     return cost;
+  }
+
+  public final double getRate() {
+    return rate;
   }
 
   @Override

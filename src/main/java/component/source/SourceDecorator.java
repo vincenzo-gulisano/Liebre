@@ -76,6 +76,11 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
+  public double getRate() {
+    return processCommand.getRate();
+  }
+
+  @Override
   public ComponentType getType() {
     return decorated.getType();
   }

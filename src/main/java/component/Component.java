@@ -64,6 +64,8 @@ public interface Component extends Active, Runnable, Named, Task {
 
   double getSelectivity();
 
+  double getRate();
+
   /**
    * Update the metrics  (e.g. cost and selectivity) based on the execution statistics of the
    * operator.

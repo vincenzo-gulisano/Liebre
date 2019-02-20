@@ -102,4 +102,9 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
   public double getCost() {
     return processCommand.getCost();
   }
+
+  @Override
+  public double getRate() {
+    return processCommand.getRate();
+  }
 }

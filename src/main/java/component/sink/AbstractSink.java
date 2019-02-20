@@ -142,4 +142,9 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   public double getCost() {
     return processCommand.getCost();
   }
+
+  @Override
+  public double getRate() {
+    return processCommand.getRate();
+  }
 }

@@ -48,6 +48,8 @@ class FeatureTranslator {
         return component.getHeadArrivalTime();
       case AVERAGE_ARRIVAL_TIME:
         return component.getAverageArrivalTime();
+      case RATE:
+        return component.getRate();
       default:
         throw new IllegalStateException("Unknown feature: " + feature);
     }

@@ -63,6 +63,11 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
+  public double getRate() {
+    return decorated.getRate();
+  }
+
+  @Override
   public Collection<? extends Stream<OUT>> getOutputs() {
     return decorated.getOutputs();
   }
