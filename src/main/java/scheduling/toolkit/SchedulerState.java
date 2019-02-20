@@ -28,15 +28,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 public final class SchedulerState {
 
+  // Features that might not be needed by any priority/deployment function
+  // but are internally used by the scheduler
+  private static final Feature[] SCHEDULER_REQUIRED_FEATURES = {Feature.COMPONENT_TYPE};
   final AtomicBoolean[] updated;
   final double[][] taskFeatures;
   final String statisticsFolder;
   private final MultiPriorityFunction priorityFunction;
   private final DeploymentFunction deploymentFunction;
-  private final Feature[] requiredFeatures;
+  private final Feature[] allRequiredFeatures;
+  private final Feature[] changingRequiredFeatures;
 
   public SchedulerState(int nTasks, MultiPriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
@@ -51,14 +56,23 @@ public final class SchedulerState {
         priorityFunction;
     this.deploymentFunction = deploymentFunction;
     this.statisticsFolder = statisticsFolder;
-    this.requiredFeatures = getAllFeatures(priorityFunction, deploymentFunction);
+    this.allRequiredFeatures = getAllFeatures(priorityFunction, deploymentFunction);
+    this.changingRequiredFeatures = getAllFeatures(priorityFunction, deploymentFunction,
+        feature -> !feature.isConstant());
   }
 
-  private Feature[] getAllFeatures(PriorityFunction priorityFunction, DeploymentFunction deploymentFunction) {
+  private Feature[] getAllFeatures(PriorityFunction priorityFunction,
+      DeploymentFunction deploymentFunction, Predicate<Feature> predicate) {
     Set<Feature> allFeatures = new HashSet<>();
     allFeatures.addAll(Arrays.asList(priorityFunction.requiredFeatures()));
     allFeatures.addAll(Arrays.asList(deploymentFunction.requiredFeatures()));
-    return allFeatures.toArray(new Feature[0]);
+    allFeatures.addAll(Arrays.asList(SCHEDULER_REQUIRED_FEATURES));
+    return allFeatures.stream().filter(predicate).toArray(Feature[]::new);
+  }
+
+  private Feature[] getAllFeatures(PriorityFunction priorityFunction,
+      DeploymentFunction deploymentFunction) {
+    return getAllFeatures(priorityFunction, deploymentFunction, feature -> true);
   }
 
   void init(List<Task> tasks) {
@@ -68,10 +82,11 @@ public final class SchedulerState {
   /**
    * Required features for the priority and deployment functions.
    *
+   * @param includingConstant Choice of whether to include the non-changing features or not
    * @return An array of all the (unique) required features.
    */
-  Feature[] requiredFeatures() {
-    return requiredFeatures;
+  Feature[] requiredFeatures(boolean includingConstant) {
+    return includingConstant ? allRequiredFeatures : changingRequiredFeatures;
   }
 
   MultiPriorityFunction priorityFunction() {

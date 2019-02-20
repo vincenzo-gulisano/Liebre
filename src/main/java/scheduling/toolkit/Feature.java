@@ -29,12 +29,12 @@ import java.util.Map;
 
 //TODO: Constant vs changing feature
 public enum Feature {
-  TOPOLOGICAL_ORDER(0),
-  SELECTIVITY(1),
-  COST(2),
-  HEAD_ARRIVAL_TIME(3),
-  AVERAGE_ARRIVAL_TIME(4),
-  COMPONENT_TYPE(5);
+  TOPOLOGICAL_ORDER(0, true),
+  SELECTIVITY(1, false),
+  COST(2, false),
+  HEAD_ARRIVAL_TIME(3, false),
+  AVERAGE_ARRIVAL_TIME(4, false),
+  COMPONENT_TYPE(5, true);
 
   public static final Map<Feature, FeatureDependency[]> dependencies;
 
@@ -52,13 +52,19 @@ public enum Feature {
   private static final FeatureDependency[] NO_DEPENDENCIES = new FeatureDependency[0];
 
   private final int index;
+  private final boolean constant;
 
-  Feature(int index) {
+  Feature(int index, boolean constant) {
     this.index = index;
+    this.constant = constant;
   }
 
   public int index() {
     return index;
+  }
+
+  public boolean isConstant() {
+    return constant;
   }
 
   public double get(Task task, double[][] features) {
