@@ -25,7 +25,6 @@ package scheduling.toolkit;
 
 import java.util.List;
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public abstract class AbstractDeploymentFunction implements DeploymentFunction {
 
@@ -57,9 +56,6 @@ public abstract class AbstractDeploymentFunction implements DeploymentFunction {
 
   @Override
   public String toString() {
-    return new ToStringBuilder(this)
-        .append("requiredFeatures", requiredFeatures)
-        .append("name", name)
-        .toString();
+    return name();
   }
 }

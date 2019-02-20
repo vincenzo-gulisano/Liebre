@@ -53,6 +53,7 @@ public class PriorityFunctions {
       return globalSelectivity;
     }
   };
+
   private static final SinglePriorityFunction HEAD_ARRIVAL_TIME = new AbstractPriorityFunction(
       "HEAD_ARRIVAL_TIME", Feature.HEAD_ARRIVAL_TIME) {
     @Override
@@ -65,6 +66,21 @@ public class PriorityFunctions {
       return true;
     }
   };
+
+  private static final SinglePriorityFunction AVERAGE_ARRIVAL_TIME = new AbstractPriorityFunction(
+      "HEAD_ARRIVAL_TIME", Feature.AVERAGE_ARRIVAL_TIME) {
+    @Override
+    public double apply(Task task, double[][] features) {
+      return Feature.AVERAGE_ARRIVAL_TIME.get(task, features);
+    }
+
+    @Override
+    public boolean reverseOrder() {
+      return true;
+    }
+
+  };
+
   private static final SinglePriorityFunction GLOBAL_AVERAGE_COST =
       new CachingPriorityFunction("GLOBAL_AVERAGE_COST", Feature.COST, Feature.SELECTIVITY) {
 
@@ -105,6 +121,10 @@ public class PriorityFunctions {
 
   private PriorityFunctions() {
 
+  }
+
+  public static SinglePriorityFunction averageArrivalTime() {
+    return AVERAGE_ARRIVAL_TIME;
   }
 
   public static SinglePriorityFunction headArrivalTime() {

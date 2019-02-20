@@ -37,27 +37,41 @@ class HighestPriorityExecutor extends AbstractExecutor {
   }
 
   protected boolean runNextTask() {
-    boolean executedSource = false;
-    long executionTimeNanos = 0;
-    boolean didRun = false;
     for (int localIndex = 0; localIndex < executorTasks.size(); localIndex++) {
       Task task = executorTasks.get(localIndex);
 //      LOG.debug("Trying to execute {}", task);
       if (task.canRun()) {
-        LOG.debug("Executing {}", task);
-        didRun = didRun || task.runFor(batchSize);
-        mark(localIndex);
-        // Prevent starvation: If one source runs, then everything will be traversed until
-        // we run out of components (enabling executedSource)
-        boolean taskWasSource =
-            Feature.COMPONENT_TYPE.get(task, state.taskFeatures) == FeatureHelper.CTYPE_SOURCE;
-        executedSource = executedSource || taskWasSource;
-        if (!executedSource) {
-          break;
+        final boolean didRun = task.runFor(batchSize);
+        if (didRun) {
+          LOG.debug("Executed {}", task);
+          runAction(localIndex, task);
+          return true;
         }
       }
     }
-    return didRun;
+    return false;
+  }
+
+  private void runAction(int localIndex, Task task) {
+    if (isSource(task)) {
+      runSources(localIndex + 1);
+    }
+    mark(localIndex);
+  }
+
+  private void runSources(int startIndex) {
+    for (int localIndex = startIndex; localIndex < executorTasks.size(); localIndex++) {
+      Task task = executorTasks.get(localIndex);
+      if (task.canRun() && isSource(task)) {
+        LOG.debug("[Source Round] Trying to execute source {}", task);
+        task.runFor(batchSize);
+        mark(localIndex);
+      }
+    }
+  }
+
+  private boolean isSource(Task task) {
+    return Feature.COMPONENT_TYPE.get(task, state.taskFeatures) == FeatureHelper.CTYPE_SOURCE;
   }
 
 }

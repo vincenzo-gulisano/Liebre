@@ -79,6 +79,13 @@ public class ToolkitScheduler implements Scheduler<Task> {
   @Override
   public void startTasks() {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
+    LOG.info("Starting Scheduler");
+    LOG.info("Priority Function: {}", priorityFunction);
+    LOG.info("Priority Cachking: {}", priorityCaching);
+    LOG.info("Deployment Function Function: {}", deploymentFunction);
+    LOG.info("Worker threads: {}", nThreads);
+    LOG.info("Scheduling Period: {} ms", schedulingPeriodMillis);
+    LOG.info("Batch Size: {}", batchSize);
     final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction,
         deploymentFunction, priorityCaching,
         statisticsFolder);
@@ -89,7 +96,6 @@ public class ToolkitScheduler implements Scheduler<Task> {
       executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriodMillis,
           barrier, state));
     }
-    LOG.info("Using {} threads", executors.size());
     for (int i = 0; i < executors.size(); i++) {
       Thread t = new Thread(executors.get(i));
       t.setName(String.format("Scheduler-Worker-%d", i));

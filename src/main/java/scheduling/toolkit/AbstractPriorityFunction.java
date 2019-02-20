@@ -78,4 +78,8 @@ public abstract class AbstractPriorityFunction implements SinglePriorityFunction
     return name;
   }
 
+  @Override
+  public String toString() {
+    return name();
+  }
 }

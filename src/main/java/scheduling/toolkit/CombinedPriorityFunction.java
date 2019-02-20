@@ -41,7 +41,7 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
     StringBuilder nameBuilder = new StringBuilder("Composite:");
     for (SinglePriorityFunction function : functions) {
       functionFeatures.addAll(Arrays.asList(function.requiredFeatures()));
-      nameBuilder.append(function.name());
+      nameBuilder.append(function.name()).append(",");
     }
     this.name = nameBuilder.toString();
     this.requiredFeatures = functionFeatures.toArray(new Feature[0]);
@@ -88,5 +88,10 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
   @Override
   public String name() {
     return name;
+  }
+
+  @Override
+  public String toString() {
+    return name();
   }
 }

@@ -50,7 +50,7 @@ public class PriorityUpdateAction implements Runnable {
   private final AbstractCummulativeStatistic priorityTime;
   private final AbstractCummulativeStatistic distributionTime;
   private final AbstractCummulativeStatistic sortTime;
-  private volatile boolean firstUpdate = true;
+  private boolean firstUpdate = true;
 
   public PriorityUpdateAction(List<Task> inputTasks, List<AbstractExecutor> executors,
       SchedulerState state) {
@@ -97,9 +97,8 @@ public class PriorityUpdateAction implements Runnable {
 
   private void updateFeatures() {
     long startTime = System.currentTimeMillis();
-
     for (Task task : tasks) {
-      if (state.updated[task.getIndex()].getAndSet(false)) {
+      if (firstUpdate || state.updated[task.getIndex()].getAndSet(false)) {
         task.refreshFeatures();
         task.updateFeatures(state.requiredFeatures(firstUpdate),
             state.taskFeatures[task.getIndex()]);
