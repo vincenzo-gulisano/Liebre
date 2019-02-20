@@ -39,7 +39,8 @@ public interface ProcessCommand extends Runnable {
    * Execute {@link #run()} for the given number of repetitions.
    *
    * @param rounds The number of times that this command will be run.
+   * @return {@code true} if the command processed at least one tuple
    */
-  void runFor(int rounds);
+  boolean runFor(int rounds);
 
 }

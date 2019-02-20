@@ -123,8 +123,8 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public void runFor(int times) {
-    decorated.runFor(times);
+  public boolean runFor(int times) {
+    return decorated.runFor(times);
   }
 
   @Override

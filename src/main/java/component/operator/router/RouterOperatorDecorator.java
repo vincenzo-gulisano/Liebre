@@ -137,8 +137,8 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public void runFor(int rounds) {
-    processingCommand.runFor(rounds);
+  public boolean runFor(int rounds) {
+    return processingCommand.runFor(rounds);
   }
 
   @Override

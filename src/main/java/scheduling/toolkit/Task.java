@@ -27,7 +27,7 @@ import java.util.List;
 
 public interface Task extends Runnable {
 
-  void runFor(final int times);
+  boolean runFor(final int times);
 
   boolean canRun();
 

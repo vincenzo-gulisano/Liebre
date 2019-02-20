@@ -50,7 +50,7 @@ public abstract class AbstractExecutor implements Runnable {
   private final Set<Integer> runTasks = new HashSet<>();
   private final Set<TaskDependency> taskDependencies = new HashSet<>();
   private final AbstractCummulativeStatistic markTime;
-  private long backoffTime = 1;
+  private final SchedulerBackoff backoff;
   protected volatile List<Task> executorTasks;
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, int schedulingPeriodExecutions,
@@ -60,6 +60,7 @@ public abstract class AbstractExecutor implements Runnable {
     this.schedulingPeriodExecutions = schedulingPeriodExecutions;
     this.barrier = barrier;
     this.state = state;
+    this.backoff = new SchedulerBackoff(1, schedulingPeriodMillis, 3);
     this.markTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "AbstractExecutor-%d-markTime", indexGenerator.getAndIncrement()), STATISTIC_TIME), true);
     markTime.enable();
@@ -87,9 +88,9 @@ public abstract class AbstractExecutor implements Runnable {
     int executions = 0;
     long startTime = System.currentTimeMillis();
     while (!Thread.currentThread().isInterrupted()) {
-      long taskExecutionNanos = runNextTask();
+      boolean didRun = runNextTask();
       final long remainingTime = schedulingPeriod - (System.currentTimeMillis() - startTime);
-      adjustUtilization(taskExecutionNanos, remainingTime);
+      adjustUtilization(didRun, remainingTime);
       executions = (executions + 1) % schedulingPeriodExecutions;
       if (remainingTime <= 0) {
         if (!updateTasks()) {
@@ -101,26 +102,18 @@ public abstract class AbstractExecutor implements Runnable {
     }
   }
 
-  private void adjustUtilization(long taskExecutionNanos, long remainingTime) {
+  private void adjustUtilization(boolean didRun, long remainingTime) {
     if (remainingTime <= 0) {
       return;
     }
-    if (taskExecutionNanos <= 0) {
-      try {
-        long sleepTime = Math.min(backoffTime, remainingTime);
-        Thread.sleep(sleepTime);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return;
-      }
-      backoffTime = Math.min(backoffTime * 2, schedulingPeriod);
+    if (!didRun) {
+      backoff.backoff(remainingTime);
+      return;
     }
-    else {
-      backoffTime = Math.max(backoffTime / 2, 1);
-    }
+    backoff.relax();
   }
 
-  protected abstract long runNextTask();
+  protected abstract boolean runNextTask();
 
   private boolean updateTasks() {
     try {

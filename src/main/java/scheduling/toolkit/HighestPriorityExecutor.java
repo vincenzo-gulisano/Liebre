@@ -36,17 +36,16 @@ class HighestPriorityExecutor extends AbstractExecutor {
     super(batchSize, schedulingPeriodMillis, schedulingPeriodExecutions, barrier, state);
   }
 
-  protected long runNextTask() {
+  protected boolean runNextTask() {
     boolean executedSource = false;
     long executionTimeNanos = 0;
+    boolean didRun = false;
     for (int localIndex = 0; localIndex < executorTasks.size(); localIndex++) {
       Task task = executorTasks.get(localIndex);
 //      LOG.debug("Trying to execute {}", task);
       if (task.canRun()) {
         LOG.debug("Executing {}", task);
-        long startTime = System.nanoTime();
-        task.runFor(batchSize);
-        executionTimeNanos += System.nanoTime() - startTime;
+        didRun = didRun || task.runFor(batchSize);
         mark(localIndex);
         // Prevent starvation: If one source runs, then everything will be traversed until
         // we run out of components (enabling executedSource)
@@ -58,7 +57,7 @@ class HighestPriorityExecutor extends AbstractExecutor {
         }
       }
     }
-    return executionTimeNanos;
+    return didRun;
   }
 
 }

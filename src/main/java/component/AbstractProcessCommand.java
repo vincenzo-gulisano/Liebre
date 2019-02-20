@@ -58,8 +58,10 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   }
 
   @Override
-  public void runFor(int rounds) {
+  public boolean runFor(int rounds) {
     int executions = 0;
+    long tuplesWrittenBefore = tuplesWritten;
+    long tuplesReadBefore = tuplesRead;
     long startTime = System.nanoTime();
     while (component.isEnabled() && executions < rounds) {
       run();
@@ -68,6 +70,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     long endTime = System.nanoTime();
     // Update processing time
     processingTimeNanos += (endTime - startTime);
+    return tuplesReadBefore != tuplesRead || tuplesWrittenBefore != tuplesWritten;
   }
 
   protected final void increaseTuplesRead() {

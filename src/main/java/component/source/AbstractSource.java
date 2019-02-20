@@ -78,8 +78,8 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public void runFor(int times) {
-    processCommand.runFor(times);
+  public boolean runFor(int times) {
+    return processCommand.runFor(times);
   }
 
   @Override
