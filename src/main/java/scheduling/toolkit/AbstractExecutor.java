@@ -23,8 +23,6 @@
 
 package scheduling.toolkit;
 
-import static scheduling.toolkit.PriorityUpdateAction.STATISTIC_TIME;
-
 import common.statistic.AbstractCummulativeStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticPath;
@@ -40,18 +38,21 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractExecutor implements Runnable {
 
+  public static final String EXECUTOR_STATISTIC_TIME = "executor-time";
+  private static final int BACKOFF_MIN_MILLIS = 1;
   private static final AtomicInteger indexGenerator = new AtomicInteger();
+  private final int index;
   private static final Logger LOG = LogManager.getLogger();
   private static final int BACKOFF_RETRIES = 3;
-  public static final int BACKOFF_MIN_MILLIS = 1;
   protected final int batchSize;
   protected final CyclicBarrier barrier;
   protected final SchedulerState state;
   private final long schedulingPeriod;
   private final Set<Integer> runTasks = new HashSet<>();
   private final Set<TaskDependency> taskDependencies = new HashSet<>();
-  private final AbstractCummulativeStatistic markTime;
   private final SchedulerBackoff backoff;
+  private final AbstractCummulativeStatistic updateTime;
+  private final AbstractCummulativeStatistic waitTime;
   protected volatile List<Task> executorTasks;
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
@@ -60,11 +61,20 @@ public abstract class AbstractExecutor implements Runnable {
     this.schedulingPeriod = schedulingPeriodMillis;
     this.barrier = barrier;
     this.state = state;
-    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis, BACKOFF_RETRIES);
-    this.markTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
-        "AbstractExecutor-%d-markTime", indexGenerator.getAndIncrement()), STATISTIC_TIME), true);
-    markTime.enable();
-    initTaskDependencies(state.requiredFeatures(true));
+    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis,
+        BACKOFF_RETRIES);
+    this.index = indexGenerator.getAndIncrement();
+    this.updateTime = new CountStatistic(
+        StatisticPath.get(state.statisticsFolder, String.format(
+            "Update-Action-Executor-%d", index),
+            EXECUTOR_STATISTIC_TIME),
+        false);
+    this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
+        "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
+        false);
+    updateTime.enable();
+    waitTime.enable();
+    initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
   private void initTaskDependencies(Feature[] features) {
@@ -92,11 +102,13 @@ public abstract class AbstractExecutor implements Runnable {
       adjustUtilization(didRun, remainingTime);
       if (remainingTime <= 0) {
         if (!updateTasks()) {
-          return;
+          break;
         }
         startTime = System.currentTimeMillis();
       }
     }
+    updateTime.disable();
+    waitTime.disable();
   }
 
   private void adjustUtilization(boolean didRun, long remainingTime) {
@@ -115,7 +127,9 @@ public abstract class AbstractExecutor implements Runnable {
   private boolean updateTasks() {
     try {
       markUpdated();
+      long start = System.currentTimeMillis();
       barrier.await();
+      waitTime.append(System.currentTimeMillis() - start);
       return true;
     } catch (InterruptedException | BrokenBarrierException e) {
       return false;
@@ -137,6 +151,9 @@ public abstract class AbstractExecutor implements Runnable {
     long startTime = System.currentTimeMillis();
     for (int taskIndex : runTasks) {
       Task task = executorTasks.get(taskIndex);
+      task.refreshFeatures();
+      task.updateFeatures(state.variableFeaturesNoDependencies(),
+          state.taskFeatures[task.getIndex()]);
       state.updated[task.getIndex()].set(true);
       for (TaskDependency taskDependency : taskDependencies) {
         for (Task dependent : taskDependency.dependents(task)) {
@@ -145,7 +162,7 @@ public abstract class AbstractExecutor implements Runnable {
       }
     }
     runTasks.clear();
-    markTime.append(System.currentTimeMillis() - startTime);
+    updateTime.append(System.currentTimeMillis() - startTime);
   }
 
   @Override

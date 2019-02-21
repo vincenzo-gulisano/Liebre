@@ -45,6 +45,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private final MultiPriorityFunction priorityFunction;
   private final boolean priorityCaching;
   private final DeploymentFunction deploymentFunction;
+  private volatile PriorityUpdateAction priorityUpdateAction;
 
   public ToolkitScheduler(int nThreads, MultiPriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
@@ -87,14 +88,12 @@ public class ToolkitScheduler implements Scheduler<Task> {
     LOG.info("Scheduling Period: {} ms", schedulingPeriodMillis);
     LOG.info("Batch Size: {}", batchSize);
     final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction,
-        deploymentFunction, priorityCaching,
-        statisticsFolder);
+        deploymentFunction, priorityCaching, statisticsFolder);
     final List<AbstractExecutor> executors = new ArrayList<>();
-    CyclicBarrier barrier = new CyclicBarrier(nThreads, new PriorityUpdateAction(tasks, executors,
-        state));
+    this.priorityUpdateAction = new PriorityUpdateAction(tasks, executors, state);
+    CyclicBarrier barrier = new CyclicBarrier(nThreads, priorityUpdateAction);
     for (int i = 0; i < nThreads; i++) {
-      executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriodMillis,
-          barrier, state));
+      executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriodMillis, barrier, state));
     }
     for (int i = 0; i < executors.size(); i++) {
       Thread t = new Thread(executors.get(i));
@@ -140,6 +139,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
     for (Task task : tasks) {
       ((Component) task).disable();
     }
+    priorityUpdateAction.disable();
   }
 
 

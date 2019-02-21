@@ -48,7 +48,7 @@ public class PriorityUpdateAction implements Runnable {
   private final AbstractCummulativeStatistic totalCalls;
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic priorityTime;
-  private final AbstractCummulativeStatistic distributionTime;
+  private final AbstractCummulativeStatistic deploymentTime;
   private final AbstractCummulativeStatistic sortTime;
   private boolean firstUpdate = true;
 
@@ -61,50 +61,66 @@ public class PriorityUpdateAction implements Runnable {
     this.priorities = new double[tasks.size()][state.priorityFunction().dimensions()];
     this.queries = new QueryResolver(this.tasks);
     this.comparator = new MultiPriorityComparator(state.priorityFunction(), priorities);
-    this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "total"), STATISTIC_CALLS), true);
 
     // Statistics Initialization
+    this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
+        "Total-Calls"), STATISTIC_CALLS), true);
     totalCalls.enable();
     this.updateTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "updateFeatures"), STATISTIC_TIME), true);
+        "Update-Features"), STATISTIC_TIME), false);
     updateTime.enable();
     this.priorityTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "calculatePriorities"), STATISTIC_TIME), true);
+        "Calculate-Priorities"), STATISTIC_TIME), false);
     priorityTime.enable();
-    this.distributionTime = new CountStatistic(
+    this.deploymentTime = new CountStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
-            "distributeTasks"), STATISTIC_TIME), true);
-    distributionTime.enable();
+            "Deploy-Tasks"), STATISTIC_TIME), false);
+    deploymentTime.enable();
     this.sortTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "sortPriorities"), STATISTIC_TIME), true);
+        "Sort-Priorities"), STATISTIC_TIME), false);
     sortTime.enable();
   }
 
   static String statisticName(String action) {
-    return String.format("Priority-Update-%s", action);
+    return String.format("%s-Priority-Update", action);
   }
 
   @Override
   public void run() {
     Validate.isTrue(tasks.size() > 0, "No tasks given!");
-    updateFeatures();
+    if (firstUpdate) {
+      updateAllFeatures();
+      firstUpdate = false;
+    } else {
+      updateFeaturesWithDependencies();
+    }
     calculatePriorities();
-    List<List<Task>> assignments = distributeTasks();
+    List<List<Task>> assignments = deployTasks();
     sortAndAssignTasks(assignments);
     totalCalls.append(1);
   }
 
-  private void updateFeatures() {
+  private void updateFeaturesWithDependencies() {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
-      if (firstUpdate || state.updated[task.getIndex()].getAndSet(false)) {
-        task.refreshFeatures();
-        task.updateFeatures(state.requiredFeatures(firstUpdate),
+      if (state.updated[task.getIndex()].getAndSet(false)) {
+        task.updateFeatures(state.variableFeaturesWithDependencies(),
             state.taskFeatures[task.getIndex()]);
       }
     }
-    firstUpdate = false;
+    updateTime.append(System.currentTimeMillis() - startTime);
+  }
+
+  private void updateAllFeatures() {
+    long startTime = System.currentTimeMillis();
+    for (Task task : tasks) {
+      task.refreshFeatures();
+      task.updateFeatures(state.constantFeatures(), state.taskFeatures[task.getIndex()]);
+      task.updateFeatures(state.variableFeaturesNoDependencies(),
+          state.taskFeatures[task.getIndex()]);
+      task.updateFeatures(state.variableFeaturesWithDependencies(),
+          state.taskFeatures[task.getIndex()]);
+    }
     updateTime.append(System.currentTimeMillis() - startTime);
   }
 
@@ -117,10 +133,10 @@ public class PriorityUpdateAction implements Runnable {
     priorityTime.append(System.currentTimeMillis() - startTime);
   }
 
-  private List<List<Task>> distributeTasks() {
+  private List<List<Task>> deployTasks() {
     long startTime = System.currentTimeMillis();
     List<List<Task>> assignments = state.deploymentFunction().getDeployment(executors.size());
-    distributionTime.append(System.currentTimeMillis() - startTime);
+    deploymentTime.append(System.currentTimeMillis() - startTime);
     return assignments;
   }
 
@@ -139,6 +155,14 @@ public class PriorityUpdateAction implements Runnable {
       executors.get(threadId).setTasks(assignment);
     }
     sortTime.append(System.currentTimeMillis() - startTime);
+  }
+
+  void disable() {
+    totalCalls.disable();
+    updateTime.disable();
+    priorityTime.disable();
+    deploymentTime.disable();
+    sortTime.disable();
   }
 
 }

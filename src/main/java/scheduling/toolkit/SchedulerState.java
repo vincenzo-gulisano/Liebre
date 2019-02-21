@@ -29,9 +29,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class SchedulerState {
 
+
+  private static final Logger LOG = LogManager.getLogger();
   // Features that might not be needed by any priority/deployment function
   // but are internally used by the scheduler
   private static final Feature[] SCHEDULER_REQUIRED_FEATURES = {Feature.COMPONENT_TYPE};
@@ -40,8 +44,11 @@ public final class SchedulerState {
   final String statisticsFolder;
   private final MultiPriorityFunction priorityFunction;
   private final DeploymentFunction deploymentFunction;
-  private final Feature[] allRequiredFeatures;
-  private final Feature[] changingRequiredFeatures;
+  private final Feature[] constantFeatures;
+  //Non-constant features with at least one dependency
+  private final Feature[] variableFeaturesWithDependencies;
+  //Non-constant features with no dependencies
+  private final Feature[] variableFeaturesNoDependencies;
 
   public SchedulerState(int nTasks, MultiPriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
@@ -56,12 +63,20 @@ public final class SchedulerState {
         priorityFunction;
     this.deploymentFunction = deploymentFunction;
     this.statisticsFolder = statisticsFolder;
-    this.allRequiredFeatures = getAllFeatures(priorityFunction, deploymentFunction);
-    this.changingRequiredFeatures = getAllFeatures(priorityFunction, deploymentFunction,
-        feature -> !feature.isConstant());
+    this.constantFeatures = getFeatures(priorityFunction, deploymentFunction,
+        feature -> feature.isConstant());
+    this.variableFeaturesWithDependencies = getFeatures(priorityFunction, deploymentFunction,
+        feature -> !feature.isConstant() && feature.dependencies().length > 0);
+    this.variableFeaturesNoDependencies = getFeatures(priorityFunction, deploymentFunction,
+        feature -> !feature.isConstant() && feature.dependencies().length == 0);
+    LOG.info("Constant Features: {}", Arrays.toString(constantFeatures));
+    LOG.info("Variable Features with dependencies: {}", Arrays.toString(
+        variableFeaturesWithDependencies));
+    LOG.info("Variable Features without dependencies: {}",
+        Arrays.toString(variableFeaturesNoDependencies));
   }
 
-  private Feature[] getAllFeatures(PriorityFunction priorityFunction,
+  private Feature[] getFeatures(PriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction, Predicate<Feature> predicate) {
     Set<Feature> allFeatures = new HashSet<>();
     allFeatures.addAll(Arrays.asList(priorityFunction.requiredFeatures()));
@@ -70,23 +85,25 @@ public final class SchedulerState {
     return allFeatures.stream().filter(predicate).toArray(Feature[]::new);
   }
 
-  private Feature[] getAllFeatures(PriorityFunction priorityFunction,
+  private Feature[] getFeatures(PriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction) {
-    return getAllFeatures(priorityFunction, deploymentFunction, feature -> true);
+    return getFeatures(priorityFunction, deploymentFunction, feature -> true);
   }
 
   void init(List<Task> tasks) {
     deploymentFunction.init(tasks, taskFeatures);
   }
 
-  /**
-   * Required features for the priority and deployment functions.
-   *
-   * @param includingConstant Choice of whether to include the non-changing features or not
-   * @return An array of all the (unique) required features.
-   */
-  Feature[] requiredFeatures(boolean includingConstant) {
-    return includingConstant ? allRequiredFeatures : changingRequiredFeatures;
+  Feature[] constantFeatures() {
+    return constantFeatures;
+  }
+
+  public Feature[] variableFeaturesWithDependencies() {
+    return variableFeaturesWithDependencies;
+  }
+
+  public Feature[] variableFeaturesNoDependencies() {
+    return variableFeaturesNoDependencies;
   }
 
   MultiPriorityFunction priorityFunction() {
