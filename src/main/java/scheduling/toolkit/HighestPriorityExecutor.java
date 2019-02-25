@@ -64,7 +64,7 @@ class HighestPriorityExecutor extends AbstractExecutor {
       Task task = executorTasks.get(localIndex);
       if (task.canRun() && isSource(task)) {
         LOG.debug("[Source Round] Trying to execute source {}", task);
-        task.runFor(batchSize);
+        task.runFor(1);
         mark(localIndex);
       }
     }

@@ -48,7 +48,9 @@ public class MultiPriorityComparator implements Comparator<Task> {
     for (int k = 0; k < p1.length; k++) {
       int comparisonDimnesionK = Double.compare(p1[k], p2[k]);
       if (comparisonDimnesionK != 0) {
-        return reverseOrder[k] ? -comparisonDimnesionK : comparisonDimnesionK;
+        // Reverse order means from LOW -> HIGH (so same as Double.compare)
+        // Normal order for priorities is HIGH -> LOW
+        return reverseOrder[k] ? comparisonDimnesionK : -comparisonDimnesionK;
       }
     }
     // If all dimensions had equal priorities, tasks are equal

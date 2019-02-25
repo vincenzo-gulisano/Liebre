@@ -106,7 +106,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
         latencySum += headTuple.getStimulus();
       }
     }
-    return latencySum == 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
+    return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
   }
 
   @Override
@@ -116,7 +116,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
     for (Stream<?> input : inputs) {
       latencySum += input.getAverageArrivalTime();
     }
-    return latencySum == 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
+    return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
   }
 
   default int getPriority() {

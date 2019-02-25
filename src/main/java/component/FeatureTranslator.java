@@ -32,7 +32,7 @@ class FeatureTranslator {
 
   }
 
-  public static final double NO_ARRIVAL_TIME = Double.MAX_VALUE;
+  public static final double NO_ARRIVAL_TIME = FeatureHelper.NO_ARRIVAL_TIME;
 
   static double get(Feature feature, Component component) {
     switch (feature) {

@@ -82,11 +82,11 @@ public interface Component extends Active, Runnable, Named, Task {
   int getPriority();
 
   default double getAverageArrivalTime() {
-    return FeatureHelper.NO_ARRIVAL_TIME;
+    return FeatureTranslator.NO_ARRIVAL_TIME;
   }
 
   default double getHeadArrivalTime() {
-    return FeatureHelper.NO_ARRIVAL_TIME;
+    return FeatureTranslator.NO_ARRIVAL_TIME;
   }
 
   @Override
