@@ -127,7 +127,7 @@ public class PriorityUpdateAction implements Runnable {
   private void calculatePriorities() {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
-      state.priorityFunction().apply(task, state.taskFeatures, priorities[task.getIndex()]);
+      state.priorityFunction().apply(task, state.taskFeatures, tasks, priorities[task.getIndex()]);
     }
     state.priorityFunction().clearCache();
     priorityTime.append(System.currentTimeMillis() - startTime);
@@ -150,7 +150,9 @@ public class PriorityUpdateAction implements Runnable {
       assignment.sort(comparator);
 //      LOG.debug("-----Thread {} assignment-----", threadId);
 //      for (Task task : assignment) {
-//        LOG.debug("[{}, {}]", task, Arrays.toString(state.taskFeatures[task.getIndex()]));
+//        LOG.debug("[{}, {}] -> {}", task,
+//            Arrays.toString(priorities[task.getIndex()]),
+//            Arrays.toString(state.taskFeatures[task.getIndex()]));
 //      }
       executors.get(threadId).setTasks(assignment);
     }

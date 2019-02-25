@@ -25,6 +25,7 @@ package component.source;
 
 import common.Active;
 import common.tuple.Tuple;
+import component.FeatureTranslator;
 import java.util.function.Supplier;
 
 /**
@@ -48,6 +49,12 @@ public interface SourceFunction<OUT extends Tuple> extends Active, Supplier<OUT>
   }
 
   default double getHeadArrivalTime() {
-    return -1;
+    return FeatureTranslator.NO_ARRIVAL_TIME;
   }
+
+  default double getAverageArrivalTime() {
+    return FeatureTranslator.NO_ARRIVAL_TIME;
+  }
+
+
 }

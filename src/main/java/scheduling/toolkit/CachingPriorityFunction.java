@@ -23,6 +23,7 @@
 
 package scheduling.toolkit;
 
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -42,19 +43,21 @@ public abstract class CachingPriorityFunction extends AbstractPriorityFunction {
   }
 
   @Override
-  public final double apply(Task task, double[][] features) {
+  public final double apply(Task task, double[][] features,
+      List<Task> tasks) {
     if (caching) {
       if (cache[task.getIndex()] < 0) {
-        double result = applyWithCachingSupport(task, features);
+        double result = applyWithCachingSupport(task, features, tasks);
         cache[task.getIndex()] = result;
         return result;
       }
       return cache[task.getIndex()];
     }
-    return applyWithCachingSupport(task, features);
+    return applyWithCachingSupport(task, features, tasks);
   }
 
-  protected abstract double applyWithCachingSupport(Task task, double[][] features);
+  protected abstract double applyWithCachingSupport(Task task, double[][] features,
+      List<Task> tasks);
 
   @Override
   public SinglePriorityFunction enableCaching(int nTasks) {

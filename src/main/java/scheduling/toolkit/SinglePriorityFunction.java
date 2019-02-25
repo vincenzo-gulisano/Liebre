@@ -23,9 +23,11 @@
 
 package scheduling.toolkit;
 
+import java.util.List;
+
 public interface SinglePriorityFunction extends PriorityFunction {
 
-  double apply(Task task, double[][] features);
+  double apply(Task task, double[][] features, List<Task> tasks);
 
   /**
    * @return {@code true} if lower values of priority imply higher priority

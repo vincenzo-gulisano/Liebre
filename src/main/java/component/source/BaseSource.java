@@ -53,6 +53,11 @@ public class BaseSource<OUT extends Tuple> extends AbstractSource<OUT> {
   }
 
   @Override
+  public double getAverageArrivalTime() {
+    return function.getAverageArrivalTime();
+  }
+
+  @Override
   public OUT getNextTuple() {
     return function.get();
   }

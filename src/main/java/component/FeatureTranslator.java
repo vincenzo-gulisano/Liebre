@@ -26,7 +26,7 @@ package component;
 import scheduling.toolkit.Feature;
 import scheduling.toolkit.FeatureHelper;
 
-class FeatureTranslator {
+public class FeatureTranslator {
 
   private FeatureTranslator() {
 
