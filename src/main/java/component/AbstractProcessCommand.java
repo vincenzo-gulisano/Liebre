@@ -36,13 +36,13 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
 
   // Exponential moving average alpha parameter
   // for cost and selectivity moving averages
-  private static final double EMA_ALPHA = 0.5;
+  private static final double EMA_ALPHA = 0.1;
   protected final T component;
 
   private volatile long tuplesWritten;
   private volatile long tuplesRead;
   private volatile long processingTimeNanos;
-  private volatile long lastUpdateTime;
+  private volatile long lastUpdateTime = System.currentTimeMillis();
 
   private volatile double selectivity = 1;
   private volatile double cost = 1;
@@ -93,18 +93,35 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
    * from another thread while the operator is stopped. The results are visible to all threads.</b>
    */
   public final void updateMetrics() {
+    updateRate();
+    updateCostAndSelectivity();
+  }
+
+  private void updateCostAndSelectivity() {
     if (tuplesRead == 0 || processingTimeNanos == 0) {
       return;
     }
-    final long currentTime = System.currentTimeMillis();
     final double currentSelectivity = tuplesWritten / (double) tuplesRead;
     final double currentCost = processingTimeNanos / (double) tuplesRead;
-    final double currentThroughput = tuplesRead / (currentTime - lastUpdateTime);
-    this.selectivity = (EMA_ALPHA * currentSelectivity) + ((1 - EMA_ALPHA) * selectivity);
-    this.cost = (EMA_ALPHA * currentCost) + ((1 - EMA_ALPHA) * cost);
-    this.rate = currentThroughput;
+    this.selectivity = movingAverage(currentSelectivity, selectivity);
+    this.cost = movingAverage(currentCost, cost);
     this.tuplesRead = this.tuplesWritten = this.processingTimeNanos = 0;
+  }
+
+
+  private void updateRate() {
+    final long currentTime = System.currentTimeMillis();
+    final double currentRate = tuplesRead / (currentTime - lastUpdateTime);
+    this.rate = movingAverage(currentRate, rate);
     this.lastUpdateTime = currentTime;
+    if (currentTime - lastUpdateTime > 1000) {
+      throw new IllegalStateException("What?");
+    }
+//    System.out.format("Updating after %d ms%n", currentTime - lastUpdateTime);
+  }
+
+  private double movingAverage(double newValue, double oldValue) {
+    return (EMA_ALPHA * newValue) + ((1 - EMA_ALPHA) * oldValue);
   }
 
   public final double getSelectivity() {
