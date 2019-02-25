@@ -119,6 +119,14 @@ public class PriorityFunctions {
         }
       };
 
+  private static final SinglePriorityFunction USER_PRIORITY =
+      new AbstractPriorityFunction("USER_PRIORITY", Feature.USER_PRIORITY) {
+        @Override
+        public double apply(Task task, double[][] features) {
+          return Feature.USER_PRIORITY.get(task, features);
+        }
+      };
+
   private PriorityFunctions() {
 
   }
@@ -145,6 +153,10 @@ public class PriorityFunctions {
 
   public static SinglePriorityFunction globalAverageCost() {
     return GLOBAL_AVERAGE_COST;
+  }
+
+  public static SinglePriorityFunction userPriority() {
+    return USER_PRIORITY;
   }
 
   public static SinglePriorityFunction reciprocalFunction(SinglePriorityFunction function) {

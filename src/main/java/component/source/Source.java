@@ -42,4 +42,8 @@ public interface Source<OUT extends Tuple> extends StreamProducer<OUT> {
     return 1;
   }
 
+  int getPriority();
+
+  void setPriority(int priority);
+
 }

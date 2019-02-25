@@ -35,7 +35,8 @@ public enum Feature {
   HEAD_ARRIVAL_TIME(3, false),
   AVERAGE_ARRIVAL_TIME(4, false),
   COMPONENT_TYPE(5, true),
-  RATE(6, false);
+  RATE(6, false),
+  USER_PRIORITY(7, true);
 
   public static final Map<Feature, FeatureDependency[]> dependencies;
 

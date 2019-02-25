@@ -27,6 +27,7 @@ import common.statistic.AbstractCummulativeStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticPath;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,19 +42,19 @@ public abstract class AbstractExecutor implements Runnable {
   public static final String EXECUTOR_STATISTIC_TIME = "executor-time";
   private static final int BACKOFF_MIN_MILLIS = 1;
   private static final AtomicInteger indexGenerator = new AtomicInteger();
-  private final int index;
   private static final Logger LOG = LogManager.getLogger();
   private static final int BACKOFF_RETRIES = 3;
   protected final int batchSize;
   protected final CyclicBarrier barrier;
   protected final SchedulerState state;
+  private final int index;
   private final long schedulingPeriod;
   private final Set<Integer> runTasks = new HashSet<>();
   private final Set<TaskDependency> taskDependencies = new HashSet<>();
   private final SchedulerBackoff backoff;
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic waitTime;
-  protected volatile List<Task> executorTasks;
+  protected volatile List<Task> executorTasks = Collections.emptyList();
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
       SchedulerState state) {
@@ -149,9 +150,12 @@ public abstract class AbstractExecutor implements Runnable {
 
   private void markUpdated() {
     long startTime = System.currentTimeMillis();
+    for (Task task : executorTasks) {
+      // Refresh features, for example those who are recorded as moving averages
+      task.refreshFeatures();
+    }
     for (int taskIndex : runTasks) {
       Task task = executorTasks.get(taskIndex);
-      task.refreshFeatures();
       task.updateFeatures(state.variableFeaturesNoDependencies(),
           state.taskFeatures[task.getIndex()]);
       state.updated[task.getIndex()].set(true);

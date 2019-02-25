@@ -145,4 +145,14 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
     return decorated.toString();
   }
 
+
+  @Override
+  public int getPriority() {
+    return decorated.getPriority();
+  }
+
+  @Override
+  public void setPriority(int priority) {
+    decorated.setPriority(priority);
+  }
 }

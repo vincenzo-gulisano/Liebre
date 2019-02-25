@@ -79,6 +79,8 @@ public interface Component extends Active, Runnable, Named, Task {
 
   ComponentType getType();
 
+  int getPriority();
+
   default double getAverageArrivalTime() {
     return FeatureHelper.NO_ARRIVAL_TIME;
   }
@@ -108,4 +110,5 @@ public interface Component extends Active, Runnable, Named, Task {
   default List<Component> getDownstream() {
     return Collections.emptyList();
   }
+
 }

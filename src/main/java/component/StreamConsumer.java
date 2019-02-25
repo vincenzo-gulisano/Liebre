@@ -119,9 +119,13 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
     return latencySum == 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
   }
 
-  default void resetArrivalTimes() {
+  default int getPriority() {
+    int priority = -1;
+    // Consumer's priority is the maximum priority of the upstream nodes
     for (Stream<?> input : getInputs()) {
-      input.resetArrivalTime();
+      priority = Math.max(input.getSource().getPriority(), priority);
     }
+    return priority;
   }
+
 }

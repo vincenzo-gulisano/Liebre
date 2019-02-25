@@ -38,6 +38,8 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   protected final ComponentState<Tuple, OUT> state;
   private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
 
+  private int priority;
+
   public AbstractSource(String id) {
     this.state = new ComponentState<>(id, ComponentType.SOURCE);
   }
@@ -128,6 +130,14 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   @Override
   public String getId() {
     return state.getId();
+  }
+
+  public int getPriority() {
+    return priority;
+  }
+
+  public void setPriority(int priority) {
+    this.priority = priority;
   }
 
   @Override
