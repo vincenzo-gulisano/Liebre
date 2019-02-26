@@ -28,7 +28,6 @@ import common.statistic.CountStatistic;
 import common.util.StatisticPath;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
@@ -40,16 +39,12 @@ public class PriorityUpdateAction implements Runnable {
   static final String STATISTIC_TIME = "priotime";
   private static final Logger LOG = LogManager.getLogger();
   private final List<Task> tasks;
-  private final QueryResolver queries;
   private final List<AbstractExecutor> executors;
-  private final double[][] priorities;
   private final SchedulerState state;
-  private final Comparator<Task> comparator;
   private final AbstractCummulativeStatistic totalCalls;
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic priorityTime;
   private final AbstractCummulativeStatistic deploymentTime;
-  private final AbstractCummulativeStatistic sortTime;
   private boolean firstUpdate = true;
 
   public PriorityUpdateAction(List<Task> inputTasks, List<AbstractExecutor> executors,
@@ -58,9 +53,6 @@ public class PriorityUpdateAction implements Runnable {
     this.executors = executors;
     this.state = state;
     this.state.init(inputTasks);
-    this.priorities = new double[tasks.size()][state.priorityFunction().dimensions()];
-    this.queries = new QueryResolver(this.tasks);
-    this.comparator = new MultiPriorityComparator(state.priorityFunction(), priorities);
 
     // Statistics Initialization
     this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
@@ -76,9 +68,7 @@ public class PriorityUpdateAction implements Runnable {
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Deploy-Tasks"), STATISTIC_TIME), false);
     deploymentTime.enable();
-    this.sortTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "Sort-Priorities"), STATISTIC_TIME), false);
-    sortTime.enable();
+
   }
 
   static String statisticName(String action) {
@@ -96,7 +86,7 @@ public class PriorityUpdateAction implements Runnable {
     }
     calculatePriorities();
     List<List<Task>> assignments = deployTasks();
-    sortAndAssignTasks(assignments);
+    assignTasks(assignments);
     totalCalls.append(1);
   }
 
@@ -127,7 +117,8 @@ public class PriorityUpdateAction implements Runnable {
   private void calculatePriorities() {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
-      state.priorityFunction().apply(task, state.taskFeatures, tasks, priorities[task.getIndex()]);
+      state.priorityFunction().apply(task, state.taskFeatures, tasks,
+          state.priorities[task.getIndex()]);
     }
     state.priorityFunction().clearCache();
     priorityTime.append(System.currentTimeMillis() - startTime);
@@ -140,14 +131,12 @@ public class PriorityUpdateAction implements Runnable {
     return assignments;
   }
 
-  private void sortAndAssignTasks(List<List<Task>> assignments) {
+  private void assignTasks(List<List<Task>> assignments) {
     Validate.isTrue(assignments.size() <= executors.size(), "#assignments > #threads");
-    long startTime = System.currentTimeMillis();
     for (int threadId = 0; threadId < executors.size(); threadId++) {
       // Give no work to executors with no assignment
       List<Task> assignment =
           threadId < assignments.size() ? assignments.get(threadId) : Collections.emptyList();
-      assignment.sort(comparator);
 //      LOG.debug("-----Thread {} assignment-----", threadId);
 //      for (Task task : assignment) {
 //        LOG.debug("[{}, {}] -> {}", task,
@@ -156,7 +145,6 @@ public class PriorityUpdateAction implements Runnable {
 //      }
       executors.get(threadId).setTasks(assignment);
     }
-    sortTime.append(System.currentTimeMillis() - startTime);
   }
 
   void disable() {
@@ -164,7 +152,6 @@ public class PriorityUpdateAction implements Runnable {
     updateTime.disable();
     priorityTime.disable();
     deploymentTime.disable();
-    sortTime.disable();
   }
 
 }

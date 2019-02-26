@@ -54,7 +54,10 @@ public abstract class AbstractExecutor implements Runnable {
   private final SchedulerBackoff backoff;
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic waitTime;
+  private final AbstractCummulativeStatistic sortTime;
   protected volatile List<Task> executorTasks = Collections.emptyList();
+
+  private long roundStartTime;
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
       SchedulerState state) {
@@ -70,11 +73,15 @@ public abstract class AbstractExecutor implements Runnable {
             "Update-Action-Executor-%d", index),
             EXECUTOR_STATISTIC_TIME),
         false);
+    this.sortTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
+        "Sort-Action-Executor-%d", index),
+        EXECUTOR_STATISTIC_TIME), false);
     this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
         false);
     updateTime.enable();
     waitTime.enable();
+    sortTime.enable();
     initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
@@ -96,20 +103,33 @@ public abstract class AbstractExecutor implements Runnable {
     if (!updateTasks()) {
       return;
     }
-    long startTime = System.currentTimeMillis();
+    roundStartTime = beginRound();
     while (!Thread.currentThread().isInterrupted()) {
       boolean didRun = runNextTask();
-      final long remainingTime = schedulingPeriod - (System.currentTimeMillis() - startTime);
+      final long remainingTime = schedulingPeriod - (System.currentTimeMillis() - roundStartTime);
       adjustUtilization(didRun, remainingTime);
       if (remainingTime <= 0) {
         if (!updateTasks()) {
           break;
         }
-        startTime = System.currentTimeMillis();
+        roundStartTime = beginRound();
       }
     }
     updateTime.disable();
     waitTime.disable();
+    sortTime.disable();
+  }
+
+  /**
+   * Update the start time of the new round, but count the sort time in the round time, to achieve
+   * synchronized entry to the barrier between processing threads.
+   *
+   * @return The start time of the rounds.
+   */
+  private long beginRound() {
+    long startTime = System.currentTimeMillis();
+    sortTasks();
+    return startTime;
   }
 
   private void adjustUtilization(boolean didRun, long remainingTime) {
@@ -137,15 +157,10 @@ public abstract class AbstractExecutor implements Runnable {
     }
   }
 
-  /**
-   * Mark the task with that has the given index in the <b>LOCAL task list</b> as executed. Do
-   * NOT use {@link Task#getIndex()} in this function, except if it matches the local index
-   * (which it usually does not).
-   *
-   * @param localIndex The index of the task in executorTasks
-   */
-  protected final void mark(int localIndex) {
-    runTasks.add(localIndex);
+  private void sortTasks() {
+    long startTime = System.currentTimeMillis();
+    executorTasks.sort(state.comparator);
+    sortTime.append(System.currentTimeMillis() - startTime);
   }
 
   private void markUpdated() {
@@ -169,6 +184,18 @@ public abstract class AbstractExecutor implements Runnable {
     updateTime.append(System.currentTimeMillis() - startTime);
   }
 
+  /**
+   * Mark the task with that has the given index in the <b>LOCAL task list</b> as executed. Do
+   * NOT use {@link Task#getIndex()} in this function, except if it matches the local index
+   * (which it usually does not).
+   *
+   * @param task The task to mark
+   * @param localIndex The index of the task in executorTasks
+   */
+  protected final void mark(Task task, int localIndex) {
+    runTasks.add(localIndex);
+    state.markUpdate(task, roundStartTime);
+  }
   @Override
   public String toString() {
     return "EXECUTOR: " + executorTasks + "\n";

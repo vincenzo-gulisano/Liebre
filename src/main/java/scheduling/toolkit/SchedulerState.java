@@ -24,6 +24,7 @@
 package scheduling.toolkit;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +42,10 @@ public final class SchedulerState {
   private static final Feature[] SCHEDULER_REQUIRED_FEATURES = {Feature.COMPONENT_TYPE};
   final AtomicBoolean[] updated;
   final double[][] taskFeatures;
+  final double[][] priorities;
+  final Comparator<Task> comparator;
   final String statisticsFolder;
+  private final long[] lastUpdateTime;
   private final MultiPriorityFunction priorityFunction;
   private final DeploymentFunction deploymentFunction;
   private final Feature[] constantFeatures;
@@ -54,14 +58,17 @@ public final class SchedulerState {
       DeploymentFunction deploymentFunction,
       boolean priorityCachning,
       String statisticsFolder) {
-    updated = new AtomicBoolean[nTasks];
-    taskFeatures = new double[nTasks][Feature.length()];
-    for (int i = 0; i < updated.length; i++) {
-      updated[i] = new AtomicBoolean(false);
-    }
     this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
         priorityFunction;
     this.deploymentFunction = deploymentFunction;
+    this.updated = new AtomicBoolean[nTasks];
+    this.taskFeatures = new double[nTasks][Feature.length()];
+    this.lastUpdateTime = new long[nTasks];
+    this.priorities = new double[nTasks][priorityFunction.dimensions()];
+    this.comparator = new MultiPriorityComparator(priorityFunction, priorities);
+    for (int i = 0; i < updated.length; i++) {
+      updated[i] = new AtomicBoolean(false);
+    }
     this.statisticsFolder = statisticsFolder;
     this.constantFeatures = getFeatures(priorityFunction, deploymentFunction,
         feature -> feature.isConstant());
@@ -88,6 +95,14 @@ public final class SchedulerState {
   private Feature[] getFeatures(PriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction) {
     return getFeatures(priorityFunction, deploymentFunction, feature -> true);
+  }
+
+  void markUpdate(Task task, long timestamp) {
+    lastUpdateTime[task.getIndex()] = timestamp;
+  }
+
+  boolean timeToUpdate(Task task, long timestamp, long updateLimitMillis) {
+    return timestamp - lastUpdateTime[task.getIndex()] > updateLimitMillis;
   }
 
   void init(List<Task> tasks) {
