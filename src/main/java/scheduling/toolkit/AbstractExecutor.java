@@ -44,6 +44,7 @@ public abstract class AbstractExecutor implements Runnable {
   private static final AtomicInteger indexGenerator = new AtomicInteger();
   private static final Logger LOG = LogManager.getLogger();
   private static final int BACKOFF_RETRIES = 3;
+  private static final int TASK_UPDATE_LIMIT_FACTOR = 2;
   protected final int batchSize;
   protected final CyclicBarrier barrier;
   protected final SchedulerState state;
@@ -54,10 +55,8 @@ public abstract class AbstractExecutor implements Runnable {
   private final SchedulerBackoff backoff;
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic waitTime;
-  private final AbstractCummulativeStatistic sortTime;
+  private final AbstractCummulativeStatistic beginRoundTime;
   protected volatile List<Task> executorTasks = Collections.emptyList();
-
-  private long roundStartTime;
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
       SchedulerState state) {
@@ -73,15 +72,16 @@ public abstract class AbstractExecutor implements Runnable {
             "Update-Action-Executor-%d", index),
             EXECUTOR_STATISTIC_TIME),
         false);
-    this.sortTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
-        "Sort-Action-Executor-%d", index),
-        EXECUTOR_STATISTIC_TIME), false);
+    this.beginRoundTime = new CountStatistic(
+        StatisticPath.get(state.statisticsFolder, String.format(
+            "Start-Round-Executor-%d", index),
+            EXECUTOR_STATISTIC_TIME), false);
     this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
         false);
     updateTime.enable();
     waitTime.enable();
-    sortTime.enable();
+    beginRoundTime.enable();
     initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
@@ -103,7 +103,7 @@ public abstract class AbstractExecutor implements Runnable {
     if (!updateTasks()) {
       return;
     }
-    roundStartTime = beginRound();
+    long roundStartTime = beginRound();
     while (!Thread.currentThread().isInterrupted()) {
       boolean didRun = runNextTask();
       final long remainingTime = schedulingPeriod - (System.currentTimeMillis() - roundStartTime);
@@ -117,7 +117,7 @@ public abstract class AbstractExecutor implements Runnable {
     }
     updateTime.disable();
     waitTime.disable();
-    sortTime.disable();
+    beginRoundTime.disable();
   }
 
   /**
@@ -129,7 +129,23 @@ public abstract class AbstractExecutor implements Runnable {
   private long beginRound() {
     long startTime = System.currentTimeMillis();
     sortTasks();
+    runLaggingTasks();
+    onRoundStart();
+//    printTasks();
+    beginRoundTime.append(System.currentTimeMillis() - startTime);
     return startTime;
+  }
+
+  private void runLaggingTasks() {
+    long timestamp = System.currentTimeMillis();
+    for (int i = 0; i < executorTasks.size(); i++) {
+      Task task = executorTasks.get(i);
+      if (state.timeToUpdate(task, timestamp,
+          TASK_UPDATE_LIMIT_FACTOR * schedulingPeriod)) {
+        task.runFor(1);
+        mark(task, i);
+      }
+    }
   }
 
   private void adjustUtilization(boolean didRun, long remainingTime) {
@@ -142,8 +158,6 @@ public abstract class AbstractExecutor implements Runnable {
     }
     backoff.relax();
   }
-
-  protected abstract boolean runNextTask();
 
   private boolean updateTasks() {
     try {
@@ -160,20 +174,20 @@ public abstract class AbstractExecutor implements Runnable {
   private void sortTasks() {
     long startTime = System.currentTimeMillis();
     executorTasks.sort(state.comparator);
-    sortTime.append(System.currentTimeMillis() - startTime);
+    beginRoundTime.append(System.currentTimeMillis() - startTime);
   }
 
   private void markUpdated() {
-    long startTime = System.currentTimeMillis();
+    long markTime = System.currentTimeMillis();
+    // Refresh features, for example those who are recorded as moving averages
     for (Task task : executorTasks) {
-      // Refresh features, for example those who are recorded as moving averages
       task.refreshFeatures();
     }
     for (int taskIndex : runTasks) {
       Task task = executorTasks.get(taskIndex);
       task.updateFeatures(state.variableFeaturesNoDependencies(),
           state.taskFeatures[task.getIndex()]);
-      state.updated[task.getIndex()].set(true);
+      state.markUpdated(task, markTime);
       for (TaskDependency taskDependency : taskDependencies) {
         for (Task dependent : taskDependency.dependents(task)) {
           state.updated[dependent.getIndex()].set(true);
@@ -181,7 +195,7 @@ public abstract class AbstractExecutor implements Runnable {
       }
     }
     runTasks.clear();
-    updateTime.append(System.currentTimeMillis() - startTime);
+    updateTime.append(System.currentTimeMillis() - markTime);
   }
 
   /**
@@ -194,8 +208,23 @@ public abstract class AbstractExecutor implements Runnable {
    */
   protected final void mark(Task task, int localIndex) {
     runTasks.add(localIndex);
-    state.markUpdate(task, roundStartTime);
   }
+
+  protected abstract boolean runNextTask();
+
+  protected abstract void onRoundStart();
+
+  private final void printTasks() {
+    synchronized (AbstractExecutor.class) {
+      LOG.info("-----Thread assignment-----");
+      for (Task task : executorTasks) {
+        LOG.info("[{}, {}] -> {}", task,
+            Arrays.toString(state.priorities[task.getIndex()]),
+            Arrays.toString(state.taskFeatures[task.getIndex()]));
+      }
+    }
+  }
+
   @Override
   public String toString() {
     return "EXECUTOR: " + executorTasks + "\n";

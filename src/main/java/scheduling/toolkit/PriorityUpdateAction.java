@@ -137,12 +137,6 @@ public class PriorityUpdateAction implements Runnable {
       // Give no work to executors with no assignment
       List<Task> assignment =
           threadId < assignments.size() ? assignments.get(threadId) : Collections.emptyList();
-//      LOG.debug("-----Thread {} assignment-----", threadId);
-//      for (Task task : assignment) {
-//        LOG.debug("[{}, {}] -> {}", task,
-//            Arrays.toString(priorities[task.getIndex()]),
-//            Arrays.toString(state.taskFeatures[task.getIndex()]));
-//      }
       executors.get(threadId).setTasks(assignment);
     }
   }

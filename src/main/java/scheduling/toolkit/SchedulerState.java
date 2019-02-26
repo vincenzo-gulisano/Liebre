@@ -97,8 +97,9 @@ public final class SchedulerState {
     return getFeatures(priorityFunction, deploymentFunction, feature -> true);
   }
 
-  void markUpdate(Task task, long timestamp) {
+  void markUpdated(Task task, long timestamp) {
     lastUpdateTime[task.getIndex()] = timestamp;
+    updated[task.getIndex()].set(true);
   }
 
   boolean timeToUpdate(Task task, long timestamp, long updateLimitMillis) {

@@ -92,7 +92,8 @@ public class PriorityFunctions {
   };
 
   private static final SinglePriorityFunction GLOBAL_AVERAGE_COST =
-      new CachingPriorityFunction("GLOBAL_AVERAGE_COST", Feature.COST, Feature.SELECTIVITY) {
+      new CachingPriorityFunction("GLOBAL_AVERAGE_COST", Feature.COST, Feature.SELECTIVITY,
+          Feature.COMPONENT_TYPE) {
 
         @Override
         public double applyWithCachingSupport(Task task, double[][] features,
@@ -111,10 +112,13 @@ public class PriorityFunctions {
         }
       };
   private static final SinglePriorityFunction GLOBAL_RATE =
-      new AbstractPriorityFunction("GLOBAL_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
+      new AbstractPriorityFunction("HIGHEST_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
         @Override
         public double apply(Task task, double[][] features,
             List<Task> tasks) {
+          if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE) {
+            return 0;
+          }
           return GLOBAL_SELECTIVITY.apply(task, features, tasks) / GLOBAL_AVERAGE_COST
               .apply(task, features, tasks);
         }
@@ -183,12 +187,51 @@ public class PriorityFunctions {
 
   private static class ChainPriorityFunction extends AbstractPriorityFunction {
 
+    private static final SinglePriorityFunction TOTAL_SELECTIVITY = new CachingPriorityFunction(
+        "SELECTIVITY", Feature.SELECTIVITY) {
+      @Override
+      protected double applyWithCachingSupport(Task task, double[][] features, List<Task> tasks) {
+        Task upstream = getUpstream(task);
+        if (upstream == null) {
+          return Feature.SELECTIVITY.get(task, features);
+        } else {
+          return Feature.SELECTIVITY.get(task, features) * apply(upstream, features, tasks);
+        }
+      }
+    };
+
+    private static final SinglePriorityFunction TIME = new CachingPriorityFunction(
+        "TIME", Feature.COST, Feature.SELECTIVITY) {
+
+      @Override
+      protected double applyWithCachingSupport(Task task, double[][] features, List<Task> tasks) {
+        Task upstream = getUpstream(task);
+        if (upstream == null) {
+          return Feature.COST.get(task, features);
+        } else {
+          return Feature.COST.get(task, features) * TOTAL_SELECTIVITY.apply(upstream, features,
+              tasks)
+              + apply(upstream, features, tasks);
+        }
+      }
+    };
     private double[] sdop;
-    private int nTasks;
     private boolean warm = false;
 
     public ChainPriorityFunction() {
-      super("CHAIN", GLOBAL_AVERAGE_COST, GLOBAL_SELECTIVITY);
+      super("CHAIN", TOTAL_SELECTIVITY, TIME);
+    }
+
+    private static Task getDownstream(Task task) {
+      List<? extends Task> downstream = task.getDownstream();
+      Validate.isTrue(downstream.size() <= 1, "This implementation works only for chains!");
+      return downstream.size() == 0 ? null : downstream.get(0);
+    }
+
+    private static Task getUpstream(Task task) {
+      List<? extends Task> upstream = task.getUpstream();
+      Validate.isTrue(upstream.size() <= 1, "This implementation works only for chains!");
+      return upstream.size() == 0 ? null : upstream.get(0);
     }
 
     @Override
@@ -208,48 +251,51 @@ public class PriorityFunctions {
     }
 
     private void populateCache(Task task, double[][] features, List<Task> tasks) {
+      if (task == null) {
+        return;
+      }
       List<Task> lowerEnvelopeCandidates = new ArrayList<>();
-      Task downstream = getDownstream(task);
+      lowerEnvelopeCandidates.add(task);
+      Task downstream = task;
       Task selected = null;
       double maxDerivative = -1;
-      while (true) {
-        if (downstream == null) {
-          break;
-        }
+      while ((downstream = getDownstream(downstream)) != null) {
         double derivative = getDerivative(task, downstream, features, tasks);
         if (derivative > maxDerivative) {
           maxDerivative = derivative;
           selected = downstream;
         }
         lowerEnvelopeCandidates.add(downstream);
-        downstream = getDownstream(downstream);
       }
-      for (Task candidate : lowerEnvelopeCandidates) {
-        sdop[candidate.getIndex()] = maxDerivative;
-        if (candidate.getIndex() == selected.getIndex()) {
-          break;
-        }
-      }
+      // Create the envelope
       if (selected != null) {
+//        System.out.println(lowerEnvelopeCandidates);
+//        System.out.format("[%s]%n", lowerEnvelopeCandidates.stream().map(t -> Double.toString(
+//            Feature.COST.get(t,
+//                features))).collect(
+//            Collectors.joining(",")));
+//        System.out.format("[%s]%n", lowerEnvelopeCandidates.stream().map(t -> Double.toString(
+//            Feature.SELECTIVITY.get(t,
+//                features))).collect(
+//            Collectors.joining(",")));
+//        System.out.println("> " + selected);
+//        System.out.println("> " + maxDerivative);
+        for (Task candidate : lowerEnvelopeCandidates) {
+          sdop[candidate.getIndex()] = maxDerivative;
+          if (candidate.getIndex() == selected.getIndex()) {
+            break;
+          }
+        }
         populateCache(selected, features, tasks);
       }
     }
 
-    private Task getDownstream(Task task) {
-      List<? extends Task> downstream = task.getDownstream();
-      Validate.isTrue(downstream.size() <= 1, "This implementation works only for chains!");
-      return downstream.size() == 0 ? null : downstream.get(0);
-    }
-
     private double getDerivative(Task left, Task right, double[][] features, List<Task> tasks) {
       double selectivityChange =
-          GLOBAL_SELECTIVITY.apply(left, features, tasks) / GLOBAL_SELECTIVITY.apply(right,
+          TOTAL_SELECTIVITY.apply(right, features, tasks) - TOTAL_SELECTIVITY.apply(left,
               features, tasks);
-      double costChange =
-          GLOBAL_AVERAGE_COST.apply(left, features, tasks) - GLOBAL_AVERAGE_COST.apply(right,
-              features, tasks);
-      double derivative = (1 - selectivityChange) / costChange;
-      return Double.isNaN(derivative) ? 0 : derivative;
+      double timeChange = TIME.apply(right, features, tasks) - TIME.apply(left, features, tasks);
+      return -selectivityChange / timeChange;
     }
 
     private List<Task> getSources(List<Task> tasks, double[][] features) {

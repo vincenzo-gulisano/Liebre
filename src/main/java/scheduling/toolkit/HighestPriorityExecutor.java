@@ -30,6 +30,9 @@ import org.apache.logging.log4j.Logger;
 class HighestPriorityExecutor extends AbstractExecutor {
 
   private static final Logger LOG = LogManager.getLogger();
+  private int localIndex;
+  private boolean equalPhase;
+  private boolean[] isNextEqual;
 
   public HighestPriorityExecutor(int batchSize, int schedulingPeriodMillis,
       CyclicBarrier barrier, SchedulerState state) {
@@ -37,41 +40,62 @@ class HighestPriorityExecutor extends AbstractExecutor {
   }
 
   protected boolean runNextTask() {
-    for (int localIndex = 0; localIndex < executorTasks.size(); localIndex++) {
+    boolean didRun = false;
+    for (; localIndex < executorTasks.size(); localIndex++) {
+      if (finishedEqualPhase()) {
+        resetEqualPhase();
+      }
       Task task = executorTasks.get(localIndex);
-//      LOG.debug("Trying to execute {}", task);
-      if (task.canRun()) {
-        final boolean didRun = task.runFor(batchSize);
-        if (didRun) {
-          LOG.debug("Executed {}", task);
-          runAction(localIndex, task);
-          return true;
-        }
+      if (task.canRun() && task.runFor(batchSize)) {
+        LOG.debug("Executed {}", task);
+//        if (equalPhase) {
+//         LOG.info("Executed equal {}", task);
+//        }
+        mark(task, localIndex);
+        didRun = true;
+        break;
       }
     }
-    return false;
-  }
-
-  private void runAction(int localIndex, Task task) {
-    if (isSource(task)) {
-      runSources(localIndex + 1);
+    // If a task ran and the next task has equal priority, continue execution from that one
+    // This is called an "equal phase"
+    if (didRun && isNextEqual[localIndex]) {
+      enterEqualPhase();
+    } else {
+      // else start execution from highest priority
+      resetEqualPhase();
     }
-    mark(localIndex);
+    return didRun;
   }
 
-  private void runSources(int startIndex) {
-    for (int localIndex = startIndex; localIndex < executorTasks.size(); localIndex++) {
-      Task task = executorTasks.get(localIndex);
-      if (task.canRun() && isSource(task)) {
-        LOG.debug("[Source Round] Trying to execute source {}", task);
-        task.runFor(1);
-        mark(localIndex);
+  @Override
+  protected void onRoundStart() {
+    markEqualPriorities();
+    resetEqualPhase();
+  }
+
+  protected void markEqualPriorities() {
+    isNextEqual = new boolean[executorTasks.size()];
+    for (int i = 0; i < executorTasks.size() - 1; i++) {
+      Task current = executorTasks.get(i);
+      Task next = executorTasks.get(i + 1);
+      if (state.comparator.compare(current, next) == 0) {
+        isNextEqual[i] = true;
       }
     }
   }
 
-  private boolean isSource(Task task) {
-    return Feature.COMPONENT_TYPE.get(task, state.taskFeatures) == FeatureHelper.CTYPE_SOURCE;
+  private void resetEqualPhase() {
+    localIndex = 0;
+    equalPhase = false;
+  }
+
+  private void enterEqualPhase() {
+    equalPhase = true;
+    localIndex = localIndex + 1;
+  }
+
+  private boolean finishedEqualPhase() {
+    return equalPhase && !isNextEqual[localIndex - 1];
   }
 
 }
