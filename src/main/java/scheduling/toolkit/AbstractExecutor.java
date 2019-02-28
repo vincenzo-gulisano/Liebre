@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 public abstract class AbstractExecutor implements Runnable {
 
   public static final String EXECUTOR_STATISTIC_TIME = "executor-time";
+  public static final String EXECUTOR_STATISTIC_EXTRA = "executor-extra";
   private static final int BACKOFF_MIN_MILLIS = 1;
   private static final AtomicInteger indexGenerator = new AtomicInteger();
   private static final Logger LOG = LogManager.getLogger();
@@ -56,6 +57,7 @@ public abstract class AbstractExecutor implements Runnable {
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic waitTime;
   private final AbstractCummulativeStatistic beginRoundTime;
+  private final AbstractCummulativeStatistic laggingTaskTime;
   protected volatile List<Task> executorTasks = Collections.emptyList();
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
@@ -79,9 +81,13 @@ public abstract class AbstractExecutor implements Runnable {
     this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
         false);
+    this.laggingTaskTime = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+        String.format("Lagging-Tasks-Executor-%d", index), EXECUTOR_STATISTIC_EXTRA),
+        false);
     updateTime.enable();
     waitTime.enable();
     beginRoundTime.enable();
+    laggingTaskTime.enable();
     initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
@@ -118,6 +124,7 @@ public abstract class AbstractExecutor implements Runnable {
     updateTime.disable();
     waitTime.disable();
     beginRoundTime.disable();
+    laggingTaskTime.disable();
   }
 
   /**
@@ -130,10 +137,11 @@ public abstract class AbstractExecutor implements Runnable {
     long startTime = System.currentTimeMillis();
     calculatePriorities();
     sortTasks();
-    runLaggingTasks();
     onRoundStart();
 //    printTasks();
     beginRoundTime.append(System.currentTimeMillis() - startTime);
+    // Lagging task execution time is not counted together with the preparation for the round
+    runLaggingTasks();
     return startTime;
   }
 
@@ -153,6 +161,7 @@ public abstract class AbstractExecutor implements Runnable {
         mark(task, i);
       }
     }
+    laggingTaskTime.append(System.currentTimeMillis() - timestamp);
   }
 
   private void adjustUtilization(boolean didRun, long remainingTime) {
