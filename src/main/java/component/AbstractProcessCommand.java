@@ -36,9 +36,13 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
 
   // Exponential moving average alpha parameter
   // for cost and selectivity moving averages
-  private static final double EMA_ALPHA = 0.1;
+  // The ALPHA we want to use for EMAs
+  private static final double TARGET_ALPHA = 0.3;
+  // The update period that the target alpha would be applied to, in millis
+  private static final long TARGET_UPDATE_PERIOD = 1000;
   protected final T component;
-
+  // The actual alpha that we use, changing depending on the actual update period length
+  private double alpha = 0.2;
   private volatile long tuplesWritten;
   private volatile long tuplesRead;
   private volatile long processingTimeNanos;
@@ -93,7 +97,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
    * from another thread while the operator is stopped. The results are visible to all threads.</b>
    */
   public final void updateMetrics() {
-    updateRate();
+    updateRateAndAlpha();
     updateCostAndSelectivity();
   }
 
@@ -109,19 +113,18 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   }
 
 
-  private void updateRate() {
+  private void updateRateAndAlpha() {
     final long currentTime = System.currentTimeMillis();
-    final double currentRate = tuplesRead / (currentTime - lastUpdateTime);
+    final long updatePeriod = currentTime - lastUpdateTime;
+    // Update alpha value
+    this.alpha = Math.min(TARGET_ALPHA, TARGET_ALPHA * updatePeriod / TARGET_UPDATE_PERIOD);
+    final double currentRate = tuplesRead / updatePeriod;
     this.rate = movingAverage(currentRate, rate);
     this.lastUpdateTime = currentTime;
-    if (currentTime - lastUpdateTime > 1000) {
-      throw new IllegalStateException("What?");
-    }
-//    System.out.format("Updating after %d ms%n", currentTime - lastUpdateTime);
   }
 
   private double movingAverage(double newValue, double oldValue) {
-    return (EMA_ALPHA * newValue) + ((1 - EMA_ALPHA) * oldValue);
+    return (alpha * newValue) + ((1 - alpha) * oldValue);
   }
 
   public final double getSelectivity() {
