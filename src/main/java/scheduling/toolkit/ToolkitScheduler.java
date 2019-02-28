@@ -45,7 +45,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private final MultiPriorityFunction priorityFunction;
   private final boolean priorityCaching;
   private final DeploymentFunction deploymentFunction;
-  private volatile PriorityUpdateAction priorityUpdateAction;
+  private volatile ReconfigurationAction reconfigurationAction;
 
   public ToolkitScheduler(int nThreads, MultiPriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
@@ -90,8 +90,8 @@ public class ToolkitScheduler implements Scheduler<Task> {
     final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction,
         deploymentFunction, priorityCaching, statisticsFolder);
     final List<AbstractExecutor> executors = new ArrayList<>();
-    this.priorityUpdateAction = new PriorityUpdateAction(tasks, executors, state);
-    CyclicBarrier barrier = new CyclicBarrier(nThreads, priorityUpdateAction);
+    this.reconfigurationAction = new ReconfigurationAction(tasks, executors, state);
+    CyclicBarrier barrier = new CyclicBarrier(nThreads, reconfigurationAction);
     for (int i = 0; i < nThreads; i++) {
       executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriodMillis, barrier, state));
     }
@@ -139,7 +139,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
     for (Task task : tasks) {
       ((Component) task).disable();
     }
-    priorityUpdateAction.disable();
+    reconfigurationAction.disable();
   }
 
 

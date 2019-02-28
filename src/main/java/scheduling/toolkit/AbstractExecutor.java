@@ -128,12 +128,19 @@ public abstract class AbstractExecutor implements Runnable {
    */
   private long beginRound() {
     long startTime = System.currentTimeMillis();
+    calculatePriorities();
     sortTasks();
     runLaggingTasks();
     onRoundStart();
 //    printTasks();
     beginRoundTime.append(System.currentTimeMillis() - startTime);
     return startTime;
+  }
+
+  private void calculatePriorities() {
+    for (Task task : executorTasks) {
+      state.priorityFunction().apply(task, state.taskFeatures, state.priorities[task.getIndex()]);
+    }
   }
 
   private void runLaggingTasks() {

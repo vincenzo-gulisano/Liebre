@@ -33,7 +33,7 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class PriorityUpdateAction implements Runnable {
+public class ReconfigurationAction implements Runnable {
 
   static final String STATISTIC_CALLS = "priocalls";
   static final String STATISTIC_TIME = "priotime";
@@ -43,11 +43,10 @@ public class PriorityUpdateAction implements Runnable {
   private final SchedulerState state;
   private final AbstractCummulativeStatistic totalCalls;
   private final AbstractCummulativeStatistic updateTime;
-  private final AbstractCummulativeStatistic priorityTime;
   private final AbstractCummulativeStatistic deploymentTime;
   private boolean firstUpdate = true;
 
-  public PriorityUpdateAction(List<Task> inputTasks, List<AbstractExecutor> executors,
+  public ReconfigurationAction(List<Task> inputTasks, List<AbstractExecutor> executors,
       SchedulerState state) {
     this.tasks = new ArrayList(inputTasks);
     this.executors = executors;
@@ -61,9 +60,6 @@ public class PriorityUpdateAction implements Runnable {
     this.updateTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "Update-Features"), STATISTIC_TIME), false);
     updateTime.enable();
-    this.priorityTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "Calculate-Priorities"), STATISTIC_TIME), false);
-    priorityTime.enable();
     this.deploymentTime = new CountStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Deploy-Tasks"), STATISTIC_TIME), false);
@@ -84,7 +80,7 @@ public class PriorityUpdateAction implements Runnable {
     } else {
       updateFeaturesWithDependencies();
     }
-    calculatePriorities();
+    state.priorityFunction().clearCache();
     List<List<Task>> assignments = deployTasks();
     assignTasks(assignments);
     totalCalls.append(1);
@@ -114,15 +110,6 @@ public class PriorityUpdateAction implements Runnable {
     updateTime.append(System.currentTimeMillis() - startTime);
   }
 
-  private void calculatePriorities() {
-    long startTime = System.currentTimeMillis();
-    for (Task task : tasks) {
-      state.priorityFunction().apply(task, state.taskFeatures, state.priorities[task.getIndex()]);
-    }
-    state.priorityFunction().clearCache();
-    priorityTime.append(System.currentTimeMillis() - startTime);
-  }
-
   private List<List<Task>> deployTasks() {
     long startTime = System.currentTimeMillis();
     List<List<Task>> assignments = state.deploymentFunction().getDeployment(executors.size());
@@ -143,7 +130,6 @@ public class PriorityUpdateAction implements Runnable {
   void disable() {
     totalCalls.disable();
     updateTime.disable();
-    priorityTime.disable();
     deploymentTime.disable();
   }
 
