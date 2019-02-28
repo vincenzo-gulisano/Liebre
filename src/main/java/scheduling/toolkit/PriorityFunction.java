@@ -31,5 +31,7 @@ public interface PriorityFunction {
 
   void clearCache();
 
+  boolean cachingEnabled();
+
   String name();
 }

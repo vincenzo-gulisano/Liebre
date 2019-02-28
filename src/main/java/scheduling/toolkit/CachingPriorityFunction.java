@@ -74,4 +74,9 @@ public abstract class CachingPriorityFunction extends AbstractPriorityFunction {
       }
     }
   }
+
+  @Override
+  public boolean cachingEnabled() {
+    return caching;
+  }
 }

@@ -87,6 +87,22 @@ public class PriorityFunctions {
 
   };
 
+  private static final SinglePriorityFunction SOURCE_AVERAGE_ARRIVAL_TIME =
+      new CachingPriorityFunction("SOURCE_AVERAGE_ARRIVAL_TIME", Feature.AVERAGE_ARRIVAL_TIME,
+          Feature.COMPONENT_TYPE) {
+    @Override
+    public double applyWithCachingSupport(Task task, double[][] features) {
+     if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE)  {
+       return AVERAGE_ARRIVAL_TIME.apply(task, features);
+     }
+     double arrivalTime = Double.MAX_VALUE;
+     for (Task upstream : task.getUpstream()) {
+       arrivalTime = Math.min(arrivalTime, apply(upstream, features));
+     }
+     return arrivalTime;
+    }
+  };
+
   private static final SinglePriorityFunction GLOBAL_AVERAGE_COST =
       new CachingPriorityFunction("GLOBAL_AVERAGE_COST", Feature.COST, Feature.SELECTIVITY,
           Feature.COMPONENT_TYPE) {
@@ -107,7 +123,7 @@ public class PriorityFunctions {
         }
       };
   private static final SinglePriorityFunction GLOBAL_RATE =
-      new AbstractPriorityFunction("HIGHEST_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
+      new AbstractPriorityFunction("GLOBAL_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
         @Override
         public double apply(Task task, double[][] features) {
           if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE) {
@@ -171,6 +187,10 @@ public class PriorityFunctions {
 
   public static SinglePriorityFunction chain() {
     return new ChainPriorityFunction();
+  }
+
+  public static SinglePriorityFunction sourceAverageArrivalTime() {
+    return SOURCE_AVERAGE_ARRIVAL_TIME;
   }
 
   public static SinglePriorityFunction reciprocalFunction(SinglePriorityFunction function) {
@@ -335,6 +355,11 @@ public class PriorityFunctions {
     @Override
     public void clearCache() {
       original.clearCache();
+    }
+
+    @Override
+    public boolean cachingEnabled() {
+      return original.cachingEnabled();
     }
 
     @Override

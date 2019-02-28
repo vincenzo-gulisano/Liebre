@@ -30,9 +30,10 @@ import org.apache.commons.lang3.Validate;
 
 public class CombinedPriorityFunction implements MultiPriorityFunction {
 
-  private final SinglePriorityFunction[] functions;
+  protected final SinglePriorityFunction[] functions;
   private final Feature[] requiredFeatures;
   private final String name;
+  private boolean caching;
 
   public CombinedPriorityFunction(SinglePriorityFunction... functions) {
     Validate.notEmpty(functions, "At least one function is needed!");
@@ -62,6 +63,7 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
 
   @Override
   public MultiPriorityFunction enableCaching(int nTasks) {
+    this.caching = true;
     for (SinglePriorityFunction function : functions) {
       function.enableCaching(nTasks);
     }
@@ -73,6 +75,11 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
     for (SinglePriorityFunction function : functions) {
       function.clearCache();
     }
+  }
+
+  @Override
+  public boolean cachingEnabled() {
+    return caching;
   }
 
   @Override

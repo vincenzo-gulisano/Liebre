@@ -33,6 +33,7 @@ public abstract class AbstractPriorityFunction implements SinglePriorityFunction
   protected final SinglePriorityFunction[] dependentFunctions;
   private final Feature[] requiredFeatures;
   private final String name;
+  private boolean caching;
 
   public AbstractPriorityFunction(String name, Feature... requiredFeatures) {
     Validate.notEmpty(requiredFeatures, "Priority function has not features!");
@@ -56,6 +57,7 @@ public abstract class AbstractPriorityFunction implements SinglePriorityFunction
 
   @Override
   public SinglePriorityFunction enableCaching(int nTasks) {
+    caching = true;
     for (SinglePriorityFunction function : dependentFunctions) {
       function.enableCaching(nTasks);
     }
@@ -67,6 +69,11 @@ public abstract class AbstractPriorityFunction implements SinglePriorityFunction
     for (SinglePriorityFunction function : dependentFunctions) {
       function.clearCache();
     }
+  }
+
+  @Override
+  public boolean cachingEnabled() {
+    return caching;
   }
 
   @Override
