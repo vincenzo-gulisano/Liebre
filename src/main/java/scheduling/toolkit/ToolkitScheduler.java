@@ -82,7 +82,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
     LOG.info("Starting Scheduler");
     LOG.info("Priority Function: {}", priorityFunction);
-    LOG.info("Priority Cachking: {}", priorityCaching);
+    LOG.info("Priority Caching: {}", priorityCaching);
     LOG.info("Deployment Function Function: {}", deploymentFunction);
     LOG.info("Worker threads: {}", nThreads);
     LOG.info("Scheduling Period: {} ms", schedulingPeriodMillis);

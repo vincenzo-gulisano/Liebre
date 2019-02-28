@@ -34,11 +34,10 @@ public class PriorityFunctions {
   private static final SinglePriorityFunction TUPLE_PROCESSING_TIME = new CachingPriorityFunction(
       "TUPLE_PROCESSING_TIME", Feature.COST) {
     @Override
-    public double applyWithCachingSupport(Task task, double[][] features,
-        List<Task> tasks) {
+    public double applyWithCachingSupport(Task task, double[][] features) {
       double totalProcessingTime = Feature.COST.get(task, features);
       for (Task downstream : task.getDownstream()) {
-        totalProcessingTime += apply(downstream, features, tasks);
+        totalProcessingTime += apply(downstream, features);
       }
       return totalProcessingTime;
     }
@@ -52,11 +51,10 @@ public class PriorityFunctions {
   private static final SinglePriorityFunction GLOBAL_SELECTIVITY = new CachingPriorityFunction(
       "GLOBAL_SELECTIVITY", Feature.SELECTIVITY) {
     @Override
-    public double applyWithCachingSupport(Task task, double[][] features,
-        List<Task> tasks) {
+    public double applyWithCachingSupport(Task task, double[][] features) {
       double globalSelectivity = Feature.SELECTIVITY.get(task, features);
       for (Task downstream : task.getDownstream()) {
-        globalSelectivity *= apply(downstream, features, tasks);
+        globalSelectivity *= apply(downstream, features);
       }
       return globalSelectivity;
     }
@@ -65,8 +63,7 @@ public class PriorityFunctions {
   private static final SinglePriorityFunction HEAD_ARRIVAL_TIME = new AbstractPriorityFunction(
       "HEAD_ARRIVAL_TIME", Feature.HEAD_ARRIVAL_TIME) {
     @Override
-    public double apply(Task task, double[][] features,
-        List<Task> tasks) {
+    public double apply(Task task, double[][] features) {
       return Feature.HEAD_ARRIVAL_TIME.get(task, features);
     }
 
@@ -79,8 +76,7 @@ public class PriorityFunctions {
   private static final SinglePriorityFunction AVERAGE_ARRIVAL_TIME = new AbstractPriorityFunction(
       "AVERAGE_ARRIVAL_TIME", Feature.AVERAGE_ARRIVAL_TIME) {
     @Override
-    public double apply(Task task, double[][] features,
-        List<Task> tasks) {
+    public double apply(Task task, double[][] features) {
       return Feature.AVERAGE_ARRIVAL_TIME.get(task, features);
     }
 
@@ -96,12 +92,11 @@ public class PriorityFunctions {
           Feature.COMPONENT_TYPE) {
 
         @Override
-        public double applyWithCachingSupport(Task task, double[][] features,
-            List<Task> tasks) {
+        public double applyWithCachingSupport(Task task, double[][] features) {
           double globalAverageCost = Feature.COST.get(task, features);
           double selectivity = Feature.SELECTIVITY.get(task, features);
           for (Task downstream : task.getDownstream()) {
-            globalAverageCost += selectivity * apply(downstream, features, tasks);
+            globalAverageCost += selectivity * apply(downstream, features);
           }
           return globalAverageCost;
         }
@@ -114,13 +109,12 @@ public class PriorityFunctions {
   private static final SinglePriorityFunction GLOBAL_RATE =
       new AbstractPriorityFunction("HIGHEST_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
         @Override
-        public double apply(Task task, double[][] features,
-            List<Task> tasks) {
+        public double apply(Task task, double[][] features) {
           if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE) {
             return 0;
           }
-          return GLOBAL_SELECTIVITY.apply(task, features, tasks) / GLOBAL_AVERAGE_COST
-              .apply(task, features, tasks);
+          return GLOBAL_SELECTIVITY.apply(task, features) / GLOBAL_AVERAGE_COST
+              .apply(task, features);
         }
 
       };
@@ -128,19 +122,17 @@ public class PriorityFunctions {
       new AbstractPriorityFunction("GLOBAL_NORMALIZED_RATE", GLOBAL_SELECTIVITY,
           GLOBAL_AVERAGE_COST, TUPLE_PROCESSING_TIME) {
         @Override
-        public double apply(Task task, double[][] features,
-            List<Task> tasks) {
-          return GLOBAL_SELECTIVITY.apply(task, features, tasks) / (GLOBAL_AVERAGE_COST.apply(task,
-              features, tasks)
-              * TUPLE_PROCESSING_TIME.apply(task, features, tasks));
+        public double apply(Task task, double[][] features) {
+          return GLOBAL_SELECTIVITY.apply(task, features) / (GLOBAL_AVERAGE_COST.apply(task,
+              features)
+              * TUPLE_PROCESSING_TIME.apply(task, features));
         }
       };
 
   private static final SinglePriorityFunction USER_PRIORITY =
       new AbstractPriorityFunction("USER_PRIORITY", Feature.USER_PRIORITY) {
         @Override
-        public double apply(Task task, double[][] features,
-            List<Task> tasks) {
+        public double apply(Task task, double[][] features) {
           return Feature.USER_PRIORITY.get(task, features);
         }
       };
@@ -190,12 +182,12 @@ public class PriorityFunctions {
     private static final SinglePriorityFunction TOTAL_SELECTIVITY = new CachingPriorityFunction(
         "SELECTIVITY", Feature.SELECTIVITY) {
       @Override
-      protected double applyWithCachingSupport(Task task, double[][] features, List<Task> tasks) {
+      protected double applyWithCachingSupport(Task task, double[][] features) {
         Task upstream = getUpstream(task);
         if (upstream == null) {
           return Feature.SELECTIVITY.get(task, features);
         } else {
-          return Feature.SELECTIVITY.get(task, features) * apply(upstream, features, tasks);
+          return Feature.SELECTIVITY.get(task, features) * apply(upstream, features);
         }
       }
     };
@@ -204,14 +196,14 @@ public class PriorityFunctions {
         "TIME", Feature.COST, Feature.SELECTIVITY) {
 
       @Override
-      protected double applyWithCachingSupport(Task task, double[][] features, List<Task> tasks) {
+      protected double applyWithCachingSupport(Task task, double[][] features) {
         Task upstream = getUpstream(task);
         if (upstream == null) {
           return Feature.COST.get(task, features);
         } else {
-          return Feature.COST.get(task, features) * TOTAL_SELECTIVITY.apply(upstream, features,
-              tasks)
-              + apply(upstream, features, tasks);
+          return Feature.COST.get(task, features) * TOTAL_SELECTIVITY.apply(upstream, features
+          )
+              + apply(upstream, features);
         }
       }
     };
@@ -235,22 +227,15 @@ public class PriorityFunctions {
     }
 
     @Override
-    public double apply(Task task, double[][] features, List<Task> tasks) {
-      if (!warm) {
-        calculateEnvelopes(tasks, features);
+    public double apply(Task task, double[][] features) {
+      if (sdop[task.getIndex()] < 0) {
+        Task source = getSource(task, features);
+        calculateLowerEnvelope(source, features);
       }
       return sdop[task.getIndex()];
     }
 
-    private void calculateEnvelopes(List<Task> tasks, double[][] features) {
-      List<Task> sources = getSources(tasks, features);
-      for (Task source : sources) {
-        populateCache(source, features, tasks);
-      }
-      warm = true;
-    }
-
-    private void populateCache(Task task, double[][] features, List<Task> tasks) {
+    private void calculateLowerEnvelope(Task task, double[][] features) {
       if (task == null) {
         return;
       }
@@ -260,7 +245,7 @@ public class PriorityFunctions {
       Task selected = null;
       double maxDerivative = -1;
       while ((downstream = getDownstream(downstream)) != null) {
-        double derivative = getDerivative(task, downstream, features, tasks);
+        double derivative = getDerivative(task, downstream, features);
         if (derivative > maxDerivative) {
           maxDerivative = derivative;
           selected = downstream;
@@ -286,32 +271,32 @@ public class PriorityFunctions {
             break;
           }
         }
-        populateCache(selected, features, tasks);
+        calculateLowerEnvelope(selected, features);
       }
     }
 
-    private double getDerivative(Task left, Task right, double[][] features, List<Task> tasks) {
+    private double getDerivative(Task left, Task right, double[][] features) {
       double selectivityChange =
-          TOTAL_SELECTIVITY.apply(right, features, tasks) - TOTAL_SELECTIVITY.apply(left,
-              features, tasks);
-      double timeChange = TIME.apply(right, features, tasks) - TIME.apply(left, features, tasks);
+          TOTAL_SELECTIVITY.apply(right, features) - TOTAL_SELECTIVITY.apply(left,
+              features);
+      double timeChange = TIME.apply(right, features) - TIME.apply(left, features);
       return -selectivityChange / timeChange;
     }
 
-    private List<Task> getSources(List<Task> tasks, double[][] features) {
-      final List<Task> result = new ArrayList<>();
-      for (Task task : tasks) {
-        if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE) {
-          result.add(task);
-        }
+    private Task getSource(Task task, double[][] features) {
+      if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE) {
+        return task;
       }
-      return result;
+      return getSource(getUpstream(task), features);
     }
 
     @Override
     public SinglePriorityFunction enableCaching(int nTasks) {
       super.enableCaching(nTasks);
       sdop = new double[nTasks];
+      for (int i = 0; i < nTasks; i++) {
+        sdop[i] = -1;
+      }
       return this;
     }
 
@@ -321,7 +306,6 @@ public class PriorityFunctions {
       for (int i = 0; i < sdop.length; i++) {
         sdop[i] = 0;
       }
-      warm = false;
     }
   }
 
@@ -334,9 +318,8 @@ public class PriorityFunctions {
     }
 
     @Override
-    public double apply(Task task, double[][] features,
-        List<Task> tasks) {
-      return 1 / original.apply(task, features, tasks);
+    public double apply(Task task, double[][] features) {
+      return 1 / original.apply(task, features);
     }
 
     @Override

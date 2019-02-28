@@ -117,8 +117,7 @@ public class PriorityUpdateAction implements Runnable {
   private void calculatePriorities() {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
-      state.priorityFunction().apply(task, state.taskFeatures, tasks,
-          state.priorities[task.getIndex()]);
+      state.priorityFunction().apply(task, state.taskFeatures, state.priorities[task.getIndex()]);
     }
     state.priorityFunction().clearCache();
     priorityTime.append(System.currentTimeMillis() - startTime);

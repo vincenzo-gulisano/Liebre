@@ -25,7 +25,6 @@ package scheduling.toolkit;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
@@ -49,11 +48,10 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
   }
 
   @Override
-  public void apply(Task task, double[][] features, List<Task> tasks,
-      double[] output) {
+  public void apply(Task task, double[][] features, double[] output) {
     Validate.isTrue(output.length == functions.length);
     for (int k = 0; k < output.length; k++) {
-      output[k] = functions[k].apply(task, features, tasks);
+      output[k] = functions[k].apply(task, features);
     }
   }
 
