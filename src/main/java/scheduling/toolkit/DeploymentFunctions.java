@@ -25,6 +25,7 @@ package scheduling.toolkit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +43,39 @@ public final class DeploymentFunctions {
 
   public static DeploymentFunction adaptiveLatency() {
     return new LatencyAdaptiveDeployment();
+  }
+
+  public static DeploymentFunction randomOperator() {
+    return new RandomOperatorDeployment();
+  }
+
+  private static class RandomOperatorDeployment extends AbstractDeploymentFunction {
+
+    private final Random random = new Random(1);
+
+    public RandomOperatorDeployment() {
+      super("RANDOM_OPERATOR", Feature.USER_PRIORITY);
+    }
+
+    @Override
+    public void init(List<Task> tasks, double[][] features) {
+      super.init(tasks, features);
+    }
+
+    @Override
+    public List<List<Task>> getDeployment(int nThreads) {
+      Validate.isTrue(nThreads > 0, "nThreads > 0");
+      List<List<Task>> assignments = new ArrayList<>();
+      for (int i = 0; i < nThreads; i++) {
+        assignments.add(new ArrayList<>());
+      }
+      for (Task task : tasks) {
+        assignments.get(random.nextInt(nThreads)).add(task);
+      }
+      return assignments;
+    }
+
+
   }
 
   private static class RoundRobinDeployment extends AbstractDeploymentFunction {
@@ -79,17 +113,16 @@ public final class DeploymentFunctions {
     // Relative difference (percentage) in latency that
     // triggers increase in thread number
     private static final long RELATIVE_DIFF_LIMIT = 10;
-    private static final long RELATIVE_DIFF_DROP_LIMIT = 20*RELATIVE_DIFF_LIMIT;
+    private static final long RELATIVE_DIFF_DROP_LIMIT = 20 * RELATIVE_DIFF_LIMIT;
     private static final long UPDATE_PERIOD_MILLIS = TimeUnit.SECONDS.toMillis(10);
     private static final double alpha = 0.3;
+    private static final Logger LOG = LogManager.getLogger();
     private final DeploymentFunction roundRobinFunction;
     private List<Task> sinks = new ArrayList<>();
     private long checkpointLatency = -1;
     private long runningAverageLatency = -1;
     private int usedThreads = 1;
     private long lastUpdateTime = -1;
-
-    private static final Logger LOG = LogManager.getLogger();
 
     protected LatencyAdaptiveDeployment() {
       super("ADAPTIVE_LATENCY", Feature.AVERAGE_ARRIVAL_TIME, Feature.COMPONENT_TYPE);
@@ -152,7 +185,7 @@ public final class DeploymentFunctions {
       } else if (latencyRelativeDiff < Math.negateExact(RELATIVE_DIFF_DROP_LIMIT)) {
         usedThreads = Math.max(usedThreads - 1, 1);
         LOG.info("Latency decreased by {}% ({} ms). decreasing threads to {}",
-             Math.round(latencyRelativeDiff), runningAverageLatency - checkpointLatency,
+            Math.round(latencyRelativeDiff), runningAverageLatency - checkpointLatency,
             usedThreads);
       }
     }
