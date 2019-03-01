@@ -71,6 +71,10 @@ public final class StatisticPath {
     return get(folder, name, type.name().toLowerCase());
   }
 
+  public static String get(String folder, String filename, StatisticType type) {
+    return get(folder, filename, type.name().toLowerCase());
+  }
+
   /**
    * Get the filename of the statistic. The general structure
    */
