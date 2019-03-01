@@ -126,9 +126,6 @@ public class PriorityFunctions {
       new AbstractPriorityFunction("GLOBAL_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
         @Override
         public double apply(Task task, double[][] features) {
-          if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE) {
-            return 0;
-          }
           return GLOBAL_SELECTIVITY.apply(task, features) / GLOBAL_AVERAGE_COST
               .apply(task, features);
         }
@@ -165,20 +162,16 @@ public class PriorityFunctions {
     return HEAD_ARRIVAL_TIME;
   }
 
-  public static SinglePriorityFunction globalNormalizedRate() {
-    return GLOBAL_NORMALIZED_RATE;
-  }
-
   public static SinglePriorityFunction globalRate() {
     return GLOBAL_RATE;
   }
 
-  public static SinglePriorityFunction tupleProcessingTime() {
-    return TUPLE_PROCESSING_TIME;
+  public static SinglePriorityFunction globalNormalizedRate() {
+    return GLOBAL_NORMALIZED_RATE;
   }
 
-  public static SinglePriorityFunction globalAverageCost() {
-    return GLOBAL_AVERAGE_COST;
+  public static SinglePriorityFunction tupleProcessingTime() {
+    return TUPLE_PROCESSING_TIME;
   }
 
   public static SinglePriorityFunction userPriority() {
