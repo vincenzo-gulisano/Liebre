@@ -24,6 +24,7 @@
 package scheduling.toolkit;
 
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.Validate;
 
 public class HighestRateFunction extends CombinedPriorityFunction {
 
@@ -41,10 +42,7 @@ public class HighestRateFunction extends CombinedPriorityFunction {
 
   @Override
   public void apply(Task task, double[][] features, double[] output) {
-    if (!cachingEnabled()) {
-      apply(task, features, output);
-      return;
-    }
+    Validate.isTrue(cachingEnabled(), "This function cannot work without caching!");
     long ts = System.currentTimeMillis();
     boolean updateCost = (ts - lastCostUpdate[task.getIndex()]) > costUpdatePeriodMillis;
     if (updateCost) {

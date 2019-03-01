@@ -24,6 +24,7 @@
 package scheduling.toolkit;
 
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.Validate;
 
 /**
  * The full chain scheduling policy, e.g. chain + arrival time, with chain slowly changing.
@@ -44,10 +45,7 @@ public class ChainArrivalTimeFunction extends CombinedPriorityFunction {
 
   @Override
   public void apply(Task task, double[][] features, double[] output) {
-    if (!cachingEnabled()) {
-      apply(task, features, output);
-      return;
-    }
+    Validate.isTrue(cachingEnabled(), "This function cannot work without caching!");
     long ts = System.currentTimeMillis();
     boolean updateCost = (ts - lastChainUpdate[task.getIndex()]) > chainUpdatePeriodMillis;
     if (updateCost) {

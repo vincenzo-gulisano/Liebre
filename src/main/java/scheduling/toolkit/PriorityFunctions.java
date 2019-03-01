@@ -186,7 +186,7 @@ public class PriorityFunctions {
     return SOURCE_AVERAGE_ARRIVAL_TIME;
   }
 
-  public static SinglePriorityFunction reciprocalFunction(SinglePriorityFunction function) {
+  static SinglePriorityFunction reciprocalFunction(SinglePriorityFunction function) {
     return new ReciprocalPriorityFunction(function);
   }
 
@@ -220,6 +220,7 @@ public class PriorityFunctions {
         }
       }
     };
+    public static final int NOT_INITIALIZED = -1;
     private double[] sdop;
     private boolean warm = false;
 
@@ -241,6 +242,7 @@ public class PriorityFunctions {
 
     @Override
     public double apply(Task task, double[][] features) {
+      Validate.isTrue(cachingEnabled(), "This function cannot work without caching!");
       if (sdop[task.getIndex()] < 0) {
         Task source = getSource(task, features);
         calculateLowerEnvelope(source, features);
@@ -256,7 +258,7 @@ public class PriorityFunctions {
       lowerEnvelopeCandidates.add(task);
       Task downstream = task;
       Task selected = null;
-      double maxDerivative = -1;
+      double maxDerivative = NOT_INITIALIZED;
       while ((downstream = getDownstream(downstream)) != null) {
         double derivative = getDerivative(task, downstream, features);
         if (derivative > maxDerivative) {
@@ -308,7 +310,7 @@ public class PriorityFunctions {
       super.enableCaching(nTasks);
       sdop = new double[nTasks];
       for (int i = 0; i < nTasks; i++) {
-        sdop[i] = -1;
+        sdop[i] = NOT_INITIALIZED;
       }
       return this;
     }
@@ -317,13 +319,14 @@ public class PriorityFunctions {
     public void clearCache() {
       super.clearCache();
       for (int i = 0; i < sdop.length; i++) {
-        sdop[i] = 0;
+        sdop[i] = NOT_INITIALIZED;
       }
     }
   }
 
   private static class ReciprocalPriorityFunction implements SinglePriorityFunction {
 
+    private static final double PREVENT_DIV_ZERO = Math.pow(10, -10);
     private final SinglePriorityFunction original;
 
     private ReciprocalPriorityFunction(SinglePriorityFunction original) {
@@ -332,7 +335,7 @@ public class PriorityFunctions {
 
     @Override
     public double apply(Task task, double[][] features) {
-      return 1 / original.apply(task, features);
+      return 1 / (original.apply(task, features) + PREVENT_DIV_ZERO);
     }
 
     @Override
