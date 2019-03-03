@@ -40,6 +40,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   private static final double TARGET_ALPHA = 0.3;
   // The update period that the target alpha would be applied to, in millis
   private static final long TARGET_UPDATE_PERIOD = 1000;
+  private static final long MILLIS_TO_NANOS = 1000000;
   protected final T component;
   // The actual alpha that we use, changing depending on the actual update period length
   private double alpha = 0.2;
@@ -118,7 +119,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     final long updatePeriod = currentTime - lastUpdateTime;
     // Update alpha value
     this.alpha = Math.min(TARGET_ALPHA, TARGET_ALPHA * updatePeriod / TARGET_UPDATE_PERIOD);
-    final double currentRate = tuplesRead / updatePeriod;
+    final double currentRate =  tuplesRead / (double) (MILLIS_TO_NANOS * updatePeriod);
     this.rate = movingAverage(currentRate, rate);
     this.lastUpdateTime = currentTime;
   }

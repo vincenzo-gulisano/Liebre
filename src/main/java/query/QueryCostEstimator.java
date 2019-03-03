@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 public class QueryCostEstimator implements Runnable {
 
   public static final int SAMPLE_FREQUENCY_MILLIS = 10000;
+  public static final int NANOS_TO_SEC = 1000000000;
   private static final Logger LOG = LogManager.getLogger();
   private final Query query;
   private final boolean scheduling;
@@ -57,13 +58,13 @@ public class QueryCostEstimator implements Runnable {
       double totalUtilization = 0;
       double totalRate = 0;
       for (Source<?> source : sources) {
-        double sourceCost = globalAverageCost(source) / 1000000000;
-        double sourceRate = source.getRate()*1000;
+        double sourceCost = globalAverageCost(source) / NANOS_TO_SEC;
+        double sourceRate = source.getRate() * NANOS_TO_SEC;
 //        LOG.info("Source {} max rate = {} t/s", source, 1 / sourceCost);
 //        LOG.info("Source {} current rate = {} t/s", source, sourceRate);
         totalCost += sourceCost;
         totalRate += sourceRate;
-        totalUtilization += 100*(sourceRate * sourceCost);
+        totalUtilization += 100 * (sourceRate * sourceCost);
       }
       LOG.info("Current Average Rate = {} t/s", totalRate / sources.size());
       LOG.info("Current Maximum Rate = {} t/s", 1 / totalCost);
