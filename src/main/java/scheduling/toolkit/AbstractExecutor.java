@@ -56,8 +56,10 @@ public abstract class AbstractExecutor implements Runnable {
   private final SchedulerBackoff backoff;
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic waitTime;
-  private final AbstractCummulativeStatistic beginRoundTime;
+  private final AbstractCummulativeStatistic sortTime;
   private final AbstractCummulativeStatistic laggingTaskTime;
+  private final AbstractCummulativeStatistic priorityTime;
+  private final AbstractCummulativeStatistic otherTime;
   protected volatile List<Task> executorTasks = Collections.emptyList();
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
@@ -74,9 +76,17 @@ public abstract class AbstractExecutor implements Runnable {
             "Update-Action-Executor-%d", index),
             EXECUTOR_STATISTIC_TIME),
         false);
-    this.beginRoundTime = new CountStatistic(
+    this.sortTime = new CountStatistic(
         StatisticPath.get(state.statisticsFolder, String.format(
-            "Start-Round-Executor-%d", index),
+            "Sort-Tasks-Executor-%d", index),
+            EXECUTOR_STATISTIC_TIME), false);
+    this.priorityTime = new CountStatistic(
+        StatisticPath.get(state.statisticsFolder, String.format(
+            "Priority-Update-Executor-%d", index),
+            EXECUTOR_STATISTIC_TIME), false);
+    this.otherTime = new CountStatistic(
+        StatisticPath.get(state.statisticsFolder, String.format(
+            "Other-Overheads-Executor-%d", index),
             EXECUTOR_STATISTIC_TIME), false);
     this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
@@ -86,7 +96,9 @@ public abstract class AbstractExecutor implements Runnable {
         false);
     updateTime.enable();
     waitTime.enable();
-    beginRoundTime.enable();
+    sortTime.enable();
+    priorityTime.enable();
+    otherTime.enable();
     laggingTaskTime.enable();
     initTaskDependencies(state.variableFeaturesWithDependencies());
   }
@@ -123,7 +135,9 @@ public abstract class AbstractExecutor implements Runnable {
     }
     updateTime.disable();
     waitTime.disable();
-    beginRoundTime.disable();
+    sortTime.disable();
+    priorityTime.disable();
+    otherTime.disable();
     laggingTaskTime.disable();
   }
 
@@ -137,18 +151,20 @@ public abstract class AbstractExecutor implements Runnable {
     long startTime = System.currentTimeMillis();
     calculatePriorities();
     sortTasks();
+    long roundStartTime = System.currentTimeMillis();
     onRoundStart();
+    otherTime.append(System.currentTimeMillis() - roundStartTime);
 //    printTasks();
-    beginRoundTime.append(System.currentTimeMillis() - startTime);
-    // Lagging task execution time is not counted together with the preparation for the round
     runLaggingTasks();
     return startTime;
   }
 
   private void calculatePriorities() {
+    long start = System.currentTimeMillis();
     for (Task task : executorTasks) {
       state.priorityFunction().apply(task, state.taskFeatures, state.priorities[task.getIndex()]);
     }
+    priorityTime.append(System.currentTimeMillis() - start);
   }
 
   private void runLaggingTasks() {
@@ -190,7 +206,7 @@ public abstract class AbstractExecutor implements Runnable {
   private void sortTasks() {
     long startTime = System.currentTimeMillis();
     executorTasks.sort(state.comparator);
-    beginRoundTime.append(System.currentTimeMillis() - startTime);
+    sortTime.append(System.currentTimeMillis() - startTime);
   }
 
   private void markUpdated() {
