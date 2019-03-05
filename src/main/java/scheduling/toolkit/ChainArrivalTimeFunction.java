@@ -32,7 +32,7 @@ import org.apache.commons.lang3.Validate;
 public class ChainArrivalTimeFunction extends CombinedPriorityFunction {
 
   public static final int ARRIVAL_TIME_INDEX = 1;
-  private long chainUpdatePeriodMillis = 500;
+  private long chainUpdatePeriodMillis = 250;
   private long[] lastChainUpdate;
 
   public ChainArrivalTimeFunction() {
