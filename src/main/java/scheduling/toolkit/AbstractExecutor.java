@@ -94,7 +94,7 @@ public abstract class AbstractExecutor implements Runnable {
     this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
         false);
-    this.laggingTaskTime = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+    this.laggingTaskTime = new AverageStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Lagging-Tasks-Executor-%d", index), EXECUTOR_STATISTIC_EXTRA),
         false);
     this.executionTime = new AverageStatistic(StatisticPath.get(state.statisticsFolder,
