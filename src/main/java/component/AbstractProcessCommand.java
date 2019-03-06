@@ -72,7 +72,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     long startTime = System.nanoTime();
     // Process while the component is enabled, the rounds are not finished and there is actually
     // processing happening at every execution
-    while (component.isEnabled() && executions < rounds && tuplesRead - tuplesReadBefore == executions) {
+    while (component.isEnabled() && executions < rounds) {
       run();
       executions += 1;
     }
