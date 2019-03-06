@@ -26,6 +26,7 @@ package scheduling.toolkit;
 import common.util.Util;
 import common.util.backoff.Backoff;
 import java.util.Random;
+import org.apache.commons.lang3.Validate;
 
 /**
  * {@link Backoff} implementation that sleeps for exponentially increasing times every time backoff
@@ -62,8 +63,9 @@ public class SchedulerBackoff {
    *     {@link SchedulerBackoff#relax()} that will actually cause a change in the backoff time.
    */
   public SchedulerBackoff(int min, int max, int retries) {
-    this.min = min;
-    this.max = max;
+    this.min = Math.max(min, 1);
+    this.max = Math.max(max, 1);
+    Validate.isTrue(this.min <= this.max);
     this.retries = retries;
     this.currentLimit = min;
     this.currentRetries = retries;
