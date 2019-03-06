@@ -33,6 +33,7 @@ public class FeatureTranslator {
   }
 
   public static final double NO_ARRIVAL_TIME = FeatureHelper.NO_ARRIVAL_TIME;
+  public static final long MAX_QUEUE_SIZE = FeatureHelper.MAX_QUEUE_SIZE;
 
   static double get(Feature feature, Component component) {
     switch (feature) {
@@ -52,6 +53,10 @@ public class FeatureTranslator {
         return component.getRate();
       case USER_PRIORITY:
         return component.getPriority();
+      case INPUT_QUEUE_SIZE:
+        return component.getInputQueueSize();
+      case OUTPUT_QUEUE_SIZE:
+        return component.getOutputQueueSize();
       default:
         throw new IllegalStateException("Unknown feature: " + feature);
     }

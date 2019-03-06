@@ -23,9 +23,12 @@
 
 package scheduling.toolkit;
 
+import query.Query;
+
 public final class FeatureHelper {
 
   public static final double NO_ARRIVAL_TIME = Double.MAX_VALUE;
+  public static final long MAX_QUEUE_SIZE = Query.DEFAULT_STREAM_CAPACITY;
   public static int CTYPE_SOURCE = 0;
   public static int CTYPE_SINK = 1;
   public static int CTYPE_OPERATOR = 2;

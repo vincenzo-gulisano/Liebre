@@ -73,4 +73,12 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
     return downstream;
   }
 
+  @Override
+  default long getOutputQueueSize() {
+    long size = 0;
+    for (Stream<?> output : getOutputs()) {
+      size += output.size();
+    }
+    return size;
+  }
 }

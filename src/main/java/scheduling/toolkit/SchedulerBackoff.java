@@ -29,9 +29,7 @@ import java.util.Random;
 
 /**
  * {@link Backoff} implementation that sleeps for exponentially increasing times every time backoff
- * is called. <p>This is a stateful and <emph>NOT thread-safe</emph> object. You are advised to use
- * {@link SchedulerBackoff#factory(int, int, int)} to create thread-local instances of the object
- * with the same configuration. </p> <br/>
+ * is called. <p>This is a stateful and <emph>NOT thread-safe</emph> object.
  * <p>
  * Every time {@link SchedulerBackoff#backoff(long)} is called, the calling thread sleeps for a
  * random
@@ -98,6 +96,11 @@ public class SchedulerBackoff {
         currentLimit = Math.max(currentLimit / 2, min);
       }
     }
+  }
+
+  public void reset() {
+    currentLimit = min;
+    currentRetries = retries;
   }
 
 

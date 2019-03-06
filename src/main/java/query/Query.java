@@ -86,7 +86,7 @@ import stream.StreamStatistic;
 public final class Query {
 
   private static final Logger LOGGER = LogManager.getLogger();
-  private static final int DEFAULT_STREAM_CAPACITY = 10000;
+  public static final int DEFAULT_STREAM_CAPACITY = 10000;
   private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
   private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
   private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();

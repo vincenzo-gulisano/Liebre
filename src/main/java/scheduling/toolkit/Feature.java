@@ -36,9 +36,12 @@ public enum Feature {
   AVERAGE_ARRIVAL_TIME(4, false),
   COMPONENT_TYPE(5, true),
   RATE(6, false),
-  USER_PRIORITY(7, true);
+  USER_PRIORITY(7, true),
+  INPUT_QUEUE_SIZE(8, false),
+  OUTPUT_QUEUE_SIZE(9, false);
 
   public static final Map<Feature, FeatureDependency[]> dependencies;
+  private static final FeatureDependency[] NO_DEPENDENCIES = new FeatureDependency[0];
 
   static {
     Map<Feature, FeatureDependency[]> deps = new HashMap<>();
@@ -48,10 +51,14 @@ public enum Feature {
     deps.put(AVERAGE_ARRIVAL_TIME,
         new FeatureDependency[]{FeatureDependency.of(HEAD_ARRIVAL_TIME),
             FeatureDependency.of(AVERAGE_ARRIVAL_TIME)});
+    deps.put(INPUT_QUEUE_SIZE,
+        new FeatureDependency[]{FeatureDependency.of(INPUT_QUEUE_SIZE, TaskDependency.DOWNSTREAM),
+        });
+    deps.put(OUTPUT_QUEUE_SIZE,
+        new FeatureDependency[]{FeatureDependency.of(INPUT_QUEUE_SIZE, TaskDependency.DOWNSTREAM),
+        });
     dependencies = Collections.unmodifiableMap(deps);
   }
-
-  private static final FeatureDependency[] NO_DEPENDENCIES = new FeatureDependency[0];
 
   private final int index;
   private final boolean constant;
@@ -59,6 +66,14 @@ public enum Feature {
   Feature(int index, boolean constant) {
     this.index = index;
     this.constant = constant;
+  }
+
+  public static int length() {
+    return Feature.values().length;
+  }
+
+  public static double[] createArray() {
+    return new double[Feature.length()];
   }
 
   public int index() {
@@ -75,13 +90,5 @@ public enum Feature {
 
   public FeatureDependency[] dependencies() {
     return dependencies.getOrDefault(this, NO_DEPENDENCIES);
-  }
-
-  public static int length() {
-    return Feature.values().length;
-  }
-
-  public static double[] createArray() {
-    return new double[Feature.length()];
   }
 }

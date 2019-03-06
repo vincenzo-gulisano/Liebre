@@ -90,18 +90,18 @@ public class PriorityFunctions {
   private static final SinglePriorityFunction SOURCE_AVERAGE_ARRIVAL_TIME =
       new CachingPriorityFunction("SOURCE_AVERAGE_ARRIVAL_TIME", Feature.AVERAGE_ARRIVAL_TIME,
           Feature.COMPONENT_TYPE) {
-    @Override
-    public double applyWithCachingSupport(Task task, double[][] features) {
-     if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE)  {
-       return AVERAGE_ARRIVAL_TIME.apply(task, features);
-     }
-     double arrivalTime = Double.MAX_VALUE;
-     for (Task upstream : task.getUpstream()) {
-       arrivalTime = Math.min(arrivalTime, apply(upstream, features));
-     }
-     return arrivalTime;
-    }
-  };
+        @Override
+        public double applyWithCachingSupport(Task task, double[][] features) {
+          if (Feature.COMPONENT_TYPE.get(task, features) == CTYPE_SOURCE) {
+            return AVERAGE_ARRIVAL_TIME.apply(task, features);
+          }
+          double arrivalTime = Double.MAX_VALUE;
+          for (Task upstream : task.getUpstream()) {
+            arrivalTime = Math.min(arrivalTime, apply(upstream, features));
+          }
+          return arrivalTime;
+        }
+      };
 
   private static final SinglePriorityFunction GLOBAL_AVERAGE_COST =
       new CachingPriorityFunction("GLOBAL_AVERAGE_COST", Feature.COST, Feature.SELECTIVITY,
@@ -150,6 +150,28 @@ public class PriorityFunctions {
         }
       };
 
+  private static final SinglePriorityFunction INPUT_QUEUE_SIZE = new AbstractPriorityFunction(
+      "INPUT_QUEUE_SIZE", Feature.INPUT_QUEUE_SIZE) {
+    @Override
+    public double apply(Task task, double[][] features) {
+      return Feature.INPUT_QUEUE_SIZE.get(task, features);
+    }
+  };
+
+  private static final SinglePriorityFunction OUTPUT_QUEUE_SIZE = new AbstractPriorityFunction(
+      "OUTPUT_QUEUE_SIZE", Feature.OUTPUT_QUEUE_SIZE) {
+    @Override
+    public double apply(Task task, double[][] features) {
+      return Feature.OUTPUT_QUEUE_SIZE.get(task, features);
+    }
+
+    @Override
+    public boolean reverseOrder() {
+      return true;
+    }
+  };
+
+
   private PriorityFunctions() {
 
   }
@@ -178,6 +200,14 @@ public class PriorityFunctions {
     return USER_PRIORITY;
   }
 
+  public static SinglePriorityFunction inputQueueSize() {
+    return INPUT_QUEUE_SIZE;
+  }
+
+  public static SinglePriorityFunction outputQueueSize() {
+    return OUTPUT_QUEUE_SIZE;
+  }
+
   public static SinglePriorityFunction chain() {
     return new ChainPriorityFunction();
   }
@@ -192,6 +222,7 @@ public class PriorityFunctions {
 
   private static class ChainPriorityFunction extends AbstractPriorityFunction {
 
+    public static final int NOT_INITIALIZED = -1;
     private static final SinglePriorityFunction TOTAL_SELECTIVITY = new CachingPriorityFunction(
         "SELECTIVITY", Feature.SELECTIVITY) {
       @Override
@@ -204,7 +235,6 @@ public class PriorityFunctions {
         }
       }
     };
-
     private static final SinglePriorityFunction TIME = new CachingPriorityFunction(
         "TIME", Feature.COST, Feature.SELECTIVITY) {
 
@@ -220,7 +250,7 @@ public class PriorityFunctions {
         }
       }
     };
-    public static final int NOT_INITIALIZED = -1;
+
     private double[] sdop;
     private boolean warm = false;
 
@@ -270,11 +300,13 @@ public class PriorityFunctions {
       // Create the envelope
       if (selected != null) {
 //        System.out.println(lowerEnvelopeCandidates);
-//        System.out.format("[%s]%n", lowerEnvelopeCandidates.stream().map(t -> Double.toString(
+//        System.out.format("cost = [%s]%n",
+//            lowerEnvelopeCandidates.stream().map(t -> Double.toString(
 //            Feature.COST.get(t,
 //                features))).collect(
 //            Collectors.joining(",")));
-//        System.out.format("[%s]%n", lowerEnvelopeCandidates.stream().map(t -> Double.toString(
+//        System.out.format("selectivity = [%s]%n",
+//            lowerEnvelopeCandidates.stream().map(t -> Double.toString(
 //            Feature.SELECTIVITY.get(t,
 //                features))).collect(
 //            Collectors.joining(",")));

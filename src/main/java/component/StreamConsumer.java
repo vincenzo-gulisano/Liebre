@@ -128,4 +128,13 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
     return priority;
   }
 
+  @Override
+  default long getInputQueueSize() {
+    long size = 0;
+    for (Stream<?> input : getInputs()) {
+      size += input.size();
+    }
+    return size;
+  }
+
 }

@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractExecutor implements Runnable {
 
+  public static final boolean DEBUG = false;
   public static final String EXECUTOR_STATISTIC_TIME = "executor-time";
   public static final String EXECUTOR_STATISTIC_EXTRA = "executor-extra";
   private static final int BACKOFF_MIN_MILLIS = 1;
@@ -61,6 +62,7 @@ public abstract class AbstractExecutor implements Runnable {
   private final AbstractCummulativeStatistic priorityTime;
   private final AbstractCummulativeStatistic otherTime;
   protected volatile List<Task> executorTasks = Collections.emptyList();
+  private AbstractCummulativeStatistic executionTime;
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
       SchedulerState state) {
@@ -68,7 +70,7 @@ public abstract class AbstractExecutor implements Runnable {
     this.schedulingPeriod = schedulingPeriodMillis;
     this.barrier = barrier;
     this.state = state;
-    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis,
+    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis/10,
         BACKOFF_RETRIES);
     this.index = indexGenerator.getAndIncrement();
     this.updateTime = new CountStatistic(
@@ -94,7 +96,11 @@ public abstract class AbstractExecutor implements Runnable {
     this.laggingTaskTime = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Lagging-Tasks-Executor-%d", index), EXECUTOR_STATISTIC_EXTRA),
         false);
+    this.executionTime = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+        String.format("Execution-Time-Executor-%d", index), EXECUTOR_STATISTIC_EXTRA),
+        false);
     updateTime.enable();
+    executionTime.enable();
     waitTime.enable();
     sortTime.enable();
     priorityTime.enable();
@@ -118,7 +124,7 @@ public abstract class AbstractExecutor implements Runnable {
 
   @Override
   public void run() {
-    if (!updateTasks()) {
+    if (!updateTasks(System.currentTimeMillis())) {
       return;
     }
     long roundStartTime = beginRound();
@@ -127,7 +133,7 @@ public abstract class AbstractExecutor implements Runnable {
       final long remainingTime = schedulingPeriod - (System.currentTimeMillis() - roundStartTime);
       adjustUtilization(didRun, remainingTime);
       if (remainingTime <= 0) {
-        if (!updateTasks()) {
+        if (!updateTasks(roundStartTime)) {
           break;
         }
         roundStartTime = beginRound();
@@ -139,6 +145,7 @@ public abstract class AbstractExecutor implements Runnable {
     priorityTime.disable();
     otherTime.disable();
     laggingTaskTime.disable();
+    executionTime.disable();
   }
 
   /**
@@ -154,8 +161,12 @@ public abstract class AbstractExecutor implements Runnable {
     long roundStartTime = System.currentTimeMillis();
     onRoundStart();
     otherTime.append(System.currentTimeMillis() - roundStartTime);
-//    printTasks();
     runLaggingTasks();
+    //FIXME: Reevaluate if the backoff needs to be reset every time
+    backoff.reset();
+    if (DEBUG) {
+      printTasks();
+    }
     return startTime;
   }
 
@@ -191,10 +202,11 @@ public abstract class AbstractExecutor implements Runnable {
     backoff.relax();
   }
 
-  private boolean updateTasks() {
+  private boolean updateTasks(long roundStartTime) {
     try {
       markUpdated();
       long start = System.currentTimeMillis();
+      executionTime.append(start - roundStartTime);
       barrier.await();
       waitTime.append(System.currentTimeMillis() - start);
       return true;

@@ -27,7 +27,6 @@ import common.Named;
 import java.util.Collections;
 import java.util.List;
 import scheduling.toolkit.Feature;
-import scheduling.toolkit.FeatureHelper;
 import scheduling.toolkit.Task;
 
 /**
@@ -64,6 +63,16 @@ public interface Component extends Active, Runnable, Named, Task {
   double getSelectivity();
 
   double getRate();
+
+  default long getInputQueueSize() {
+    // Sources can always run
+    return FeatureTranslator.MAX_QUEUE_SIZE;
+  }
+
+  default long getOutputQueueSize() {
+    // Sinks can always run
+   return 0;
+  }
 
   /**
    * Update the metrics  (e.g. cost and selectivity) based on the execution statistics of the
