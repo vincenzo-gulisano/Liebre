@@ -28,6 +28,7 @@ import common.statistic.CountStatistic;
 import common.util.StatisticPath;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
@@ -49,13 +50,14 @@ public class ReconfigurationAction implements Runnable {
   public ReconfigurationAction(List<Task> inputTasks, List<AbstractExecutor> executors,
       SchedulerState state) {
     this.tasks = new ArrayList(inputTasks);
+    Collections.sort(tasks, Comparator.comparingInt(Task::getIndex));
     this.executors = executors;
     this.state = state;
-    this.state.init(inputTasks);
+    this.state.init(tasks);
 
     // Statistics Initialization
     this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "Total-Calls"), STATISTIC_CALLS), true);
+        "Total-Calls"), STATISTIC_CALLS), false);
     totalCalls.enable();
     this.updateTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "Update-Features"), STATISTIC_TIME), false);
