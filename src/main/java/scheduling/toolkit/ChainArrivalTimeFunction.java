@@ -32,11 +32,22 @@ import org.apache.commons.lang3.Validate;
 public class ChainArrivalTimeFunction extends CombinedPriorityFunction {
 
   public static final int ARRIVAL_TIME_INDEX = 1;
+  private static SinglePriorityFunction sourcesLast = new AbstractPriorityFunction("SOURCES_LAST"
+      , Feature.COMPONENT_TYPE) {
+    @Override
+    public double apply(Task task, double[][] features) {
+      if (Feature.COMPONENT_TYPE.get(task, features) == FeatureHelper.CTYPE_SOURCE) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+  };
   private long chainUpdatePeriodMillis = 250;
   private long[] lastChainUpdate;
 
   public ChainArrivalTimeFunction() {
-    super(PriorityFunctions.chain(), PriorityFunctions.headArrivalTime());
+    super(sourcesLast, PriorityFunctions.chain(), PriorityFunctions.headArrivalTime());
   }
 
   public void setCostUpdatePeriod(long period, TimeUnit timeUnit) {
