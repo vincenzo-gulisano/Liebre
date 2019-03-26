@@ -61,12 +61,12 @@ class ChainPriorityFunction extends AbstractPriorityFunction {
       if (upstream == null) {
         return Feature.COST.get(task, features);
       } else {
-        return Feature.COST.get(task, features) * TOTAL_SELECTIVITY.apply(upstream, features
-        )
+        return Feature.COST.get(task, features) * TOTAL_SELECTIVITY.apply(upstream, features)
             + apply(upstream, features);
       }
     }
   };
+  public static final double SINK_SELECTIVITY = 0;
   private double[] sdop;
   private boolean warm = false;
 
@@ -88,7 +88,7 @@ class ChainPriorityFunction extends AbstractPriorityFunction {
 
   private static double getSelectivity(Task task, double[][] features) {
     boolean isSink = Feature.COMPONENT_TYPE.get(task, features) == FeatureHelper.CTYPE_SINK;
-    return isSink ? 0 : Feature.SELECTIVITY.get(task, features);
+    return isSink ? SINK_SELECTIVITY : Feature.SELECTIVITY.get(task, features);
   }
 
   @Override
