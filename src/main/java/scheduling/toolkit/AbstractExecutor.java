@@ -34,12 +34,12 @@ import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractExecutor implements Runnable {
 
-  public static final boolean DEBUG = false;
   public static final String EXECUTOR_STATISTIC_TIME = "executor-time";
   public static final String EXECUTOR_STATISTIC_EXTRA = "executor-extra";
   private static final int BACKOFF_MIN_MILLIS = 1;
@@ -164,7 +164,7 @@ public abstract class AbstractExecutor implements Runnable {
     runLaggingTasks();
     //FIXME: Reevaluate if the backoff needs to be reset every time
     backoff.reset();
-    if (DEBUG) {
+    if (LOG.getLevel() == Level.TRACE) {
       printTasks();
     }
     return startTime;

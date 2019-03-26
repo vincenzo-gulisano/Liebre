@@ -27,10 +27,15 @@ import static scheduling.toolkit.FeatureHelper.CTYPE_SOURCE;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class PriorityFunctions {
 
+  private static final Logger LOG = LogManager.getLogger();
   private static final SinglePriorityFunction TUPLE_PROCESSING_TIME = new CachingPriorityFunction(
       "TUPLE_PROCESSING_TIME", Feature.COST) {
     @Override
@@ -224,14 +229,16 @@ public class PriorityFunctions {
 
     public static final int NOT_INITIALIZED = -1;
     private static final SinglePriorityFunction TOTAL_SELECTIVITY = new CachingPriorityFunction(
-        "SELECTIVITY", Feature.SELECTIVITY) {
+        "SELECTIVITY", Feature.SELECTIVITY, Feature.COMPONENT_TYPE) {
       @Override
       protected double applyWithCachingSupport(Task task, double[][] features) {
         Task upstream = getUpstream(task);
+        boolean isSink = Feature.COMPONENT_TYPE.get(task, features) == FeatureHelper.CTYPE_SINK;
+        double selectivity = isSink ? 0 : Feature.SELECTIVITY.get(task, features);
         if (upstream == null) {
-          return Feature.SELECTIVITY.get(task, features);
+          return selectivity;
         } else {
-          return Feature.SELECTIVITY.get(task, features) * apply(upstream, features);
+          return selectivity * apply(upstream, features);
         }
       }
     };
@@ -299,19 +306,9 @@ public class PriorityFunctions {
       }
       // Create the envelope
       if (selected != null) {
-//        System.out.println(lowerEnvelopeCandidates);
-//        System.out.format("cost = [%s]%n",
-//            lowerEnvelopeCandidates.stream().map(t -> Double.toString(
-//            Feature.COST.get(t,
-//                features))).collect(
-//            Collectors.joining(",")));
-//        System.out.format("selectivity = [%s]%n",
-//            lowerEnvelopeCandidates.stream().map(t -> Double.toString(
-//            Feature.SELECTIVITY.get(t,
-//                features))).collect(
-//            Collectors.joining(",")));
-//        System.out.println("> " + selected);
-//        System.out.println("> " + maxDerivative);
+        if (LOG.getLevel() == Level.TRACE) {
+          printDetails(features, lowerEnvelopeCandidates, selected, maxDerivative);
+        }
         for (Task candidate : lowerEnvelopeCandidates) {
           sdop[candidate.getIndex()] = maxDerivative;
           if (candidate.getIndex() == selected.getIndex()) {
@@ -320,6 +317,23 @@ public class PriorityFunctions {
         }
         calculateLowerEnvelope(selected, features);
       }
+    }
+
+    private void printDetails(double[][] features, List<Task> lowerEnvelopeCandidates, Task selected,
+        double maxDerivative) {
+      System.out.println(lowerEnvelopeCandidates);
+      System.out.format("cost = [%s]%n",
+          lowerEnvelopeCandidates.stream().map(t -> Double.toString(
+              Feature.COST.get(t,
+                  features))).collect(
+              Collectors.joining(",")));
+      System.out.format("selectivity = [%s]%n",
+          lowerEnvelopeCandidates.stream().map(t -> Double.toString(
+              Feature.SELECTIVITY.get(t,
+                  features))).collect(
+              Collectors.joining(",")));
+      System.out.println("> " + selected);
+      System.out.println("> " + maxDerivative);
     }
 
     private double getDerivative(Task left, Task right, double[][] features) {
