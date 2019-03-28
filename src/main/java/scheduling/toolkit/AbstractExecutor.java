@@ -42,6 +42,7 @@ public abstract class AbstractExecutor implements Runnable {
 
   public static final String EXECUTOR_STATISTIC_TIME = "executor-time";
   public static final String EXECUTOR_STATISTIC_EXTRA = "executor-extra";
+  private static final String EXECUTED_TASK_COUNTS = "executed-tasks";
   private static final int BACKOFF_MIN_MILLIS = 1;
   private static final AtomicInteger indexGenerator = new AtomicInteger();
   private static final Logger LOG = LogManager.getLogger();
@@ -61,8 +62,10 @@ public abstract class AbstractExecutor implements Runnable {
   private final AbstractCummulativeStatistic laggingTaskTime;
   private final AbstractCummulativeStatistic priorityTime;
   private final AbstractCummulativeStatistic otherTime;
+  private final AbstractCummulativeStatistic executionTime;
+  private final AbstractCummulativeStatistic markedTasks;
+  private final AbstractCummulativeStatistic laggingTaskCount;
   protected volatile List<Task> executorTasks = Collections.emptyList();
-  private AbstractCummulativeStatistic executionTime;
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
       SchedulerState state) {
@@ -70,7 +73,7 @@ public abstract class AbstractExecutor implements Runnable {
     this.schedulingPeriod = schedulingPeriodMillis;
     this.barrier = barrier;
     this.state = state;
-    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis/10,
+    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis / 10,
         BACKOFF_RETRIES);
     this.index = indexGenerator.getAndIncrement();
     this.updateTime = new CountStatistic(
@@ -99,6 +102,12 @@ public abstract class AbstractExecutor implements Runnable {
     this.executionTime = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Execution-Time-Executor-%d", index), EXECUTOR_STATISTIC_EXTRA),
         false);
+    this.markedTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+        String.format("Marked-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
+        false);
+    this.laggingTaskCount = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+        String.format("Lagging-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
+        false);
     updateTime.enable();
     executionTime.enable();
     waitTime.enable();
@@ -106,6 +115,8 @@ public abstract class AbstractExecutor implements Runnable {
     priorityTime.enable();
     otherTime.enable();
     laggingTaskTime.enable();
+    markedTasks.enable();
+    laggingTaskCount.enable();
     initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
@@ -146,6 +157,8 @@ public abstract class AbstractExecutor implements Runnable {
     otherTime.disable();
     laggingTaskTime.disable();
     executionTime.disable();
+    markedTasks.disable();
+    laggingTaskCount.disable();
   }
 
   /**
@@ -186,6 +199,7 @@ public abstract class AbstractExecutor implements Runnable {
           TASK_UPDATE_LIMIT_FACTOR * schedulingPeriod)) {
         task.runFor(1);
         mark(task, i);
+        laggingTaskCount.append(1);
       }
     }
     laggingTaskTime.append(System.currentTimeMillis() - timestamp);
@@ -227,6 +241,7 @@ public abstract class AbstractExecutor implements Runnable {
     for (Task task : executorTasks) {
       task.refreshFeatures();
     }
+    markedTasks.append(runTasks.size());
     for (int taskIndex : runTasks) {
       Task task = executorTasks.get(taskIndex);
       task.updateFeatures(state.variableFeaturesNoDependencies(),
