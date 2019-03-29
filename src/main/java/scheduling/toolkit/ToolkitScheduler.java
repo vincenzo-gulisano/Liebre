@@ -88,7 +88,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
     LOG.info("Scheduling Period: {} ms", schedulingPeriodMillis);
     LOG.info("Batch Size: {}", batchSize);
     final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction,
-        deploymentFunction, priorityCaching, statisticsFolder);
+        deploymentFunction, priorityCaching, statisticsFolder, nThreads);
     final List<AbstractExecutor> executors = new ArrayList<>();
     this.reconfigurationAction = new ReconfigurationAction(tasks, executors, state);
     CyclicBarrier barrier = new CyclicBarrier(nThreads, reconfigurationAction);

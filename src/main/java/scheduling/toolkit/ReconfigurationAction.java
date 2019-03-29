@@ -24,6 +24,7 @@
 package scheduling.toolkit;
 
 import common.statistic.AbstractCummulativeStatistic;
+import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticPath;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class ReconfigurationAction implements Runnable {
 
   static final String STATISTIC_CALLS = "priocalls";
   static final String STATISTIC_TIME = "priotime";
+  public static final String PERIOD_INFO = "period-info";
   private static final Logger LOG = LogManager.getLogger();
   private final List<Task> tasks;
   private final List<AbstractExecutor> executors;
@@ -45,6 +47,7 @@ public class ReconfigurationAction implements Runnable {
   private final AbstractCummulativeStatistic totalCalls;
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic deploymentTime;
+  private final AbstractCummulativeStatistic periodVariance;
   private boolean firstUpdate = true;
 
   public ReconfigurationAction(List<Task> inputTasks, List<AbstractExecutor> executors,
@@ -66,6 +69,10 @@ public class ReconfigurationAction implements Runnable {
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Deploy-Tasks"), STATISTIC_TIME), false);
     deploymentTime.enable();
+    this.periodVariance = new AverageStatistic(
+        StatisticPath.get(state.statisticsFolder, statisticName(
+            "Period-Variance"), PERIOD_INFO), false);
+    periodVariance.enable();
 
   }
 
@@ -86,6 +93,7 @@ public class ReconfigurationAction implements Runnable {
     List<List<Task>> assignments = deployTasks();
     assignTasks(assignments);
     totalCalls.append(1);
+    periodVariance.append(state.periodDurationVariance());
   }
 
   private void updateFeaturesWithDependencies() {
@@ -133,6 +141,7 @@ public class ReconfigurationAction implements Runnable {
     totalCalls.disable();
     updateTime.disable();
     deploymentTime.disable();
+    periodVariance.disable();
   }
 
 }

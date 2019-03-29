@@ -53,11 +53,12 @@ public final class SchedulerState {
   private final Feature[] variableFeaturesWithDependencies;
   //Non-constant features with no dependencies
   private final Feature[] variableFeaturesNoDependencies;
+  private final long[] periodDurations;
 
   public SchedulerState(int nTasks, MultiPriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
       boolean priorityCachning,
-      String statisticsFolder) {
+      String statisticsFolder, int nThreads) {
     this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
         priorityFunction;
     this.deploymentFunction = deploymentFunction;
@@ -69,6 +70,7 @@ public final class SchedulerState {
     for (int i = 0; i < updated.length; i++) {
       updated[i] = new AtomicBoolean(false);
     }
+    this.periodDurations = new long[nThreads];
     this.statisticsFolder = statisticsFolder;
     this.constantFeatures = getFeatures(priorityFunction, deploymentFunction,
         feature -> feature.isConstant());
@@ -128,5 +130,19 @@ public final class SchedulerState {
 
   DeploymentFunction deploymentFunction() {
     return deploymentFunction;
+  }
+
+  void recordPeriodDuration(int executorIndex, long duration) {
+    periodDurations[executorIndex] = duration;
+  }
+
+  long periodDurationVariance() {
+    long min = periodDurations[0];
+    long max = periodDurations[0];
+    for (long d : periodDurations) {
+     min = Math.min(d, min) ;
+     max = Math.max(d, max);
+    }
+    return max - min;
   }
 }

@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Logger;
 public abstract class AbstractExecutor implements Runnable {
 
   public static final String EXECUTOR_STATISTIC_TIME = "executor-time";
-  public static final String EXECUTOR_STATISTIC_EXTRA = "executor-extra";
   private static final String EXECUTED_TASK_COUNTS = "executed-tasks";
   private static final int BACKOFF_MIN_MILLIS = 1;
   private static final AtomicInteger indexGenerator = new AtomicInteger();
@@ -59,11 +58,8 @@ public abstract class AbstractExecutor implements Runnable {
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic waitTime;
   private final AbstractCummulativeStatistic sortTime;
-  private final AbstractCummulativeStatistic laggingTaskTime;
   private final AbstractCummulativeStatistic priorityTime;
   private final AbstractCummulativeStatistic otherTime;
-  private final AbstractCummulativeStatistic executionTime;
-  private final AbstractCummulativeStatistic exceededTime;
   private final AbstractCummulativeStatistic markedTasks;
   private final AbstractCummulativeStatistic laggingTaskCount;
   protected volatile List<Task> executorTasks = Collections.emptyList();
@@ -97,15 +93,6 @@ public abstract class AbstractExecutor implements Runnable {
     this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
         false);
-    this.laggingTaskTime = new CountStatistic(StatisticPath.get(state.statisticsFolder,
-        String.format("Lagging-Tasks-Executor-%d", index), EXECUTOR_STATISTIC_EXTRA),
-        false);
-    this.executionTime = new CountStatistic(StatisticPath.get(state.statisticsFolder,
-        String.format("Execution-Time-Executor-%d", index), EXECUTOR_STATISTIC_EXTRA),
-        false);
-    this.exceededTime = new CountStatistic(StatisticPath.get(state.statisticsFolder,
-        String.format("Exceeded-Time-Executor-%d", index), EXECUTOR_STATISTIC_EXTRA),
-        false);
     this.markedTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Marked-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
@@ -113,15 +100,12 @@ public abstract class AbstractExecutor implements Runnable {
         String.format("Lagging-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
     updateTime.enable();
-//    executionTime.enable();
     waitTime.enable();
     sortTime.enable();
     priorityTime.enable();
     otherTime.enable();
-//    laggingTaskTime.enable();
     markedTasks.enable();
     laggingTaskCount.enable();
-    exceededTime.enable();
     initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
@@ -160,11 +144,8 @@ public abstract class AbstractExecutor implements Runnable {
     sortTime.disable();
     priorityTime.disable();
     otherTime.disable();
-//    laggingTaskTime.disable();
-//    executionTime.disable();
     markedTasks.disable();
     laggingTaskCount.disable();
-    exceededTime.disable();
   }
 
   /**
@@ -208,7 +189,6 @@ public abstract class AbstractExecutor implements Runnable {
         laggingTaskCount.append(1);
       }
     }
-//    laggingTaskTime.append(System.currentTimeMillis() - timestamp);
   }
 
   private void adjustUtilization(boolean didRun, long remainingTime) {
@@ -225,13 +205,10 @@ public abstract class AbstractExecutor implements Runnable {
   private boolean updateTasks(long roundStartTime) {
     try {
       markUpdated();
-      long start = System.currentTimeMillis();
-//      executionTime.append(start - roundStartTime);
-      if (start - roundStartTime > schedulingPeriod) {
-        exceededTime.append(1);
-      }
+      long barrierEnterTime = System.currentTimeMillis();
+      state.recordPeriodDuration(index, barrierEnterTime - roundStartTime);
       barrier.await();
-      waitTime.append(System.currentTimeMillis() - start);
+      waitTime.append(System.currentTimeMillis() - barrierEnterTime);
       return true;
     } catch (InterruptedException | BrokenBarrierException e) {
       return false;
@@ -250,7 +227,6 @@ public abstract class AbstractExecutor implements Runnable {
     for (Task task : executorTasks) {
       task.refreshFeatures();
     }
-    markedTasks.append(runTasks.size());
     for (int taskIndex : runTasks) {
       Task task = executorTasks.get(taskIndex);
       task.updateFeatures(state.variableFeaturesNoDependencies(),
@@ -275,6 +251,7 @@ public abstract class AbstractExecutor implements Runnable {
    * @param localIndex The index of the task in executorTasks
    */
   protected final void mark(Task task, int localIndex) {
+    markedTasks.append(1);
     runTasks.add(localIndex);
   }
 
