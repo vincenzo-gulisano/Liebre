@@ -51,7 +51,7 @@ public final class DeploymentFunctions {
 
   private static class RandomOperatorDeployment extends AbstractDeploymentFunction {
 
-    private final Random random = new Random(1);
+    private final Random random = new Random();
 
     public RandomOperatorDeployment() {
       super("RANDOM_OPERATOR", Feature.USER_PRIORITY);

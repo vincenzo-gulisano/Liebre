@@ -53,24 +53,29 @@ public final class SchedulerState {
   private final Feature[] variableFeaturesWithDependencies;
   //Non-constant features with no dependencies
   private final Feature[] variableFeaturesNoDependencies;
-  private final long[] periodDurations;
+  private final long[] barrierEnter;
+  private final long[] barrierExit;
+  private long roundEndTime;
+  private final long schedulingPeriod;
 
   public SchedulerState(int nTasks, MultiPriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
       boolean priorityCachning,
-      String statisticsFolder, int nThreads) {
+      String statisticsFolder, int nThreads, long schedulingPeriod) {
     this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
         priorityFunction;
     this.deploymentFunction = deploymentFunction;
     this.updated = new AtomicBoolean[nTasks];
     this.taskFeatures = new double[nTasks][Feature.length()];
     this.lastUpdateTime = new long[nTasks];
+    this.schedulingPeriod = schedulingPeriod;
     this.priorities = new double[nTasks][priorityFunction.dimensions()];
     this.comparator = new MultiPriorityComparator(priorityFunction, priorities);
     for (int i = 0; i < updated.length; i++) {
       updated[i] = new AtomicBoolean(false);
     }
-    this.periodDurations = new long[nThreads];
+    this.barrierEnter = new long[nThreads];
+    this.barrierExit = new long[nThreads];
     this.statisticsFolder = statisticsFolder;
     this.constantFeatures = getFeatures(priorityFunction, deploymentFunction,
         feature -> feature.isConstant());
@@ -132,16 +137,36 @@ public final class SchedulerState {
     return deploymentFunction;
   }
 
-  void recordPeriodDuration(int executorIndex, long duration) {
-    periodDurations[executorIndex] = duration;
+  void updateRoundEndTime() {
+   this.roundEndTime = System.currentTimeMillis() + schedulingPeriod;
   }
 
-  long periodDurationVariance() {
-    long min = periodDurations[0];
-    long max = periodDurations[0];
-    for (long d : periodDurations) {
-     min = Math.min(d, min) ;
-     max = Math.max(d, max);
+  public long remainingRoundTime() {
+    return roundEndTime - System.currentTimeMillis();
+  }
+
+  void recordBarrierEnter(int executorIndex, long duration) {
+    barrierEnter[executorIndex] = duration;
+  }
+
+  void recordBarrierExit(int executorIndex, long duration) {
+    barrierExit[executorIndex] = duration;
+  }
+
+  long barrierEnterVariance() {
+    return variance(barrierEnter);
+  }
+
+  long barrierExitVariance() {
+    return variance(barrierExit);
+  }
+
+  private long variance(long[] data) {
+    long min = data[0];
+    long max = data[0];
+    for (long d : data) {
+      min = Math.min(d, min) ;
+      max = Math.max(d, max);
     }
     return max - min;
   }

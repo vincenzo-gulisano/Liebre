@@ -39,7 +39,7 @@ public class ReconfigurationAction implements Runnable {
 
   static final String STATISTIC_CALLS = "priocalls";
   static final String STATISTIC_TIME = "priotime";
-  public static final String PERIOD_INFO = "period-info";
+  public static final String BARRIER_INFO = "barrier-info";
   private static final Logger LOG = LogManager.getLogger();
   private final List<Task> tasks;
   private final List<AbstractExecutor> executors;
@@ -47,7 +47,8 @@ public class ReconfigurationAction implements Runnable {
   private final AbstractCummulativeStatistic totalCalls;
   private final AbstractCummulativeStatistic updateTime;
   private final AbstractCummulativeStatistic deploymentTime;
-  private final AbstractCummulativeStatistic periodVariance;
+  private final AbstractCummulativeStatistic barrierEnterVariance;
+  private final AbstractCummulativeStatistic barrierExitVariance;
   private boolean firstUpdate = true;
 
   public ReconfigurationAction(List<Task> inputTasks, List<AbstractExecutor> executors,
@@ -69,10 +70,14 @@ public class ReconfigurationAction implements Runnable {
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Deploy-Tasks"), STATISTIC_TIME), false);
     deploymentTime.enable();
-    this.periodVariance = new AverageStatistic(
+    this.barrierEnterVariance = new AverageStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
-            "Period-Variance"), PERIOD_INFO), false);
-    periodVariance.enable();
+            "Enter-Variance"), BARRIER_INFO), false);
+    barrierEnterVariance.enable();
+    this.barrierExitVariance = new AverageStatistic(
+        StatisticPath.get(state.statisticsFolder, statisticName(
+            "Exit-Variance"), BARRIER_INFO), false);
+    barrierExitVariance.enable();
 
   }
 
@@ -92,8 +97,10 @@ public class ReconfigurationAction implements Runnable {
     state.priorityFunction().clearCache();
     List<List<Task>> assignments = deployTasks();
     assignTasks(assignments);
+    state.updateRoundEndTime();
     totalCalls.append(1);
-    periodVariance.append(state.periodDurationVariance());
+    barrierEnterVariance.append(state.barrierEnterVariance());
+    barrierExitVariance.append(state.barrierExitVariance());
   }
 
   private void updateFeaturesWithDependencies() {
@@ -141,7 +148,8 @@ public class ReconfigurationAction implements Runnable {
     totalCalls.disable();
     updateTime.disable();
     deploymentTime.disable();
-    periodVariance.disable();
+    barrierEnterVariance.disable();
+    barrierExitVariance.disable();
   }
 
 }

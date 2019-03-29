@@ -124,19 +124,19 @@ public abstract class AbstractExecutor implements Runnable {
 
   @Override
   public void run() {
-    if (!updateTasks(System.currentTimeMillis())) {
+    if (!updateTasks()) {
       return;
     }
-    long roundStartTime = beginRound();
+    beginRound();
     while (!Thread.currentThread().isInterrupted()) {
       boolean didRun = runNextTask();
-      final long remainingTime = schedulingPeriod - (System.currentTimeMillis() - roundStartTime);
+      final long remainingTime = state.remainingRoundTime();
       adjustUtilization(didRun, remainingTime);
-      if (remainingTime <= 0) {
-        if (!updateTasks(roundStartTime)) {
+      if (state.remainingRoundTime() <= 0) {
+        if (!updateTasks()) {
           break;
         }
-        roundStartTime = beginRound();
+        beginRound();
       }
     }
     updateTime.disable();
@@ -154,20 +154,17 @@ public abstract class AbstractExecutor implements Runnable {
    *
    * @return The start time of the rounds.
    */
-  private long beginRound() {
-    long startTime = System.currentTimeMillis();
+  private void beginRound() {
     calculatePriorities();
     sortTasks();
-    long roundStartTime = System.currentTimeMillis();
+    long otherStart = System.currentTimeMillis();
     onRoundStart();
-    otherTime.append(System.currentTimeMillis() - roundStartTime);
+    otherTime.append(System.currentTimeMillis() - otherStart);
     runLaggingTasks();
-    //FIXME: Reevaluate if the backoff needs to be reset every time
     backoff.reset();
     if (LOG.getLevel() == Level.TRACE) {
       printTasks();
     }
-    return startTime;
   }
 
   private void calculatePriorities() {
@@ -202,13 +199,15 @@ public abstract class AbstractExecutor implements Runnable {
     backoff.relax();
   }
 
-  private boolean updateTasks(long roundStartTime) {
+  private boolean updateTasks() {
     try {
       markUpdated();
       long barrierEnterTime = System.currentTimeMillis();
-      state.recordPeriodDuration(index, barrierEnterTime - roundStartTime);
+      state.recordBarrierEnter(index, barrierEnterTime);
       barrier.await();
-      waitTime.append(System.currentTimeMillis() - barrierEnterTime);
+      long barrierExitTime = System.currentTimeMillis();
+      waitTime.append(barrierExitTime - barrierEnterTime);
+      state.recordBarrierExit(index, barrierExitTime);
       return true;
     } catch (InterruptedException | BrokenBarrierException e) {
       return false;

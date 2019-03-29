@@ -37,7 +37,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
 
   private static final Logger LOG = LogManager.getLogger();
   private final int batchSize;
-  private final int schedulingPeriodMillis;
+  private final int schedulingPeriod;
   private final int nThreads;
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
@@ -50,25 +50,25 @@ public class ToolkitScheduler implements Scheduler<Task> {
   public ToolkitScheduler(int nThreads, MultiPriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
       boolean priorityCaching, int batchSize,
-      int schedulingPeriodMillis,
+      int schedulingPeriod,
       String statisticsFolder) {
     this.nThreads = nThreads;
     this.priorityFunction = priorityFunction;
     this.deploymentFunction = deploymentFunction;
     this.priorityCaching = priorityCaching;
     this.batchSize = batchSize;
-    this.schedulingPeriodMillis = schedulingPeriodMillis;
+    this.schedulingPeriod = schedulingPeriod;
     this.statisticsFolder = statisticsFolder;
   }
 
   public ToolkitScheduler(int nThreads, SinglePriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
       boolean priorityCaching, int batchSize,
-      int schedulingPeriodMillis,
+      int schedulingPeriod,
       String statisticsFolder) {
     this(nThreads, new CombinedPriorityFunction(priorityFunction), deploymentFunction,
         priorityCaching, batchSize,
-        schedulingPeriodMillis, statisticsFolder);
+        schedulingPeriod, statisticsFolder);
   }
 
 
@@ -85,15 +85,15 @@ public class ToolkitScheduler implements Scheduler<Task> {
     LOG.info("Priority Caching: {}", priorityCaching);
     LOG.info("Deployment Function Function: {}", deploymentFunction);
     LOG.info("Worker threads: {}", nThreads);
-    LOG.info("Scheduling Period: {} ms", schedulingPeriodMillis);
+    LOG.info("Scheduling Period: {} ms", schedulingPeriod);
     LOG.info("Batch Size: {}", batchSize);
     final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction,
-        deploymentFunction, priorityCaching, statisticsFolder, nThreads);
+        deploymentFunction, priorityCaching, statisticsFolder, nThreads, schedulingPeriod);
     final List<AbstractExecutor> executors = new ArrayList<>();
     this.reconfigurationAction = new ReconfigurationAction(tasks, executors, state);
     CyclicBarrier barrier = new CyclicBarrier(nThreads, reconfigurationAction);
     for (int i = 0; i < nThreads; i++) {
-      executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriodMillis, barrier, state));
+      executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriod, barrier, state));
     }
     for (int i = 0; i < executors.size(); i++) {
       Thread t = new Thread(executors.get(i));
