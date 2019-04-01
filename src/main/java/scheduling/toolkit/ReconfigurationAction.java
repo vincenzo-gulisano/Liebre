@@ -39,7 +39,8 @@ public class ReconfigurationAction implements Runnable {
 
   static final String STATISTIC_CALLS = "priocalls";
   static final String STATISTIC_TIME = "priotime";
-  public static final String BARRIER_INFO = "barrier-info";
+  static final String BARRIER_INFO = "barrier-info";
+
   private static final Logger LOG = LogManager.getLogger();
   private final List<Task> tasks;
   private final List<AbstractExecutor> executors;
@@ -106,7 +107,7 @@ public class ReconfigurationAction implements Runnable {
   private void updateFeaturesWithDependencies() {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
-      if (state.updated[task.getIndex()].getAndSet(false)) {
+      if (state.resetUpdated(task)) {
         task.updateFeatures(state.variableFeaturesWithDependencies(),
             state.taskFeatures[task.getIndex()]);
       }

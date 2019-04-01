@@ -28,7 +28,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +39,7 @@ public final class SchedulerState {
   // Features that might not be needed by any priority/deployment function
   // but are internally used by the scheduler
   private static final Feature[] SCHEDULER_REQUIRED_FEATURES = {Feature.COMPONENT_TYPE};
-  final AtomicBoolean[] updated;
+  private final boolean[] updated;
   final double[][] taskFeatures;
   final double[][] priorities;
   final Comparator<Task> comparator;
@@ -65,15 +64,12 @@ public final class SchedulerState {
     this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
         priorityFunction;
     this.deploymentFunction = deploymentFunction;
-    this.updated = new AtomicBoolean[nTasks];
+    this.updated = new boolean[nTasks];
     this.taskFeatures = new double[nTasks][Feature.length()];
     this.lastUpdateTime = new long[nTasks];
     this.schedulingPeriod = schedulingPeriod;
     this.priorities = new double[nTasks][priorityFunction.dimensions()];
     this.comparator = new MultiPriorityComparator(priorityFunction, priorities);
-    for (int i = 0; i < updated.length; i++) {
-      updated[i] = new AtomicBoolean(false);
-    }
     this.barrierEnter = new long[nThreads];
     this.barrierExit = new long[nThreads];
     this.statisticsFolder = statisticsFolder;
@@ -104,9 +100,19 @@ public final class SchedulerState {
     return getFeatures(priorityFunction, deploymentFunction, feature -> true);
   }
 
-  void markUpdated(Task task, long timestamp) {
+  void markUpdated(Task task) {
+    updated[task.getIndex()] = true;
+  }
+
+  void markRun(Task task, long timestamp) {
     lastUpdateTime[task.getIndex()] = timestamp;
-    updated[task.getIndex()].set(true);
+    updated[task.getIndex()] = true;
+  }
+
+  boolean resetUpdated(Task task) {
+    boolean state = updated[task.getIndex()];
+    updated[task.getIndex()] = false;
+    return state;
   }
 
   boolean timeToUpdate(Task task, long timestamp, long updateLimitMillis) {

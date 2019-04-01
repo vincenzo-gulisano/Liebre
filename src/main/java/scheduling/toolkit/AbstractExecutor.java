@@ -61,7 +61,8 @@ public abstract class AbstractExecutor implements Runnable {
   private final AbstractCummulativeStatistic priorityTime;
   private final AbstractCummulativeStatistic otherTime;
   private final AbstractCummulativeStatistic markedTasks;
-  private final AbstractCummulativeStatistic laggingTaskCount;
+  private final AbstractCummulativeStatistic laggingTasks;
+  private final AbstractCummulativeStatistic dependentTasks;
   protected volatile List<Task> executorTasks = Collections.emptyList();
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
@@ -96,8 +97,11 @@ public abstract class AbstractExecutor implements Runnable {
     this.markedTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Marked-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
-    this.laggingTaskCount = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+    this.laggingTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Lagging-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
+        false);
+    this.dependentTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+        String.format("Dependent-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
     updateTime.enable();
     waitTime.enable();
@@ -105,7 +109,8 @@ public abstract class AbstractExecutor implements Runnable {
     priorityTime.enable();
     otherTime.enable();
     markedTasks.enable();
-    laggingTaskCount.enable();
+    laggingTasks.enable();
+    dependentTasks.enable();
     initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
@@ -130,8 +135,7 @@ public abstract class AbstractExecutor implements Runnable {
     beginRound();
     while (!Thread.currentThread().isInterrupted()) {
       boolean didRun = runNextTask();
-      final long remainingTime = state.remainingRoundTime();
-      adjustUtilization(didRun, remainingTime);
+      adjustUtilization(didRun, state.remainingRoundTime());
       if (state.remainingRoundTime() <= 0) {
         if (!updateTasks()) {
           break;
@@ -145,7 +149,8 @@ public abstract class AbstractExecutor implements Runnable {
     priorityTime.disable();
     otherTime.disable();
     markedTasks.disable();
-    laggingTaskCount.disable();
+    laggingTasks.disable();
+    dependentTasks.disable();
   }
 
   /**
@@ -183,7 +188,7 @@ public abstract class AbstractExecutor implements Runnable {
           TASK_UPDATE_LIMIT_FACTOR * schedulingPeriod)) {
         task.runFor(1);
         mark(task, i);
-        laggingTaskCount.append(1);
+        laggingTasks.append(1);
       }
     }
   }
@@ -226,17 +231,21 @@ public abstract class AbstractExecutor implements Runnable {
     for (Task task : executorTasks) {
       task.refreshFeatures();
     }
+    markedTasks.append(runTasks.size());
+    int totalDependentCount = 0;
     for (int taskIndex : runTasks) {
       Task task = executorTasks.get(taskIndex);
       task.updateFeatures(state.variableFeaturesNoDependencies(),
           state.taskFeatures[task.getIndex()]);
-      state.markUpdated(task, markTime);
+      state.markRun(task, markTime);
       for (TaskDependency taskDependency : taskDependencies) {
         for (Task dependent : taskDependency.dependents(task)) {
-          state.updated[dependent.getIndex()].set(true);
+          state.markUpdated(dependent);
+          totalDependentCount++;
         }
       }
     }
+    dependentTasks.append(totalDependentCount);
     runTasks.clear();
     updateTime.append(System.currentTimeMillis() - markTime);
   }
@@ -250,7 +259,6 @@ public abstract class AbstractExecutor implements Runnable {
    * @param localIndex The index of the task in executorTasks
    */
   protected final void mark(Task task, int localIndex) {
-    markedTasks.append(1);
     runTasks.add(localIndex);
   }
 
