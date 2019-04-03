@@ -65,6 +65,7 @@ public class SchedulerBackoff {
   public SchedulerBackoff(int min, int max, int retries) {
     this.min = Math.max(min, 1);
     this.max = Math.max(max, 1);
+    Validate.isTrue(this.min > 0);
     Validate.isTrue(this.min <= this.max);
     this.retries = retries;
     this.currentLimit = min;
@@ -84,8 +85,10 @@ public class SchedulerBackoff {
       currentLimit = Math.min(2 * currentLimit, max);
       currentRetries = retries;
     }
-
-    Util.sleep(Math.min(delay, maxDelayMillis));
+    final long sleepTime = Math.min(delay, maxDelayMillis);
+    if (sleepTime > 0) {
+      Util.sleep(sleepTime);
+    }
   }
 
   /**

@@ -24,7 +24,6 @@
 package scheduling.toolkit;
 
 import common.statistic.AbstractCummulativeStatistic;
-import common.statistic.AverageStatistic;
 import common.statistic.CountStatistic;
 import common.util.StatisticPath;
 import java.util.Arrays;
@@ -96,16 +95,16 @@ public abstract class AbstractExecutor implements Runnable {
     this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
         false);
-    this.markedTasks = new AverageStatistic(StatisticPath.get(state.statisticsFolder,
+    this.markedTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Marked-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
-    this.laggingTasks = new AverageStatistic(StatisticPath.get(state.statisticsFolder,
+    this.laggingTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Lagging-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
-    this.dependentTasks = new AverageStatistic(StatisticPath.get(state.statisticsFolder,
+    this.dependentTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Dependent-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
-    this.backoffCalls = new AverageStatistic(StatisticPath.get(state.statisticsFolder,
+    this.backoffCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Backoff-Calls-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
     updateTime.enable();
