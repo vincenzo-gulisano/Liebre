@@ -205,10 +205,10 @@ public abstract class AbstractExecutor implements Runnable {
     }
     if (!didRun) {
       backoffCalls.append(1);
-//      backoff.backoff(remainingTime);
+      backoff.backoff(remainingTime);
       return;
     }
-//    backoff.relax();
+    backoff.relax();
   }
 
   private boolean updateTasks() {
