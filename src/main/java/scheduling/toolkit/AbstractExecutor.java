@@ -65,10 +65,17 @@ public abstract class AbstractExecutor implements Runnable {
   private final AbstractCummulativeStatistic laggingTasks;
   private final AbstractCummulativeStatistic dependentTasks;
   private final AbstractCummulativeStatistic backoffCalls;
+  private final int cpuId;
   protected volatile List<Task> executorTasks = Collections.emptyList();
 
   public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
       SchedulerState state) {
+    this(batchSize, schedulingPeriodMillis, barrier, state, -1);
+  }
+
+  public AbstractExecutor(
+      int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
+      SchedulerState state, int cpuId) {
     this.batchSize = batchSize;
     this.schedulingPeriod = schedulingPeriodMillis;
     this.barrier = barrier;
@@ -76,6 +83,7 @@ public abstract class AbstractExecutor implements Runnable {
     this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis / 10,
         BACKOFF_RETRIES);
     this.index = indexGenerator.getAndIncrement();
+    this.cpuId = cpuId;
     this.updateTime = new CountStatistic(
         StatisticPath.get(state.statisticsFolder, String.format(
             "Update-Action-Executor-%d", index),
@@ -135,7 +143,10 @@ public abstract class AbstractExecutor implements Runnable {
 
   @Override
   public void run() {
-    Affinity.setAffinity(1);
+    if (cpuId > 0) {
+      LOG.info("Setting affinity to CPU #{}", cpuId);
+      Affinity.setAffinity(cpuId);
+    }
     if (!updateTasks()) {
       return;
     }

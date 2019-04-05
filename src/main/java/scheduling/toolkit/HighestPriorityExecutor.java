@@ -39,6 +39,11 @@ class HighestPriorityExecutor extends AbstractExecutor {
     super(batchSize, schedulingPeriodMillis, barrier, state);
   }
 
+  public HighestPriorityExecutor(int batchSize, int schedulingPeriodMillis,
+      CyclicBarrier barrier, SchedulerState state, int cpuId) {
+    super(batchSize, schedulingPeriodMillis, barrier, state, cpuId);
+  }
+
   protected boolean runNextTask() {
     boolean didRun = false;
     for (; localIndex < executorTasks.size(); localIndex++) {

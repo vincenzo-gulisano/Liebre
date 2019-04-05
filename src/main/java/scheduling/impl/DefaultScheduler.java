@@ -25,6 +25,7 @@ package scheduling.impl;
 
 import component.Component;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -44,7 +45,16 @@ public class DefaultScheduler implements Scheduler<Component> {
 
   private final List<Component> tasks = new ArrayList<>();
   private final List<BasicWorkerThread> threads = new ArrayList<>();
+  private final BitSet affinity;
   private volatile boolean enabled;
+
+  public DefaultScheduler() {
+    this(null);
+  }
+
+  public DefaultScheduler(BitSet affinity) {
+    this.affinity = affinity;
+  }
 
   @Override
   public void addTasks(Collection<Component> tasks) {
@@ -57,7 +67,7 @@ public class DefaultScheduler implements Scheduler<Component> {
       throw new IllegalStateException();
     }
     for (Runnable task : tasks) {
-      BasicWorkerThread thread = new BasicWorkerThread(task);
+      BasicWorkerThread thread = new BasicWorkerThread(task, affinity);
       thread.setName(task.toString());
       threads.add(thread);
       thread.enable();

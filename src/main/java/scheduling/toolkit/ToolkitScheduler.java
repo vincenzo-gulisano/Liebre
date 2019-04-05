@@ -25,6 +25,7 @@ package scheduling.toolkit;
 
 import component.Component;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
@@ -45,13 +46,14 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private final MultiPriorityFunction priorityFunction;
   private final boolean priorityCaching;
   private final DeploymentFunction deploymentFunction;
+  private final int[] workerAffinity;
   private volatile ReconfigurationAction reconfigurationAction;
 
-  public ToolkitScheduler(int nThreads, MultiPriorityFunction priorityFunction,
-      DeploymentFunction deploymentFunction,
-      boolean priorityCaching, int batchSize,
-      int schedulingPeriod,
-      String statisticsFolder) {
+
+  public ToolkitScheduler(
+      int nThreads, MultiPriorityFunction priorityFunction, DeploymentFunction deploymentFunction,
+      boolean priorityCaching, int batchSize, int schedulingPeriod, String statisticsFolder,
+      BitSet workerAffinity) {
     this.nThreads = nThreads;
     this.priorityFunction = priorityFunction;
     this.deploymentFunction = deploymentFunction;
@@ -59,16 +61,20 @@ public class ToolkitScheduler implements Scheduler<Task> {
     this.batchSize = batchSize;
     this.schedulingPeriod = schedulingPeriod;
     this.statisticsFolder = statisticsFolder;
+    this.workerAffinity = workerAffinity.stream().toArray();
+    if (this.workerAffinity.length < nThreads) {
+      LOG.warn("#CPUs assigned is less than #threads! Performance might suffer.");
+    }
   }
 
   public ToolkitScheduler(int nThreads, SinglePriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
       boolean priorityCaching, int batchSize,
       int schedulingPeriod,
-      String statisticsFolder) {
+      String statisticsFolder, BitSet workerAffinity) {
     this(nThreads, new CombinedPriorityFunction(priorityFunction), deploymentFunction,
         priorityCaching, batchSize,
-        schedulingPeriod, statisticsFolder);
+        schedulingPeriod, statisticsFolder, workerAffinity);
   }
 
 
@@ -93,7 +99,9 @@ public class ToolkitScheduler implements Scheduler<Task> {
     this.reconfigurationAction = new ReconfigurationAction(tasks, executors, state);
     CyclicBarrier barrier = new CyclicBarrier(nThreads, reconfigurationAction);
     for (int i = 0; i < nThreads; i++) {
-      executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriod, barrier, state));
+      int cpuId = getAffinity(i);
+      executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriod, barrier, state,
+          cpuId));
     }
     for (int i = 0; i < executors.size(); i++) {
       Thread t = new Thread(executors.get(i));
@@ -101,6 +109,10 @@ public class ToolkitScheduler implements Scheduler<Task> {
       threads.add(t);
       t.start();
     }
+  }
+
+  private int getAffinity(int i) {
+    return workerAffinity != null ? workerAffinity[i % workerAffinity.length] : -1;
   }
 
   @Override
