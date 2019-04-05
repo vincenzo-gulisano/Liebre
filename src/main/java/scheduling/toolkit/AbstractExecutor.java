@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
+import net.openhft.affinity.Affinity;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -134,6 +135,7 @@ public abstract class AbstractExecutor implements Runnable {
 
   @Override
   public void run() {
+    Affinity.setAffinity(1);
     if (!updateTasks()) {
       return;
     }
