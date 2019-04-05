@@ -31,7 +31,7 @@ import org.apache.commons.lang3.Validate;
  */
 public class ChainArrivalTimeFunction extends CombinedPriorityFunction {
 
-  public static final int ARRIVAL_TIME_INDEX = 1;
+  public static final int ARRIVAL_TIME_INDEX = 2;
   private static SinglePriorityFunction sourcesLast = new AbstractPriorityFunction("SOURCES_LAST"
       , Feature.COMPONENT_TYPE) {
     @Override
@@ -47,7 +47,7 @@ public class ChainArrivalTimeFunction extends CombinedPriorityFunction {
   private long[] lastChainUpdate;
 
   public ChainArrivalTimeFunction() {
-    super(PriorityFunctions.chain(), PriorityFunctions.headArrivalTime());
+    super(sourcesLast, PriorityFunctions.chain(), PriorityFunctions.headArrivalTime());
   }
 
   public void setCostUpdatePeriod(long period, TimeUnit timeUnit) {
