@@ -26,6 +26,7 @@ package query;
 import component.Component;
 import component.source.Source;
 import java.util.Collection;
+import net.openhft.affinity.Affinity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,6 +45,7 @@ public class QueryCostEstimator implements Runnable {
 
   @Override
   public void run() {
+    Affinity.setAffinity(0);
     if (!scheduling) {
       return;
     }
