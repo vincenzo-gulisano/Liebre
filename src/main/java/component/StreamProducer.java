@@ -28,7 +28,7 @@ import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 /**
  * A stream {@link Component} that produces tuples.
@@ -42,32 +42,32 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
    * Different implementations allow one or more calls to this function.
    *
    * @param destination The consumer fed by this consumer.
-   * @param stream The {@link SSSRStream} that forms the data connection.
+   * @param stream The {@link SWSRStream} that forms the data connection.
    * @see ConnectionsNumber
    */
-  void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream);
+  void addOutput(StreamConsumer<OUT> destination, SWSRStream<OUT> stream);
 
   /**
-   * Get the output {@link SSSRStream} of this producer, <emph>if is the type of producer that always
+   * Get the output {@link SWSRStream} of this producer, <emph>if is the type of producer that always
    * has a unique input.</emph> {@link StreamProducer}s that cannot conform to this interface can
    * throw {@link UnsupportedOperationException} (this is done for example in {@link
    * component.operator.router.BaseRouterOperator}.
    *
    * @return The unique output stream of this producer.
    */
-  SSSRStream<OUT> getOutput() throws UnsupportedOperationException;
+  SWSRStream<OUT> getOutput() throws UnsupportedOperationException;
 
   /**
-   * Get all the output {@link SSSRStream}s of this producer.
+   * Get all the output {@link SWSRStream}s of this producer.
    *
    * @return All the output streams of this producer.
    */
-  Collection<? extends SSSRStream<OUT>> getOutputs();
+  Collection<? extends SWSRStream<OUT>> getOutputs();
 
   @Override
   default List<Component> getDownstream() {
     List<Component> downstream = new ArrayList<>();
-    for (SSSRStream<?> output : getOutputs()) {
+    for (SWSRStream<?> output : getOutputs()) {
       downstream.add(output.getDestination());
     }
     return downstream;
@@ -76,7 +76,7 @@ public interface StreamProducer<OUT extends Tuple> extends Named, Component {
   @Override
   default long getOutputQueueSize() {
     long size = 0;
-    for (SSSRStream<?> output : getOutputs()) {
+    for (SWSRStream<?> output : getOutputs()) {
       size += output.size();
     }
     return size;

@@ -29,7 +29,7 @@ import common.util.StatisticPath;
 import common.util.StatisticType;
 
 /**
- * Statistic recorder for {@link SSSRStream}s. Records the statistics {@link StatisticType#IN} and
+ * Statistic recorder for {@link SWSRStream}s. Records the statistics {@link StatisticType#IN} and
  * {@link StatisticType#OUT}.
  *
  * @param <T> The type of tuples transferred by the stream.
@@ -46,7 +46,7 @@ public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
    * @param outputFolder The path of the file where the statistics are written to.
    * @param autoFlush The autoflush parameter for the file writer.
    */
-  public StreamStatistic(SSSRStream<T> stream, String outputFolder, boolean autoFlush) {
+  public StreamStatistic(SWSRStream<T> stream, String outputFolder, boolean autoFlush) {
     super(stream);
     inRate = new CountStatistic(StatisticPath.get(outputFolder, stream, StatisticType.IN),
         autoFlush);

@@ -28,7 +28,7 @@ import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
 import java.util.Collection;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 /**
  * Statistic decorator for {@link RouterOperator}.
@@ -72,9 +72,9 @@ public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDeco
   }
 
   @Override
-  public Collection<? extends SSSRStream<T>> chooseOutputs(T tuple) {
+  public Collection<? extends SWSRStream<T>> chooseOutputs(T tuple) {
     long start = System.nanoTime();
-    Collection<? extends SSSRStream<T>> chosenOutputs = super.chooseOutputs(tuple);
+    Collection<? extends SWSRStream<T>> chosenOutputs = super.chooseOutputs(tuple);
     processingTimeStatistic.append(System.nanoTime() - start);
     return chosenOutputs;
   }

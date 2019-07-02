@@ -25,9 +25,9 @@ package stream;
 
 import common.Active;
 import common.Named;
+import common.tuple.RichTuple;
 import component.StreamConsumer;
 import component.StreamProducer;
-import common.tuple.Tuple;
 
 /**
  * An ordered one-on-one stream that connects exactly one {@link StreamProducer} and one {@link
@@ -35,28 +35,14 @@ import common.tuple.Tuple;
  *
  * @param <T> The type of values that can be transfered inside the stream
  */
-public interface SSSRStream<T extends Tuple> extends Active, Named {
+public interface MWMRSortedStream<T extends RichTuple> extends Active, Named {
 
-  void addTuple(T tuple);
+  void addTuple(int sourceIndex, T tuple);
 
-  boolean offer(T tuple);
+  T getNextTuple(int readerIndex);
 
-  T getNextTuple();
+  StreamProducer<T>[] getSources();
 
-  T poll();
-
-  T peek();
-
-  int remainingCapacity();
-
-  int size();
-
-  StreamProducer<T> getSource();
-
-  StreamConsumer<T> getDestination();
-
-  void resetArrivalTime();
-
-  double getAverageArrivalTime();
+  StreamConsumer<T>[] getDestinations();
 
 }

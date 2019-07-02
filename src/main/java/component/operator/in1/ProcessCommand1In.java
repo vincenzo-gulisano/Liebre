@@ -27,7 +27,7 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import component.AbstractProcessCommand;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 /**
  * Process command implementation for {@link Operator1In}.
@@ -43,8 +43,8 @@ class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
 
   @Override
   public final void process() {
-    SSSRStream<IN> input = component.getInput();
-    SSSRStream<OUT> output = component.getOutput();
+    SWSRStream<IN> input = component.getInput();
+    SWSRStream<OUT> output = component.getOutput();
 
     IN inTuple = input.getNextTuple();
     if (inTuple != null) {

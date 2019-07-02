@@ -29,7 +29,7 @@ import component.ComponentType;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 
 public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
@@ -45,7 +45,7 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, SWSRStream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 
@@ -55,12 +55,12 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public SSSRStream<OUT> getOutput() {
+  public SWSRStream<OUT> getOutput() {
     return state.getOutput(OUTPUT_KEY);
   }
 
   @Override
-  public Collection<? extends SSSRStream<OUT>> getOutputs() {
+  public Collection<? extends SWSRStream<OUT>> getOutputs() {
     return state.getOutputs();
   }
 

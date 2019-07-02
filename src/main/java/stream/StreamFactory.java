@@ -29,14 +29,14 @@ import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
 
 /**
- * Factory for {@link SSSRStream}s.
+ * Factory for {@link SWSRStream}s.
  */
 public interface StreamFactory {
 
-  <T extends Tuple> SSSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
+  <T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
       int capacity, BackoffFactory backoff);
 
-  default <T extends Tuple> SSSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
+  default <T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
       int capacity) {
     return newStream(from, to, capacity, BackoffFactory.NOOP);
   }

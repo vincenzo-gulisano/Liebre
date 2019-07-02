@@ -39,12 +39,12 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  * provided {@link Backoff} strategy. The backoff strategy is also activated in case the reader is
  * faster than the writer, to prevent spinning.
  *
- * @param <T> The type of tuples transferred by this {@link SSSRStream}.
+ * @param <T> The type of tuples transferred by this {@link SWSRStream}.
  * @see StreamFactory
  * @see common.util.backoff.ExponentialBackoff
  * @see common.util.backoff.NoopBackoff
  */
-public class BackoffStream<T extends Tuple> implements SSSRStream<T> {
+public class BackoffStream<T extends Tuple> implements SWSRStream<T> {
 
   private static final double EMA_ALPHA = 0.5;
   private final Queue<T> stream = new ConcurrentLinkedQueue<>();
@@ -218,7 +218,7 @@ public class BackoffStream<T extends Tuple> implements SSSRStream<T> {
     private final AtomicInteger indexes = new AtomicInteger();
 
     @Override
-    public <T extends Tuple> SSSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
+    public <T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
         int capacity, BackoffFactory backoff) {
       return new BackoffStream<>(getStreamId(from, to), indexes.getAndIncrement(), from, to,
           capacity, backoff);

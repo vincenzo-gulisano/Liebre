@@ -31,7 +31,7 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
 import component.operator.Operator;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 /**
  * Base decorator for {@link Operator2In}. Delegates all function calls to the decorated object.
@@ -62,17 +62,17 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, SWSRStream<OUT> stream) {
     decorated.addOutput(destination, stream);
   }
 
   @Override
-  public SSSRStream<OUT> getOutput() {
+  public SWSRStream<OUT> getOutput() {
     return decorated.getOutput();
   }
 
   @Override
-  public Collection<? extends SSSRStream<Tuple>> getInputs() {
+  public Collection<? extends SWSRStream<Tuple>> getInputs() {
     return decorated.getInputs();
   }
 
@@ -87,7 +87,7 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public void addInput2(StreamProducer<IN2> source, SSSRStream<IN2> stream) {
+  public void addInput2(StreamProducer<IN2> source, SWSRStream<IN2> stream) {
     decorated.addInput2(source, stream);
   }
 
@@ -97,7 +97,7 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public Collection<? extends SSSRStream<OUT>> getOutputs() {
+  public Collection<? extends SWSRStream<OUT>> getOutputs() {
     return decorated.getOutputs();
   }
 
@@ -137,7 +137,7 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public SSSRStream<IN2> getInput2() {
+  public SWSRStream<IN2> getInput2() {
     return decorated.getInput2();
   }
 
@@ -153,12 +153,12 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, SSSRStream<IN> stream) {
+  public void addInput(StreamProducer<IN> source, SWSRStream<IN> stream) {
     decorated.addInput(source, stream);
   }
 
   @Override
-  public SSSRStream<IN> getInput() {
+  public SWSRStream<IN> getInput() {
     return decorated.getInput();
   }
 

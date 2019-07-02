@@ -31,7 +31,7 @@ import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import component.operator.Operator;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 /**
  * Base abstract {@link Operator2In} implementation.
@@ -68,42 +68,42 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   }
 
   @Override
-  public SSSRStream<IN> getInput() {
-    return (SSSRStream<IN>) state.getInput(INPUT1_KEY);
+  public SWSRStream<IN> getInput() {
+    return (SWSRStream<IN>) state.getInput(INPUT1_KEY);
   }
 
   @Override
-  public SSSRStream<IN2> getInput2() {
-    return (SSSRStream<IN2>) state.getInput(INPUT2_KEY);
+  public SWSRStream<IN2> getInput2() {
+    return (SWSRStream<IN2>) state.getInput(INPUT2_KEY);
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, SSSRStream<IN> stream) {
-    state.addInput(INPUT1_KEY, (SSSRStream<Tuple>) stream);
+  public void addInput(StreamProducer<IN> source, SWSRStream<IN> stream) {
+    state.addInput(INPUT1_KEY, (SWSRStream<Tuple>) stream);
   }
 
   @Override
-  public void addInput2(StreamProducer<IN2> source, SSSRStream<IN2> stream) {
-    state.addInput(INPUT2_KEY, (SSSRStream<Tuple>) stream);
+  public void addInput2(StreamProducer<IN2> source, SWSRStream<IN2> stream) {
+    state.addInput(INPUT2_KEY, (SWSRStream<Tuple>) stream);
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, SWSRStream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 
   @Override
-  public SSSRStream<OUT> getOutput() {
+  public SWSRStream<OUT> getOutput() {
     return state.getOutput();
   }
 
   @Override
-  public Collection<? extends SSSRStream<OUT>> getOutputs() {
+  public Collection<? extends SWSRStream<OUT>> getOutputs() {
     return state.getOutputs();
   }
 
   @Override
-  public Collection<? extends SSSRStream<Tuple>> getInputs() {
+  public Collection<? extends SWSRStream<Tuple>> getInputs() {
     return state.getInputs();
   }
 

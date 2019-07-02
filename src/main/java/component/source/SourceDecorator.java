@@ -28,7 +28,7 @@ import component.StreamConsumer;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 /**
  * Base decorator for {@link Source}. Delegates all function calls to the decorated object.
@@ -96,12 +96,12 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public Collection<? extends SSSRStream<OUT>> getOutputs() {
+  public Collection<? extends SWSRStream<OUT>> getOutputs() {
     return decorated.getOutputs();
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, SWSRStream<OUT> stream) {
     decorated.addOutput(destination, stream);
   }
 
@@ -111,7 +111,7 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public SSSRStream<OUT> getOutput() {
+  public SWSRStream<OUT> getOutput() {
     return decorated.getOutput();
   }
 

@@ -29,7 +29,7 @@ import component.StreamProducer;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 /**
  * Base decorator for {@link RouterOperator}. Delegates all function calls to the decorated object.
@@ -67,37 +67,37 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public Collection<? extends SSSRStream<T>> getOutputs() {
+  public Collection<? extends SWSRStream<T>> getOutputs() {
     return decorated.getOutputs();
   }
 
   @Override
-  public Collection<? extends SSSRStream<T>> getInputs() {
+  public Collection<? extends SWSRStream<T>> getInputs() {
     return decorated.getInputs();
   }
 
   @Override
-  public void addInput(StreamProducer<T> source, SSSRStream<T> stream) {
+  public void addInput(StreamProducer<T> source, SWSRStream<T> stream) {
     decorated.addInput(source, stream);
   }
 
   @Override
-  public SSSRStream<T> getInput() {
+  public SWSRStream<T> getInput() {
     return decorated.getInput();
   }
 
   @Override
-  public void addOutput(StreamConsumer<T> destination, SSSRStream<T> stream) {
+  public void addOutput(StreamConsumer<T> destination, SWSRStream<T> stream) {
     decorated.addOutput(destination, stream);
   }
 
   @Override
-  public SSSRStream<T> getOutput() {
+  public SWSRStream<T> getOutput() {
     return decorated.getOutput();
   }
 
   @Override
-  public Collection<? extends SSSRStream<T>> chooseOutputs(T tuple) {
+  public Collection<? extends SWSRStream<T>> chooseOutputs(T tuple) {
     return decorated.chooseOutputs(tuple);
   }
 

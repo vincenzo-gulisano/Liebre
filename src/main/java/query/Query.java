@@ -72,14 +72,14 @@ import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
 import scheduling.impl.DefaultScheduler;
 import stream.BlockingStream;
-import stream.SSSRStream;
+import stream.SWSRStream;
 import stream.StreamFactory;
 import stream.StreamStatistic;
 
 /**
  * The main execution unit. Acts as a factory for the stream {@link Component}s such as {@link
  * Operator}s, {@link Source}s and {@link Sink}s through various helper methods. It also handles the
- * connections of the components with the correct types of {@link SSSRStream}s and the
+ * connections of the components with the correct types of {@link SWSRStream}s and the
  * activation/deactivation of the query. Activating the query also starts executing it by delegating
  * this work to the provided {@link Scheduler} implementation.
  */
@@ -297,7 +297,7 @@ public final class Query {
     Validate.isTrue(destination instanceof Operator2In == false,
         "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
         destination.getId());
-    SSSRStream<T> stream = getStream(source, destination, backoff);
+    SWSRStream<T> stream = getStream(source, destination, backoff);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
     return this;
@@ -310,7 +310,7 @@ public final class Query {
 
   public synchronized <T extends Tuple> Query connect2inLeft(StreamProducer<T> source,
       Operator2In<T, ?, ?> destination, BackoffFactory backoff) {
-    SSSRStream<T> stream = getStream(source, destination, backoff);
+    SWSRStream<T> stream = getStream(source, destination, backoff);
     source.addOutput(destination, stream);
     destination.addInput(source, stream);
     return this;
@@ -323,16 +323,16 @@ public final class Query {
 
   public synchronized <T extends Tuple> Query connect2inRight(StreamProducer<T> source,
       Operator2In<?, T, ?> destination, BackoffFactory backoff) {
-    SSSRStream<T> stream = getStream(source, destination.secondInputView(), backoff);
+    SWSRStream<T> stream = getStream(source, destination.secondInputView(), backoff);
     source.addOutput(destination.secondInputView(), stream);
     destination.addInput2(source, stream);
     return this;
   }
 
-  private synchronized <T extends Tuple> SSSRStream<T> getStream(StreamProducer<T> source,
+  private synchronized <T extends Tuple> SWSRStream<T> getStream(StreamProducer<T> source,
       StreamConsumer<T> destination,
       BackoffFactory backoff) {
-    SSSRStream<T> stream = streamFactory
+    SWSRStream<T> stream = streamFactory
         .newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
     if (enabledStatistics.containsKey(StatisticType.STREAMS)) {
       StatisticsConfiguration statConfig = enabledStatistics.get(StatisticType.STREAMS);
@@ -385,8 +385,8 @@ public final class Query {
     return sources.values();
   }
 
-  private Set<SSSRStream<?>> streams() {
-    Set<SSSRStream<?>> streams = new HashSet<>();
+  private Set<SWSRStream<?>> streams() {
+    Set<SWSRStream<?>> streams = new HashSet<>();
     for (Operator<?, ?> op : operators.values()) {
       streams.addAll(op.getInputs());
     }

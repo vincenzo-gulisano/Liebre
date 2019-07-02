@@ -28,7 +28,7 @@ import component.StreamProducer;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
-import stream.SSSRStream;
+import stream.SWSRStream;
 
 /**
  * Base decorator for {@link Sink}. Delegates all function calls to the decorated object.
@@ -66,17 +66,17 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, SSSRStream<IN> stream) {
+  public void addInput(StreamProducer<IN> source, SWSRStream<IN> stream) {
     decorated.addInput(source, stream);
   }
 
   @Override
-  public SSSRStream<IN> getInput() {
+  public SWSRStream<IN> getInput() {
     return decorated.getInput();
   }
 
   @Override
-  public Collection<? extends SSSRStream<IN>> getInputs() {
+  public Collection<? extends SWSRStream<IN>> getInputs() {
     return decorated.getInputs();
   }
 
