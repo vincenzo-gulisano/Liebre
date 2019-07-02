@@ -21,33 +21,42 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package component.sink;
+package stream;
 
-import component.ProcessCommand;
+import common.Active;
+import common.Named;
+import component.StreamConsumer;
+import component.StreamProducer;
 import common.tuple.Tuple;
-import component.AbstractProcessCommand;
-import stream.SSSRStream;
 
 /**
- * {@link ProcessCommand} implementation for {@link Sink}s.
+ * An ordered one-on-one stream that connects exactly one {@link StreamProducer} and one {@link
+ * StreamConsumer}.
  *
- * @param <T> The type of input tuples.
+ * @param <T> The type of values that can be transfered inside the stream
  */
-class ProcessCommandSink<T extends Tuple> extends AbstractProcessCommand<Sink<T>> {
+public interface SSSRStream<T extends Tuple> extends Active, Named {
 
-  public ProcessCommandSink(Sink<T> sink) {
-    super(sink);
-  }
+  void addTuple(T tuple);
 
-  @Override
-  public final void process() {
-    SSSRStream<T> input = component.getInput();
-    T tuple = input.getNextTuple();
-    if (tuple != null) {
-      increaseTuplesRead();
-      increaseTuplesWritten();
-      component.processTuple(tuple);
-    }
-  }
+  boolean offer(T tuple);
+
+  T getNextTuple();
+
+  T poll();
+
+  T peek();
+
+  int remainingCapacity();
+
+  int size();
+
+  StreamProducer<T> getSource();
+
+  StreamConsumer<T> getDestination();
+
+  void resetArrivalTime();
+
+  double getAverageArrivalTime();
 
 }

@@ -31,7 +31,7 @@ import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
 import component.operator.Operator;
-import stream.Stream;
+import stream.SSSRStream;
 
 
 /**
@@ -58,7 +58,7 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+  public void addInput(StreamProducer<IN> source, SSSRStream<IN> stream) {
     decorated.addInput2(source, stream);
   }
 
@@ -68,17 +68,17 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public Collection<? extends Stream<OUT>> getOutputs() {
+  public Collection<? extends SSSRStream<OUT>> getOutputs() {
     return decorated.getOutputs();
   }
 
   @Override
-  public Collection<? extends Stream<Tuple>> getInputs() {
+  public Collection<? extends SSSRStream<Tuple>> getInputs() {
     return decorated.getInputs();
   }
 
   @Override
-  public Stream<IN> getInput() {
+  public SSSRStream<IN> getInput() {
     return decorated.getInput2();
   }
 
@@ -143,7 +143,7 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream) {
     decorated.addOutput(destination, stream);
   }
 
@@ -158,7 +158,7 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public Stream<OUT> getOutput() {
+  public SSSRStream<OUT> getOutput() {
     return decorated.getOutput();
   }
 }

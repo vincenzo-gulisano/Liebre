@@ -29,7 +29,7 @@ import component.StreamProducer;
 import common.tuple.Tuple;
 import component.operator.Operator;
 import component.operator.in1.Operator1In;
-import stream.Stream;
+import stream.SSSRStream;
 
 /**
  * An {@link Operator} with two inputs (of possibly different types) and one output.
@@ -50,19 +50,19 @@ public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tu
   List<OUT> processTupleIn2(IN2 tuple);
 
   /**
-   * Set the second input {@link Stream} for this component.operator.
+   * Set the second input {@link SSSRStream} for this component.operator.
    *
    * @param source The {@link StreamProducer} feeding this component.operator.
    * @param stream The stream that forms the data connection.
    */
-  void addInput2(StreamProducer<IN2> source, Stream<IN2> stream);
+  void addInput2(StreamProducer<IN2> source, SSSRStream<IN2> stream);
 
   /**
-   * Get the second input {@link Stream} for this component.operator.
+   * Get the second input {@link SSSRStream} for this component.operator.
    *
    * @return The second input stream.
    */
-  Stream<IN2> getInput2();
+  SSSRStream<IN2> getInput2();
 
   /**
    * Get an adapter of this component.operator that looks like a regular {@link Operator1In} with its main

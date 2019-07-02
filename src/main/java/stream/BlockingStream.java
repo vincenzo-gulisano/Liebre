@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class BlockingStream<T extends Tuple> implements Stream<T> {
+public class BlockingStream<T extends Tuple> implements SSSRStream<T> {
 
   private static final double EMA_ALPHA = 0.01;
   private final BlockingQueue<T> stream;
@@ -197,7 +197,7 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
     private final AtomicInteger indexes = new AtomicInteger();
 
     @Override
-    public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
+    public <T extends Tuple> SSSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
         int capacity, BackoffFactory backoff) {
       Validate.isTrue(backoff == BackoffFactory.NOOP, "This stream does not support Backoff!");
       return new BlockingStream<>(getStreamId(from, to), indexes.getAndIncrement(), from, to,

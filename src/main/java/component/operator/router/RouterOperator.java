@@ -26,7 +26,7 @@ package component.operator.router;
 import common.tuple.Tuple;
 import java.util.Collection;
 import component.operator.Operator;
-import stream.Stream;
+import stream.SSSRStream;
 
 /**
  * {@link Operator} that copies an input tuple to multiple output streams.
@@ -35,6 +35,6 @@ import stream.Stream;
  */
 public interface RouterOperator<T extends Tuple> extends Operator<T, T> {
 
-  Collection<? extends Stream<T>> chooseOutputs(T tuple);
+  Collection<? extends SSSRStream<T>> chooseOutputs(T tuple);
 
 }

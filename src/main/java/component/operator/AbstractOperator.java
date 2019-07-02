@@ -30,7 +30,7 @@ import component.ComponentType;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
-import stream.Stream;
+import stream.SSSRStream;
 
 /**
  * Abstract implementation of {@link Operator} that handles basic changes to the state of the
@@ -56,30 +56,30 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+  public void addInput(StreamProducer<IN> source, SSSRStream<IN> stream) {
     state.addInput(INPUT_KEY, stream);
   }
 
   @Override
-  public Stream<IN> getInput() {
+  public SSSRStream<IN> getInput() {
     return state.getInput(INPUT_KEY);
   }
 
   @Override
-  public Stream<OUT> getOutput() {
+  public SSSRStream<OUT> getOutput() {
     return state.getOutput(OUTPUT_KEY);
   }
 
-  public Collection<? extends Stream<IN>> getInputs() {
+  public Collection<? extends SSSRStream<IN>> getInputs() {
     return state.getInputs();
   }
 
-  public Collection<? extends Stream<OUT>> getOutputs() {
+  public Collection<? extends SSSRStream<OUT>> getOutputs() {
     return state.getOutputs();
   }
 

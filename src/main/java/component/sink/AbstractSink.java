@@ -29,7 +29,7 @@ import component.ComponentType;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
-import stream.Stream;
+import stream.SSSRStream;
 
 /**
  * Abstract implementation of a {@link Sink}, controlling basic changes to the state.
@@ -57,17 +57,17 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+  public void addInput(StreamProducer<IN> source, SSSRStream<IN> stream) {
     state.addInput(INPUT_KEY, stream);
   }
 
   @Override
-  public Stream<IN> getInput() {
+  public SSSRStream<IN> getInput() {
     return state.getInput(INPUT_KEY);
   }
 
   @Override
-  public Collection<? extends Stream<IN>> getInputs() {
+  public Collection<? extends SSSRStream<IN>> getInputs() {
     return state.getInputs();
   }
 

@@ -28,21 +28,21 @@ import component.StreamProducer;
 import common.tuple.Tuple;
 
 /**
- * Basic decorator for {@link Stream} instances. Delegates all function cals to the decorated
+ * Basic decorator for {@link SSSRStream} instances. Delegates all function cals to the decorated
  * instance.
  *
  * @param <T> The type of tuples transferred by the stream.
  */
-public class StreamDecorator<T extends Tuple> implements Stream<T> {
+public class StreamDecorator<T extends Tuple> implements SSSRStream<T> {
 
-  private final Stream<T> decorated;
+  private final SSSRStream<T> decorated;
 
   /**
    * Construct.
    *
    * @param decorated The stream to be decorated.
    */
-  public StreamDecorator(Stream<T> decorated) {
+  public StreamDecorator(SSSRStream<T> decorated) {
     this.decorated = decorated;
   }
 

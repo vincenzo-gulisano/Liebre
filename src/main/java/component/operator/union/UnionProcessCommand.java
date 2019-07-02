@@ -25,7 +25,7 @@ package component.operator.union;
 
 import common.tuple.Tuple;
 import component.AbstractProcessCommand;
-import stream.Stream;
+import stream.SSSRStream;
 
 public class UnionProcessCommand<T extends Tuple> extends AbstractProcessCommand<UnionOperator<T>> {
 
@@ -35,8 +35,8 @@ public class UnionProcessCommand<T extends Tuple> extends AbstractProcessCommand
 
   @Override
   public void process() {
-    Stream<T> output = component.getOutput();
-    for (Stream<T> in : component.getInputs()) {
+    SSSRStream<T> output = component.getOutput();
+    for (SSSRStream<T> in : component.getInputs()) {
       T inTuple = in.getNextTuple();
       if (inTuple != null) {
         increaseTuplesRead();

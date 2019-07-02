@@ -29,7 +29,7 @@ import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import stream.Stream;
+import stream.SSSRStream;
 
 /**
  * A stream {@link Component} that consumes tuples.
@@ -43,33 +43,33 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
    * Different implementations allow one or more calls to this function.
    *
    * @param source The producer feeding this consumer.
-   * @param stream The {@link Stream} that forms the data connection.
+   * @param stream The {@link SSSRStream} that forms the data connection.
    * @see ConnectionsNumber
    */
-  void addInput(StreamProducer<IN> source, Stream<IN> stream);
+  void addInput(StreamProducer<IN> source, SSSRStream<IN> stream);
 
   /**
-   * Get the input {@link Stream} of this consumer, if is the type of consumer that always has a
+   * Get the input {@link SSSRStream} of this consumer, if is the type of consumer that always has a
    * unique input. {@link StreamConsumer}s that cannot conform to this interface can throw {@link
    * UnsupportedOperationException} (this is done for example in {@link
    * component.operator.union.UnionOperator})
    *
    * @return The unique input stream of this consumer.
    */
-  Stream<IN> getInput() throws UnsupportedOperationException;
+  SSSRStream<IN> getInput() throws UnsupportedOperationException;
 
   /**
-   * Get all the input {@link Stream}s of this consumer.
+   * Get all the input {@link SSSRStream}s of this consumer.
    *
    * @param <T> The superclass of all input contents (in the case of input streams of different
    *     types, as in {@link component.operator.in2.Operator2In}.
    * @return All the input streams of this consumer.
    */
-  <T extends Tuple> Collection<? extends Stream<T>> getInputs();
+  <T extends Tuple> Collection<? extends SSSRStream<T>> getInputs();
 
   @Override
   default int getTopologicalOrder() {
-    for (Stream<?> input : getInputs()) {
+    for (SSSRStream<?> input : getInputs()) {
       int upstreamOrder = input.getSource().getTopologicalOrder();
       return upstreamOrder + 1;
     }
@@ -79,7 +79,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
   @Override
   default List<Component> getUpstream() {
     List<Component> upstream = new ArrayList<>();
-    for (Stream<?> input : getInputs()) {
+    for (SSSRStream<?> input : getInputs()) {
       upstream.add(input.getSource());
     }
     return upstream;
@@ -93,9 +93,9 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
    */
   @Override
   default double getHeadArrivalTime() {
-    Collection<? extends Stream<?>> inputs = getInputs();
+    Collection<? extends SSSRStream<?>> inputs = getInputs();
     long latencySum = 0;
-    for (Stream<?> input : inputs) {
+    for (SSSRStream<?> input : inputs) {
       Object head = input.peek();
       if (head != null) {
         if (head instanceof RichTuple == false) {
@@ -111,9 +111,9 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 
   @Override
   default double getAverageArrivalTime() {
-    Collection<? extends Stream<?>> inputs = getInputs();
+    Collection<? extends SSSRStream<?>> inputs = getInputs();
     long latencySum = 0;
-    for (Stream<?> input : inputs) {
+    for (SSSRStream<?> input : inputs) {
       latencySum += input.getAverageArrivalTime();
     }
     return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
@@ -122,7 +122,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
   default int getPriority() {
     int priority = -1;
     // Consumer's priority is the maximum priority of the upstream nodes
-    for (Stream<?> input : getInputs()) {
+    for (SSSRStream<?> input : getInputs()) {
       priority = Math.max(input.getSource().getPriority(), priority);
     }
     return priority;
@@ -131,7 +131,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
   @Override
   default long getInputQueueSize() {
     long size = 0;
-    for (Stream<?> input : getInputs()) {
+    for (SSSRStream<?> input : getInputs()) {
       size += input.size();
     }
     return size;

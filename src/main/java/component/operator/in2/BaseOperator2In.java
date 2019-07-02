@@ -31,7 +31,7 @@ import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import component.operator.Operator;
-import stream.Stream;
+import stream.SSSRStream;
 
 /**
  * Base abstract {@link Operator2In} implementation.
@@ -68,42 +68,42 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
   }
 
   @Override
-  public Stream<IN> getInput() {
-    return (Stream<IN>) state.getInput(INPUT1_KEY);
+  public SSSRStream<IN> getInput() {
+    return (SSSRStream<IN>) state.getInput(INPUT1_KEY);
   }
 
   @Override
-  public Stream<IN2> getInput2() {
-    return (Stream<IN2>) state.getInput(INPUT2_KEY);
+  public SSSRStream<IN2> getInput2() {
+    return (SSSRStream<IN2>) state.getInput(INPUT2_KEY);
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
-    state.addInput(INPUT1_KEY, (Stream<Tuple>) stream);
+  public void addInput(StreamProducer<IN> source, SSSRStream<IN> stream) {
+    state.addInput(INPUT1_KEY, (SSSRStream<Tuple>) stream);
   }
 
   @Override
-  public void addInput2(StreamProducer<IN2> source, Stream<IN2> stream) {
-    state.addInput(INPUT2_KEY, (Stream<Tuple>) stream);
+  public void addInput2(StreamProducer<IN2> source, SSSRStream<IN2> stream) {
+    state.addInput(INPUT2_KEY, (SSSRStream<Tuple>) stream);
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 
   @Override
-  public Stream<OUT> getOutput() {
+  public SSSRStream<OUT> getOutput() {
     return state.getOutput();
   }
 
   @Override
-  public Collection<? extends Stream<OUT>> getOutputs() {
+  public Collection<? extends SSSRStream<OUT>> getOutputs() {
     return state.getOutputs();
   }
 
   @Override
-  public Collection<? extends Stream<Tuple>> getInputs() {
+  public Collection<? extends SSSRStream<Tuple>> getInputs() {
     return state.getInputs();
   }
 

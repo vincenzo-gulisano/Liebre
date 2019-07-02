@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import stream.Stream;
+import stream.SSSRStream;
 
 /**
  * Object that represents the state of all common stream components such as operators, sinks and
@@ -46,8 +46,8 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   private final ComponentType type;
   private final String id;
   private final int index;
-  private final List<Stream<IN>> inputs = new ArrayList<>();
-  private final List<Stream<OUT>> outputs = new ArrayList<>();
+  private final List<SSSRStream<IN>> inputs = new ArrayList<>();
+  private final List<SSSRStream<OUT>> outputs = new ArrayList<>();
 
   private volatile boolean enabled = false;
 
@@ -69,20 +69,20 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
     return type;
   }
 
-  public void addOutput(int index, Stream<OUT> stream) {
+  public void addOutput(int index, SSSRStream<OUT> stream) {
     outputs.add(index, stream);
   }
 
-  public void addOutput(Stream<OUT> stream) {
+  public void addOutput(SSSRStream<OUT> stream) {
     Validate.validState(type.outputsNumber().isMultiple());
     outputs.add(stream);
   }
 
-  public void addInput(int index, Stream<IN> stream) {
+  public void addInput(int index, SSSRStream<IN> stream) {
     inputs.add(index, stream);
   }
 
-  public void addInput(Stream<IN> stream) {
+  public void addInput(SSSRStream<IN> stream) {
     Validate.validState(type.inputsNumber().isMultiple());
     inputs.add(stream);
   }
@@ -90,7 +90,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   /**
    * Get the input stream with the given index.
    */
-  public Stream<IN> getInput(int index) {
+  public SSSRStream<IN> getInput(int index) {
     return inputs.get(index);
   }
 
@@ -99,7 +99,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    *
    * @throws IllegalStateException if the component can have more than 1 input
    */
-  public Stream<IN> getInput() {
+  public SSSRStream<IN> getInput() {
     Validate.validState(type.outputsNumber().isSingle());
     return getInput(0);
   }
@@ -107,7 +107,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
   /**
    * Get the output stream with the given index.
    */
-  public Stream<OUT> getOutput(int index) {
+  public SSSRStream<OUT> getOutput(int index) {
     return outputs.get(index);
   }
 
@@ -116,7 +116,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    *
    * @throws IllegalStateException if the component can have more than 1 output
    */
-  public Stream<OUT> getOutput() {
+  public SSSRStream<OUT> getOutput() {
     Validate.validState(type.outputsNumber().isSingle());
     return getOutput(0);
   }
@@ -126,7 +126,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    */
   public void enable() {
     type.validate(this);
-    for (Stream<?> input : inputs) {
+    for (SSSRStream<?> input : inputs) {
       input.enable();
     }
     this.enabled = true;
@@ -143,7 +143,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    * Disable the state. Should always be called when calling {@link Component#disable()}
    */
   public void disable() {
-    for (Stream<?> input : inputs) {
+    for (SSSRStream<?> input : inputs) {
       input.disable();
     }
     this.enabled = false;
@@ -173,7 +173,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    *
    * @return An unmodifiable collection of all the input streams.
    */
-  public Collection<Stream<IN>> getInputs() {
+  public Collection<SSSRStream<IN>> getInputs() {
     return Collections.unmodifiableCollection(inputs);
   }
 
@@ -182,7 +182,7 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    *
    * @return An unmodifiable collection of all the input streams.
    */
-  public Collection<Stream<OUT>> getOutputs() {
+  public Collection<SSSRStream<OUT>> getOutputs() {
     return Collections.unmodifiableCollection(outputs);
   }
 

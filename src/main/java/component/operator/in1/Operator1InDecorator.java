@@ -30,7 +30,7 @@ import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
 import java.util.List;
-import stream.Stream;
+import stream.SSSRStream;
 
 /**
  * Base decorator for {@link Operator1In}. Delegates all function calls to the decorated object.
@@ -70,32 +70,32 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple> implement
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+  public void addInput(StreamProducer<IN> source, SSSRStream<IN> stream) {
     decorated.addInput(source, stream);
   }
 
   @Override
-  public Stream<IN> getInput() {
+  public SSSRStream<IN> getInput() {
     return decorated.getInput();
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, SSSRStream<OUT> stream) {
     decorated.addOutput(destination, stream);
   }
 
   @Override
-  public Stream<OUT> getOutput() {
+  public SSSRStream<OUT> getOutput() {
     return decorated.getOutput();
   }
 
   @Override
-  public Collection<? extends Stream<OUT>> getOutputs() {
+  public Collection<? extends SSSRStream<OUT>> getOutputs() {
     return decorated.getOutputs();
   }
 
   @Override
-  public Collection<? extends Stream<IN>> getInputs() {
+  public Collection<? extends SSSRStream<IN>> getInputs() {
     return decorated.getInputs();
   }
 
