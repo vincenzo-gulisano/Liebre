@@ -25,6 +25,7 @@ package stream;
 
 import component.StreamConsumer;
 import component.StreamProducer;
+import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
 
@@ -33,15 +34,20 @@ import common.util.backoff.BackoffFactory;
  */
 public interface StreamFactory {
 
-  <T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
-      int capacity, BackoffFactory backoff);
+	<T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from,
+			StreamConsumer<T> to, int capacity, BackoffFactory backoff);
 
-  default <T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to,
-      int capacity) {
-    return newStream(from, to, capacity, BackoffFactory.NOOP);
-  }
+	default <T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from,
+			StreamConsumer<T> to, int capacity) {
+		return newStream(from, to, capacity, BackoffFactory.NOOP);
+	}
 
-  default <T extends Tuple> String getStreamId(StreamProducer<T> from, StreamConsumer<T> to) {
-    return String.format("%s_%s", from.getId(), to.getId());
-  }
+	default <T extends Tuple> String getStreamId(StreamProducer<T> from,
+			StreamConsumer<T> to) {
+		return String.format("%s_%s", from.getId(), to.getId());
+	}
+
+	<T extends RichTuple> MWMRSortedStream<T> newMWMRSortedStream(
+			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
+			int maxLevels);
 }
