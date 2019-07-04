@@ -28,8 +28,10 @@ import component.ComponentState;
 import component.ComponentType;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
+
 import java.util.Collection;
-import stream.SWSRStream;
+
+import stream.Stream;
 
 
 public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
@@ -39,13 +41,15 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
 
   private int priority;
+  private int relativeProducerIndex;
 
-  public AbstractSource(String id) {
+  public AbstractSource(String id,int relativeProducerIndex) {
     this.state = new ComponentState<>(id, ComponentType.SOURCE);
+    this.relativeProducerIndex=relativeProducerIndex;
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, SWSRStream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 
@@ -55,12 +59,12 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   }
 
   @Override
-  public SWSRStream<OUT> getOutput() {
+  public Stream<OUT> getOutput() {
     return state.getOutput(OUTPUT_KEY);
   }
 
   @Override
-  public Collection<? extends SWSRStream<OUT>> getOutputs() {
+  public Collection<? extends Stream<OUT>> getOutputs() {
     return state.getOutputs();
   }
 
@@ -149,4 +153,14 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   public String toString() {
     return getId();
   }
+  
+  @Override
+	public int getRelativeProducerIndex(int index) {
+		return relativeProducerIndex;
+	}
+  
+  @Override
+	public int getRelativeConsumerIndex(int index) {
+		throw new UnsupportedOperationException("Sources are not consumers!");
+	}
 }

@@ -77,7 +77,7 @@ import scheduling.impl.DefaultScheduler;
 import stream.BlockingStream;
 import stream.GlobalStreamFactory;
 import stream.MWMRSortedStream;
-import stream.SWSRStream;
+import stream.Stream;
 import stream.StreamFactory;
 import stream.StreamStatistic;
 
@@ -85,7 +85,7 @@ import stream.StreamStatistic;
  * The main execution unit. Acts as a factory for the stream {@link Component}s
  * such as {@link Operator}s, {@link Source}s and {@link Sink}s through various
  * helper methods. It also handles the connections of the components with the
- * correct types of {@link SWSRStream}s and the activation/deactivation of the
+ * correct types of {@link Stream}s and the activation/deactivation of the
  * query. Activating the query also starts executing it by delegating this work
  * to the provided {@link Scheduler} implementation.
  */
@@ -204,27 +204,27 @@ public final class Query {
 			long windowSize, long windowSlide) {
 
 		return addOperator(new TimeBasedSingleWindowAggregate<IN, OUT>(
-				identifier, windowSize, windowSlide, window));
+				identifier,0,0, windowSize, windowSlide, window));
 	}
 
 	public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(
 			String identifier, MapFunction<IN, OUT> mapFunction) {
-		return addOperator(new MapOperator<IN, OUT>(identifier, mapFunction));
+		return addOperator(new MapOperator<IN, OUT>(identifier,0,0, mapFunction));
 	}
 
 	public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addFlatMapOperator(
 			String identifier, FlatMapFunction<IN, OUT> mapFunction) {
-		return addOperator(new FlatMapOperator<IN, OUT>(identifier, mapFunction));
+		return addOperator(new FlatMapOperator<IN, OUT>(identifier,0,0, mapFunction));
 	}
 
 	public synchronized <T extends Tuple> Operator<T, T> addFilterOperator(
 			String identifier, FilterFunction<T> filterF) {
-		return addOperator(new FilterOperator<T>(identifier, filterF));
+		return addOperator(new FilterOperator<T>(identifier,0,0, filterF));
 	}
 
 	public synchronized <T extends Tuple> RouterOperator<T> addRouterOperator(
 			String identifier) {
-		RouterOperator<T> router = new BaseRouterOperator<T>(identifier);
+		RouterOperator<T> router = new BaseRouterOperator<T>(identifier,0,0);
 		if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
 			StatisticsConfiguration statConfig = enabledStatistics
 					.get(StatisticType.OPERATORS);
@@ -243,7 +243,7 @@ public final class Query {
 
 	public synchronized <T extends Tuple> UnionOperator<T> addUnionOperator(
 			String identifier) {
-		UnionOperator<T> union = new UnionOperator<>(identifier);
+		UnionOperator<T> union = new UnionOperator<>(identifier,0,0);
 		return addUnionOperator(union);
 	}
 
@@ -261,12 +261,12 @@ public final class Query {
 
 	public synchronized <T extends Tuple> Source<T> addBaseSource(String id,
 			SourceFunction<T> function) {
-		return addSource(new BaseSource<>(id, function));
+		return addSource(new BaseSource<>(id,0, function));
 	}
 
 	public synchronized <T extends Tuple> Source<T> addTextFileSource(
 			String id, String filename, TextSourceFunction<T> function) {
-		return addSource(new TextFileSource(id, filename, function));
+		return addSource(new TextFileSource(id, 0,filename, function));
 	}
 
 	public synchronized <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
@@ -283,12 +283,12 @@ public final class Query {
 
 	public synchronized <T extends Tuple> Sink<T> addBaseSink(String id,
 			SinkFunction<T> sinkFunction) {
-		return addSink(new BaseSink<>(id, sinkFunction));
+		return addSink(new BaseSink<>(id,0, sinkFunction));
 	}
 
 	public synchronized <T extends Tuple> Sink<T> addTextFileSink(String id,
 			String file, TextSinkFunction<T> function) {
-		return addSink(new TextFileSink<>(id, file, function));
+		return addSink(new TextFileSink<>(id,0, file, function));
 	}
 
 	public synchronized <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
@@ -307,7 +307,7 @@ public final class Query {
 	public synchronized <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
 			String identifier, JoinFunction<IN, IN2, OUT> joinFunction,
 			long windowSize) {
-		return addOperator2In(new TimeBasedJoin<IN, IN2, OUT>(identifier,
+		return addOperator2In(new TimeBasedJoin<IN, IN2, OUT>(identifier,0,0,
 				windowSize, joinFunction));
 	}
 
@@ -323,7 +323,7 @@ public final class Query {
 				destination instanceof Operator2In == false,
 				"Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
 				destination.getId());
-		SWSRStream<T> stream = getStream(source, destination, backoff);
+		Stream<T> stream = getStream(source, destination, backoff);
 		source.addOutput(destination, stream);
 		destination.addInput(source, stream);
 		return this;
@@ -337,7 +337,7 @@ public final class Query {
 	public synchronized <T extends Tuple> Query connect2inLeft(
 			StreamProducer<T> source, Operator2In<T, ?, ?> destination,
 			BackoffFactory backoff) {
-		SWSRStream<T> stream = getStream(source, destination, backoff);
+		Stream<T> stream = getStream(source, destination, backoff);
 		source.addOutput(destination, stream);
 		destination.addInput(source, stream);
 		return this;
@@ -351,17 +351,17 @@ public final class Query {
 	public synchronized <T extends Tuple> Query connect2inRight(
 			StreamProducer<T> source, Operator2In<?, T, ?> destination,
 			BackoffFactory backoff) {
-		SWSRStream<T> stream = getStream(source, destination.secondInputView(),
+		Stream<T> stream = getStream(source, destination.secondInputView(),
 				backoff);
 		source.addOutput(destination.secondInputView(), stream);
 		destination.addInput2(source, stream);
 		return this;
 	}
 
-	private synchronized <T extends Tuple> SWSRStream<T> getStream(
+	private synchronized <T extends Tuple> Stream<T> getStream(
 			StreamProducer<T> source, StreamConsumer<T> destination,
 			BackoffFactory backoff) {
-		SWSRStream<T> stream = streamFactory.newStream(source, destination,
+		Stream<T> stream = streamFactory.newStream(source, destination,0,0,
 				DEFAULT_STREAM_CAPACITY, backoff);
 		if (enabledStatistics.containsKey(StatisticType.STREAMS)) {
 			StatisticsConfiguration statConfig = enabledStatistics
@@ -375,7 +375,7 @@ public final class Query {
 	
 	private synchronized <T extends RichTuple> MWMRSortedStream<T> getMWMRSortedStream(
 			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations) {
-		return streamFactory.newMWMRSortedStream(sources, destinations, DEFAULT_MAX_LEVELS);
+		return streamFactory.newMWMRSortedStream(sources, destinations,0,0, DEFAULT_MAX_LEVELS);
 		// TODO Do we want statistics here
 	}
 
@@ -425,8 +425,8 @@ public final class Query {
 		return sources.values();
 	}
 
-	private Set<SWSRStream<?>> streams() {
-		Set<SWSRStream<?>> streams = new HashSet<>();
+	private Set<Stream<?>> streams() {
+		Set<Stream<?>> streams = new HashSet<>();
 		for (Operator<?, ?> op : operators.values()) {
 			streams.addAll(op.getInputs());
 		}

@@ -26,7 +26,7 @@ package component.operator.router;
 import common.tuple.Tuple;
 import component.ProcessCommand;
 import component.AbstractProcessCommand;
-import stream.SWSRStream;
+import stream.Stream;
 
 /**
  * {@link ProcessCommand} implementation for {@link BaseRouterOperator}.
@@ -42,13 +42,13 @@ class ProcessCommandRouter<T extends Tuple> extends
 
   @Override
   public final void process() {
-    SWSRStream<T> input = component.getInput();
-    T inTuple = input.getNextTuple();
+    Stream<T> input = component.getInput();
+    T inTuple = input.getNextTuple(component.getRelativeConsumerIndex(input.getIndex()));
     if (inTuple != null) {
       increaseTuplesRead();
-      for (SWSRStream<T> output : component.chooseOutputs(inTuple)) {
+      for (Stream<T> output : component.chooseOutputs(inTuple)) {
         increaseTuplesWritten();
-        output.addTuple(inTuple);
+        output.addTuple(inTuple,component.getRelativeProducerIndex(output.getIndex()));
       }
     }
   }

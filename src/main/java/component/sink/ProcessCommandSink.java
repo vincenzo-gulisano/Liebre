@@ -26,7 +26,7 @@ package component.sink;
 import component.ProcessCommand;
 import common.tuple.Tuple;
 import component.AbstractProcessCommand;
-import stream.SWSRStream;
+import stream.Stream;
 
 /**
  * {@link ProcessCommand} implementation for {@link Sink}s.
@@ -41,8 +41,8 @@ class ProcessCommandSink<T extends Tuple> extends AbstractProcessCommand<Sink<T>
 
   @Override
   public final void process() {
-    SWSRStream<T> input = component.getInput();
-    T tuple = input.getNextTuple();
+    Stream<T> input = component.getInput();
+    T tuple = input.getNextTuple(component.getRelativeConsumerIndex(input.getIndex()));
     if (tuple != null) {
       increaseTuplesRead();
       increaseTuplesWritten();

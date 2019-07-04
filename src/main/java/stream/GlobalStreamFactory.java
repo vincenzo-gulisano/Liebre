@@ -15,20 +15,23 @@ public class GlobalStreamFactory implements StreamFactory {
 	private final AtomicInteger indexes = new AtomicInteger();
 
 	@Override
-	public <T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from,
-			StreamConsumer<T> to, int capacity, BackoffFactory backoff) {
+	public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from,
+			StreamConsumer<T> to, int relativeProducerIndex,
+			int relativeConsumerIndex, int capacity, BackoffFactory backoff) {
 		Validate.isTrue(backoff == BackoffFactory.NOOP,
 				"This stream does not support Backoff!");
 		return new BlockingStream<>(getStreamId(from, to),
-				indexes.getAndIncrement(), from, to, capacity);
+				indexes.getAndIncrement(), relativeProducerIndex,
+				relativeConsumerIndex, from, to, capacity);
 	}
 
 	@Override
 	public <T extends RichTuple> MWMRSortedStream<T> newMWMRSortedStream(
 			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
-			int maxLevels) {
+			int relativeProducerIndex, int relativeConsumerIndex, int maxLevels) {
 		return new SGStream<T>(getStreamId(sources[0], destinations[0]),
-				indexes.getAndIncrement(), maxLevels, sources.length,
+				indexes.getAndIncrement(), relativeProducerIndex,
+				relativeConsumerIndex, maxLevels, sources.length,
 				destinations.length, sources, destinations);
 	}
 

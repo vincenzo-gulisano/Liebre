@@ -42,8 +42,8 @@ public class BaseSink<IN extends Tuple> extends AbstractSink<IN> {
    * @param id The unique ID of this component.
    * @param function The function to be applied to each input tuple.
    */
-  public BaseSink(String id, SinkFunction<IN> function) {
-    super(id);
+  public BaseSink(String id, int relativeConsumerIndex, SinkFunction<IN> function) {
+    super(id,relativeConsumerIndex);
     Validate.notNull(function, "function");
     this.function = function;
   }

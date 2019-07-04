@@ -27,36 +27,38 @@ import java.util.List;
 
 import common.tuple.Tuple;
 import component.AbstractProcessCommand;
-import stream.SWSRStream;
+import stream.Stream;
 
 /**
  * Process command implementation for {@link Operator1In}.
  *
  * @see AbstractProcessCommand
  */
-class ProcessCommand1In<IN extends Tuple, OUT extends Tuple>
-    extends AbstractProcessCommand<Operator1In<IN, OUT>> {
+class ProcessCommand1In<IN extends Tuple, OUT extends Tuple> extends
+		AbstractProcessCommand<Operator1In<IN, OUT>> {
 
-  protected ProcessCommand1In(Operator1In<IN, OUT> operator) {
-    super(operator);
-  }
+	protected ProcessCommand1In(Operator1In<IN, OUT> operator) {
+		super(operator);
+	}
 
-  @Override
-  public final void process() {
-    SWSRStream<IN> input = component.getInput();
-    SWSRStream<OUT> output = component.getOutput();
+	@Override
+	public final void process() {
+		Stream<IN> input = component.getInput();
+		Stream<OUT> output = component.getOutput();
 
-    IN inTuple = input.getNextTuple();
-    if (inTuple != null) {
-      increaseTuplesRead();
-      List<OUT> outTuples = component.processTupleIn1(inTuple);
-      if (outTuples != null) {
-        for (OUT t : outTuples) {
-          increaseTuplesWritten();
-          output.addTuple(t);
-        }
-      }
-    }
-  }
+		IN inTuple = input.getNextTuple(component
+				.getRelativeConsumerIndex(input.getIndex()));
+		if (inTuple != null) {
+			increaseTuplesRead();
+			List<OUT> outTuples = component.processTupleIn1(inTuple);
+			if (outTuples != null) {
+				for (OUT t : outTuples) {
+					increaseTuplesWritten();
+					output.addTuple(t, component
+							.getRelativeProducerIndex(output.getIndex()));
+				}
+			}
+		}
+	}
 
 }

@@ -47,13 +47,13 @@ public class TextFileSink<IN extends Tuple> extends AbstractSink<IN> {
    * @param filename The file path to write the data to.
    * @param function The {@link TextSinkFunction} that will map every input tuple to a string.
    */
-  public TextFileSink(String id, String filename, TextSinkFunction<IN> function) {
-    this(id, filename, function, true);
+  public TextFileSink(String id, int relativeConsumerIndex, String filename, TextSinkFunction<IN> function) {
+    this(id, relativeConsumerIndex, filename, function, true);
   }
 
-  protected TextFileSink(String id, String filename, TextSinkFunction<IN> function,
+  protected TextFileSink(String id, int relativeConsumerIndex, String filename, TextSinkFunction<IN> function,
       boolean autoFlush) {
-    super(id);
+    super(id,relativeConsumerIndex);
     try {
       this.pw = new PrintWriter(new FileWriter(filename), autoFlush);
     } catch (IOException e) {

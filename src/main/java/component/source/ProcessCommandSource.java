@@ -25,7 +25,7 @@ package component.source;
 
 import common.tuple.Tuple;
 import component.AbstractProcessCommand;
-import stream.SWSRStream;
+import stream.Stream;
 
 class ProcessCommandSource<T extends Tuple> extends AbstractProcessCommand<Source<T>> {
 
@@ -36,11 +36,11 @@ class ProcessCommandSource<T extends Tuple> extends AbstractProcessCommand<Sourc
 	@Override
 	public final void process() {
 		T tuple = component.getNextTuple();
-		SWSRStream<T> output = component.getOutput();
+		Stream<T> output = component.getOutput();
 		if (tuple != null) {
 			increaseTuplesRead();
 			increaseTuplesWritten();
-			output.addTuple(tuple);
+			output.addTuple(tuple,component.getRelativeProducerIndex(output.getIndex()));
 		}
 	}
 

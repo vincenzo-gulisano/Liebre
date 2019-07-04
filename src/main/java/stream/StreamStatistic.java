@@ -29,7 +29,7 @@ import common.util.StatisticPath;
 import common.util.StatisticType;
 
 /**
- * Statistic recorder for {@link SWSRStream}s. Records the statistics {@link StatisticType#IN} and
+ * Statistic recorder for {@link Stream}s. Records the statistics {@link StatisticType#IN} and
  * {@link StatisticType#OUT}.
  *
  * @param <T> The type of tuples transferred by the stream.
@@ -46,7 +46,7 @@ public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
    * @param outputFolder The path of the file where the statistics are written to.
    * @param autoFlush The autoflush parameter for the file writer.
    */
-  public StreamStatistic(SWSRStream<T> stream, String outputFolder, boolean autoFlush) {
+  public StreamStatistic(Stream<T> stream, String outputFolder, boolean autoFlush) {
     super(stream);
     inRate = new CountStatistic(StatisticPath.get(outputFolder, stream, StatisticType.IN),
         autoFlush);
@@ -55,14 +55,14 @@ public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
   }
 
   @Override
-  public void addTuple(T tuple) {
+  public void addTuple(T tuple,int writer) {
     inRate.append(1);
-    super.addTuple(tuple);
+    super.addTuple(tuple,writer);
   }
 
   @Override
-  public T getNextTuple() {
-    T out = super.getNextTuple();
+  public T getNextTuple(int reader) {
+    T out = super.getNextTuple(reader);
     if (out != null) {
       outRate.append(1);
     }
@@ -70,12 +70,12 @@ public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
   }
 
   @Override
-  public boolean offer(T tuple) {
+  public boolean offer(T tuple,int writer) {
     throw new UnsupportedOperationException("stream statistic must be the last decorator!");
   }
 
   @Override
-  public T poll() {
+  public T poll(int reader) {
     throw new UnsupportedOperationException("stream statistic must be the last decorator!");
   }
 

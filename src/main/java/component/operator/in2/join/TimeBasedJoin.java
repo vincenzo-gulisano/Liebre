@@ -57,9 +57,9 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
    * @param joinFunction The {@link JoinFunction} that will be applied to every pair of tuples
    * inside the same time window.
    */
-  public TimeBasedJoin(String id, long windowSize,
+  public TimeBasedJoin(String id,int relativeProducerIndex, int relativeConsumerIndex, long windowSize,
       JoinFunction<IN, IN2, OUT> joinFunction) {
-    super(id);
+    super(id,relativeProducerIndex,relativeConsumerIndex);
     this.ws = windowSize;
     this.joinFunction = joinFunction;
 

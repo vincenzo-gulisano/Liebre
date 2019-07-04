@@ -29,7 +29,7 @@ import component.StreamProducer;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
 import java.util.Collection;
-import stream.SWSRStream;
+import stream.Stream;
 
 /**
  * Base decorator for {@link RouterOperator}. Delegates all function calls to the decorated object.
@@ -67,37 +67,37 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   }
 
   @Override
-  public Collection<? extends SWSRStream<T>> getOutputs() {
+  public Collection<? extends Stream<T>> getOutputs() {
     return decorated.getOutputs();
   }
 
   @Override
-  public Collection<? extends SWSRStream<T>> getInputs() {
+  public Collection<? extends Stream<T>> getInputs() {
     return decorated.getInputs();
   }
 
   @Override
-  public void addInput(StreamProducer<T> source, SWSRStream<T> stream) {
+  public void addInput(StreamProducer<T> source, Stream<T> stream) {
     decorated.addInput(source, stream);
   }
 
   @Override
-  public SWSRStream<T> getInput() {
+  public Stream<T> getInput() {
     return decorated.getInput();
   }
 
   @Override
-  public void addOutput(StreamConsumer<T> destination, SWSRStream<T> stream) {
+  public void addOutput(StreamConsumer<T> destination, Stream<T> stream) {
     decorated.addOutput(destination, stream);
   }
 
   @Override
-  public SWSRStream<T> getOutput() {
+  public Stream<T> getOutput() {
     return decorated.getOutput();
   }
 
   @Override
-  public Collection<? extends SWSRStream<T>> chooseOutputs(T tuple) {
+  public Collection<? extends Stream<T>> chooseOutputs(T tuple) {
     return decorated.chooseOutputs(tuple);
   }
 
@@ -165,4 +165,14 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   public boolean canRun() {
     return decorated.canRun();
   }
+  
+  @Override
+	public int getRelativeProducerIndex(int index) {
+		return decorated.getRelativeProducerIndex(index);
+	}
+  
+  @Override
+	public int getRelativeConsumerIndex(int index) {
+		return decorated.getRelativeConsumerIndex(index);
+	}
 }

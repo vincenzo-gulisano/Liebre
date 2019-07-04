@@ -51,10 +51,10 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
   private long latestTimestamp;
   private boolean firstTuple = true;
 
-  public TimeBasedSingleWindowAggregate(String id, long windowSize,
+  public TimeBasedSingleWindowAggregate(String id,int relativeProducerIndex,int relativeConsumerIndex, long windowSize,
       long windowSlide,
       TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
-    super(id);
+    super(id,relativeProducerIndex,relativeConsumerIndex);
     tuples = new LinkedList<IN>();
     windows = new TreeMap<Long, HashMap<String, TimeBasedSingleWindow<IN, OUT>>>();
     windowsCounters = new TreeMap<Long, HashMap<String, WinCounter>>();
@@ -167,5 +167,7 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
       return count == 0;
     }
   }
+  
+  
 
 }

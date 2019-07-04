@@ -28,104 +28,117 @@ import component.StreamProducer;
 import common.tuple.Tuple;
 
 /**
- * Basic decorator for {@link SWSRStream} instances. Delegates all function cals to the decorated
- * instance.
+ * Basic decorator for {@link Stream} instances. Delegates all function cals to
+ * the decorated instance.
  *
- * @param <T> The type of tuples transferred by the stream.
+ * @param <T>
+ *            The type of tuples transferred by the stream.
  */
-public class StreamDecorator<T extends Tuple> implements SWSRStream<T> {
+public class StreamDecorator<T extends Tuple> implements Stream<T> {
 
-  private final SWSRStream<T> decorated;
+	private final Stream<T> decorated;
 
-  /**
-   * Construct.
-   *
-   * @param decorated The stream to be decorated.
-   */
-  public StreamDecorator(SWSRStream<T> decorated) {
-    this.decorated = decorated;
-  }
+	/**
+	 * Construct.
+	 *
+	 * @param decorated
+	 *            The stream to be decorated.
+	 */
+	public StreamDecorator(Stream<T> decorated) {
+		this.decorated = decorated;
+	}
 
-  @Override
-  public void enable() {
-    decorated.enable();
-  }
+	@Override
+	public void enable() {
+		decorated.enable();
+	}
 
-  @Override
-  public boolean isEnabled() {
-    return decorated.isEnabled();
-  }
+	@Override
+	public boolean isEnabled() {
+		return decorated.isEnabled();
+	}
 
-  @Override
-  public void disable() {
-    decorated.disable();
-  }
+	@Override
+	public void disable() {
+		decorated.disable();
+	}
 
-  @Override
-  public String getId() {
-    return decorated.getId();
-  }
+	@Override
+	public String getId() {
+		return decorated.getId();
+	}
 
-  @Override
-  public int getIndex() {
-    return decorated.getIndex();
-  }
+	@Override
+	public int getIndex() {
+		return decorated.getIndex();
+	}
 
-  @Override
-  public void addTuple(T tuple) {
-    decorated.addTuple(tuple);
-  }
+	@Override
+	public void addTuple(T tuple, int writer) {
+		decorated.addTuple(tuple, writer);
+	}
 
-  @Override
-  public T getNextTuple() {
-    return decorated.getNextTuple();
-  }
+	@Override
+	public T getNextTuple(int reader) {
+		return decorated.getNextTuple(reader);
+	}
 
-  @Override
-  public T peek() {
-    return decorated.peek();
-  }
+	@Override
+	public T peek(int reader) {
+		return decorated.peek(reader);
+	}
 
-  @Override
-  public int size() {
-    return decorated.size();
-  }
+	@Override
+	public int size() {
+		return decorated.size();
+	}
 
-  @Override
-  public int remainingCapacity() {
-    return decorated.remainingCapacity();
-  }
+	@Override
+	public int remainingCapacity() {
+		return decorated.remainingCapacity();
+	}
 
-  @Override
-  public boolean offer(T tuple) {
-    return decorated.offer(tuple);
-  }
+	@Override
+	public boolean offer(T tuple, int writer) {
+		return decorated.offer(tuple, writer);
+	}
 
-  @Override
-  public T poll() {
-    return decorated.poll();
-  }
+	@Override
+	public T poll(int reader) {
+		return decorated.poll(reader);
+	}
 
-  @Override
-  public String toString() {
-    return decorated.toString();
-  }
+	@Override
+	public String toString() {
+		return decorated.toString();
+	}
 
-  public StreamProducer<T> getSource() {
-    return decorated.getSource();
-  }
+	public StreamProducer<T>[] getSources() {
+		return decorated.getSources();
+	}
 
-  public StreamConsumer<T> getDestination() {
-    return decorated.getDestination();
-  }
+	public StreamConsumer<T>[] getDestinations() {
+		return decorated.getDestinations();
+	}
 
-  @Override
-  public void resetArrivalTime() {
-    decorated.resetArrivalTime();
-  }
+	@Override
+	public void resetArrivalTime() {
+		decorated.resetArrivalTime();
+	}
 
-  @Override
-  public double getAverageArrivalTime() {
-    return decorated.getAverageArrivalTime();
-  }
+	@Override
+	public double getAverageArrivalTime() {
+		return decorated.getAverageArrivalTime();
+	}
+	
+
+	@Override
+	public int getRelativeProducerIndex(int index) {
+		return decorated.getRelativeProducerIndex(index);
+	}
+
+	@Override
+	public int getRelativeConsumerIndex(int index) {
+		return decorated.getRelativeConsumerIndex(index);
+	}
 }

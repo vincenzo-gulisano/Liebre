@@ -46,11 +46,12 @@ public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOp
    * @param id The unique id of this component.operator.
    * @param map The {@link FlatMapFunction} that will be applied to each input tuple.
    */
-  public FlatMapOperator(String id, FlatMapFunction<IN, OUT> map) {
-    super(id);
-    Validate.notNull(map, "map");
-    this.map = map;
-  }
+	public FlatMapOperator(String id, int relativeProducerIndex,
+			int relativeConsumerIndex, FlatMapFunction<IN, OUT> map) {
+		super(id, relativeProducerIndex, relativeConsumerIndex);
+		Validate.notNull(map, "map");
+		this.map = map;
+	}
 
   @Override
   public void enable() {

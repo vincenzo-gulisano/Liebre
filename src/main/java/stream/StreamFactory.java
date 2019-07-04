@@ -30,16 +30,19 @@ import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
 
 /**
- * Factory for {@link SWSRStream}s.
+ * Factory for {@link Stream}s.
  */
 public interface StreamFactory {
 
-	<T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from,
-			StreamConsumer<T> to, int capacity, BackoffFactory backoff);
+	<T extends Tuple> Stream<T> newStream(StreamProducer<T> from,
+			StreamConsumer<T> to, int relativeProducerIndex,
+			int relativeConsumerIndex, int capacity, BackoffFactory backoff);
 
-	default <T extends Tuple> SWSRStream<T> newStream(StreamProducer<T> from,
-			StreamConsumer<T> to, int capacity) {
-		return newStream(from, to, capacity, BackoffFactory.NOOP);
+	default <T extends Tuple> Stream<T> newStream(StreamProducer<T> from,
+			StreamConsumer<T> to, int relativeProducerIndex,
+			int relativeConsumerIndex, int capacity) {
+		return newStream(from, to, relativeProducerIndex,
+				relativeConsumerIndex, capacity, BackoffFactory.NOOP);
 	}
 
 	default <T extends Tuple> String getStreamId(StreamProducer<T> from,
@@ -49,5 +52,5 @@ public interface StreamFactory {
 
 	<T extends RichTuple> MWMRSortedStream<T> newMWMRSortedStream(
 			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
-			int maxLevels);
+			int relativeProducerIndex, int relativeConsumerIndex, int maxLevels);
 }

@@ -52,8 +52,8 @@ public class TextFileSource<OUT extends Tuple> extends AbstractSource<OUT> {
    * @param filename The file path where the data is read from.
    * @param function The {@link TextSourceFunction} that converts raw text lines to tuples.
    */
-  public TextFileSource(String id, String filename, TextSourceFunction<OUT> function) {
-    super(id);
+  public TextFileSource(String id,int relativeProducerIndex, String filename, TextSourceFunction<OUT> function) {
+    super(id,relativeProducerIndex);
     Validate.notNull(function, "function");
     this.function = function;
     try {

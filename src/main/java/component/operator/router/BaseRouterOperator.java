@@ -28,7 +28,7 @@ import component.ComponentType;
 import common.tuple.Tuple;
 import java.util.Collection;
 import component.operator.AbstractOperator;
-import stream.SWSRStream;
+import stream.Stream;
 
 /**
  * Default implementation for {@link RouterOperator}.
@@ -40,21 +40,21 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
 
   private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
 
-  public BaseRouterOperator(String id) {
-    super(id, ComponentType.ROUTER);
+  public BaseRouterOperator(String id,int relativeProducerIndex,int relativeConsumerIndex) {
+    super(id, ComponentType.ROUTER,relativeProducerIndex,relativeConsumerIndex);
   }
 
   @Override
-  public Collection<? extends SWSRStream<T>> chooseOutputs(T tuple) {
+  public Collection<? extends Stream<T>> chooseOutputs(T tuple) {
     return getOutputs();
   }
 
   @Override
-  public void addOutput(StreamConsumer<T> destination, SWSRStream<T> stream) {
+  public void addOutput(StreamConsumer<T> destination, Stream<T> stream) {
     state.addOutput(stream);
   }
 
-  public SWSRStream<T> getOutput() {
+  public Stream<T> getOutput() {
     throw new UnsupportedOperationException(
         String.format("'%s': Router has multiple outputs!", state.getId()));
   }
@@ -64,7 +64,7 @@ public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> 
     if (getInput().size() == 0) {
       return false;
     }
-    for (SWSRStream<?> output: getOutputs()) {
+    for (Stream<?> output: getOutputs()) {
       if (output.remainingCapacity() > 0) {
         return true;
       }

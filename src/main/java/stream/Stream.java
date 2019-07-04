@@ -35,25 +35,25 @@ import common.tuple.Tuple;
  *
  * @param <T> The type of values that can be transfered inside the stream
  */
-public interface SWSRStream<T extends Tuple> extends Active, Named {
+public interface Stream<T extends Tuple> extends Active, Named {
 
-  void addTuple(T tuple);
+  void addTuple(T tuple,int writer);
 
-  boolean offer(T tuple);
+  boolean offer(T tuple,int writer);
 
-  T getNextTuple();
+  T getNextTuple(int reader);
 
-  T poll();
+  T poll(int reader);
 
-  T peek();
+  T peek(int reader);
 
   int remainingCapacity();
 
   int size();
 
-  StreamProducer<T> getSource();
+  StreamProducer<T>[] getSources();
 
-  StreamConsumer<T> getDestination();
+  StreamConsumer<T>[] getDestinations();
 
   void resetArrivalTime();
 

@@ -25,7 +25,7 @@ package component.operator.union;
 
 import common.tuple.Tuple;
 import component.AbstractProcessCommand;
-import stream.SWSRStream;
+import stream.Stream;
 
 public class UnionProcessCommand<T extends Tuple> extends AbstractProcessCommand<UnionOperator<T>> {
 
@@ -35,13 +35,13 @@ public class UnionProcessCommand<T extends Tuple> extends AbstractProcessCommand
 
   @Override
   public void process() {
-    SWSRStream<T> output = component.getOutput();
-    for (SWSRStream<T> in : component.getInputs()) {
-      T inTuple = in.getNextTuple();
+    Stream<T> output = component.getOutput();
+    for (Stream<T> in : component.getInputs()) {
+      T inTuple = in.getNextTuple(component.getRelativeConsumerIndex(in.getIndex()));
       if (inTuple != null) {
         increaseTuplesRead();
         increaseTuplesWritten();
-        output.addTuple(inTuple);
+        output.addTuple(inTuple,component.getRelativeProducerIndex(output.getIndex()));
       }
     }
   }

@@ -26,6 +26,8 @@ public class SGStream<T extends RichTuple> implements MWMRSortedStream<T> {
 
 	private String id;
 	private int index;
+	private final int relativeProducerIndex;
+	private final int relativeConsumerIndex;
 	private boolean enabled;
 	private ScaleGate<T> sg;
 	private StreamProducer<T>[] sources;
@@ -33,11 +35,13 @@ public class SGStream<T extends RichTuple> implements MWMRSortedStream<T> {
 
 	private TuplesFromAll barrier;
 
-	public SGStream(String id, int index, int maxLevels, int writers,
-			int readers, StreamProducer<T>[] sources,
-			StreamConsumer<T>[] destinations) {
+	public SGStream(String id, int index, int relativeProducerIndex,
+			int relativeConsumerIndex, int maxLevels, int writers, int readers,
+			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations) {
 		this.id = id;
 		this.index = index;
+		this.relativeProducerIndex = relativeProducerIndex;
+		this.relativeConsumerIndex = relativeConsumerIndex;
 		enabled = false;
 		this.sg = new ScaleGateAArrImpl<T>(maxLevels, writers, readers);
 		this.sources = sources;
@@ -98,4 +102,13 @@ public class SGStream<T extends RichTuple> implements MWMRSortedStream<T> {
 		return destinations;
 	}
 
+	@Override
+	public int getRelativeProducerIndex(int index) {
+		return relativeProducerIndex;
+	}
+
+	@Override
+	public int getRelativeConsumerIndex(int index) {
+		return relativeConsumerIndex;
+	}
 }

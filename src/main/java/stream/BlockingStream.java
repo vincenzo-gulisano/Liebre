@@ -23,24 +23,25 @@
 
 package stream;
 
-import common.tuple.RichTuple;
-import common.tuple.Tuple;
-import common.util.backoff.BackoffFactory;
-import component.StreamConsumer;
-import component.StreamProducer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.lang3.Validate;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class BlockingStream<T extends Tuple> implements SWSRStream<T> {
+import common.tuple.RichTuple;
+import common.tuple.Tuple;
+import component.StreamConsumer;
+import component.StreamProducer;
+
+public class BlockingStream<T extends Tuple> implements Stream<T> {
 
 	private static final double EMA_ALPHA = 0.01;
 	private final BlockingQueue<T> stream;
 	private final int capacity;
 	private final String id;
 	private final int index;
+	private final int relativeProducerIndex;
+	private final int relativeConsumerIndex;
 	private final StreamProducer<T> source;
 	private final StreamConsumer<T> destination;
 	private volatile boolean enabled;
@@ -63,27 +64,30 @@ public class BlockingStream<T extends Tuple> implements SWSRStream<T> {
 	 * @param capacity
 	 *            The capacity that the stream will enforce.
 	 */
-	BlockingStream(String id, int index, StreamProducer<T> source,
+	BlockingStream(String id, int index, int relativeProducerIndex,
+			int relativeConsumerIndex, StreamProducer<T> source,
 			StreamConsumer<T> destination, int capacity) {
 		this.capacity = capacity;
 		this.stream = new ArrayBlockingQueue<>(capacity);
 		this.id = id;
 		this.index = index;
+		this.relativeProducerIndex = relativeProducerIndex;
+		this.relativeConsumerIndex = relativeConsumerIndex;
 		this.source = source;
 		this.destination = destination;
 	}
 
-	/**
-	 * Get a {@link StreamFactory} implementation for {@link BackoffStream}s.
-	 *
-	 * @return A factory that generates {@link BackoffStream}s.
-	 */
-	public static StreamFactory factory() {
-		return BlockingStream.Factory.INSTANCE;
-	}
+	// /**
+	// * Get a {@link StreamFactory} implementation for {@link BackoffStream}s.
+	// *
+	// * @return A factory that generates {@link BackoffStream}s.
+	// */
+	// public static StreamFactory factory() {
+	// return BlockingStream.Factory.INSTANCE;
+	// }
 
 	@Override
-	public void addTuple(T tuple) {
+	public void addTuple(T tuple, int writer) {
 		try {
 			stream.put(tuple);
 			if (tuple instanceof RichTuple) {
@@ -98,13 +102,13 @@ public class BlockingStream<T extends Tuple> implements SWSRStream<T> {
 	}
 
 	@Override
-	public final boolean offer(T tuple) {
+	public final boolean offer(T tuple, int writer) {
 		throw new UnsupportedOperationException(
 				"Use BackoffStream for non-blocking behavior");
 	}
 
 	@Override
-	public T getNextTuple() {
+	public T getNextTuple(int reader) {
 		try {
 			return stream.take();
 		} catch (InterruptedException e) {
@@ -115,13 +119,13 @@ public class BlockingStream<T extends Tuple> implements SWSRStream<T> {
 	}
 
 	@Override
-	public final T poll() {
+	public final T poll(int reader) {
 		throw new UnsupportedOperationException(
 				"Use BackoffStream for non-blocking behavior");
 	}
 
 	@Override
-	public final T peek() {
+	public final T peek(int reader) {
 		return stream.peek();
 	}
 
@@ -135,14 +139,16 @@ public class BlockingStream<T extends Tuple> implements SWSRStream<T> {
 		return (int) (tuplesWritten - tuplesRead);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public StreamProducer<T> getSource() {
-		return source;
+	public StreamProducer<T>[] getSources() {
+		return (StreamProducer<T>[]) new Object[] { source };
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public StreamConsumer<T> getDestination() {
-		return destination;
+	public StreamConsumer<T>[] getDestinations() {
+		return (StreamConsumer<T>[]) new Object[] { destination };
 	}
 
 	@Override
@@ -189,31 +195,40 @@ public class BlockingStream<T extends Tuple> implements SWSRStream<T> {
 				.toString();
 	}
 
-	/**
-	 * Default factory implementation, that enforces unique increasing integer
-	 * indexes.
-	 */
-	private enum Factory implements StreamFactory {
-		INSTANCE;
+	// /**
+	// * Default factory implementation, that enforces unique increasing integer
+	// * indexes.
+	// */
+	// private enum Factory implements StreamFactory {
+	// INSTANCE;
+	//
+	// private final AtomicInteger indexes = new AtomicInteger();
+	//
+	// @Override
+	// public <T extends Tuple> Stream<T> newStream(StreamProducer<T> from,
+	// StreamConsumer<T> to, int capacity, BackoffFactory backoff) {
+	// Validate.isTrue(backoff == BackoffFactory.NOOP,
+	// "This stream does not support Backoff!");
+	// return new BlockingStream<>(getStreamId(from, to),
+	// indexes.getAndIncrement(), from, to, capacity);
+	// }
+	//
+	// @Override
+	// public <T extends RichTuple> MWMRSortedStream<T> newMWMRSortedStream(
+	// StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
+	// int maxLevels) {
+	// throw new UnsupportedOperationException(
+	// "BlockingStream cannot create MWMRSortedStreams");
+	// }
+	// }
 
-		private final AtomicInteger indexes = new AtomicInteger();
+	@Override
+	public int getRelativeProducerIndex(int index) {
+		return relativeProducerIndex;
+	}
 
-		@Override
-		public <T extends Tuple> SWSRStream<T> newStream(
-				StreamProducer<T> from, StreamConsumer<T> to, int capacity,
-				BackoffFactory backoff) {
-			Validate.isTrue(backoff == BackoffFactory.NOOP,
-					"This stream does not support Backoff!");
-			return new BlockingStream<>(getStreamId(from, to),
-					indexes.getAndIncrement(), from, to, capacity);
-		}
-
-		@Override
-		public <T extends RichTuple> MWMRSortedStream<T> newMWMRSortedStream(
-				StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
-				int maxLevels) {
-			throw new UnsupportedOperationException(
-					"BlockingStream cannot create MWMRSortedStreams");
-		}
+	@Override
+	public int getRelativeConsumerIndex(int index) {
+		return relativeConsumerIndex;
 	}
 }

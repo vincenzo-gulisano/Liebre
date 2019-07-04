@@ -23,14 +23,16 @@
 
 package component.operator;
 
-import component.StreamConsumer;
-import component.StreamProducer;
+import java.util.Collection;
+
+import stream.Stream;
+
+import common.tuple.Tuple;
 import component.ComponentState;
 import component.ComponentType;
 import component.ConnectionsNumber;
-import common.tuple.Tuple;
-import java.util.Collection;
-import stream.SWSRStream;
+import component.StreamConsumer;
+import component.StreamProducer;
 
 /**
  * Abstract implementation of {@link Operator} that handles basic changes to the state of the
@@ -45,9 +47,13 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   protected final ComponentState<IN, OUT> state;
   private final int INPUT_KEY = 0;
   private final int OUTPUT_KEY = 0;
+  private final int relativeProducerIndex;
+  private final int relativeConsumerIndex;
 
-  public AbstractOperator(String id, ComponentType type) {
+  public AbstractOperator(String id, ComponentType type, int relativeProducerIndex, int relativeConsumerIndex) {
     state = new ComponentState<>(id, type);
+    this.relativeProducerIndex=relativeProducerIndex;
+    this.relativeConsumerIndex=relativeConsumerIndex;
   }
 
   @Override
@@ -56,30 +62,30 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, SWSRStream<OUT> stream) {
+  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, SWSRStream<IN> stream) {
+  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
     state.addInput(INPUT_KEY, stream);
   }
 
   @Override
-  public SWSRStream<IN> getInput() {
+  public Stream<IN> getInput() {
     return state.getInput(INPUT_KEY);
   }
 
   @Override
-  public SWSRStream<OUT> getOutput() {
+  public Stream<OUT> getOutput() {
     return state.getOutput(OUTPUT_KEY);
   }
 
-  public Collection<? extends SWSRStream<IN>> getInputs() {
+  public Collection<? extends Stream<IN>> getInputs() {
     return state.getInputs();
   }
 
-  public Collection<? extends SWSRStream<OUT>> getOutputs() {
+  public Collection<? extends Stream<OUT>> getOutputs() {
     return state.getOutputs();
   }
 
@@ -127,6 +133,15 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   public ConnectionsNumber outputsNumber() {
     return state.outputsNumber();
   }
-
+  
+  @Override
+	public int getRelativeProducerIndex(int index) {
+		return relativeProducerIndex;
+	}
+  
+  @Override
+	public int getRelativeConsumerIndex(int index) {
+		return relativeConsumerIndex;
+	}
 
 }

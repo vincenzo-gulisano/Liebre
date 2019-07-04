@@ -28,8 +28,10 @@ import component.ComponentState;
 import component.ComponentType;
 import component.ConnectionsNumber;
 import common.tuple.Tuple;
+
 import java.util.Collection;
-import stream.SWSRStream;
+
+import stream.Stream;
 
 /**
  * Abstract implementation of a {@link Sink}, controlling basic changes to the state.
@@ -41,14 +43,15 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   private static final int INPUT_KEY = 0;
   protected final ComponentState<IN, Tuple> state;
   private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
-
+  private final int relativeConsumerIndex;
   /**
    * Construct.
    *
    * @param id The unique ID of this component.
    */
-  public AbstractSink(String id) {
+  public AbstractSink(String id,int relativeConsumerIndex) {
     state = new ComponentState<>(id, ComponentType.SINK);
+    this.relativeConsumerIndex=relativeConsumerIndex;
   }
 
   @Override
@@ -57,17 +60,17 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, SWSRStream<IN> stream) {
+  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
     state.addInput(INPUT_KEY, stream);
   }
 
   @Override
-  public SWSRStream<IN> getInput() {
+  public Stream<IN> getInput() {
     return state.getInput(INPUT_KEY);
   }
 
   @Override
-  public Collection<? extends SWSRStream<IN>> getInputs() {
+  public Collection<? extends Stream<IN>> getInputs() {
     return state.getInputs();
   }
 
@@ -147,4 +150,14 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   public double getRate() {
     return processCommand.getRate();
   }
+  
+  @Override
+	public int getRelativeConsumerIndex(int index) {
+		return relativeConsumerIndex;
+	}
+  
+  @Override
+	public int getRelativeProducerIndex(int index) {
+		throw new UnsupportedOperationException("Sink is not a producer!");
+	}
 }

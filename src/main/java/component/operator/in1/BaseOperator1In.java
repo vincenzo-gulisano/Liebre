@@ -30,53 +30,58 @@ import component.operator.AbstractOperator;
 /**
  * Default abstract implementation of {@link Operator1In}.
  *
- * @param <IN> The type of input tuples.
- * @param <OUT> The type of output tuples.
+ * @param <IN>
+ *            The type of input tuples.
+ * @param <OUT>
+ *            The type of output tuples.
  *
  * @author palivosd
  */
-public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple> extends
-    AbstractOperator<IN, OUT>
-    implements Operator1In<IN, OUT> {
+public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple>
+		extends AbstractOperator<IN, OUT> implements Operator1In<IN, OUT> {
 
-  private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(this);
+	private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(
+			this);
 
-  /**
-   * Construct.
-   *
-   * @param id The unique id of this component.
-   */
-  public BaseOperator1In(String id) {
-    super(id, ComponentType.OPERATOR);
-  }
+	/**
+	 * Construct.
+	 *
+	 * @param id
+	 *            The unique id of this component.
+	 */
+	public BaseOperator1In(String id, int relativeProducerIndex,
+			int relativeConsumerIndex) {
+		super(id, ComponentType.OPERATOR, relativeProducerIndex,
+				relativeConsumerIndex);
+	}
 
-  @Override
-  public boolean runFor(int times) {
-    return processCommand.runFor(times);
-  }
+	@Override
+	public boolean runFor(int times) {
+		return processCommand.runFor(times);
+	}
 
-  @Override
-  public void run() {
-    processCommand.run();
-  }
+	@Override
+	public void run() {
+		processCommand.run();
+	}
 
-  @Override
-  public double getSelectivity() {
-    return processCommand.getSelectivity();
-  }
+	@Override
+	public double getSelectivity() {
+		return processCommand.getSelectivity();
+	}
 
-  @Override
-  public double getCost() {
-    return processCommand.getCost();
-  }
+	@Override
+	public double getCost() {
+		return processCommand.getCost();
+	}
 
-  @Override
-  public double getRate() {
-    return processCommand.getRate();
-  }
+	@Override
+	public double getRate() {
+		return processCommand.getRate();
+	}
 
-  @Override
-  public void updateMetrics() {
-    processCommand.updateMetrics();
-  }
+	@Override
+	public void updateMetrics() {
+		processCommand.updateMetrics();
+	}
 }

@@ -27,7 +27,7 @@ import component.StreamProducer;
 import component.ComponentType;
 import common.tuple.Tuple;
 import component.operator.AbstractOperator;
-import stream.SWSRStream;
+import stream.Stream;
 
 /**
  * Operator that unites multiple input streams into one. No guarantee on the ordering of the output
@@ -44,12 +44,12 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
    *
    * @param id The unique ID of the component.operator.
    */
-  public UnionOperator(String id) {
-    super(id, ComponentType.UNION);
+  public UnionOperator(String id,int relativeProducerIndex,int relativeConsumerIndex) {
+    super(id, ComponentType.UNION,relativeProducerIndex,relativeConsumerIndex);
   }
 
   @Override
-  public void addInput(StreamProducer<T> source, SWSRStream<T> stream) {
+  public void addInput(StreamProducer<T> source, Stream<T> stream) {
     state.addInput(stream);
   }
 
@@ -60,7 +60,7 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
    *     inputs.
    */
   @Override
-  public SWSRStream<T> getInput() {
+  public Stream<T> getInput() {
     throw new UnsupportedOperationException(
         String.format("'%s': Unions have multiple inputs!", state.getId()));
   }
@@ -70,7 +70,7 @@ public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
     if (getOutput().remainingCapacity() == 0) {
       return false;
     }
-    for (SWSRStream<?> input : getInputs()) {
+    for (Stream<?> input : getInputs()) {
       if (input.size() > 0) {
         return true;
       }

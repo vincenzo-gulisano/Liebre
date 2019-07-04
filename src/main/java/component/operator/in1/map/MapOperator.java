@@ -47,11 +47,12 @@ public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperat
    * @param id The unique id of this component.operator.
    * @param map The {@link MapFunction} to be applied to every input tuple.
    */
-  public MapOperator(String id, MapFunction<IN, OUT> map) {
-    super(id);
-    Validate.notNull(map, "map");
-    this.map = map;
-  }
+	public MapOperator(String id, int relativeProducerIndex,
+			int relativeConsumerIndex, MapFunction<IN, OUT> map) {
+		super(id, relativeProducerIndex, relativeConsumerIndex);
+		Validate.notNull(map, "map");
+		this.map = map;
+	}
 
   @Override
   public void enable() {
