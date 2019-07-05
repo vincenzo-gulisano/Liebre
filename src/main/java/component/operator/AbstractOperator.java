@@ -47,8 +47,8 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   protected final ComponentState<IN, OUT> state;
   private final int INPUT_KEY = 0;
   private final int OUTPUT_KEY = 0;
-  private final int relativeProducerIndex;
-  private final int relativeConsumerIndex;
+  private int relativeProducerIndex;
+  private int relativeConsumerIndex;
 
   public AbstractOperator(String id, ComponentType type, int relativeProducerIndex, int relativeConsumerIndex) {
     state = new ComponentState<>(id, type);
@@ -133,15 +133,25 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   public ConnectionsNumber outputsNumber() {
     return state.outputsNumber();
   }
-  
-  @Override
+
+	@Override
 	public int getRelativeProducerIndex() {
 		return relativeProducerIndex;
 	}
-  
-  @Override
+
+	@Override
+	public void setRelativeProducerIndex(int index) {
+		this.relativeProducerIndex = index;
+	}
+
+	@Override
 	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
+	}
+
+	@Override
+	public void setRelativeConsumerIndex(int index) {
+		this.relativeConsumerIndex = index;
 	}
 
 }

@@ -180,9 +180,19 @@ public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple>
 	public int getRelativeProducerIndex() {
 		return decorated.getRelativeProducerIndex();
 	}
+	
+	@Override
+	public void setRelativeProducerIndex(int index) {
+		decorated.setRelativeProducerIndex(index);
+	}
 
 	@Override
 	public int getRelativeConsumerIndex() {
 		return decorated.getRelativeConsumerIndex();
+	}
+	
+	@Override
+	public void setRelativeConsumerIndex(int index) {
+		decorated.setRelativeConsumerIndex(index);
 	}
 }

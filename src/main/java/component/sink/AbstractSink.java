@@ -43,7 +43,7 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   private static final int INPUT_KEY = 0;
   protected final ComponentState<IN, Tuple> state;
   private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
-  private final int relativeConsumerIndex;
+  private int relativeConsumerIndex;
   /**
    * Construct.
    *
@@ -150,14 +150,24 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   public double getRate() {
     return processCommand.getRate();
   }
-  
-  @Override
+
+	@Override
 	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
 	}
-  
-  @Override
+
+	@Override
+	public void setRelativeConsumerIndex(int index) {
+		this.relativeConsumerIndex = index;
+	}
+
+	@Override
 	public int getRelativeProducerIndex() {
+		throw new UnsupportedOperationException("Sink is not a producer!");
+	}
+
+	@Override
+	public void setRelativeProducerIndex(int index) {
 		throw new UnsupportedOperationException("Sink is not a producer!");
 	}
 }

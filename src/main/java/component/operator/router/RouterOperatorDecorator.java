@@ -165,14 +165,24 @@ public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<
   public boolean canRun() {
     return decorated.canRun();
   }
-  
-  @Override
+
+	@Override
 	public int getRelativeProducerIndex() {
 		return decorated.getRelativeProducerIndex();
 	}
-  
-  @Override
+
+	@Override
+	public void setRelativeProducerIndex(int index) {
+		decorated.setRelativeProducerIndex(index);
+	}
+
+	@Override
 	public int getRelativeConsumerIndex() {
 		return decorated.getRelativeConsumerIndex();
 	}
+	
+	@Override
+		public void setRelativeConsumerIndex(int index) {
+			decorated.setRelativeConsumerIndex(index);
+		}
 }

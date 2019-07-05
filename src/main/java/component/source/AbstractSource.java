@@ -153,14 +153,24 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
   public String toString() {
     return getId();
   }
-  
-  @Override
+
+	@Override
 	public int getRelativeProducerIndex() {
 		return relativeProducerIndex;
 	}
-  
-  @Override
+
+	@Override
+	public void setRelativeProducerIndex(int index) {
+		this.relativeProducerIndex = index;
+	}
+
+	@Override
 	public int getRelativeConsumerIndex() {
+		throw new UnsupportedOperationException("Sources are not consumers!");
+	}
+
+	@Override
+	public void setRelativeConsumerIndex(int index) {
 		throw new UnsupportedOperationException("Sources are not consumers!");
 	}
 }

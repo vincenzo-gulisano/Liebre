@@ -108,7 +108,19 @@ public class SGStream<T extends RichTuple> implements MWMRSortedStream<T> {
 	}
 
 	@Override
+	public void setRelativeProducerIndex(int index) {
+		throw new UnsupportedOperationException(
+				"relativeProducerIndex cannot be changed for a stream");
+	}
+
+	@Override
 	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
+	}
+
+	@Override
+	public void setRelativeConsumerIndex(int index) {
+		throw new UnsupportedOperationException(
+				"setRelativeConsumerIndex cannot be changed for a stream");
 	}
 }

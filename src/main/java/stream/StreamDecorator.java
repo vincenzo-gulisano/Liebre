@@ -131,14 +131,23 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
 		return decorated.getAverageArrivalTime();
 	}
 	
-
 	@Override
 	public int getRelativeProducerIndex() {
 		return decorated.getRelativeProducerIndex();
 	}
 
 	@Override
+	public void setRelativeProducerIndex(int index) {
+		decorated.setRelativeProducerIndex(index);
+	}
+
+	@Override
 	public int getRelativeConsumerIndex() {
 		return decorated.getRelativeConsumerIndex();
+	}
+
+	@Override
+	public void setRelativeConsumerIndex(int index) {
+		decorated.setRelativeConsumerIndex(index);
 	}
 }

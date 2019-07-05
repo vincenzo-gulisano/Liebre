@@ -155,15 +155,24 @@ public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
   public void setPriority(int priority) {
     decorated.setPriority(priority);
   }
-  
 
-  @Override
+	@Override
 	public int getRelativeProducerIndex() {
 		return decorated.getRelativeProducerIndex();
 	}
-  
-  @Override
+
+	@Override
+	public void setRelativeProducerIndex(int index) {
+		decorated.setRelativeProducerIndex(index);
+	}
+
+	@Override
 	public int getRelativeConsumerIndex() {
 		return decorated.getRelativeConsumerIndex();
+	}
+
+	@Override
+	public void setRelativeConsumerIndex(int index) {
+		decorated.setRelativeConsumerIndex(index);
 	}
 }

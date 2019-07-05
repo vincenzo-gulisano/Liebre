@@ -120,7 +120,7 @@ public final class Query {
 	public Query(Scheduler scheduler, StreamFactory streamFactory) {
 		this.scheduler = scheduler;
 		// Set a default backoff value
-		setBackoff(1, 20, 5);
+		//setBackoff(1, 20, 5);
 		this.streamFactory = streamFactory;
 	}
 

@@ -50,8 +50,8 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	private final ComponentState<Tuple, OUT> state;
 	private final Operator<IN2, OUT> secondInputView;
-	private final int relativeProducerIndex;
-	private final int relativeConsumerIndex;
+	private int relativeProducerIndex;
+	private int relativeConsumerIndex;
 
 	private final int INPUT1_KEY = 0;
 	private final int INPUT2_KEY = 1;
@@ -206,8 +206,18 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
+	public void setRelativeProducerIndex(int index) {
+		this.relativeProducerIndex=index;
+	}
+	
+	@Override
 	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
+	}
+	
+	@Override
+	public void setRelativeConsumerIndex(int index) {
+		this.relativeConsumerIndex=index;
 	}
 
 }

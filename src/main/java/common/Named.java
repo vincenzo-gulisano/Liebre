@@ -61,4 +61,10 @@ public interface Named {
    */
   int getRelativeConsumerIndex();
   
+
+  void setRelativeProducerIndex(int index);
+  
+  void setRelativeConsumerIndex(int index);
+  
+  
 }

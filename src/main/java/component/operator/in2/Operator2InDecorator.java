@@ -205,8 +205,18 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 	}
 
 	@Override
+	public void setRelativeProducerIndex(int index) {
+		decorated.setRelativeProducerIndex(index);
+	}
+	
+	@Override
 	public int getRelativeConsumerIndex() {
 		return decorated.getRelativeConsumerIndex();
+	}
+	
+	@Override
+	public void setRelativeConsumerIndex(int index) {
+		decorated.setRelativeConsumerIndex(index);
 	}
 
 }
