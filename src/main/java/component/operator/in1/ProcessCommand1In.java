@@ -47,7 +47,7 @@ class ProcessCommand1In<IN extends Tuple, OUT extends Tuple> extends
 		Stream<OUT> output = component.getOutput();
 
 		IN inTuple = input.getNextTuple(component
-				.getRelativeConsumerIndex(input.getIndex()));
+				.getRelativeConsumerIndex());
 		if (inTuple != null) {
 			increaseTuplesRead();
 			List<OUT> outTuples = component.processTupleIn1(inTuple);
@@ -55,7 +55,7 @@ class ProcessCommand1In<IN extends Tuple, OUT extends Tuple> extends
 				for (OUT t : outTuples) {
 					increaseTuplesWritten();
 					output.addTuple(t, component
-							.getRelativeProducerIndex(output.getIndex()));
+							.getRelativeProducerIndex());
 				}
 			}
 		}

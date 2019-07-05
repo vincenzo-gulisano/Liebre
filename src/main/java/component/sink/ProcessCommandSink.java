@@ -42,7 +42,7 @@ class ProcessCommandSink<T extends Tuple> extends AbstractProcessCommand<Sink<T>
   @Override
   public final void process() {
     Stream<T> input = component.getInput();
-    T tuple = input.getNextTuple(component.getRelativeConsumerIndex(input.getIndex()));
+    T tuple = input.getNextTuple(component.getRelativeConsumerIndex());
     if (tuple != null) {
       increaseTuplesRead();
       increaseTuplesWritten();

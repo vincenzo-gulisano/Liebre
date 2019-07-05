@@ -41,11 +41,12 @@ public class FilterOperator<T extends Tuple> extends BaseOperator1In<T, T> {
 
   protected FilterFunction<T> filter;
 
-  public FilterOperator(String id,int relativeProducerIndex,int relativeConsumerIndex, FilterFunction<T> filter) {
-    super(id,relativeProducerIndex,relativeConsumerIndex);
-    Validate.notNull(filter, "filter");
-    this.filter = filter;
-  }
+	public FilterOperator(String id, int relativeProducerIndex,
+			int relativeConsumerIndex, FilterFunction<T> filter) {
+		super(id, relativeProducerIndex, relativeConsumerIndex);
+		Validate.notNull(filter, "filter");
+		this.filter = filter;
+	}
 
   @Override
   public void enable() {

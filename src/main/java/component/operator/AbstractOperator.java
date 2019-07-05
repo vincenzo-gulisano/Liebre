@@ -135,12 +135,12 @@ public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> impl
   }
   
   @Override
-	public int getRelativeProducerIndex(int index) {
+	public int getRelativeProducerIndex() {
 		return relativeProducerIndex;
 	}
   
   @Override
-	public int getRelativeConsumerIndex(int index) {
+	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
 	}
 

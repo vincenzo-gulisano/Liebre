@@ -223,12 +223,12 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 	// }
 
 	@Override
-	public int getRelativeProducerIndex(int index) {
+	public int getRelativeProducerIndex() {
 		return relativeProducerIndex;
 	}
 
 	@Override
-	public int getRelativeConsumerIndex(int index) {
+	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
 	}
 }

@@ -47,15 +47,15 @@ class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
     Stream<IN2> input2 = component.getInput2();
     Stream<OUT> output = component.getOutput();
 
-    IN inTuple1 = input1.getNextTuple();
-    IN2 inTuple2 = input2.getNextTuple();
+    IN inTuple1 = input1.getNextTuple(component.getRelativeConsumerIndex());
+    IN2 inTuple2 = input2.getNextTuple(component.getRelativeConsumerIndex());
     if (inTuple1 != null) {
       increaseTuplesRead();
       List<OUT> outTuples = component.processTupleIn1(inTuple1);
       if (outTuples != null) {
         for (OUT t : outTuples) {
           increaseTuplesWritten();
-          output.addTuple(t);
+          output.addTuple(t,component.getRelativeProducerIndex());
         }
       }
     }
@@ -65,7 +65,7 @@ class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
       if (outTuples != null) {
         for (OUT t : outTuples) {
           increaseTuplesWritten();
-          output.addTuple(t);
+          output.addTuple(t,component.getRelativeProducerIndex());
         }
       }
     }

@@ -23,18 +23,17 @@
 
 package stream;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import common.tuple.RichTuple;
-import component.StreamConsumer;
-import component.StreamProducer;
 import common.tuple.Tuple;
 import common.util.backoff.Backoff;
 import common.util.backoff.BackoffFactory;
-
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import component.StreamConsumer;
+import component.StreamProducer;
 
 /**
  * Stream implementation that has an (optional) approximate capacity that is
@@ -245,12 +244,12 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
 //	}
 
 	@Override
-	public int getRelativeProducerIndex(int index) {
+	public int getRelativeProducerIndex() {
 		return relativeProducerIndex;
 	}
 
 	@Override
-	public int getRelativeConsumerIndex(int index) {
+	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
 	}
 }

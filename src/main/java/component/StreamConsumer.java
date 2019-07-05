@@ -109,7 +109,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 		Collection<? extends Stream<?>> inputs = getInputs();
 		long latencySum = 0;
 		for (Stream<?> input : inputs) {
-			Object head = input.peek(getRelativeConsumerIndex(input.getIndex()));
+			Object head = input.peek(getRelativeConsumerIndex());
 			if (head != null) {
 				if (head instanceof RichTuple == false) {
 					// This stream has no latency info

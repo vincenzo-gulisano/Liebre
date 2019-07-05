@@ -201,12 +201,12 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
-	public int getRelativeProducerIndex(int index) {
+	public int getRelativeProducerIndex() {
 		return relativeProducerIndex;
 	}
 
 	@Override
-	public int getRelativeConsumerIndex(int index) {
+	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
 	}
 

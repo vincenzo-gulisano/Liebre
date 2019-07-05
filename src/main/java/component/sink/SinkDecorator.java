@@ -146,13 +146,13 @@ public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
   }
   
   @Override
-	public int getRelativeProducerIndex(int index) {
-		return decorated.getRelativeProducerIndex(index);
+	public int getRelativeProducerIndex() {
+		return decorated.getRelativeProducerIndex();
 	}
   
 
   @Override
-	public int getRelativeConsumerIndex(int index) {
-		return decorated.getRelativeConsumerIndex(index);
+	public int getRelativeConsumerIndex() {
+		return decorated.getRelativeConsumerIndex();
 	}
 }

@@ -49,18 +49,16 @@ public interface Named {
    * 
    * Get the relative index (starting in 0) of this entity with respect to a connected downstream entity
    * 
-   * @param index, the index of the entity of which this entity is a producer
    * @return The relative index of this entity as producer of its connected downstream entity
    */
-  int getRelativeProducerIndex(int index);
+  int getRelativeProducerIndex();
   
   /**
    * 
    * Get the relative index (starting in 0) of this entity with respect to a connected upstream entity
    * 
-   * @param index, the index of the entity of which this entity is a consumer
    * @return The relative index of this entity as consumer of its connected upstream entity
    */
-  int getRelativeConsumerIndex(int index);
+  int getRelativeConsumerIndex();
   
 }

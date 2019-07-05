@@ -40,7 +40,7 @@ class ProcessCommandSource<T extends Tuple> extends AbstractProcessCommand<Sourc
 		if (tuple != null) {
 			increaseTuplesRead();
 			increaseTuplesWritten();
-			output.addTuple(tuple,component.getRelativeProducerIndex(output.getIndex()));
+			output.addTuple(tuple,component.getRelativeProducerIndex());
 		}
 	}
 

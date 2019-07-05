@@ -161,4 +161,14 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   public Stream<OUT> getOutput() {
     return decorated.getOutput();
   }
+  
+  @Override
+	public int getRelativeProducerIndex() {
+		return decorated.getRelativeProducerIndex();
+	}
+
+  @Override
+	public int getRelativeConsumerIndex() {
+		return decorated.getRelativeConsumerIndex();
+	}
 }

@@ -152,12 +152,12 @@ public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
   }
   
   @Override
-	public int getRelativeConsumerIndex(int index) {
+	public int getRelativeConsumerIndex() {
 		return relativeConsumerIndex;
 	}
   
   @Override
-	public int getRelativeProducerIndex(int index) {
+	public int getRelativeProducerIndex() {
 		throw new UnsupportedOperationException("Sink is not a producer!");
 	}
 }

@@ -37,11 +37,11 @@ public class UnionProcessCommand<T extends Tuple> extends AbstractProcessCommand
   public void process() {
     Stream<T> output = component.getOutput();
     for (Stream<T> in : component.getInputs()) {
-      T inTuple = in.getNextTuple(component.getRelativeConsumerIndex(in.getIndex()));
+      T inTuple = in.getNextTuple(component.getRelativeConsumerIndex());
       if (inTuple != null) {
         increaseTuplesRead();
         increaseTuplesWritten();
-        output.addTuple(inTuple,component.getRelativeProducerIndex(output.getIndex()));
+        output.addTuple(inTuple,component.getRelativeProducerIndex());
       }
     }
   }
