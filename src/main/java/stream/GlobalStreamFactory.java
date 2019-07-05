@@ -26,7 +26,7 @@ public class GlobalStreamFactory implements StreamFactory {
 	}
 
 	@Override
-	public <T extends RichTuple> MWMRSortedStream<T> newMWMRSortedStream(
+	public <T extends RichTuple> Stream<T> newMWMRSortedStream(
 			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
 			int relativeProducerIndex, int relativeConsumerIndex, int maxLevels) {
 		return new SGStream<T>(getStreamId(sources[0], destinations[0]),

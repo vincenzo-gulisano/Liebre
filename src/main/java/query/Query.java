@@ -328,6 +328,24 @@ public final class Query {
 		destination.addInput(source, stream);
 		return this;
 	}
+	
+	public synchronized <T extends RichTuple> Query connect(
+			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations) {
+		Stream<T> stream = getMWMRSortedStream(sources, destinations);
+		for (int i = 0; i < sources.length; i++) {
+			for (int j = 0; j < destinations.length; j++) {
+				sources[i].addOutput(destinations[j], stream);
+			}
+			sources[i].setRelativeProducerIndex(i);
+		}
+		for (int j = 0; j < destinations.length; j++) {
+			for (int i = 0; i < sources.length; i++) {
+				destinations[j].addInput(sources[i], stream);
+			}
+			destinations[j].setRelativeConsumerIndex(j);
+		}
+		return this;
+	}
 
 	public synchronized <T extends Tuple> Query connect2inLeft(
 			StreamProducer<T> source, Operator2In<T, ?, ?> destination) {
@@ -373,7 +391,7 @@ public final class Query {
 		}
 	}
 	
-	private synchronized <T extends RichTuple> MWMRSortedStream<T> getMWMRSortedStream(
+	private synchronized <T extends RichTuple> Stream<T> getMWMRSortedStream(
 			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations) {
 		return streamFactory.newMWMRSortedStream(sources, destinations,0,0, DEFAULT_MAX_LEVELS);
 		// TODO Do we want statistics here

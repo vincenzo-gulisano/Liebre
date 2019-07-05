@@ -1,13 +1,9 @@
 package stream;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import common.scalegate.ScaleGate;
 import common.scalegate.ScaleGateAArrImpl;
 import common.scalegate.TuplesFromAll;
 import common.tuple.RichTuple;
-import common.tuple.Tuple;
-import common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
 
@@ -16,7 +12,7 @@ import component.StreamProducer;
  * (i.e., this class is not safe when used in combination
  * with custom thread scheduling)
  */
-public class SGStream<T extends RichTuple> implements MWMRSortedStream<T> {
+public class SGStream<T extends RichTuple> implements Stream<T> {
 
 	// TODO Am I using id in the right way?
 	// TODO Am I using index in the right way?
@@ -78,7 +74,7 @@ public class SGStream<T extends RichTuple> implements MWMRSortedStream<T> {
 	}
 
 	@Override
-	public void addTuple(int writer, T tuple) {
+	public void addTuple(T tuple,int writer) {
 		assert (enabled);
 		sg.addTuple(tuple, writer);
 	}
@@ -122,5 +118,40 @@ public class SGStream<T extends RichTuple> implements MWMRSortedStream<T> {
 	public void setRelativeConsumerIndex(int index) {
 		throw new UnsupportedOperationException(
 				"setRelativeConsumerIndex cannot be changed for a stream");
+	}
+
+	@Override
+	public boolean offer(T tuple, int writer) {
+		throw new UnsupportedOperationException("cannot invoke this function on SGStream");
+	}
+
+	@Override
+	public T poll(int reader) {
+		throw new UnsupportedOperationException("cannot invoke this function on SGStream");
+	}
+
+	@Override
+	public T peek(int reader) {
+		throw new UnsupportedOperationException("cannot invoke this function on SGStream");
+	}
+
+	@Override
+	public int remainingCapacity() {
+		return Integer.MAX_VALUE;
+	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public void resetArrivalTime() {
+		throw new UnsupportedOperationException("cannot invoke this function on SGStream");
+	}
+
+	@Override
+	public double getAverageArrivalTime() {
+		throw new UnsupportedOperationException("cannot invoke this function on SGStream");
 	}
 }

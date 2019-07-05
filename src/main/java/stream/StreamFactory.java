@@ -50,7 +50,7 @@ public interface StreamFactory {
 		return String.format("%s_%s", from.getId(), to.getId());
 	}
 
-	<T extends RichTuple> MWMRSortedStream<T> newMWMRSortedStream(
+	<T extends RichTuple> Stream<T> newMWMRSortedStream(
 			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
 			int relativeProducerIndex, int relativeConsumerIndex, int maxLevels);
 }
