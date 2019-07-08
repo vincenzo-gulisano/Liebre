@@ -1,5 +1,6 @@
 package stream;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.Validate;
@@ -27,12 +28,13 @@ public class GlobalStreamFactory implements StreamFactory {
 
 	@Override
 	public <T extends RichTuple> Stream<T> newMWMRSortedStream(
-			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
+			List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations,
 			int relativeProducerIndex, int relativeConsumerIndex, int maxLevels) {
-		return new SGStream<T>(getStreamId(sources[0], destinations[0]),
+		// TODO Ulgy to get index 0 by default?
+		return new SGStream<T>(getStreamId(sources.get(0), destinations.get(0)),
 				indexes.getAndIncrement(), relativeProducerIndex,
-				relativeConsumerIndex, maxLevels, sources.length,
-				destinations.length, sources, destinations);
+				relativeConsumerIndex, maxLevels, sources.size(),
+				destinations.size(), sources, destinations);
 	}
 
 }

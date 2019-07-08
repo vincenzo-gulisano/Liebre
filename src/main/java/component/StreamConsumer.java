@@ -77,7 +77,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 	@Override
 	default int getTopologicalOrder() {
 		for (Stream<?> input : getInputs()) {
-			int upstreamOrder = input.getSources()[0].getTopologicalOrder();
+			int upstreamOrder = input.getSources().get(0).getTopologicalOrder();
 			return upstreamOrder + 1;
 			// TODO check this, why a return in a for that looks like is going
 			// in any case to fire on the fisrt loop iteration?

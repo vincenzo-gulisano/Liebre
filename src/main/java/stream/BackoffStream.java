@@ -23,6 +23,7 @@
 
 package stream;
 
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
+import common.util.Util;
 import common.util.backoff.Backoff;
 import common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
@@ -164,14 +166,14 @@ public class BackoffStream<T extends Tuple> implements Stream<T> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public StreamProducer<T>[] getSources() {
-		return (StreamProducer<T>[]) new Object[] { source };
+	public List<StreamProducer<T>> getSources() {
+		return Util.makeList(source);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public StreamConsumer<T>[] getDestinations() {
-		return (StreamConsumer<T>[]) new Object[] { destination };
+	public List<StreamConsumer<T>> getDestinations() {
+		return Util.makeList(destination);
 	}
 
 	@Override

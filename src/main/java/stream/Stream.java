@@ -23,6 +23,8 @@
 
 package stream;
 
+import java.util.List;
+
 import common.Active;
 import common.Named;
 import component.StreamConsumer;
@@ -51,9 +53,9 @@ public interface Stream<T extends Tuple> extends Active, Named {
 
   int size();
 
-  StreamProducer<T>[] getSources();
+  List<StreamProducer<T>> getSources();
 
-  StreamConsumer<T>[] getDestinations();
+  List<StreamConsumer<T>> getDestinations();
 
   void resetArrivalTime();
 

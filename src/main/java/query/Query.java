@@ -23,6 +23,24 @@
 
 package query;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import scheduling.Scheduler;
+import scheduling.impl.DefaultScheduler;
+import stream.GlobalStreamFactory;
+import stream.Stream;
+import stream.StreamFactory;
+import stream.StreamStatistic;
+
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
@@ -61,25 +79,6 @@ import component.source.SourceFunction;
 import component.source.SourceStatistic;
 import component.source.TextFileSource;
 import component.source.TextSourceFunction;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.Validate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import scheduling.Scheduler;
-import scheduling.impl.DefaultScheduler;
-import stream.BlockingStream;
-import stream.GlobalStreamFactory;
-import stream.MWMRSortedStream;
-import stream.Stream;
-import stream.StreamFactory;
-import stream.StreamStatistic;
 
 /**
  * The main execution unit. Acts as a factory for the stream {@link Component}s
@@ -330,19 +329,24 @@ public final class Query {
 	}
 	
 	public synchronized <T extends RichTuple> Query connect(
-			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations) {
+			List<StreamProducer<T>> sources,
+			List<StreamConsumer<T>> destinations) {
 		Stream<T> stream = getMWMRSortedStream(sources, destinations);
-		for (int i = 0; i < sources.length; i++) {
-			for (int j = 0; j < destinations.length; j++) {
-				sources[i].addOutput(destinations[j], stream);
+		int i = 0;
+		for (StreamProducer<T> s : sources) {
+			for (StreamConsumer<T> d : destinations) {
+				s.addOutput(d, stream);
 			}
-			sources[i].setRelativeProducerIndex(i);
+			s.setRelativeProducerIndex(i);
+			i++;
 		}
-		for (int j = 0; j < destinations.length; j++) {
-			for (int i = 0; i < sources.length; i++) {
-				destinations[j].addInput(sources[i], stream);
+		i = 0;
+		for (StreamConsumer<T> d : destinations) {
+			for (StreamProducer<T> s : sources) {
+				d.addInput(s, stream);
 			}
-			destinations[j].setRelativeConsumerIndex(j);
+			d.setRelativeConsumerIndex(i);
+			i++;
 		}
 		return this;
 	}
@@ -392,8 +396,10 @@ public final class Query {
 	}
 	
 	private synchronized <T extends RichTuple> Stream<T> getMWMRSortedStream(
-			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations) {
-		return streamFactory.newMWMRSortedStream(sources, destinations,0,0, DEFAULT_MAX_LEVELS);
+			List<StreamProducer<T>> sources,
+			List<StreamConsumer<T>> destinations) {
+		return streamFactory.newMWMRSortedStream(sources, destinations, 0, 0,
+				DEFAULT_MAX_LEVELS);
 		// TODO Do we want statistics here
 	}
 

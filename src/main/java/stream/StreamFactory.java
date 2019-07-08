@@ -23,6 +23,8 @@
 
 package stream;
 
+import java.util.List;
+
 import component.StreamConsumer;
 import component.StreamProducer;
 import common.tuple.RichTuple;
@@ -51,6 +53,6 @@ public interface StreamFactory {
 	}
 
 	<T extends RichTuple> Stream<T> newMWMRSortedStream(
-			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations,
-			int relativeProducerIndex, int relativeConsumerIndex, int maxLevels);
+			List<StreamProducer<T>> sources,
+			List<StreamConsumer<T>> destinations, int relativeProducerIndex, int relativeConsumerIndex, int maxLevels);
 }

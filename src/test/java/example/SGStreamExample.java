@@ -1,0 +1,114 @@
+/*
+ * Copyright (C) 2017-2019
+ *   Vincenzo Gulisano
+ *   Dimitris Palyvos-Giannas
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Contact:
+ *   Vincenzo Gulisano info@vincenzogulisano.com
+ *   Dimitris Palyvos-Giannas palyvos@chalmers.se
+ */
+
+package example;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+
+import query.Query;
+import common.tuple.BaseRichTuple;
+import common.tuple.Tuple;
+import common.util.Util;
+import component.StreamConsumer;
+import component.StreamProducer;
+import component.operator.Operator;
+import component.operator.in1.BaseOperator1In;
+import component.sink.Sink;
+import component.source.Source;
+import component.source.SourceFunction;
+
+public class SGStreamExample {
+
+	@SuppressWarnings("unchecked")
+	public static void main(String[] args) {
+//		final String reportFolder = args[0];
+
+		Query q = new Query();
+//		q.activateStatistics(reportFolder);
+		Source<MyTuple> source1 = q.addBaseSource("S1",
+				new SourceFunction<MyTuple>() {
+					private final Random r = new Random();
+
+					@Override
+					public MyTuple get() {
+						Util.sleep(250 + r.nextInt(251));
+						return new MyTuple(System.currentTimeMillis(), "",
+								"S1", r.nextInt(100));
+					}
+				});
+		Source<MyTuple> source2 = q.addBaseSource("S2",
+				new SourceFunction<MyTuple>() {
+					private final Random r = new Random();
+
+					@Override
+					public MyTuple get() {
+						Util.sleep(250 + r.nextInt(251));
+						return new MyTuple(System.currentTimeMillis(), "",
+								"S2", r.nextInt(100));
+					}
+				});
+
+		Operator<MyTuple, MyTuple> multiply = q
+				.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", 0, 0) {
+					@Override
+					public List<MyTuple> processTupleIn1(MyTuple tuple) {
+						List<MyTuple> result = new LinkedList<MyTuple>();
+						result.add(new MyTuple(tuple.getTimestamp(), tuple
+								.getKey(), tuple.source, tuple.value * 2));
+						return result;
+					}
+				});
+
+		Sink<MyTuple> sink = q.addBaseSink("O1",
+				tuple -> System.out.println(tuple));
+
+		// TODO this is ugly, we might want to define our own array for Generics
+		q.connect(Util.makeList(source1, source2), Util.makeList(multiply))
+				.connect(multiply, sink);
+
+		q.activate();
+		Util.sleep(30000);
+		q.deActivate();
+
+	}
+
+	private static class MyTuple extends BaseRichTuple {
+
+		public String source;
+		public int value;
+
+		public MyTuple(long timestamp, String key, String source, int value) {
+			super(timestamp, key);
+			this.source = source;
+			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			// TODO Auto-generated method stub
+			return getTimestamp() + "," + getKey() + "," + source + "," + value;
+		}
+	}
+}

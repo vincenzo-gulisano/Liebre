@@ -23,6 +23,7 @@
 
 package stream;
 
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import common.tuple.RichTuple;
 import common.tuple.Tuple;
+import common.util.Util;
 import component.StreamConsumer;
 import component.StreamProducer;
 
@@ -139,16 +141,14 @@ public class BlockingStream<T extends Tuple> implements Stream<T> {
 		return (int) (tuplesWritten - tuplesRead);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public StreamProducer<T>[] getSources() {
-		return (StreamProducer<T>[]) new Object[] { source };
+	public List<StreamProducer<T>> getSources() {
+		return Util.makeList(source);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public StreamConsumer<T>[] getDestinations() {
-		return (StreamConsumer<T>[]) new Object[] { destination };
+	public List<StreamConsumer<T>> getDestinations() {
+		return Util.makeList(destination);
 	}
 
 	@Override

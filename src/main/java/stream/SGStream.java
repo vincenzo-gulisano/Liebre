@@ -1,5 +1,7 @@
 package stream;
 
+import java.util.List;
+
 import common.scalegate.ScaleGate;
 import common.scalegate.ScaleGateAArrImpl;
 import common.scalegate.TuplesFromAll;
@@ -26,14 +28,14 @@ public class SGStream<T extends RichTuple> implements Stream<T> {
 	private final int relativeConsumerIndex;
 	private boolean enabled;
 	private ScaleGate<T> sg;
-	private StreamProducer<T>[] sources;
-	private StreamConsumer<T>[] destinations;
+	private List<StreamProducer<T>> sources;
+	private List<StreamConsumer<T>> destinations;
 
 	private TuplesFromAll barrier;
 
 	public SGStream(String id, int index, int relativeProducerIndex,
 			int relativeConsumerIndex, int maxLevels, int writers, int readers,
-			StreamProducer<T>[] sources, StreamConsumer<T>[] destinations) {
+			List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations) {
 		this.id = id;
 		this.index = index;
 		this.relativeProducerIndex = relativeProducerIndex;
@@ -89,12 +91,12 @@ public class SGStream<T extends RichTuple> implements Stream<T> {
 	}
 
 	@Override
-	public StreamProducer<T>[] getSources() {
+	public List<StreamProducer<T>> getSources() {
 		return sources;
 	}
 
 	@Override
-	public StreamConsumer<T>[] getDestinations() {
+	public List<StreamConsumer<T>> getDestinations() {
 		return destinations;
 	}
 

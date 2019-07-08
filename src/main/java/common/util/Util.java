@@ -23,6 +23,10 @@
 
 package common.util;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,6 +62,14 @@ public class Util {
       LOGGER.debug("Sleep interrupted: {}", e.getStackTrace()[2]);
       Thread.currentThread().interrupt();
     }
+  }
+  
+  @SafeVarargs
+public static <T> List<T> makeList(T ... params) {
+	  ArrayList<T> result = new ArrayList<T>(params.length);
+	  	for (T p : params)
+	  		result.add(p);
+	  return result;
   }
 
 }

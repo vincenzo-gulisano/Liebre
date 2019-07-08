@@ -23,9 +23,11 @@
 
 package stream;
 
+import java.util.List;
+
+import common.tuple.Tuple;
 import component.StreamConsumer;
 import component.StreamProducer;
-import common.tuple.Tuple;
 
 /**
  * Basic decorator for {@link Stream} instances. Delegates all function cals to
@@ -113,11 +115,11 @@ public class StreamDecorator<T extends Tuple> implements Stream<T> {
 		return decorated.toString();
 	}
 
-	public StreamProducer<T>[] getSources() {
+	public List<StreamProducer<T>> getSources() {
 		return decorated.getSources();
 	}
 
-	public StreamConsumer<T>[] getDestinations() {
+	public List<StreamConsumer<T>> getDestinations() {
 		return decorated.getDestinations();
 	}
 
