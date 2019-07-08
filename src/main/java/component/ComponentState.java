@@ -125,7 +125,8 @@ public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
    * Enable the state. Should always be called when calling {@link Component#enable()}
    */
   public void enable() {
-    type.validate(this);
+	  // TODO disabled validation
+//    type.validate(this);
     for (Stream<?> input : inputs) {
       input.enable();
     }

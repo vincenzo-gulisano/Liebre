@@ -27,7 +27,7 @@ public class SGStream<T extends RichTuple> implements Stream<T> {
 	private final int relativeProducerIndex;
 	private final int relativeConsumerIndex;
 	private boolean enabled;
-	private ScaleGate<T> sg;
+	private ScaleGate sg;
 	private List<StreamProducer<T>> sources;
 	private List<StreamConsumer<T>> destinations;
 
@@ -41,7 +41,7 @@ public class SGStream<T extends RichTuple> implements Stream<T> {
 		this.relativeProducerIndex = relativeProducerIndex;
 		this.relativeConsumerIndex = relativeConsumerIndex;
 		enabled = false;
-		this.sg = new ScaleGateAArrImpl<T>(maxLevels, writers, readers);
+		this.sg = new ScaleGateAArrImpl(maxLevels, writers, readers);
 		this.sources = sources;
 		this.destinations = destinations;
 

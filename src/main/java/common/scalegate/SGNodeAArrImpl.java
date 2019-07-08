@@ -28,16 +28,16 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import common.tuple.RichTuple;
 
 
-public class SGNodeAArrImpl<T extends RichTuple> {
+public class SGNodeAArrImpl {
 
-    final AtomicReferenceArray<SGNodeAArrImpl<T>> next;
-    final T obj;
-    final ScaleGateAArrImpl<T>.WriterThreadLocalData ln;
+    final AtomicReferenceArray<SGNodeAArrImpl> next;
+    final RichTuple obj;
+    final ScaleGateAArrImpl.WriterThreadLocalData ln;
     final int writerID;
     volatile boolean assigned;
     
-    public SGNodeAArrImpl (int levels, T t, ScaleGateAArrImpl<T>.WriterThreadLocalData ln, int writerID) {
-	next = new AtomicReferenceArray<SGNodeAArrImpl<T>>(levels);
+	public SGNodeAArrImpl (int levels, RichTuple t, ScaleGateAArrImpl.WriterThreadLocalData ln, int writerID) {
+	next = new AtomicReferenceArray<SGNodeAArrImpl>(levels);
 	for (int i = 0; i < levels; i++) {
 	    	next.set(i, null);
 	}
@@ -47,20 +47,20 @@ public class SGNodeAArrImpl<T extends RichTuple> {
 	this.writerID = writerID;
     }
     
-    public SGNodeAArrImpl<T> getNext(int level) {
+    public SGNodeAArrImpl getNext(int level) {
 	return next.get(level);
     }
 
-    public T getTuple() {
+    public RichTuple getTuple() {
 	return this.obj;
     }
 
-    public void setNext(int i, SGNodeAArrImpl<T> newNode) {
+    public void setNext(int i, SGNodeAArrImpl newNode) {
 	next.set(i, newNode);
     }
 
-    public boolean trySetNext(int i, SGNodeAArrImpl<T> oldNode,
-	    SGNodeAArrImpl<T> newNode) {
+    public boolean trySetNext(int i, SGNodeAArrImpl oldNode,
+	    SGNodeAArrImpl newNode) {
 	return next.compareAndSet(i, oldNode, newNode);
     }
 

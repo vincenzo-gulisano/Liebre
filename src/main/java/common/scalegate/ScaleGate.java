@@ -26,11 +26,12 @@ package common.scalegate;
 
 import common.tuple.RichTuple;
 
-public interface ScaleGate<T extends RichTuple> {
+
+public interface ScaleGate {
 
     // Called by each processing thread to get the next ready tuple
-    public T getNextReadyTuple(int readerID);
+    public <T> T getNextReadyTuple(int readerID);
 
     // Just add a tuple (used for the output tuples TGate)
-    public void addTuple(T tuple, int writerID);
+    public void addTuple(RichTuple tuple, int writerID);
 }

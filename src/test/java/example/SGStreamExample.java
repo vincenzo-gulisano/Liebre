@@ -28,11 +28,9 @@ import java.util.List;
 import java.util.Random;
 
 import query.Query;
+
 import common.tuple.BaseRichTuple;
-import common.tuple.Tuple;
 import common.util.Util;
-import component.StreamConsumer;
-import component.StreamProducer;
 import component.operator.Operator;
 import component.operator.in1.BaseOperator1In;
 import component.sink.Sink;
@@ -43,17 +41,17 @@ public class SGStreamExample {
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-//		final String reportFolder = args[0];
+		// final String reportFolder = args[0];
 
 		Query q = new Query();
-//		q.activateStatistics(reportFolder);
+		// q.activateStatistics(reportFolder);
 		Source<MyTuple> source1 = q.addBaseSource("S1",
 				new SourceFunction<MyTuple>() {
 					private final Random r = new Random();
 
 					@Override
 					public MyTuple get() {
-						Util.sleep(250 + r.nextInt(251));
+						Util.sleep(25 + r.nextInt(25));
 						return new MyTuple(System.currentTimeMillis(), "",
 								"S1", r.nextInt(100));
 					}
@@ -64,7 +62,7 @@ public class SGStreamExample {
 
 					@Override
 					public MyTuple get() {
-						Util.sleep(250 + r.nextInt(251));
+						Util.sleep(25 + r.nextInt(25));
 						return new MyTuple(System.currentTimeMillis(), "",
 								"S2", r.nextInt(100));
 					}
@@ -72,8 +70,15 @@ public class SGStreamExample {
 
 		Operator<MyTuple, MyTuple> multiply = q
 				.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", 0, 0) {
+
+					long lastTimestamp = -1;
+
 					@Override
 					public List<MyTuple> processTupleIn1(MyTuple tuple) {
+						if (!(lastTimestamp == -1)) {
+							assert (tuple.getTimestamp() >= lastTimestamp);
+						}
+						lastTimestamp = tuple.getTimestamp();
 						List<MyTuple> result = new LinkedList<MyTuple>();
 						result.add(new MyTuple(tuple.getTimestamp(), tuple
 								.getKey(), tuple.source, tuple.value * 2));
@@ -84,7 +89,6 @@ public class SGStreamExample {
 		Sink<MyTuple> sink = q.addBaseSink("O1",
 				tuple -> System.out.println(tuple));
 
-		// TODO this is ugly, we might want to define our own array for Generics
 		q.connect(Util.makeList(source1, source2), Util.makeList(multiply))
 				.connect(multiply, sink);
 

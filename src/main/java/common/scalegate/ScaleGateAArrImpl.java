@@ -28,11 +28,11 @@ import java.util.Random;
 
 import common.tuple.RichTuple;
 
-public class ScaleGateAArrImpl<T extends RichTuple> implements ScaleGate<T> {
+public class ScaleGateAArrImpl implements ScaleGate {
 
 	final int maxlevels;
-	SGNodeAArrImpl<T> head;
-	final SGNodeAArrImpl<T> tail;
+	SGNodeAArrImpl head;
+	final SGNodeAArrImpl tail;
 
 	final int numberOfWriters;
 	final int numberOfReaders;
@@ -40,12 +40,11 @@ public class ScaleGateAArrImpl<T extends RichTuple> implements ScaleGate<T> {
 	WriterThreadLocalData[] writertld;
 	ReaderThreadLocalData[] readertld;
 
-	@SuppressWarnings("unchecked")
 	public ScaleGateAArrImpl(int maxlevels, int writers, int readers) {
 		this.maxlevels = maxlevels;
 
-		this.head = new SGNodeAArrImpl<T>(maxlevels, null, null, -1);
-		this.tail = new SGNodeAArrImpl<T>(maxlevels, null, null, -1);
+		this.head = new SGNodeAArrImpl(maxlevels, null, null, -1);
+		this.tail = new SGNodeAArrImpl(maxlevels, null, null, -1);
 
 		for (int i = 0; i < maxlevels; i++)
 			head.setNext(i, tail);
@@ -53,12 +52,12 @@ public class ScaleGateAArrImpl<T extends RichTuple> implements ScaleGate<T> {
 		this.numberOfWriters = writers;
 		this.numberOfReaders = readers;
 
-		writertld = (WriterThreadLocalData[]) new Object[numberOfWriters];
+		writertld = new WriterThreadLocalData[numberOfWriters];
 		for (int i = 0; i < numberOfWriters; i++) {
 			writertld[i] = new WriterThreadLocalData(head);
 		}
 
-		readertld = (ReaderThreadLocalData[]) new Object[numberOfReaders];
+		readertld = new ReaderThreadLocalData[numberOfReaders];
 		for (int i = 0; i < numberOfReaders; i++) {
 			readertld[i] = new ReaderThreadLocalData(head);
 		}
@@ -67,30 +66,31 @@ public class ScaleGateAArrImpl<T extends RichTuple> implements ScaleGate<T> {
 		head = null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	/*
 	 * (non-Javadoc)
 	 */
-	public T getNextReadyTuple(int readerID) {
-		SGNodeAArrImpl<T> next = getReaderLocal(readerID).localHead.getNext(0);
+	public <T> T getNextReadyTuple(int readerID) {
+		SGNodeAArrImpl next = getReaderLocal(readerID).localHead.getNext(0);
 
 		if (next != tail && !next.isLastAdded()) {
 			getReaderLocal(readerID).localHead = next;
-			return next.getTuple();
+			return (T) next.getTuple();
 		}
 		return null;
 	}
 
 	@Override
 	// Add a tuple
-	public void addTuple(T tuple, int writerID) {
+	public void addTuple(RichTuple tuple, int writerID) {
 		this.internalAddTuple(tuple, writerID);
 	}
 
-	private void insertNode(SGNodeAArrImpl<T> fromNode,
-			SGNodeAArrImpl<T> newNode, final T obj, final int level) {
+	private void insertNode(SGNodeAArrImpl fromNode,
+			SGNodeAArrImpl newNode, final RichTuple obj, final int level) {
 		while (true) {
-			SGNodeAArrImpl<T> next = fromNode.getNext(level);
+			SGNodeAArrImpl next = fromNode.getNext(level);
 			if (next == tail || next.getTuple().compareTo(obj) > 0) {
 				newNode.setNext(level, next);
 				if (fromNode.trySetNext(level, next, newNode)) {
@@ -102,20 +102,20 @@ public class ScaleGateAArrImpl<T extends RichTuple> implements ScaleGate<T> {
 		}
 	}
 
-	private SGNodeAArrImpl<T> internalAddTuple(T obj, int inputID) {
+	private SGNodeAArrImpl internalAddTuple(RichTuple obj, int inputID) {
 		int levels = 1;
 		WriterThreadLocalData ln = getWriterLocal(inputID);
 
 		while (ln.rand.nextBoolean() && levels < maxlevels)
 			levels++;
 
-		SGNodeAArrImpl<T> newNode = new SGNodeAArrImpl<T>(levels, obj, ln,
+		SGNodeAArrImpl newNode = new SGNodeAArrImpl(levels, obj, ln,
 				inputID);
-		SGNodeAArrImpl<T>[] update = ln.update;
-		SGNodeAArrImpl<T> curNode = update[maxlevels - 1];
+		SGNodeAArrImpl[] update = ln.update;
+		SGNodeAArrImpl curNode = update[maxlevels - 1];
 
 		for (int i = maxlevels - 1; i >= 0; i--) {
-			SGNodeAArrImpl<T> tx = curNode.getNext(i);
+			SGNodeAArrImpl tx = curNode.getNext(i);
 
 			while (tx != tail && tx.getTuple().compareTo(obj) < 0) {
 				curNode = tx;
@@ -143,13 +143,12 @@ public class ScaleGateAArrImpl<T extends RichTuple> implements ScaleGate<T> {
 
 	protected class WriterThreadLocalData {
 		// reference to the last written node by the respective writer
-		volatile SGNodeAArrImpl<T> written;
-		SGNodeAArrImpl<T>[] update;
+		volatile SGNodeAArrImpl written;
+		SGNodeAArrImpl[] update;
 		final Random rand;
 
-		@SuppressWarnings("unchecked")
-		public WriterThreadLocalData(SGNodeAArrImpl<T> localHead) {
-			update = (SGNodeAArrImpl<T>[]) new Object[maxlevels];
+		public WriterThreadLocalData(SGNodeAArrImpl localHead) {
+			update =  new SGNodeAArrImpl[maxlevels];
 			written = localHead;
 			for (int i = 0; i < maxlevels; i++) {
 				update[i] = localHead;
@@ -159,9 +158,9 @@ public class ScaleGateAArrImpl<T extends RichTuple> implements ScaleGate<T> {
 	}
 
 	protected class ReaderThreadLocalData {
-		SGNodeAArrImpl<T> localHead;
+		SGNodeAArrImpl localHead;
 
-		public ReaderThreadLocalData(SGNodeAArrImpl<T> lhead) {
+		public ReaderThreadLocalData(SGNodeAArrImpl lhead) {
 			localHead = lhead;
 		}
 	}
