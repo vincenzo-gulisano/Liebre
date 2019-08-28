@@ -25,6 +25,9 @@ package io.palyvos.haren;
 
 import query.Query;
 
+/**
+ * Utility class that assigns unique IDs to each feature type and provides some sane defaults.
+ */
 public final class FeatureHelper {
 
   public static final double NO_ARRIVAL_TIME = Double.MAX_VALUE;
@@ -44,11 +47,11 @@ public final class FeatureHelper {
   }
 
   public static double getHeadLatency(double[] features, long currentTime) {
-    return getLatency(features[Feature.HEAD_ARRIVAL_TIME.index()], currentTime);
+    return getLatency(features[Features.HEAD_ARRIVAL_TIME.index()], currentTime);
   }
 
   public static double getAverageLatency(double[] features, long currentTime) {
-    return getLatency(features[Feature.AVERAGE_ARRIVAL_TIME.index()], currentTime);
+    return getLatency(features[Features.AVERAGE_ARRIVAL_TIME.index()], currentTime);
   }
 
   public static boolean noArrivalTime(double arrivalTime) {

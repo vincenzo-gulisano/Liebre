@@ -30,14 +30,14 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
-public class CombinedIntraThreadSchedulingFunction implements VectorIntraThreadSchedulingFunction {
+public class VectorIntraThreadSchedulingFunctionImpl implements VectorIntraThreadSchedulingFunction {
 
   protected final SingleIntraThreadSchedulingFunction[] functions;
   private final Feature[] requiredFeatures;
   private final String name;
   private boolean caching;
 
-  public CombinedIntraThreadSchedulingFunction(SingleIntraThreadSchedulingFunction... functions) {
+  public VectorIntraThreadSchedulingFunctionImpl(SingleIntraThreadSchedulingFunction... functions) {
     Validate.notEmpty(functions, "At least one function is needed!");
     this.functions = functions;
     Set<Feature> functionFeatures = new HashSet<>();

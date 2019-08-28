@@ -23,7 +23,7 @@
 
 package io.palyvos.haren.function;
 
-import io.palyvos.haren.Feature;
+import io.palyvos.haren.Features;
 import io.palyvos.haren.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +35,7 @@ public abstract class CachingIntraThreadSchedulingFunction extends
   private boolean caching;
   private static final Logger LOG = LogManager.getLogger();
 
-  public CachingIntraThreadSchedulingFunction(String name, Feature... features) {
+  public CachingIntraThreadSchedulingFunction(String name, Features... features) {
     super(name, features);
   }
 

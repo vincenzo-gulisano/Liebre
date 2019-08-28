@@ -39,6 +39,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Class encompassing the exectuon logic of every worker thread of {@link HarenScheduler}.
+ */
 public abstract class AbstractExecutor implements Runnable {
 
   public static final String EXECUTOR_STATISTIC_TIME = "executor-time";

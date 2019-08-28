@@ -41,7 +41,7 @@ import org.apache.commons.lang3.Validate;
  * function happen.
  * </p>
  */
-public class SchedulerBackoff {
+class SchedulerBackoff {
 
   private final int min, max, retries;
   private final Random rand = new Random();

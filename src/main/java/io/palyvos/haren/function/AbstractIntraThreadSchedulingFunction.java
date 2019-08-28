@@ -24,6 +24,7 @@
 package io.palyvos.haren.function;
 
 import io.palyvos.haren.Feature;
+import io.palyvos.haren.Features;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,11 +34,11 @@ public abstract class AbstractIntraThreadSchedulingFunction implements
     SingleIntraThreadSchedulingFunction {
 
   protected final SingleIntraThreadSchedulingFunction[] dependentFunctions;
-  private final Feature[] requiredFeatures;
+  private final Features[] requiredFeatures;
   private final String name;
   private boolean caching;
 
-  public AbstractIntraThreadSchedulingFunction(String name, Feature... requiredFeatures) {
+  public AbstractIntraThreadSchedulingFunction(String name, Features... requiredFeatures) {
     Validate.notEmpty(requiredFeatures, "Priority function has not features!");
     Validate.notEmpty(name);
     this.requiredFeatures = requiredFeatures;

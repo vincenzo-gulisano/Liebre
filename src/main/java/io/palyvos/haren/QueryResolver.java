@@ -33,6 +33,9 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Utility class that associates each task with the streaming query to which it belongs.
+ */
 public class QueryResolver {
 
   private static final Logger LOG = LogManager.getLogger();

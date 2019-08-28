@@ -34,10 +34,10 @@ import java.util.Collection;
 public interface Scheduler<T extends Runnable> extends Active {
 
   /**
-   * Set the {@link Runnable}s that are going to be scheduled by this entity. These should generally
-   * be Operators and not sources or sinks.
+   * Set the {@link Runnable}s that are going to be scheduled by this entity.
    *
-   * @param tasks The operators to be scheduled
+   * @param tasks The tasks to be scheduled.
+   * @implNote This function should work correctly if called mutliple times.
    */
   void addTasks(Collection<T> tasks);
 
@@ -53,8 +53,8 @@ public interface Scheduler<T extends Runnable> extends Active {
 
   /**
    * Activate statistics for this scheduler instance
-   *  @param folder The folder to save the statistics to
    *
+   * @param folder The folder to save the statistics to
    */
   void activateStatistics(String folder);
 

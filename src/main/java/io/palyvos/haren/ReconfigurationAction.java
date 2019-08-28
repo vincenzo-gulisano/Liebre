@@ -35,7 +35,14 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class ReconfigurationAction implements Runnable {
+/**
+ * The functional object that performs the sequential part of what is referred to as the
+ * "scheduling task" of {@link HarenScheduler}. Retrieves some of the features and runs the
+ * {@link io.palyvos.haren.function.InterThreadSchedulingFunction} that assigns {@link Task}s to
+ * {@link AbstractExecutor}s.
+ *
+ */
+class ReconfigurationAction implements Runnable {
 
   static final String STATISTIC_CALLS = "priocalls";
   static final String STATISTIC_TIME = "priotime";

@@ -26,6 +26,9 @@ package io.palyvos.haren;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Entity expressing the direction of a task dependency.
+ */
 public enum TaskDependency {
   UPSTREAM {
     @Override

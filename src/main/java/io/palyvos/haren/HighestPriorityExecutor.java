@@ -27,6 +27,10 @@ import java.util.concurrent.CyclicBarrier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * The default {@link AbstractExecutor} implementation in {@link HarenScheduler}, which always
+ * excutes the first (assigned) task that can run.
+ */
 class HighestPriorityExecutor extends AbstractExecutor {
 
   private static final Logger LOG = LogManager.getLogger();

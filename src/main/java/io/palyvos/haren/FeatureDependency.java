@@ -23,21 +23,24 @@
 
 package io.palyvos.haren;
 
+/**
+ * A dependency relation towards a feature of the upstream of downstream tasks of another task.
+ */
 public final class FeatureDependency {
 
   final Feature feature;
   final TaskDependency[] dependencies;
 
-  public static FeatureDependency of(Feature feature, TaskDependency ...dependencies) {
+  private FeatureDependency(Feature feature, TaskDependency... dependencies) {
+    this.feature = feature;
+    this.dependencies = dependencies == null ? new TaskDependency[0] : dependencies;
+  }
+
+  public static FeatureDependency of(Feature feature, TaskDependency... dependencies) {
     return new FeatureDependency(feature, dependencies);
   }
 
   public static FeatureDependency of(Feature feature) {
     return new FeatureDependency(feature, TaskDependency.UPSTREAM, TaskDependency.DOWNSTREAM);
-  }
-
-  private FeatureDependency(Feature feature, TaskDependency... dependencies) {
-    this.feature = feature;
-    this.dependencies = dependencies == null ? new TaskDependency[0] : dependencies;
   }
 }

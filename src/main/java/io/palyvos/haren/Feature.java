@@ -23,72 +23,38 @@
 
 package io.palyvos.haren;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+/**
+ * An abstraction of anything that characterizes a {@link Task}'s state.
+ */
+public interface Feature {
 
-//TODO: Constant vs changing feature
-public enum Feature {
-  TOPOLOGICAL_ORDER(0, true),
-  SELECTIVITY(1, false),
-  COST(2, false),
-  HEAD_ARRIVAL_TIME(3, false),
-  AVERAGE_ARRIVAL_TIME(4, false),
-  COMPONENT_TYPE(5, true),
-  RATE(6, false),
-  USER_PRIORITY(7, true),
-  INPUT_QUEUE_SIZE(8, false),
-  OUTPUT_QUEUE_SIZE(9, false);
+  /**
+   * @return The unique, numerical index of this feature.
+   */
+  int index();
 
-  public static final Map<Feature, FeatureDependency[]> dependencies;
-  private static final FeatureDependency[] NO_DEPENDENCIES = new FeatureDependency[0];
+  /**
+   * Check if this is a constant or variable feature.
+   *
+   * @return {@code true} if the feature is constant.
+   */
+  boolean isConstant();
 
-  static {
-    Map<Feature, FeatureDependency[]> deps = new HashMap<>();
-    deps.put(HEAD_ARRIVAL_TIME,
-        new FeatureDependency[]{FeatureDependency.of(HEAD_ARRIVAL_TIME),
-            FeatureDependency.of(AVERAGE_ARRIVAL_TIME)});
-    deps.put(AVERAGE_ARRIVAL_TIME,
-        new FeatureDependency[]{FeatureDependency.of(HEAD_ARRIVAL_TIME),
-            FeatureDependency.of(AVERAGE_ARRIVAL_TIME)});
-    deps.put(INPUT_QUEUE_SIZE,
-        new FeatureDependency[]{FeatureDependency.of(INPUT_QUEUE_SIZE, TaskDependency.DOWNSTREAM),
-        });
-    deps.put(OUTPUT_QUEUE_SIZE,
-        new FeatureDependency[]{FeatureDependency.of(INPUT_QUEUE_SIZE, TaskDependency.DOWNSTREAM),
-        });
-    dependencies = Collections.unmodifiableMap(deps);
-  }
+  /**
+   * Get the value of this feature.
+   *
+   * @param task The task that we want to retrieve the feature for.
+   * @param features The complete feature matrix of the SPE.
+   * @return The value of this feature.
+   */
+  double get(Task task, double[][] features);
 
-  private final int index;
-  private final boolean constant;
-
-  Feature(int index, boolean constant) {
-    this.index = index;
-    this.constant = constant;
-  }
-
-  public static int length() {
-    return Feature.values().length;
-  }
-
-  public static double[] createArray() {
-    return new double[Feature.length()];
-  }
-
-  public int index() {
-    return index;
-  }
-
-  public boolean isConstant() {
-    return constant;
-  }
-
-  public double get(Task task, double[][] features) {
-    return features[task.getIndex()][index];
-  }
-
-  public FeatureDependency[] dependencies() {
-    return dependencies.getOrDefault(this, NO_DEPENDENCIES);
-  }
+  /**
+   * Get the dependencies of this feature to other features and tasks. It is possible for a feature
+   * to depend on itself (for example, when a feature changes, the same feature needs to be
+   * updated for upstream or downstream tasks).
+   *
+   * @return An array of {@link FeatureDependency} objects.
+   */
+  FeatureDependency[] dependencies();
 }

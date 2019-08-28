@@ -24,6 +24,7 @@
 package io.palyvos.haren.function;
 
 import io.palyvos.haren.Feature;
+import io.palyvos.haren.Features;
 import io.palyvos.haren.Task;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
@@ -33,10 +34,10 @@ public abstract class AbstractInterThreadSchedulingFunction implements
 
   protected double[][] features;
   protected List<Task> tasks;
-  private final Feature[] requiredFeatures;
+  private final Features[] requiredFeatures;
   private final String name;
 
-  protected AbstractInterThreadSchedulingFunction(String name, Feature... requiredFeatures) {
+  protected AbstractInterThreadSchedulingFunction(String name, Features... requiredFeatures) {
     Validate.notEmpty(name);
     this.requiredFeatures = requiredFeatures;
     this.name = name;

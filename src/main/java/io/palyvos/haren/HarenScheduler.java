@@ -24,7 +24,7 @@
 package io.palyvos.haren;
 
 import component.Component;
-import io.palyvos.haren.function.CombinedIntraThreadSchedulingFunction;
+import io.palyvos.haren.function.VectorIntraThreadSchedulingFunctionImpl;
 import io.palyvos.haren.function.InterThreadSchedulingFunction;
 import io.palyvos.haren.function.VectorIntraThreadSchedulingFunction;
 import io.palyvos.haren.function.SingleIntraThreadSchedulingFunction;
@@ -38,6 +38,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
 
+/**
+ * The scheduler class, responsible for orchestrating the execution of streaming {@link Task}s.
+ */
+//FIXME: Remove statistics from final version
 public class HarenScheduler implements Scheduler<Task> {
 
   private static final Logger LOG = LogManager.getLogger();
@@ -47,21 +51,40 @@ public class HarenScheduler implements Scheduler<Task> {
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
   private final String statisticsFolder;
-  private final VectorIntraThreadSchedulingFunction priorityFunction;
+  private final VectorIntraThreadSchedulingFunction intraThreadFunction;
   private final boolean priorityCaching;
-  private final InterThreadSchedulingFunction interThreadSchedulingFunction;
+  private final InterThreadSchedulingFunction interThreadFunction;
   private final int[] workerAffinity;
   private volatile ReconfigurationAction reconfigurationAction;
 
 
+  /**
+   * Construct.
+   *
+   * @param nThreads The number of worker threads that will be used by Haren.
+   * @param intraThreadFunction The desired
+   *     {@link io.palyvos.haren.function.IntraThreadSchedulingFunction}, responsible for
+   *     prioritizing the tasks executed by each thread.
+   * @param interThreadFunction The desired {@link InterThreadSchedulingFunction},
+   *     responsible for assigning tasks to worker threads.
+   * @param caching Enable or disable caching (if supported by the chosen scheduling
+   *     functions).
+   * @param batchSize The maximum number of invocations of a scheduled tasks. Controls the
+   *     preemption granularity.
+   * @param schedulingPeriod The duration between two invocations of the scheduler, in millisec.
+   * @param statisticsFolder The path for storing scheduling statistics.
+   * @param workerAffinity Available CPU cores for the scheduler. Will be assigned to workers in
+   *     a round-robin fashion.
+   */
   public HarenScheduler(
-      int nThreads, VectorIntraThreadSchedulingFunction priorityFunction, InterThreadSchedulingFunction interThreadSchedulingFunction,
-      boolean priorityCaching, int batchSize, int schedulingPeriod, String statisticsFolder,
+      int nThreads, VectorIntraThreadSchedulingFunction intraThreadFunction,
+      InterThreadSchedulingFunction interThreadFunction,
+      boolean caching, int batchSize, int schedulingPeriod, String statisticsFolder,
       BitSet workerAffinity) {
     this.nThreads = nThreads;
-    this.priorityFunction = priorityFunction;
-    this.interThreadSchedulingFunction = interThreadSchedulingFunction;
-    this.priorityCaching = priorityCaching;
+    this.intraThreadFunction = intraThreadFunction;
+    this.interThreadFunction = interThreadFunction;
+    this.priorityCaching = caching;
     this.batchSize = batchSize;
     this.schedulingPeriod = schedulingPeriod;
     this.statisticsFolder = statisticsFolder;
@@ -71,13 +94,20 @@ public class HarenScheduler implements Scheduler<Task> {
     }
   }
 
-  public HarenScheduler(int nThreads, SingleIntraThreadSchedulingFunction priorityFunction,
-      InterThreadSchedulingFunction interThreadSchedulingFunction,
+  /**
+   * Helper constructor which accepts a {@link SingleIntraThreadSchedulingFunction} for
+   * convenience.
+   *
+   * @see #HarenScheduler(int, VectorIntraThreadSchedulingFunction, InterThreadSchedulingFunction,
+   *     boolean, int, int, String, BitSet)
+   */
+  public HarenScheduler(int nThreads, SingleIntraThreadSchedulingFunction intraThreadFunction,
+      InterThreadSchedulingFunction interThreadFunction,
       boolean priorityCaching, int batchSize,
       int schedulingPeriod,
       String statisticsFolder, BitSet workerAffinity) {
-    this(nThreads, new CombinedIntraThreadSchedulingFunction(priorityFunction),
-        interThreadSchedulingFunction,
+    this(nThreads, new VectorIntraThreadSchedulingFunctionImpl(intraThreadFunction),
+        interThreadFunction,
         priorityCaching, batchSize,
         schedulingPeriod, statisticsFolder, workerAffinity);
   }
@@ -92,14 +122,14 @@ public class HarenScheduler implements Scheduler<Task> {
   public void startTasks() {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
     LOG.info("Starting Scheduler");
-    LOG.info("Priority Function: {}", priorityFunction);
+    LOG.info("Priority Function: {}", intraThreadFunction);
     LOG.info("Priority Caching: {}", priorityCaching);
-    LOG.info("Deployment Function Function: {}", interThreadSchedulingFunction);
+    LOG.info("Deployment Function Function: {}", interThreadFunction);
     LOG.info("Worker threads: {}", nThreads);
     LOG.info("Scheduling Period: {} ms", schedulingPeriod);
     LOG.info("Batch Size: {}", batchSize);
-    final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction,
-        interThreadSchedulingFunction, priorityCaching, statisticsFolder, nThreads, schedulingPeriod);
+    final SchedulerState state = new SchedulerState(tasks.size(), intraThreadFunction,
+        interThreadFunction, priorityCaching, statisticsFolder, nThreads, schedulingPeriod);
     final List<AbstractExecutor> executors = new ArrayList<>();
     this.reconfigurationAction = new ReconfigurationAction(tasks, executors, state);
     CyclicBarrier barrier = new CyclicBarrier(nThreads, reconfigurationAction);
@@ -116,10 +146,6 @@ public class HarenScheduler implements Scheduler<Task> {
     }
   }
 
-  private int getAffinity(int i) {
-    return workerAffinity != null ? workerAffinity[i % workerAffinity.length] : -1;
-  }
-
   @Override
   public void stopTasks() {
     for (Thread thread : threads) {
@@ -130,6 +156,10 @@ public class HarenScheduler implements Scheduler<Task> {
         e.printStackTrace();
       }
     }
+  }
+
+  private int getAffinity(int i) {
+    return workerAffinity != null ? workerAffinity[i % workerAffinity.length] : -1;
   }
 
   @Override

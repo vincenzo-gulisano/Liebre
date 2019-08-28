@@ -36,13 +36,13 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class SchedulerState {
+final class SchedulerState {
 
 
   private static final Logger LOG = LogManager.getLogger();
   // Features that might not be needed by any priority/deployment function
   // but are internally used by the scheduler
-  private static final Feature[] SCHEDULER_REQUIRED_FEATURES = {Feature.COMPONENT_TYPE};
+  private static final Feature[] SCHEDULER_REQUIRED_FEATURES = {Features.COMPONENT_TYPE};
   private final boolean[] updated;
   final double[][] taskFeatures;
   final double[][] priorities;
@@ -69,7 +69,7 @@ public final class SchedulerState {
         priorityFunction;
     this.interThreadSchedulingFunction = interThreadSchedulingFunction;
     this.updated = new boolean[nTasks];
-    this.taskFeatures = new double[nTasks][Feature.length()];
+    this.taskFeatures = new double[nTasks][Features.length()];
     this.lastUpdateTime = new long[nTasks];
     this.schedulingPeriod = schedulingPeriod;
     this.priorities = new double[nTasks][priorityFunction.dimensions()];
