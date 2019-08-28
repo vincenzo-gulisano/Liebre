@@ -21,31 +21,22 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
-import java.util.Collections;
-import java.util.List;
+public interface MultiPriorityFunction extends PriorityFunction {
 
-public enum TaskDependency {
-  UPSTREAM {
-    @Override
-    public List<? extends Task> dependents(Task task) {
-      return task.getUpstream();
-    }
-  },
-  DOWNSTREAM {
-    @Override
-    public List<? extends Task> dependents(Task task) {
-      return task.getDownstream();
-    }
-  },
-  NONE {
-    @Override
-    public List<Task> dependents(Task task) {
-      return Collections.emptyList();
-    }
-  };
+  void apply(Task task, double[][] features, double[] output);
 
-  public abstract List<? extends Task> dependents(Task task);
+  int dimensions();
 
+  @Override
+  MultiPriorityFunction enableCaching(int nTasks);
+
+  /**
+   * The value of {@link SinglePriorityFunction#reverseOrder()} for the function at the given index.
+   *
+   * @param i The index of the function
+   * @return {@code true} if lower values of priority imply higher priority
+   */
+  boolean reverseOrder(int i);
 }

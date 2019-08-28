@@ -21,22 +21,23 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
-public interface MultiPriorityFunction extends PriorityFunction {
+public interface SinglePriorityFunction extends PriorityFunction {
 
-  void apply(Task task, double[][] features, double[] output);
-
-  int dimensions();
-
-  @Override
-  MultiPriorityFunction enableCaching(int nTasks);
+  double apply(Task task, double[][] features);
 
   /**
-   * The value of {@link SinglePriorityFunction#reverseOrder()} for the function at the given index.
-   *
-   * @param i The index of the function
    * @return {@code true} if lower values of priority imply higher priority
    */
-  boolean reverseOrder(int i);
+  default boolean reverseOrder() {
+    return false;
+  }
+
+  default SinglePriorityFunction reciprocal() {
+    return PriorityFunctions.reciprocalFunction(this);
+  }
+
+  @Override
+  SinglePriorityFunction enableCaching(int nTasks);
 }

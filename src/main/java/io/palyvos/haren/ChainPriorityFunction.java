@@ -21,9 +21,9 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
-import static scheduling.toolkit.FeatureHelper.CTYPE_SOURCE;
+import static io.palyvos.haren.FeatureHelper.CTYPE_SOURCE;
 
 import java.util.ArrayList;
 import java.util.List;

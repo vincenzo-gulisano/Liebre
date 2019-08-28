@@ -23,8 +23,8 @@
 
 package component;
 
-import scheduling.toolkit.Feature;
-import scheduling.toolkit.FeatureHelper;
+import io.palyvos.haren.Feature;
+import io.palyvos.haren.FeatureHelper;
 
 public class FeatureTranslator {
 

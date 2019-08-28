@@ -21,7 +21,7 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

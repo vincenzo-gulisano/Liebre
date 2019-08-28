@@ -21,33 +21,47 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.Validate;
 
-public class HighestRateFunction extends CombinedPriorityFunction {
+/**
+ * The full chain scheduling policy, e.g. chain + arrival time, with chain slowly changing.
+ */
+public class ChainArrivalTimeFunction extends CombinedPriorityFunction {
 
-  public static final int ARRIVAL_TIME_INDEX = 0;
-  private long costUpdatePeriodMillis = 500;
-  private long[] lastCostUpdate;
+  public static final int ARRIVAL_TIME_INDEX = 2;
+  private static SinglePriorityFunction sourcesLast = new AbstractPriorityFunction("SOURCES_LAST"
+      , Feature.COMPONENT_TYPE) {
+    @Override
+    public double apply(Task task, double[][] features) {
+      if (Feature.COMPONENT_TYPE.get(task, features) == FeatureHelper.CTYPE_SOURCE) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+  };
+  private long chainUpdatePeriodMillis = 250;
+  private long[] lastChainUpdate;
 
-  public HighestRateFunction() {
-    super(PriorityFunctions.sourceAverageArrivalTime(), PriorityFunctions.globalRate());
+  public ChainArrivalTimeFunction() {
+    super(sourcesLast, PriorityFunctions.chain(), PriorityFunctions.headArrivalTime());
   }
 
   public void setCostUpdatePeriod(long period, TimeUnit timeUnit) {
-    this.costUpdatePeriodMillis = timeUnit.toMillis(period);
+    this.chainUpdatePeriodMillis = timeUnit.toMillis(period);
   }
 
   @Override
   public void apply(Task task, double[][] features, double[] output) {
     Validate.isTrue(cachingEnabled(), "This function cannot work without caching!");
     long ts = System.currentTimeMillis();
-    boolean updateCost = (ts - lastCostUpdate[task.getIndex()]) > costUpdatePeriodMillis;
+    boolean updateCost = (ts - lastChainUpdate[task.getIndex()]) > chainUpdatePeriodMillis;
     if (updateCost) {
       super.apply(task, features, output);
-      lastCostUpdate[task.getIndex()] = ts;
+      lastChainUpdate[task.getIndex()] = ts;
       return;
     }
     // Otherwise update only arrival time
@@ -56,12 +70,13 @@ public class HighestRateFunction extends CombinedPriorityFunction {
 
   @Override
   public MultiPriorityFunction enableCaching(int nTasks) {
-    this.lastCostUpdate = new long[nTasks];
+    this.lastChainUpdate = new long[nTasks];
     return super.enableCaching(nTasks);
   }
 
   @Override
   public String name() {
-    return "HIGHEST_RATE";
+    return "CHAIN_ARRIVAL_TIME";
   }
+
 }

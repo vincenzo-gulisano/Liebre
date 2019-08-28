@@ -21,18 +21,23 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
-import java.util.List;
+public final class FeatureDependency {
 
-public interface DeploymentFunction {
+  final Feature feature;
+  final TaskDependency[] dependencies;
 
-  void init(List<Task> tasks, double[][] features);
+  public static FeatureDependency of(Feature feature, TaskDependency ...dependencies) {
+    return new FeatureDependency(feature, dependencies);
+  }
 
-  List<List<Task>> getDeployment(int nThreads);
+  public static FeatureDependency of(Feature feature) {
+    return new FeatureDependency(feature, TaskDependency.UPSTREAM, TaskDependency.DOWNSTREAM);
+  }
 
-  Feature[] requiredFeatures();
-
-  String name();
-
+  private FeatureDependency(Feature feature, TaskDependency... dependencies) {
+    this.feature = feature;
+    this.dependencies = dependencies == null ? new TaskDependency[0] : dependencies;
+  }
 }

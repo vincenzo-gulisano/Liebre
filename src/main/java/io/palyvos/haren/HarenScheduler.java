@@ -21,7 +21,7 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
 import component.Component;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scheduling.Scheduler;
 
-public class ToolkitScheduler implements Scheduler<Task> {
+public class HarenScheduler implements Scheduler<Task> {
 
   private static final Logger LOG = LogManager.getLogger();
   private final int batchSize;
@@ -50,7 +50,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
   private volatile ReconfigurationAction reconfigurationAction;
 
 
-  public ToolkitScheduler(
+  public HarenScheduler(
       int nThreads, MultiPriorityFunction priorityFunction, DeploymentFunction deploymentFunction,
       boolean priorityCaching, int batchSize, int schedulingPeriod, String statisticsFolder,
       BitSet workerAffinity) {
@@ -67,7 +67,7 @@ public class ToolkitScheduler implements Scheduler<Task> {
     }
   }
 
-  public ToolkitScheduler(int nThreads, SinglePriorityFunction priorityFunction,
+  public HarenScheduler(int nThreads, SinglePriorityFunction priorityFunction,
       DeploymentFunction deploymentFunction,
       boolean priorityCaching, int batchSize,
       int schedulingPeriod,

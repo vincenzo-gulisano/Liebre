@@ -21,7 +21,7 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
 import java.util.concurrent.CyclicBarrier;
 import org.apache.logging.log4j.LogManager;

@@ -21,7 +21,7 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

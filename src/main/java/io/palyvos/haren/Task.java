@@ -21,12 +21,20 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package io.palyvos.haren;
 
 import java.util.List;
 
+/**
+ * A streaming task that can be scheduled, e.g., an operator, a source or a sink.
+ */
 public interface Task extends Runnable {
 
+  /**
+   * Run this task
+   * @param times
+   * @return
+   */
   boolean runFor(final int times);
 
   boolean canRun();
