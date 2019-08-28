@@ -21,8 +21,10 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package io.palyvos.haren;
+package io.palyvos.haren.function;
 
+import io.palyvos.haren.Feature;
+import io.palyvos.haren.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

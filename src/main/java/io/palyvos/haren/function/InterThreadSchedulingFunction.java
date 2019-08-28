@@ -21,42 +21,20 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package io.palyvos.haren;
+package io.palyvos.haren.function;
 
+import io.palyvos.haren.Feature;
+import io.palyvos.haren.Task;
 import java.util.List;
-import org.apache.commons.lang3.Validate;
 
-public abstract class AbstractInterThreadSchedulingFunction implements
-    InterThreadSchedulingFunction {
+public interface InterThreadSchedulingFunction {
 
-  protected double[][] features;
-  protected List<Task> tasks;
-  private final Feature[] requiredFeatures;
-  private final String name;
+  void init(List<Task> tasks, double[][] features);
 
-  protected AbstractInterThreadSchedulingFunction(String name, Feature... requiredFeatures) {
-    Validate.notEmpty(name);
-    this.requiredFeatures = requiredFeatures;
-    this.name = name;
-  }
+  List<List<Task>> getDeployment(int nThreads);
 
-  @Override
-  public void init(List<Task> tasks, double[][] features) {
-    this.features = features;
-    this.tasks = tasks;
-  }
+  Feature[] requiredFeatures();
 
-  public Feature[] requiredFeatures() {
-    return requiredFeatures.clone();
-  }
+  String name();
 
-  @Override
-  public String name() {
-    return name;
-  }
-
-  @Override
-  public String toString() {
-    return name();
-  }
 }

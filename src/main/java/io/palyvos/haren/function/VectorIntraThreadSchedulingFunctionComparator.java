@@ -21,17 +21,18 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package io.palyvos.haren;
+package io.palyvos.haren.function;
 
+import io.palyvos.haren.Task;
 import java.util.Comparator;
 import org.apache.commons.lang3.Validate;
 
-public class MultiPriorityComparator implements Comparator<Task> {
+public class VectorIntraThreadSchedulingFunctionComparator implements Comparator<Task> {
 
   private final double[][] priorities;
   private final boolean[] reverseOrder;
 
-  public MultiPriorityComparator(MultiIntraThreadSchedulingFunction function, double[][] priorities) {
+  public VectorIntraThreadSchedulingFunctionComparator(VectorIntraThreadSchedulingFunction function, double[][] priorities) {
     Validate.isTrue(function.dimensions() == priorities[0].length);
     this.priorities = priorities;
     this.reverseOrder = new boolean[function.dimensions()];

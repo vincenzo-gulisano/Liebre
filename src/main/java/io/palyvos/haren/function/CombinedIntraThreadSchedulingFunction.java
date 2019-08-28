@@ -21,14 +21,16 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package io.palyvos.haren;
+package io.palyvos.haren.function;
 
+import io.palyvos.haren.Feature;
+import io.palyvos.haren.Task;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
-public class CombinedIntraThreadSchedulingFunction implements MultiIntraThreadSchedulingFunction {
+public class CombinedIntraThreadSchedulingFunction implements VectorIntraThreadSchedulingFunction {
 
   protected final SingleIntraThreadSchedulingFunction[] functions;
   private final Feature[] requiredFeatures;
@@ -62,7 +64,7 @@ public class CombinedIntraThreadSchedulingFunction implements MultiIntraThreadSc
   }
 
   @Override
-  public MultiIntraThreadSchedulingFunction enableCaching(int nTasks) {
+  public VectorIntraThreadSchedulingFunction enableCaching(int nTasks) {
     this.caching = true;
     for (SingleIntraThreadSchedulingFunction function : functions) {
       function.enableCaching(nTasks);

@@ -24,6 +24,10 @@
 package io.palyvos.haren;
 
 import component.Component;
+import io.palyvos.haren.function.CombinedIntraThreadSchedulingFunction;
+import io.palyvos.haren.function.InterThreadSchedulingFunction;
+import io.palyvos.haren.function.VectorIntraThreadSchedulingFunction;
+import io.palyvos.haren.function.SingleIntraThreadSchedulingFunction;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -43,7 +47,7 @@ public class HarenScheduler implements Scheduler<Task> {
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
   private final String statisticsFolder;
-  private final MultiIntraThreadSchedulingFunction priorityFunction;
+  private final VectorIntraThreadSchedulingFunction priorityFunction;
   private final boolean priorityCaching;
   private final InterThreadSchedulingFunction interThreadSchedulingFunction;
   private final int[] workerAffinity;
@@ -51,7 +55,7 @@ public class HarenScheduler implements Scheduler<Task> {
 
 
   public HarenScheduler(
-      int nThreads, MultiIntraThreadSchedulingFunction priorityFunction, InterThreadSchedulingFunction interThreadSchedulingFunction,
+      int nThreads, VectorIntraThreadSchedulingFunction priorityFunction, InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCaching, int batchSize, int schedulingPeriod, String statisticsFolder,
       BitSet workerAffinity) {
     this.nThreads = nThreads;

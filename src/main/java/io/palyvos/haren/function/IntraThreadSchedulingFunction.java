@@ -21,23 +21,19 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package io.palyvos.haren;
+package io.palyvos.haren.function;
 
-public interface SingleIntraThreadSchedulingFunction extends IntraThreadSchedulingFunction {
+import io.palyvos.haren.Feature;
 
-  double apply(Task task, double[][] features);
+public interface IntraThreadSchedulingFunction {
 
-  /**
-   * @return {@code true} if lower values of priority imply higher priority
-   */
-  default boolean reverseOrder() {
-    return false;
-  }
+  Feature[] requiredFeatures();
 
-  default SingleIntraThreadSchedulingFunction reciprocal() {
-    return PriorityFunctions.reciprocalFunction(this);
-  }
+  IntraThreadSchedulingFunction enableCaching(int nTasks);
 
-  @Override
-  SingleIntraThreadSchedulingFunction enableCaching(int nTasks);
+  void clearCache();
+
+  boolean cachingEnabled();
+
+  String name();
 }

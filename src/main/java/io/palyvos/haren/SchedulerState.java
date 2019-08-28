@@ -23,6 +23,10 @@
 
 package io.palyvos.haren;
 
+import io.palyvos.haren.function.InterThreadSchedulingFunction;
+import io.palyvos.haren.function.IntraThreadSchedulingFunction;
+import io.palyvos.haren.function.VectorIntraThreadSchedulingFunction;
+import io.palyvos.haren.function.VectorIntraThreadSchedulingFunctionComparator;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -45,7 +49,7 @@ public final class SchedulerState {
   final Comparator<Task> comparator;
   final String statisticsFolder;
   private final long[] lastUpdateTime;
-  private final MultiIntraThreadSchedulingFunction priorityFunction;
+  private final VectorIntraThreadSchedulingFunction priorityFunction;
   private final InterThreadSchedulingFunction interThreadSchedulingFunction;
   private final Feature[] constantFeatures;
   //Non-constant features with at least one dependency
@@ -57,7 +61,7 @@ public final class SchedulerState {
   private long roundEndTime;
   private final long schedulingPeriod;
 
-  public SchedulerState(int nTasks, MultiIntraThreadSchedulingFunction priorityFunction,
+  public SchedulerState(int nTasks, VectorIntraThreadSchedulingFunction priorityFunction,
       InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCachning,
       String statisticsFolder, int nThreads, long schedulingPeriod) {
@@ -69,7 +73,7 @@ public final class SchedulerState {
     this.lastUpdateTime = new long[nTasks];
     this.schedulingPeriod = schedulingPeriod;
     this.priorities = new double[nTasks][priorityFunction.dimensions()];
-    this.comparator = new MultiPriorityComparator(priorityFunction, priorities);
+    this.comparator = new VectorIntraThreadSchedulingFunctionComparator(priorityFunction, priorities);
     this.barrierEnter = new long[nThreads];
     this.barrierExit = new long[nThreads];
     this.statisticsFolder = statisticsFolder;
@@ -137,7 +141,7 @@ public final class SchedulerState {
     return variableFeaturesNoDependencies;
   }
 
-  MultiIntraThreadSchedulingFunction priorityFunction() {
+  VectorIntraThreadSchedulingFunction priorityFunction() {
     return priorityFunction;
   }
 

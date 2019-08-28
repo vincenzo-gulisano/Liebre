@@ -21,18 +21,26 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package io.palyvos.haren;
+package io.palyvos.haren.function;
 
-import java.util.List;
+import io.palyvos.haren.Task;
 
-public interface InterThreadSchedulingFunction {
+public interface SingleIntraThreadSchedulingFunction extends IntraThreadSchedulingFunction {
 
-  void init(List<Task> tasks, double[][] features);
+  double apply(Task task, double[][] features);
 
-  List<List<Task>> getDeployment(int nThreads);
+  /**
+   * @return {@code true} if lower values of priority imply higher priority
+   */
+  default boolean reverseOrder() {
+    return false;
+  }
 
-  Feature[] requiredFeatures();
+  default SingleIntraThreadSchedulingFunction reverse() {
+    return new ReverseIntraThreadSchedulingFunction(this);
+  }
 
-  String name();
+  @Override
+  SingleIntraThreadSchedulingFunction enableCaching(int nTasks);
 
 }

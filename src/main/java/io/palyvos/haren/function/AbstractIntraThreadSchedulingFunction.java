@@ -21,8 +21,9 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package io.palyvos.haren;
+package io.palyvos.haren.function;
 
+import io.palyvos.haren.Feature;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
