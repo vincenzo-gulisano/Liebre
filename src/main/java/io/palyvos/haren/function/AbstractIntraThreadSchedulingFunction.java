@@ -34,7 +34,7 @@ public abstract class AbstractIntraThreadSchedulingFunction implements
     SingleIntraThreadSchedulingFunction {
 
   protected final SingleIntraThreadSchedulingFunction[] dependentFunctions;
-  private final Features[] requiredFeatures;
+  private final Feature[] requiredFeatures;
   private final String name;
   private boolean caching;
 

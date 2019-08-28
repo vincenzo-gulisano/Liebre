@@ -23,43 +23,45 @@
 
 package component;
 
+import static io.palyvos.haren.Features.*;
+
 import io.palyvos.haren.Feature;
 import io.palyvos.haren.FeatureHelper;
 
 public class FeatureTranslator {
 
+  public static final double NO_ARRIVAL_TIME = FeatureHelper.NO_ARRIVAL_TIME;
+  public static final long MAX_QUEUE_SIZE = FeatureHelper.MAX_QUEUE_SIZE;
+
   private FeatureTranslator() {
 
   }
 
-  public static final double NO_ARRIVAL_TIME = FeatureHelper.NO_ARRIVAL_TIME;
-  public static final long MAX_QUEUE_SIZE = FeatureHelper.MAX_QUEUE_SIZE;
-
   static double get(Feature feature, Component component) {
-    switch (feature) {
-      case COST:
-        return component.getCost();
-      case SELECTIVITY:
-        return component.getSelectivity();
-      case TOPOLOGICAL_ORDER:
-        return component.getTopologicalOrder();
-      case COMPONENT_TYPE:
-        return translatedComponentType(component);
-      case HEAD_ARRIVAL_TIME:
-        return component.getHeadArrivalTime();
-      case AVERAGE_ARRIVAL_TIME:
-        return component.getAverageArrivalTime();
-      case RATE:
-        return component.getRate();
-      case USER_PRIORITY:
-        return component.getPriority();
-      case INPUT_QUEUE_SIZE:
-        return component.getInputQueueSize();
-      case OUTPUT_QUEUE_SIZE:
-        return component.getOutputQueueSize();
-      default:
-        throw new IllegalStateException("Unknown feature: " + feature);
+    if (feature == COST) {
+      return component.getCost();
+    } else if (feature == SELECTIVITY) {
+      return component.getSelectivity();
+    } else if (feature == TOPOLOGICAL_ORDER) {
+      return component.getTopologicalOrder();
+    } else if (feature == COMPONENT_TYPE) {
+      return translatedComponentType(component);
+    } else if (feature == HEAD_ARRIVAL_TIME) {
+      return component.getHeadArrivalTime();
+    } else if (feature == AVERAGE_ARRIVAL_TIME) {
+      return component.getAverageArrivalTime();
+    } else if (feature == RATE) {
+      return component.getRate();
+    } else if (feature == USER_PRIORITY) {
+      return component.getPriority();
+    } else if (feature == INPUT_QUEUE_SIZE) {
+      return component.getInputQueueSize();
+    } else if (feature == OUTPUT_QUEUE_SIZE) {
+      return component.getOutputQueueSize();
+    } else {
+      throw new IllegalStateException("Unknown feature: " + feature);
     }
+
   }
 
   static double translatedComponentType(Component component) {
