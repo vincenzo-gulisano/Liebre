@@ -37,23 +37,24 @@ public final class DeploymentFunctions {
 
   }
 
-  public static DeploymentFunction roundRobinQuery() {
-    return new RoundRobinDeployment();
+  public static InterThreadSchedulingFunction roundRobinQuery() {
+    return new RoundRobinInterThreadScheduling();
   }
 
-  public static DeploymentFunction adaptiveLatency() {
-    return new LatencyAdaptiveDeployment();
+  public static InterThreadSchedulingFunction adaptiveLatency() {
+    return new LatencyAdaptiveInterThreadScheduling();
   }
 
-  public static DeploymentFunction randomOperator() {
-    return new RandomOperatorDeployment();
+  public static InterThreadSchedulingFunction randomOperator() {
+    return new RandomOperatorInterThreadScheduling();
   }
 
-  private static class RandomOperatorDeployment extends AbstractDeploymentFunction {
+  private static class RandomOperatorInterThreadScheduling extends
+      AbstractInterThreadSchedulingFunction {
 
     private final Random random = new Random();
 
-    public RandomOperatorDeployment() {
+    public RandomOperatorInterThreadScheduling() {
       super("RANDOM_OPERATOR", Feature.USER_PRIORITY);
     }
 
@@ -78,11 +79,12 @@ public final class DeploymentFunctions {
 
   }
 
-  private static class RoundRobinDeployment extends AbstractDeploymentFunction {
+  private static class RoundRobinInterThreadScheduling extends
+      AbstractInterThreadSchedulingFunction {
 
     private QueryResolver queries;
 
-    protected RoundRobinDeployment() {
+    protected RoundRobinInterThreadScheduling() {
       super("ROUND_ROBIN_QUERY", new Feature[0]);
     }
 
@@ -108,7 +110,8 @@ public final class DeploymentFunctions {
     }
   }
 
-  private static class LatencyAdaptiveDeployment extends AbstractDeploymentFunction {
+  private static class LatencyAdaptiveInterThreadScheduling extends
+      AbstractInterThreadSchedulingFunction {
 
     // Relative difference (percentage) in latency that
     // triggers increase in thread number
@@ -117,16 +120,16 @@ public final class DeploymentFunctions {
     private static final long UPDATE_PERIOD_MILLIS = TimeUnit.SECONDS.toMillis(10);
     private static final double alpha = 0.3;
     private static final Logger LOG = LogManager.getLogger();
-    private final DeploymentFunction roundRobinFunction;
+    private final InterThreadSchedulingFunction roundRobinFunction;
     private List<Task> sinks = new ArrayList<>();
     private long checkpointLatency = -1;
     private long runningAverageLatency = -1;
     private int usedThreads = 1;
     private long lastUpdateTime = -1;
 
-    protected LatencyAdaptiveDeployment() {
+    protected LatencyAdaptiveInterThreadScheduling() {
       super("ADAPTIVE_LATENCY", Feature.AVERAGE_ARRIVAL_TIME, Feature.COMPONENT_TYPE);
-      roundRobinFunction = new RoundRobinDeployment();
+      roundRobinFunction = new RoundRobinInterThreadScheduling();
     }
 
     @Override

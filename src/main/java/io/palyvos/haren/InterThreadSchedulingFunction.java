@@ -23,21 +23,16 @@
 
 package io.palyvos.haren;
 
-public interface SinglePriorityFunction extends PriorityFunction {
+import java.util.List;
 
-  double apply(Task task, double[][] features);
+public interface InterThreadSchedulingFunction {
 
-  /**
-   * @return {@code true} if lower values of priority imply higher priority
-   */
-  default boolean reverseOrder() {
-    return false;
-  }
+  void init(List<Task> tasks, double[][] features);
 
-  default SinglePriorityFunction reciprocal() {
-    return PriorityFunctions.reciprocalFunction(this);
-  }
+  List<List<Task>> getDeployment(int nThreads);
 
-  @Override
-  SinglePriorityFunction enableCaching(int nTasks);
+  Feature[] requiredFeatures();
+
+  String name();
+
 }

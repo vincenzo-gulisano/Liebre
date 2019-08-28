@@ -28,26 +28,27 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
-public abstract class AbstractPriorityFunction implements SinglePriorityFunction {
+public abstract class AbstractIntraThreadSchedulingFunction implements
+    SingleIntraThreadSchedulingFunction {
 
-  protected final SinglePriorityFunction[] dependentFunctions;
+  protected final SingleIntraThreadSchedulingFunction[] dependentFunctions;
   private final Feature[] requiredFeatures;
   private final String name;
   private boolean caching;
 
-  public AbstractPriorityFunction(String name, Feature... requiredFeatures) {
+  public AbstractIntraThreadSchedulingFunction(String name, Feature... requiredFeatures) {
     Validate.notEmpty(requiredFeatures, "Priority function has not features!");
     Validate.notEmpty(name);
     this.requiredFeatures = requiredFeatures;
-    this.dependentFunctions = new SinglePriorityFunction[0];
+    this.dependentFunctions = new SingleIntraThreadSchedulingFunction[0];
     this.name = name;
   }
 
-  public AbstractPriorityFunction(String name, SinglePriorityFunction... dependentFunctions) {
+  public AbstractIntraThreadSchedulingFunction(String name, SingleIntraThreadSchedulingFunction... dependentFunctions) {
     Validate.notEmpty(name);
     Validate.notEmpty(dependentFunctions, "Priority function depends on no other function!");
     Set<Feature> features = new HashSet<>();
-    for (SinglePriorityFunction function : dependentFunctions) {
+    for (SingleIntraThreadSchedulingFunction function : dependentFunctions) {
       features.addAll(Arrays.asList(function.requiredFeatures()));
     }
     this.requiredFeatures = features.toArray(new Feature[0]);
@@ -56,9 +57,9 @@ public abstract class AbstractPriorityFunction implements SinglePriorityFunction
   }
 
   @Override
-  public SinglePriorityFunction enableCaching(int nTasks) {
+  public SingleIntraThreadSchedulingFunction enableCaching(int nTasks) {
     caching = true;
-    for (SinglePriorityFunction function : dependentFunctions) {
+    for (SingleIntraThreadSchedulingFunction function : dependentFunctions) {
       function.enableCaching(nTasks);
     }
     return this;
@@ -66,7 +67,7 @@ public abstract class AbstractPriorityFunction implements SinglePriorityFunction
 
   @Override
   public void clearCache() {
-    for (SinglePriorityFunction function : dependentFunctions) {
+    for (SingleIntraThreadSchedulingFunction function : dependentFunctions) {
       function.clearCache();
     }
   }

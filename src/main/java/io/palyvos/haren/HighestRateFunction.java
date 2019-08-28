@@ -26,7 +26,7 @@ package io.palyvos.haren;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.Validate;
 
-public class HighestRateFunction extends CombinedPriorityFunction {
+public class HighestRateFunction extends CombinedIntraThreadSchedulingFunction {
 
   public static final int ARRIVAL_TIME_INDEX = 0;
   private long costUpdatePeriodMillis = 500;
@@ -55,7 +55,7 @@ public class HighestRateFunction extends CombinedPriorityFunction {
   }
 
   @Override
-  public MultiPriorityFunction enableCaching(int nTasks) {
+  public MultiIntraThreadSchedulingFunction enableCaching(int nTasks) {
     this.lastCostUpdate = new long[nTasks];
     return super.enableCaching(nTasks);
   }

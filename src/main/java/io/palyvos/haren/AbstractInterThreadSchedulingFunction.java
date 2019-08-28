@@ -26,14 +26,15 @@ package io.palyvos.haren;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
 
-public abstract class AbstractDeploymentFunction implements DeploymentFunction {
+public abstract class AbstractInterThreadSchedulingFunction implements
+    InterThreadSchedulingFunction {
 
   protected double[][] features;
   protected List<Task> tasks;
   private final Feature[] requiredFeatures;
   private final String name;
 
-  protected AbstractDeploymentFunction(String name, Feature... requiredFeatures) {
+  protected AbstractInterThreadSchedulingFunction(String name, Feature... requiredFeatures) {
     Validate.notEmpty(name);
     this.requiredFeatures = requiredFeatures;
     this.name = name;

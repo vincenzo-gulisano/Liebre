@@ -31,7 +31,7 @@ public class MultiPriorityComparator implements Comparator<Task> {
   private final double[][] priorities;
   private final boolean[] reverseOrder;
 
-  public MultiPriorityComparator(MultiPriorityFunction function, double[][] priorities) {
+  public MultiPriorityComparator(MultiIntraThreadSchedulingFunction function, double[][] priorities) {
     Validate.isTrue(function.dimensions() == priorities[0].length);
     this.priorities = priorities;
     this.reverseOrder = new boolean[function.dimensions()];

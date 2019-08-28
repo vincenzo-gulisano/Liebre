@@ -27,7 +27,7 @@ import static io.palyvos.haren.FeatureHelper.CTYPE_SOURCE;
 
 public class PriorityFunctions {
 
-  private static final SinglePriorityFunction TUPLE_PROCESSING_TIME = new CachingPriorityFunction(
+  private static final SingleIntraThreadSchedulingFunction TUPLE_PROCESSING_TIME = new CachingIntraThreadSchedulingFunction(
       "TUPLE_PROCESSING_TIME", Feature.COST) {
     @Override
     public double applyWithCachingSupport(Task task, double[][] features) {
@@ -44,7 +44,7 @@ public class PriorityFunctions {
     }
   };
 
-  private static final SinglePriorityFunction GLOBAL_SELECTIVITY = new CachingPriorityFunction(
+  private static final SingleIntraThreadSchedulingFunction GLOBAL_SELECTIVITY = new CachingIntraThreadSchedulingFunction(
       "GLOBAL_SELECTIVITY", Feature.SELECTIVITY) {
     @Override
     public double applyWithCachingSupport(Task task, double[][] features) {
@@ -56,7 +56,7 @@ public class PriorityFunctions {
     }
   };
 
-  private static final SinglePriorityFunction HEAD_ARRIVAL_TIME = new AbstractPriorityFunction(
+  private static final SingleIntraThreadSchedulingFunction HEAD_ARRIVAL_TIME = new AbstractIntraThreadSchedulingFunction(
       "HEAD_ARRIVAL_TIME", Feature.HEAD_ARRIVAL_TIME) {
     @Override
     public double apply(Task task, double[][] features) {
@@ -69,7 +69,7 @@ public class PriorityFunctions {
     }
   };
 
-  private static final SinglePriorityFunction AVERAGE_ARRIVAL_TIME = new AbstractPriorityFunction(
+  private static final SingleIntraThreadSchedulingFunction AVERAGE_ARRIVAL_TIME = new AbstractIntraThreadSchedulingFunction(
       "AVERAGE_ARRIVAL_TIME", Feature.AVERAGE_ARRIVAL_TIME) {
     @Override
     public double apply(Task task, double[][] features) {
@@ -83,8 +83,8 @@ public class PriorityFunctions {
 
   };
 
-  private static final SinglePriorityFunction SOURCE_AVERAGE_ARRIVAL_TIME =
-      new CachingPriorityFunction("SOURCE_AVERAGE_ARRIVAL_TIME", Feature.AVERAGE_ARRIVAL_TIME,
+  private static final SingleIntraThreadSchedulingFunction SOURCE_AVERAGE_ARRIVAL_TIME =
+      new CachingIntraThreadSchedulingFunction("SOURCE_AVERAGE_ARRIVAL_TIME", Feature.AVERAGE_ARRIVAL_TIME,
           Feature.COMPONENT_TYPE) {
         @Override
         public double applyWithCachingSupport(Task task, double[][] features) {
@@ -99,8 +99,8 @@ public class PriorityFunctions {
         }
       };
 
-  private static final SinglePriorityFunction GLOBAL_AVERAGE_COST =
-      new CachingPriorityFunction("GLOBAL_AVERAGE_COST", Feature.COST, Feature.SELECTIVITY,
+  private static final SingleIntraThreadSchedulingFunction GLOBAL_AVERAGE_COST =
+      new CachingIntraThreadSchedulingFunction("GLOBAL_AVERAGE_COST", Feature.COST, Feature.SELECTIVITY,
           Feature.COMPONENT_TYPE) {
 
         @Override
@@ -118,8 +118,8 @@ public class PriorityFunctions {
           return true;
         }
       };
-  private static final SinglePriorityFunction GLOBAL_RATE =
-      new AbstractPriorityFunction("GLOBAL_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
+  private static final SingleIntraThreadSchedulingFunction GLOBAL_RATE =
+      new AbstractIntraThreadSchedulingFunction("GLOBAL_RATE", GLOBAL_SELECTIVITY, GLOBAL_AVERAGE_COST) {
         @Override
         public double apply(Task task, double[][] features) {
           return GLOBAL_SELECTIVITY.apply(task, features) / GLOBAL_AVERAGE_COST
@@ -127,8 +127,8 @@ public class PriorityFunctions {
         }
 
       };
-  private static final SinglePriorityFunction GLOBAL_NORMALIZED_RATE =
-      new AbstractPriorityFunction("GLOBAL_NORMALIZED_RATE", GLOBAL_SELECTIVITY,
+  private static final SingleIntraThreadSchedulingFunction GLOBAL_NORMALIZED_RATE =
+      new AbstractIntraThreadSchedulingFunction("GLOBAL_NORMALIZED_RATE", GLOBAL_SELECTIVITY,
           GLOBAL_AVERAGE_COST, TUPLE_PROCESSING_TIME) {
         @Override
         public double apply(Task task, double[][] features) {
@@ -138,15 +138,15 @@ public class PriorityFunctions {
         }
       };
 
-  private static final SinglePriorityFunction USER_PRIORITY =
-      new AbstractPriorityFunction("USER_PRIORITY", Feature.USER_PRIORITY) {
+  private static final SingleIntraThreadSchedulingFunction USER_PRIORITY =
+      new AbstractIntraThreadSchedulingFunction("USER_PRIORITY", Feature.USER_PRIORITY) {
         @Override
         public double apply(Task task, double[][] features) {
           return Feature.USER_PRIORITY.get(task, features);
         }
       };
 
-  private static final SinglePriorityFunction INPUT_QUEUE_SIZE = new AbstractPriorityFunction(
+  private static final SingleIntraThreadSchedulingFunction INPUT_QUEUE_SIZE = new AbstractIntraThreadSchedulingFunction(
       "INPUT_QUEUE_SIZE", Feature.INPUT_QUEUE_SIZE) {
     @Override
     public double apply(Task task, double[][] features) {
@@ -154,7 +154,7 @@ public class PriorityFunctions {
     }
   };
 
-  private static final SinglePriorityFunction OUTPUT_QUEUE_SIZE = new AbstractPriorityFunction(
+  private static final SingleIntraThreadSchedulingFunction OUTPUT_QUEUE_SIZE = new AbstractIntraThreadSchedulingFunction(
       "OUTPUT_QUEUE_SIZE", Feature.OUTPUT_QUEUE_SIZE) {
     @Override
     public double apply(Task task, double[][] features) {
@@ -172,56 +172,58 @@ public class PriorityFunctions {
 
   }
 
-  public static SinglePriorityFunction averageArrivalTime() {
+  public static SingleIntraThreadSchedulingFunction averageArrivalTime() {
     return AVERAGE_ARRIVAL_TIME;
   }
 
-  public static SinglePriorityFunction headArrivalTime() {
+  public static SingleIntraThreadSchedulingFunction headArrivalTime() {
     return HEAD_ARRIVAL_TIME;
   }
 
-  public static SinglePriorityFunction globalRate() {
+  public static SingleIntraThreadSchedulingFunction globalRate() {
     return GLOBAL_RATE;
   }
 
-  public static SinglePriorityFunction globalNormalizedRate() {
+  public static SingleIntraThreadSchedulingFunction globalNormalizedRate() {
     return GLOBAL_NORMALIZED_RATE;
   }
 
-  public static SinglePriorityFunction tupleProcessingTime() {
+  public static SingleIntraThreadSchedulingFunction tupleProcessingTime() {
     return TUPLE_PROCESSING_TIME;
   }
 
-  public static SinglePriorityFunction userPriority() {
+  public static SingleIntraThreadSchedulingFunction userPriority() {
     return USER_PRIORITY;
   }
 
-  public static SinglePriorityFunction inputQueueSize() {
+  public static SingleIntraThreadSchedulingFunction inputQueueSize() {
     return INPUT_QUEUE_SIZE;
   }
 
-  public static SinglePriorityFunction outputQueueSize() {
+  public static SingleIntraThreadSchedulingFunction outputQueueSize() {
     return OUTPUT_QUEUE_SIZE;
   }
 
-  public static SinglePriorityFunction chain() {
-    return new ChainPriorityFunction();
+  public static SingleIntraThreadSchedulingFunction chain() {
+    return new ChainIntraThreadSchedulingFunction();
   }
 
-  public static SinglePriorityFunction sourceAverageArrivalTime() {
+  public static SingleIntraThreadSchedulingFunction sourceAverageArrivalTime() {
     return SOURCE_AVERAGE_ARRIVAL_TIME;
   }
 
-  static SinglePriorityFunction reciprocalFunction(SinglePriorityFunction function) {
-    return new ReciprocalPriorityFunction(function);
+  static SingleIntraThreadSchedulingFunction reciprocalFunction(
+      SingleIntraThreadSchedulingFunction function) {
+    return new ReciprocalIntraThreadSchedulingFunction(function);
   }
 
-  private static class ReciprocalPriorityFunction implements SinglePriorityFunction {
+  private static class ReciprocalIntraThreadSchedulingFunction implements
+      SingleIntraThreadSchedulingFunction {
 
     private static final double PREVENT_DIV_ZERO = Math.pow(10, -10);
-    private final SinglePriorityFunction original;
+    private final SingleIntraThreadSchedulingFunction original;
 
-    private ReciprocalPriorityFunction(SinglePriorityFunction original) {
+    private ReciprocalIntraThreadSchedulingFunction(SingleIntraThreadSchedulingFunction original) {
       this.original = original;
     }
 
@@ -236,7 +238,7 @@ public class PriorityFunctions {
     }
 
     @Override
-    public SinglePriorityFunction enableCaching(int nTasks) {
+    public SingleIntraThreadSchedulingFunction enableCaching(int nTasks) {
       return original.enableCaching(nTasks);
     }
 

@@ -33,11 +33,11 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-class ChainPriorityFunction extends AbstractPriorityFunction {
+class ChainIntraThreadSchedulingFunction extends AbstractIntraThreadSchedulingFunction {
 
   public static final int NOT_INITIALIZED = -1;
   private static final Logger LOG = LogManager.getLogger();
-  private static final SinglePriorityFunction TOTAL_SELECTIVITY = new CachingPriorityFunction(
+  private static final SingleIntraThreadSchedulingFunction TOTAL_SELECTIVITY = new CachingIntraThreadSchedulingFunction(
       "TOTAL_SELECTIVITY", Feature.SELECTIVITY, Feature.COMPONENT_TYPE) {
     @Override
     protected double applyWithCachingSupport(Task task, double[][] features) {
@@ -52,7 +52,7 @@ class ChainPriorityFunction extends AbstractPriorityFunction {
 
 
   };
-  private static final SinglePriorityFunction TIME = new CachingPriorityFunction(
+  private static final SingleIntraThreadSchedulingFunction TIME = new CachingIntraThreadSchedulingFunction(
       "TOTAL_TIME", Feature.COST, Feature.SELECTIVITY) {
 
     @Override
@@ -70,7 +70,7 @@ class ChainPriorityFunction extends AbstractPriorityFunction {
   private double[] sdop;
   private boolean warm = false;
 
-  public ChainPriorityFunction() {
+  public ChainIntraThreadSchedulingFunction() {
     super("CHAIN", TOTAL_SELECTIVITY, TIME);
   }
 
@@ -164,7 +164,7 @@ class ChainPriorityFunction extends AbstractPriorityFunction {
   }
 
   @Override
-  public SinglePriorityFunction enableCaching(int nTasks) {
+  public SingleIntraThreadSchedulingFunction enableCaching(int nTasks) {
     super.enableCaching(nTasks);
     sdop = new double[nTasks];
     for (int i = 0; i < nTasks; i++) {

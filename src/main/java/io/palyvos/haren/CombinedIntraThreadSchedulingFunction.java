@@ -28,19 +28,19 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
-public class CombinedPriorityFunction implements MultiPriorityFunction {
+public class CombinedIntraThreadSchedulingFunction implements MultiIntraThreadSchedulingFunction {
 
-  protected final SinglePriorityFunction[] functions;
+  protected final SingleIntraThreadSchedulingFunction[] functions;
   private final Feature[] requiredFeatures;
   private final String name;
   private boolean caching;
 
-  public CombinedPriorityFunction(SinglePriorityFunction... functions) {
+  public CombinedIntraThreadSchedulingFunction(SingleIntraThreadSchedulingFunction... functions) {
     Validate.notEmpty(functions, "At least one function is needed!");
     this.functions = functions;
     Set<Feature> functionFeatures = new HashSet<>();
     StringBuilder nameBuilder = new StringBuilder("Composite:");
-    for (SinglePriorityFunction function : functions) {
+    for (SingleIntraThreadSchedulingFunction function : functions) {
       functionFeatures.addAll(Arrays.asList(function.requiredFeatures()));
       nameBuilder.append(function.name()).append(",");
     }
@@ -62,9 +62,9 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
   }
 
   @Override
-  public MultiPriorityFunction enableCaching(int nTasks) {
+  public MultiIntraThreadSchedulingFunction enableCaching(int nTasks) {
     this.caching = true;
-    for (SinglePriorityFunction function : functions) {
+    for (SingleIntraThreadSchedulingFunction function : functions) {
       function.enableCaching(nTasks);
     }
     return this;
@@ -72,7 +72,7 @@ public class CombinedPriorityFunction implements MultiPriorityFunction {
 
   @Override
   public void clearCache() {
-    for (SinglePriorityFunction function : functions) {
+    for (SingleIntraThreadSchedulingFunction function : functions) {
       function.clearCache();
     }
   }

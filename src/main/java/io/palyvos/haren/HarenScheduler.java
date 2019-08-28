@@ -43,20 +43,20 @@ public class HarenScheduler implements Scheduler<Task> {
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
   private final String statisticsFolder;
-  private final MultiPriorityFunction priorityFunction;
+  private final MultiIntraThreadSchedulingFunction priorityFunction;
   private final boolean priorityCaching;
-  private final DeploymentFunction deploymentFunction;
+  private final InterThreadSchedulingFunction interThreadSchedulingFunction;
   private final int[] workerAffinity;
   private volatile ReconfigurationAction reconfigurationAction;
 
 
   public HarenScheduler(
-      int nThreads, MultiPriorityFunction priorityFunction, DeploymentFunction deploymentFunction,
+      int nThreads, MultiIntraThreadSchedulingFunction priorityFunction, InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCaching, int batchSize, int schedulingPeriod, String statisticsFolder,
       BitSet workerAffinity) {
     this.nThreads = nThreads;
     this.priorityFunction = priorityFunction;
-    this.deploymentFunction = deploymentFunction;
+    this.interThreadSchedulingFunction = interThreadSchedulingFunction;
     this.priorityCaching = priorityCaching;
     this.batchSize = batchSize;
     this.schedulingPeriod = schedulingPeriod;
@@ -67,12 +67,13 @@ public class HarenScheduler implements Scheduler<Task> {
     }
   }
 
-  public HarenScheduler(int nThreads, SinglePriorityFunction priorityFunction,
-      DeploymentFunction deploymentFunction,
+  public HarenScheduler(int nThreads, SingleIntraThreadSchedulingFunction priorityFunction,
+      InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCaching, int batchSize,
       int schedulingPeriod,
       String statisticsFolder, BitSet workerAffinity) {
-    this(nThreads, new CombinedPriorityFunction(priorityFunction), deploymentFunction,
+    this(nThreads, new CombinedIntraThreadSchedulingFunction(priorityFunction),
+        interThreadSchedulingFunction,
         priorityCaching, batchSize,
         schedulingPeriod, statisticsFolder, workerAffinity);
   }
@@ -89,12 +90,12 @@ public class HarenScheduler implements Scheduler<Task> {
     LOG.info("Starting Scheduler");
     LOG.info("Priority Function: {}", priorityFunction);
     LOG.info("Priority Caching: {}", priorityCaching);
-    LOG.info("Deployment Function Function: {}", deploymentFunction);
+    LOG.info("Deployment Function Function: {}", interThreadSchedulingFunction);
     LOG.info("Worker threads: {}", nThreads);
     LOG.info("Scheduling Period: {} ms", schedulingPeriod);
     LOG.info("Batch Size: {}", batchSize);
     final SchedulerState state = new SchedulerState(tasks.size(), priorityFunction,
-        deploymentFunction, priorityCaching, statisticsFolder, nThreads, schedulingPeriod);
+        interThreadSchedulingFunction, priorityCaching, statisticsFolder, nThreads, schedulingPeriod);
     final List<AbstractExecutor> executors = new ArrayList<>();
     this.reconfigurationAction = new ReconfigurationAction(tasks, executors, state);
     CyclicBarrier barrier = new CyclicBarrier(nThreads, reconfigurationAction);

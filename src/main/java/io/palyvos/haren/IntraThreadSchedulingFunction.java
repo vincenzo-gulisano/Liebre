@@ -23,16 +23,15 @@
 
 package io.palyvos.haren;
 
-import java.util.List;
-
-public interface DeploymentFunction {
-
-  void init(List<Task> tasks, double[][] features);
-
-  List<List<Task>> getDeployment(int nThreads);
+public interface IntraThreadSchedulingFunction {
 
   Feature[] requiredFeatures();
 
-  String name();
+  IntraThreadSchedulingFunction enableCaching(int nTasks);
 
+  void clearCache();
+
+  boolean cachingEnabled();
+
+  String name();
 }

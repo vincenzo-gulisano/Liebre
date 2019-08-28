@@ -29,10 +29,10 @@ import org.apache.commons.lang3.Validate;
 /**
  * The full chain scheduling policy, e.g. chain + arrival time, with chain slowly changing.
  */
-public class ChainArrivalTimeFunction extends CombinedPriorityFunction {
+public class ChainArrivalTimeFunction extends CombinedIntraThreadSchedulingFunction {
 
   public static final int ARRIVAL_TIME_INDEX = 2;
-  private static SinglePriorityFunction sourcesLast = new AbstractPriorityFunction("SOURCES_LAST"
+  private static SingleIntraThreadSchedulingFunction sourcesLast = new AbstractIntraThreadSchedulingFunction("SOURCES_LAST"
       , Feature.COMPONENT_TYPE) {
     @Override
     public double apply(Task task, double[][] features) {
@@ -69,7 +69,7 @@ public class ChainArrivalTimeFunction extends CombinedPriorityFunction {
   }
 
   @Override
-  public MultiPriorityFunction enableCaching(int nTasks) {
+  public MultiIntraThreadSchedulingFunction enableCaching(int nTasks) {
     this.lastChainUpdate = new long[nTasks];
     return super.enableCaching(nTasks);
   }

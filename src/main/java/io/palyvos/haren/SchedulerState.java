@@ -45,8 +45,8 @@ public final class SchedulerState {
   final Comparator<Task> comparator;
   final String statisticsFolder;
   private final long[] lastUpdateTime;
-  private final MultiPriorityFunction priorityFunction;
-  private final DeploymentFunction deploymentFunction;
+  private final MultiIntraThreadSchedulingFunction priorityFunction;
+  private final InterThreadSchedulingFunction interThreadSchedulingFunction;
   private final Feature[] constantFeatures;
   //Non-constant features with at least one dependency
   private final Feature[] variableFeaturesWithDependencies;
@@ -57,13 +57,13 @@ public final class SchedulerState {
   private long roundEndTime;
   private final long schedulingPeriod;
 
-  public SchedulerState(int nTasks, MultiPriorityFunction priorityFunction,
-      DeploymentFunction deploymentFunction,
+  public SchedulerState(int nTasks, MultiIntraThreadSchedulingFunction priorityFunction,
+      InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCachning,
       String statisticsFolder, int nThreads, long schedulingPeriod) {
     this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
         priorityFunction;
-    this.deploymentFunction = deploymentFunction;
+    this.interThreadSchedulingFunction = interThreadSchedulingFunction;
     this.updated = new boolean[nTasks];
     this.taskFeatures = new double[nTasks][Feature.length()];
     this.lastUpdateTime = new long[nTasks];
@@ -73,11 +73,13 @@ public final class SchedulerState {
     this.barrierEnter = new long[nThreads];
     this.barrierExit = new long[nThreads];
     this.statisticsFolder = statisticsFolder;
-    this.constantFeatures = getFeatures(priorityFunction, deploymentFunction,
+    this.constantFeatures = getFeatures(priorityFunction, interThreadSchedulingFunction,
         feature -> feature.isConstant());
-    this.variableFeaturesWithDependencies = getFeatures(priorityFunction, deploymentFunction,
+    this.variableFeaturesWithDependencies = getFeatures(priorityFunction,
+        interThreadSchedulingFunction,
         feature -> !feature.isConstant() && feature.dependencies().length > 0);
-    this.variableFeaturesNoDependencies = getFeatures(priorityFunction, deploymentFunction,
+    this.variableFeaturesNoDependencies = getFeatures(priorityFunction,
+        interThreadSchedulingFunction,
         feature -> !feature.isConstant() && feature.dependencies().length == 0);
     LOG.info("Constant Features: {}", Arrays.toString(constantFeatures));
     LOG.info("Variable Features with dependencies: {}", Arrays.toString(
@@ -86,18 +88,18 @@ public final class SchedulerState {
         Arrays.toString(variableFeaturesNoDependencies));
   }
 
-  private Feature[] getFeatures(PriorityFunction priorityFunction,
-      DeploymentFunction deploymentFunction, Predicate<Feature> predicate) {
+  private Feature[] getFeatures(IntraThreadSchedulingFunction intraThreadSchedulingFunction,
+      InterThreadSchedulingFunction interThreadSchedulingFunction, Predicate<Feature> predicate) {
     Set<Feature> allFeatures = new HashSet<>();
-    allFeatures.addAll(Arrays.asList(priorityFunction.requiredFeatures()));
-    allFeatures.addAll(Arrays.asList(deploymentFunction.requiredFeatures()));
+    allFeatures.addAll(Arrays.asList(intraThreadSchedulingFunction.requiredFeatures()));
+    allFeatures.addAll(Arrays.asList(interThreadSchedulingFunction.requiredFeatures()));
     allFeatures.addAll(Arrays.asList(SCHEDULER_REQUIRED_FEATURES));
     return allFeatures.stream().filter(predicate).toArray(Feature[]::new);
   }
 
-  private Feature[] getFeatures(PriorityFunction priorityFunction,
-      DeploymentFunction deploymentFunction) {
-    return getFeatures(priorityFunction, deploymentFunction, feature -> true);
+  private Feature[] getFeatures(IntraThreadSchedulingFunction intraThreadSchedulingFunction,
+      InterThreadSchedulingFunction interThreadSchedulingFunction) {
+    return getFeatures(intraThreadSchedulingFunction, interThreadSchedulingFunction, feature -> true);
   }
 
   void markUpdated(Task task) {
@@ -120,7 +122,7 @@ public final class SchedulerState {
   }
 
   void init(List<Task> tasks) {
-    deploymentFunction.init(tasks, taskFeatures);
+    interThreadSchedulingFunction.init(tasks, taskFeatures);
   }
 
   Feature[] constantFeatures() {
@@ -135,12 +137,12 @@ public final class SchedulerState {
     return variableFeaturesNoDependencies;
   }
 
-  MultiPriorityFunction priorityFunction() {
+  MultiIntraThreadSchedulingFunction priorityFunction() {
     return priorityFunction;
   }
 
-  DeploymentFunction deploymentFunction() {
-    return deploymentFunction;
+  InterThreadSchedulingFunction deploymentFunction() {
+    return interThreadSchedulingFunction;
   }
 
   void updateRoundEndTime() {

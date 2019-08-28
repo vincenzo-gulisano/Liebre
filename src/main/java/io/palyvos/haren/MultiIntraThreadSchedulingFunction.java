@@ -23,15 +23,20 @@
 
 package io.palyvos.haren;
 
-public interface PriorityFunction {
+public interface MultiIntraThreadSchedulingFunction extends IntraThreadSchedulingFunction {
 
-  Feature[] requiredFeatures();
+  void apply(Task task, double[][] features, double[] output);
 
-  PriorityFunction enableCaching(int nTasks);
+  int dimensions();
 
-  void clearCache();
+  @Override
+  MultiIntraThreadSchedulingFunction enableCaching(int nTasks);
 
-  boolean cachingEnabled();
-
-  String name();
+  /**
+   * The value of {@link SingleIntraThreadSchedulingFunction#reverseOrder()} for the function at the given index.
+   *
+   * @param i The index of the function
+   * @return {@code true} if lower values of priority imply higher priority
+   */
+  boolean reverseOrder(int i);
 }

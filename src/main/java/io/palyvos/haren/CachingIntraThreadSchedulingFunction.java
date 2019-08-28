@@ -26,18 +26,19 @@ package io.palyvos.haren;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class CachingPriorityFunction extends AbstractPriorityFunction {
+public abstract class CachingIntraThreadSchedulingFunction extends
+    AbstractIntraThreadSchedulingFunction {
 
   private double[] cache;
   private boolean caching;
   private static final Logger LOG = LogManager.getLogger();
 
-  public CachingPriorityFunction(String name, Feature... features) {
+  public CachingIntraThreadSchedulingFunction(String name, Feature... features) {
     super(name, features);
   }
 
-  public CachingPriorityFunction(String name,
-      SinglePriorityFunction... dependentFunctions) {
+  public CachingIntraThreadSchedulingFunction(String name,
+      SingleIntraThreadSchedulingFunction... dependentFunctions) {
     super(name, dependentFunctions);
   }
 
@@ -57,7 +58,7 @@ public abstract class CachingPriorityFunction extends AbstractPriorityFunction {
   protected abstract double applyWithCachingSupport(Task task, double[][] features);
 
   @Override
-  public SinglePriorityFunction enableCaching(int nTasks) {
+  public SingleIntraThreadSchedulingFunction enableCaching(int nTasks) {
     LOG.info("Caching enabled for {}", name());
     super.enableCaching(nTasks);
     this.cache = new double[nTasks];
