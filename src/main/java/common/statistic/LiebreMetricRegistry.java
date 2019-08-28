@@ -23,41 +23,18 @@
 
 package common.statistic;
 
-/**
- * Statistic that records the per-second sum of the recorded value.
- */
-public class CountStatistic extends AbstractCummulativeStatistic {
-	private long count;
-	long prevSec;
+import com.codahale.metrics.MetricRegistry;
 
-	public CountStatistic(String outputFile, boolean autoFlush) {
-		super(outputFile, autoFlush);
-	}
+public class LiebreMetricRegistry {
 
-	@Override
-	protected void doAppend(long v) {
-		writePreviousCounts();
-		count += v;
-	}
+  private static final MetricRegistry registry = new MetricRegistry();
 
-	@Override
-	public void enable() {
-		this.count = 0;
-		this.prevSec = currentTimeSeconds();
-		super.enable();
-	}
+  private LiebreMetricRegistry() {
 
-	public void disable() {
-		writePreviousCounts();
-		super.disable();
-	}
+  }
 
-	private void writePreviousCounts() {
-		long thisSec = currentTimeSeconds();
-		while (prevSec < thisSec) {
-			writeCommaSeparatedValues(prevSec, count);
-			count = 0;
-			prevSec++;
-		}
-	}
+  public static MetricRegistry get() {
+    return registry;
+  }
+
 }

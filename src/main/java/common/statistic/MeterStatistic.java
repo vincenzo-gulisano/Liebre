@@ -23,48 +23,24 @@
 
 package common.statistic;
 
+import com.codahale.metrics.Meter;
+
 /**
- * Statistic that writes the per-second average of the recorded value.
+ * Statistic that records the per-second sum of the recorded value.
  */
-public class AverageStatistic extends AbstractCummulativeStatistic {
+public class MeterStatistic extends AbstractCummulativeStatistic {
 
-	private long sum;
-	private long count;
-	private long prevSec;
+	private final Meter meter;
 
-	public AverageStatistic(String outputFile, boolean autoFlush) {
+	public MeterStatistic(String outputFile, boolean autoFlush) {
 		super(outputFile, autoFlush);
+		meter = LiebreMetricRegistry.get().meter(metricName);
 	}
 
 	@Override
 	protected void doAppend(long v) {
-		writePreviousAverages();
-		sum += v;
-		count++;
+    meter.mark(v);
 	}
 
-	@Override
-	public void enable() {
-		this.sum = 0;
-		this.count = 0;
-		prevSec = currentTimeSeconds();
-		super.enable();
 
-	}
-
-	public void disable() {
-		writePreviousAverages();
-		super.disable();
-	}
-
-	private void writePreviousAverages() {
-		long thisSec = currentTimeSeconds();
-		while (prevSec < thisSec) {
-			long average = (count != 0 ? sum / count : -1);
-			writeCommaSeparatedValues(prevSec, average);
-			sum = 0;
-			count = 0;
-			prevSec++;
-		}
-	}
 }

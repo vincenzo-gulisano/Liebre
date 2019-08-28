@@ -23,7 +23,7 @@
 
 package component.operator.in2;
 
-import common.statistic.AverageStatistic;
+import common.statistic.HistogramStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
@@ -38,8 +38,8 @@ import java.util.List;
 public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
     extends Operator2InDecorator<IN, IN2, OUT> {
 
-  private final AverageStatistic processingTimeStatistic;
-  private final AverageStatistic executionTimeStatistic;
+  private final HistogramStatistic processingTimeStatistic;
+  private final HistogramStatistic executionTimeStatistic;
 
   /**
    * Add statistics to the given component.operator.
@@ -51,9 +51,9 @@ public class Operator2InStatistic<IN extends Tuple, IN2 extends Tuple, OUT exten
   public Operator2InStatistic(Operator2In<IN, IN2, OUT> operator, String outputFolder,
       boolean autoFlush) {
     super(operator);
-    this.processingTimeStatistic = new AverageStatistic(
+    this.processingTimeStatistic = new HistogramStatistic(
         StatisticPath.get(outputFolder, operator, StatisticType.PROC), autoFlush);
-    this.executionTimeStatistic = new AverageStatistic(
+    this.executionTimeStatistic = new HistogramStatistic(
         StatisticPath.get(outputFolder, operator, StatisticType.EXEC), autoFlush);
   }
 

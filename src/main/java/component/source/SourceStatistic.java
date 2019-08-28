@@ -23,7 +23,7 @@
 
 package component.source;
 
-import common.statistic.AverageStatistic;
+import common.statistic.HistogramStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
@@ -37,8 +37,8 @@ import common.util.StatisticType;
 public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
 
 
-  private final AverageStatistic processingTimeStatistic;
-  private final AverageStatistic executionTimeStatistic;
+  private final HistogramStatistic processingTimeStatistic;
+  private final HistogramStatistic executionTimeStatistic;
 
   /**
    * Add statistics to the given component.source.
@@ -50,9 +50,9 @@ public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
   public SourceStatistic(Source<T> source, String outputFolder,
       boolean autoFlush) {
     super(source);
-    this.processingTimeStatistic = new AverageStatistic(
+    this.processingTimeStatistic = new HistogramStatistic(
         StatisticPath.get(outputFolder, source, StatisticType.PROC), autoFlush);
-    this.executionTimeStatistic = new AverageStatistic(
+    this.executionTimeStatistic = new HistogramStatistic(
         StatisticPath.get(outputFolder, source, StatisticType.EXEC), autoFlush);
   }
 

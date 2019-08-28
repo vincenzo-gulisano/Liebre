@@ -23,7 +23,7 @@
 
 package component.sink;
 
-import common.statistic.AverageStatistic;
+import common.statistic.HistogramStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
@@ -36,8 +36,8 @@ import common.util.StatisticType;
  */
 public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
 
-  private final AverageStatistic processingTimeStatistic;
-  private final AverageStatistic executionTimeStatistic;
+  private final HistogramStatistic processingTimeStatistic;
+  private final HistogramStatistic executionTimeStatistic;
 
   /**
    * Add statistics to the given component.sink.
@@ -48,9 +48,9 @@ public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
    */
   public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
     super(sink);
-    this.processingTimeStatistic = new AverageStatistic(
+    this.processingTimeStatistic = new HistogramStatistic(
         StatisticPath.get(outputFolder, sink, StatisticType.PROC), autoFlush);
-    this.executionTimeStatistic = new AverageStatistic(
+    this.executionTimeStatistic = new HistogramStatistic(
         StatisticPath.get(outputFolder, sink, StatisticType.EXEC), autoFlush);
   }
 

@@ -24,7 +24,7 @@
 package scheduling.toolkit;
 
 import common.statistic.AbstractCummulativeStatistic;
-import common.statistic.CountStatistic;
+import common.statistic.MeterStatistic;
 import common.util.StatisticPath;
 import java.util.Arrays;
 import java.util.Collections;
@@ -84,36 +84,36 @@ public abstract class AbstractExecutor implements Runnable {
         BACKOFF_RETRIES);
     this.index = indexGenerator.getAndIncrement();
     this.cpuId = cpuId;
-    this.updateTime = new CountStatistic(
+    this.updateTime = new MeterStatistic(
         StatisticPath.get(state.statisticsFolder, String.format(
             "Update-Action-Executor-%d", index),
             EXECUTOR_STATISTIC_TIME),
         false);
-    this.sortTime = new CountStatistic(
+    this.sortTime = new MeterStatistic(
         StatisticPath.get(state.statisticsFolder, String.format(
             "Sort-Tasks-Executor-%d", index),
             EXECUTOR_STATISTIC_TIME), false);
-    this.priorityTime = new CountStatistic(
+    this.priorityTime = new MeterStatistic(
         StatisticPath.get(state.statisticsFolder, String.format(
             "Priority-Update-Executor-%d", index),
             EXECUTOR_STATISTIC_TIME), false);
-    this.otherTime = new CountStatistic(
+    this.otherTime = new MeterStatistic(
         StatisticPath.get(state.statisticsFolder, String.format(
             "Other-Overheads-Executor-%d", index),
             EXECUTOR_STATISTIC_TIME), false);
-    this.waitTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, String.format(
+    this.waitTime = new MeterStatistic(StatisticPath.get(state.statisticsFolder, String.format(
         "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
         false);
-    this.markedTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+    this.markedTasks = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Marked-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
-    this.laggingTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+    this.laggingTasks = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Lagging-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
-    this.dependentTasks = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+    this.dependentTasks = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Dependent-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
-    this.backoffCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder,
+    this.backoffCalls = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Backoff-Calls-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
     updateTime.enable();

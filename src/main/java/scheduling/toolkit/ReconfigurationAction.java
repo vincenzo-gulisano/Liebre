@@ -24,8 +24,8 @@
 package scheduling.toolkit;
 
 import common.statistic.AbstractCummulativeStatistic;
-import common.statistic.AverageStatistic;
-import common.statistic.CountStatistic;
+import common.statistic.HistogramStatistic;
+import common.statistic.MeterStatistic;
 import common.util.StatisticPath;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,21 +61,21 @@ public class ReconfigurationAction implements Runnable {
     this.state.init(tasks);
 
     // Statistics Initialization
-    this.totalCalls = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
+    this.totalCalls = new MeterStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "Total-Calls"), STATISTIC_CALLS), false);
     totalCalls.enable();
-    this.updateTime = new CountStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
+    this.updateTime = new MeterStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "Update-Features"), STATISTIC_TIME), false);
     updateTime.enable();
-    this.deploymentTime = new CountStatistic(
+    this.deploymentTime = new MeterStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Deploy-Tasks"), STATISTIC_TIME), false);
     deploymentTime.enable();
-    this.barrierEnterVariance = new AverageStatistic(
+    this.barrierEnterVariance = new HistogramStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Enter-Variance"), BARRIER_INFO), false);
     barrierEnterVariance.enable();
-    this.barrierExitVariance = new AverageStatistic(
+    this.barrierExitVariance = new HistogramStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Exit-Variance"), BARRIER_INFO), false);
     barrierExitVariance.enable();

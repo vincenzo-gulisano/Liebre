@@ -24,12 +24,8 @@
 package common.statistic;
 
 import common.Active;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.concurrent.TimeUnit;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Base class for implementing cummulative statistics that record values at arbitrary intervals
@@ -39,76 +35,34 @@ import org.apache.logging.log4j.Logger;
  */
 public abstract class AbstractCummulativeStatistic implements Active {
 
-  private final PrintWriter out;
-  private volatile boolean enabled;
-  private volatile boolean initialized;
-  private final Logger LOGGER = LogManager.getLogger();
+  private static final Pattern EXTRACT_METRIC_NAME = Pattern.compile(".+\\/(.+)\\.csv");
+  protected final String metricName;
 
   public AbstractCummulativeStatistic(String outputFile, boolean autoFlush) {
-    try {
-      FileWriter outFile = new FileWriter(outputFile);
-      out = new PrintWriter(outFile, autoFlush);
-    } catch (IOException e) {
-      throw new IllegalArgumentException(
-          String.format("Failed to open file %s for writing: %s", outputFile, e.getMessage()), e);
+    final Matcher m = EXTRACT_METRIC_NAME.matcher(outputFile);
+    if (m.matches()) {
+      metricName = m.group(1);
+    } else {
+      throw new IllegalStateException(String.format("Failed to extract metric name from path: %s",
+          outputFile));
     }
-  }
-
-  protected void writeCommaSeparatedValues(Object... values) {
-    if (!isEnabled()) {
-      checkInitialized();
-      return;
-    }
-    StringBuilder sb = new StringBuilder();
-    for (Object value : values) {
-      sb.append(value).append(",");
-    }
-    sb.deleteCharAt(sb.length() - 1);
-    writeLine(sb.toString());
   }
 
   public final void append(long value) {
-    if (!isEnabled()) {
-      checkInitialized();
-      return;
-    }
     doAppend(value);
-  }
-
-  protected void writeLine(String line) {
-    if (!isEnabled()) {
-      checkInitialized();
-      return;
-    }
-    out.println(line);
-  }
-
-  private void checkInitialized() {
-    if (!initialized) {
-      LOGGER.warn("Ignoring append, statistic is disabled");
-    }
-  }
-
-  protected long currentTimeSeconds() {
-    return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
   }
 
   @Override
   public void enable() {
-    this.enabled = true;
-    this.initialized = true;
   }
 
   @Override
   public boolean isEnabled() {
-    return this.enabled;
+    return true;
   }
 
   @Override
   public void disable() {
-    this.enabled = false;
-    out.flush();
-    out.close();
   }
 
   protected abstract void doAppend(long value);
