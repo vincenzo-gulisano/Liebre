@@ -27,18 +27,35 @@ import io.palyvos.haren.Task;
 
 public interface VectorIntraThreadSchedulingFunction extends IntraThreadSchedulingFunction {
 
+  /**
+   * Get the value vector of this function.
+   *
+   * @param task The task to get the value for.
+   * @param features The feature matrix of all tasks.
+   * @param output The value vector of the function for the given task and the current values of
+   *     the features.
+   */
   void apply(Task task, double[][] features, double[] output);
 
+  /**
+   * Get the number of dimensions of this function (i.e., the size of the resulting vector).
+   *
+   * @return The number of dimensions.
+   */
   int dimensions();
 
   @Override
   VectorIntraThreadSchedulingFunction enableCaching(int nTasks);
 
   /**
-   * The value of {@link SingleIntraThreadSchedulingFunction#reverseOrder()} for the function at the given index.
+   * Usually if a {@link Task} has a higher value of a
+   * {@link SingleIntraThreadSchedulingFunction}, it means that it has a higher priority. If the
+   * <b>reverse</b> is true for a specific function, {@code true} should be returned when its
+   * index is queried, so that
+   * {@link io.palyvos.haren.HarenScheduler} can sort the tasks correctly by their priority.
    *
    * @param i The index of the function
    * @return {@code true} if lower values of priority imply higher priority
    */
-  boolean reverseOrder(int i);
+  boolean isReverseOrder(int i);
 }

@@ -30,13 +30,24 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
-public class VectorIntraThreadSchedulingFunctionImpl implements VectorIntraThreadSchedulingFunction {
+/**
+ * Default implementatin of {@link VectorIntraThreadSchedulingFunction}. Generates a priority
+ * vector. The value of each element of the vector is derived by one
+ * {@link SingleIntraThreadSchedulingFunction}.
+ */
+public class VectorIntraThreadSchedulingFunctionImpl implements
+    VectorIntraThreadSchedulingFunction {
 
   protected final SingleIntraThreadSchedulingFunction[] functions;
   private final Feature[] requiredFeatures;
   private final String name;
   private boolean caching;
 
+  /**
+   * Construct.
+   * @param functions The {@link SingleIntraThreadSchedulingFunction}s that will generate the
+   * priority vector.
+   */
   public VectorIntraThreadSchedulingFunctionImpl(SingleIntraThreadSchedulingFunction... functions) {
     Validate.notEmpty(functions, "At least one function is needed!");
     this.functions = functions;
@@ -90,8 +101,8 @@ public class VectorIntraThreadSchedulingFunctionImpl implements VectorIntraThrea
   }
 
   @Override
-  public boolean reverseOrder(int i) {
-    return functions[i].reverseOrder();
+  public boolean isReverseOrder(int i) {
+    return functions[i].isReverseOrder();
   }
 
   @Override

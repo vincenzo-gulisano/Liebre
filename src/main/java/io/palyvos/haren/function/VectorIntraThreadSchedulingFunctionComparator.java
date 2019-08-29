@@ -37,7 +37,7 @@ public class VectorIntraThreadSchedulingFunctionComparator implements Comparator
     this.priorities = priorities;
     this.reverseOrder = new boolean[function.dimensions()];
     for (int i = 0; i < function.dimensions(); i++) {
-      reverseOrder[i] = function.reverseOrder(i);
+      reverseOrder[i] = function.isReverseOrder(i);
     }
   }
 

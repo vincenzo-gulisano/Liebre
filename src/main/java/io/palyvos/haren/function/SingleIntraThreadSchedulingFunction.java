@@ -27,12 +27,24 @@ import io.palyvos.haren.Task;
 
 public interface SingleIntraThreadSchedulingFunction extends IntraThreadSchedulingFunction {
 
+  /**
+   * Get the value of this function.
+   *
+   * @param task The task to get the value for.
+   * @param features The feature matrix of all tasks.
+   * @return The value of the function for the given task and the current values of the features.
+   */
   double apply(Task task, double[][] features);
 
   /**
+   * Usually if a {@link Task} has a higher value of a
+   * {@link SingleIntraThreadSchedulingFunction}, it means that it has a higher priority. If the
+   * <b>reverse</b> is true for this specific function, this should return {@code true}, so that
+   * {@link io.palyvos.haren.HarenScheduler} can sort the tasks correctly by their priority.
+   *
    * @return {@code true} if lower values of priority imply higher priority
    */
-  default boolean reverseOrder() {
+  default boolean isReverseOrder() {
     return false;
   }
 

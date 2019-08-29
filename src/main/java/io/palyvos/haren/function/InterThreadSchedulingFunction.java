@@ -27,14 +27,38 @@ import io.palyvos.haren.Feature;
 import io.palyvos.haren.Task;
 import java.util.List;
 
+/**
+ * Abstraction of a function that assigns {@link Task}s to
+ * {@link io.palyvos.haren.HarenScheduler}'s processing threads.
+ */
 public interface InterThreadSchedulingFunction {
 
+  /**
+   * Initialize the function with the {@link Task}s that will be assigned and their
+   * {@link Feature} matrix
+   * @param tasks The {@link Task}s that this function will assign.
+   * @param features The {@link Feature} matrix of these tasks.
+   */
   void init(List<Task> tasks, double[][] features);
 
-  List<List<Task>> getDeployment(int nThreads);
+  /**
+   * Get the assignment of {@link Task}s to processing threads.
+   * @param nThreads The number of available processing threads.
+   * @return A {@link List}, each element of which is the {@link Task}s that are assigned to the
+   * thread with that index.
+   */
+  List<List<Task>> getAssignment(int nThreads);
 
+  /**
+   * Get the {@link Feature}s which are used to compute this function's value.
+   *
+   * @return An array of the {@link Feature}s required by this function.
+   */
   Feature[] requiredFeatures();
 
+  /**
+   * @return The name of this function.
+   */
   String name();
 
 }

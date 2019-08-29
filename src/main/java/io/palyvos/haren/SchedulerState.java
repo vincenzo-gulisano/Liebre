@@ -36,6 +36,9 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * State object that contains information accessed by various scheduler comoponents.
+ */
 final class SchedulerState {
 
 

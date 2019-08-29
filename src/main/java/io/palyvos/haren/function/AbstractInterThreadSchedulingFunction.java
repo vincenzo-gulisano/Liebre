@@ -29,14 +29,24 @@ import io.palyvos.haren.Task;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
 
+/**
+ * Abstract implementation of {@link InterThreadSchedulingFunction}, handling basic
+ * functionality.
+ */
 public abstract class AbstractInterThreadSchedulingFunction implements
     InterThreadSchedulingFunction {
 
-  protected double[][] features;
-  protected List<Task> tasks;
   private final Features[] requiredFeatures;
   private final String name;
+  protected double[][] features;
+  protected List<Task> tasks;
 
+  /**
+   * Construct.
+   *
+   * @param name The function's name.
+   * @param requiredFeatures The features used by this function.
+   */
   protected AbstractInterThreadSchedulingFunction(String name, Features... requiredFeatures) {
     Validate.notEmpty(name);
     this.requiredFeatures = requiredFeatures;

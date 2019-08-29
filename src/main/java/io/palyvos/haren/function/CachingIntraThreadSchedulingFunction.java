@@ -28,21 +28,47 @@ import io.palyvos.haren.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+/**
+ * Base implementation of an {@link AbstractIntraThreadSchedulingFunction} with caching support.
+ */
 public abstract class CachingIntraThreadSchedulingFunction extends
     AbstractIntraThreadSchedulingFunction {
 
+  private static final Logger LOG = LogManager.getLogger();
   private double[] cache;
   private boolean caching;
-  private static final Logger LOG = LogManager.getLogger();
 
+  /**
+   * Construct.
+   *
+   * @param name The function's name.
+   * @param features The features used by this function.
+   */
   public CachingIntraThreadSchedulingFunction(String name, Features... features) {
     super(name, features);
   }
 
+  /**
+   * Construct.
+   *
+   * @param name The functions name.
+   * @param dependentFunctions Other {@link SingleIntraThreadSchedulingFunction}s used by this
+   *     function.
+   */
   public CachingIntraThreadSchedulingFunction(String name,
       SingleIntraThreadSchedulingFunction... dependentFunctions) {
     super(name, dependentFunctions);
   }
+
+  /**
+   * Template method in place of {@link #apply(Task, double[][])}, which automatically enforces
+   * caching.
+   *
+   * @param task
+   * @param features
+   * @return
+   */
+  protected abstract double applyWithCachingSupport(Task task, double[][] features);
 
   @Override
   public final double apply(Task task, double[][] features) {
@@ -56,8 +82,6 @@ public abstract class CachingIntraThreadSchedulingFunction extends
     }
     return applyWithCachingSupport(task, features);
   }
-
-  protected abstract double applyWithCachingSupport(Task task, double[][] features);
 
   @Override
   public SingleIntraThreadSchedulingFunction enableCaching(int nTasks) {

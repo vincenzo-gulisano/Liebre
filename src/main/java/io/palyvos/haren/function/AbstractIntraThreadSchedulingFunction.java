@@ -30,6 +30,10 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.lang3.Validate;
 
+/**
+ * Abstract implementation of {@link SingleIntraThreadSchedulingFunction}, handling basic
+ * functionality.
+ */
 public abstract class AbstractIntraThreadSchedulingFunction implements
     SingleIntraThreadSchedulingFunction {
 
@@ -38,7 +42,13 @@ public abstract class AbstractIntraThreadSchedulingFunction implements
   private final String name;
   private boolean caching;
 
-  public AbstractIntraThreadSchedulingFunction(String name, Features... requiredFeatures) {
+  /**
+   * Construct.
+   *
+   * @param name The function's name.
+   * @param requiredFeatures The features used by this function.
+   */
+  protected AbstractIntraThreadSchedulingFunction(String name, Features... requiredFeatures) {
     Validate.notEmpty(requiredFeatures, "Priority function has not features!");
     Validate.notEmpty(name);
     this.requiredFeatures = requiredFeatures;
@@ -46,7 +56,15 @@ public abstract class AbstractIntraThreadSchedulingFunction implements
     this.name = name;
   }
 
-  public AbstractIntraThreadSchedulingFunction(String name, SingleIntraThreadSchedulingFunction... dependentFunctions) {
+  /**
+   * Construct.
+   *
+   * @param name The functions name.
+   * @param dependentFunctions Other {@link SingleIntraThreadSchedulingFunction}s used by this
+   *     function.
+   */
+  protected AbstractIntraThreadSchedulingFunction(String name,
+      SingleIntraThreadSchedulingFunction... dependentFunctions) {
     Validate.notEmpty(name);
     Validate.notEmpty(dependentFunctions, "Priority function depends on no other function!");
     Set<Feature> features = new HashSet<>();
@@ -84,6 +102,7 @@ public abstract class AbstractIntraThreadSchedulingFunction implements
     return requiredFeatures.clone();
   }
 
+  @Override
   public final String name() {
     return name;
   }

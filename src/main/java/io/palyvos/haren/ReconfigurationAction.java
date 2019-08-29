@@ -137,7 +137,7 @@ class ReconfigurationAction implements Runnable {
 
   private List<List<Task>> deployTasks() {
     long startTime = System.currentTimeMillis();
-    List<List<Task>> assignments = state.deploymentFunction().getDeployment(executors.size());
+    List<List<Task>> assignments = state.deploymentFunction().getAssignment(executors.size());
     deploymentTime.append(System.currentTimeMillis() - startTime);
     return assignments;
   }
