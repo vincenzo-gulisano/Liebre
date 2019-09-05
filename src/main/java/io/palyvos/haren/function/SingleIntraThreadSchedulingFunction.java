@@ -23,6 +23,7 @@
 
 package io.palyvos.haren.function;
 
+import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;
 
 public interface SingleIntraThreadSchedulingFunction extends IntraThreadSchedulingFunction {
@@ -40,7 +41,7 @@ public interface SingleIntraThreadSchedulingFunction extends IntraThreadScheduli
    * Usually if a {@link Task} has a higher value of a
    * {@link SingleIntraThreadSchedulingFunction}, it means that it has a higher priority. If the
    * <b>reverse</b> is true for this specific function, this should return {@code true}, so that
-   * {@link io.palyvos.haren.HarenScheduler} can sort the tasks correctly by their priority.
+   * {@link HarenScheduler} can sort the tasks correctly by their priority.
    *
    * @return {@code true} if lower values of priority imply higher priority
    */

@@ -69,8 +69,8 @@ import java.util.Set;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import scheduling.Scheduler;
-import scheduling.impl.DefaultScheduler;
+import scheduling.LiebreScheduler;
+import scheduling.impl.DefaultLiebreScheduler;
 import stream.BlockingStream;
 import stream.Stream;
 import stream.StreamFactory;
@@ -81,7 +81,7 @@ import stream.StreamStatistic;
  * Operator}s, {@link Source}s and {@link Sink}s through various helper methods. It also handles the
  * connections of the components with the correct types of {@link Stream}s and the
  * activation/deactivation of the query. Activating the query also starts executing it by delegating
- * this work to the provided {@link Scheduler} implementation.
+ * this work to the provided {@link LiebreScheduler} implementation.
  */
 public final class Query {
 
@@ -90,7 +90,7 @@ public final class Query {
   private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
   private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
   private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
-  private final Scheduler scheduler;
+  private final LiebreScheduler scheduler;
   private final Map<StatisticType, StatisticsConfiguration> enabledStatistics = new HashMap<>();
   private final StreamFactory streamFactory;
   private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
@@ -100,7 +100,7 @@ public final class Query {
    * Construct.
    */
   public Query() {
-    this(new DefaultScheduler(), BlockingStream.factory());
+    this(new DefaultLiebreScheduler(), BlockingStream.factory());
   }
 
   /**
@@ -109,7 +109,7 @@ public final class Query {
    * @param scheduler The scheduler implementation to use when executing the query after Query{@link
    * #activate()} is called.
    */
-  public Query(Scheduler scheduler, StreamFactory streamFactory) {
+  public Query(LiebreScheduler scheduler, StreamFactory streamFactory) {
     this.scheduler = scheduler;
     // Set a default backoff value
     setBackoff(1, 20, 5);

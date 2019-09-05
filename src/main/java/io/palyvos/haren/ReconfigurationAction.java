@@ -152,7 +152,7 @@ class ReconfigurationAction implements Runnable {
     }
   }
 
-  void disable() {
+  void stop() {
     totalCalls.disable();
     updateTime.disable();
     deploymentTime.disable();

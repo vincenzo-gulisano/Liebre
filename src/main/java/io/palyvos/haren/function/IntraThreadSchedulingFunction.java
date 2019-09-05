@@ -24,10 +24,11 @@
 package io.palyvos.haren.function;
 
 import io.palyvos.haren.Feature;
+import io.palyvos.haren.HarenScheduler;
 
 /**
  * Abstraction of a function that prioritizes {@link io.palyvos.haren.Task}s assigned to one of
- * {@link io.palyvos.haren.HarenScheduler}'s processing threads.
+ * {@link HarenScheduler}'s processing threads.
  */
 public interface IntraThreadSchedulingFunction {
 

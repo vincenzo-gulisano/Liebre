@@ -24,12 +24,13 @@
 package io.palyvos.haren.function;
 
 import io.palyvos.haren.Feature;
+import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;
 import java.util.List;
 
 /**
  * Abstraction of a function that assigns {@link Task}s to
- * {@link io.palyvos.haren.HarenScheduler}'s processing threads.
+ * {@link HarenScheduler}'s processing threads.
  */
 public interface InterThreadSchedulingFunction {
 

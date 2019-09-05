@@ -21,41 +21,16 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling;
+package io.palyvos.haren;
 
-import common.Active;
 import java.util.Collection;
 
-/**
- * Scheduler for streaming operators.
- *
- * @author palivosd
- */
-public interface Scheduler<T extends Runnable> extends Active {
+public interface Scheduler<T extends Runnable> {
 
-  /**
-   * Set the {@link Runnable}s that are going to be scheduled by this entity.
-   *
-   * @param tasks The tasks to be scheduled.
-   * @implNote This function should work correctly if called mutliple times.
-   */
-  void addTasks(Collection<T> tasks);
+  void addTasks(Collection<Task> tasks);
 
-  /**
-   * Start and schedule the tasks according to the actual scheduler implementation.
-   */
-  void startTasks();
+  void start();
 
-  /**
-   * Stop the running tasks.
-   */
-  void stopTasks();
-
-  /**
-   * Activate statistics for this scheduler instance
-   *
-   * @param folder The folder to save the statistics to
-   */
-  void activateStatistics(String folder);
+  void stop();
 
 }

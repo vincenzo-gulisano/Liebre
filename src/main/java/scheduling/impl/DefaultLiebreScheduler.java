@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import scheduling.Scheduler;
+import scheduling.LiebreScheduler;
 import scheduling.thread.BasicWorkerThread;
 
 /**
@@ -39,7 +39,7 @@ import scheduling.thread.BasicWorkerThread;
  *
  * @author palivosd
  */
-public class DefaultScheduler implements Scheduler<Component> {
+public class DefaultLiebreScheduler implements LiebreScheduler<Component> {
 
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -48,11 +48,11 @@ public class DefaultScheduler implements Scheduler<Component> {
   private final BitSet affinity;
   private volatile boolean enabled;
 
-  public DefaultScheduler() {
+  public DefaultLiebreScheduler() {
     this(null);
   }
 
-  public DefaultScheduler(BitSet affinity) {
+  public DefaultLiebreScheduler(BitSet affinity) {
     this.affinity = affinity;
   }
 

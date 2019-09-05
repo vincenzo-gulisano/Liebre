@@ -23,11 +23,10 @@
 
 package io.palyvos.haren;
 
-import component.Component;
-import io.palyvos.haren.function.VectorIntraThreadSchedulingFunctionImpl;
 import io.palyvos.haren.function.InterThreadSchedulingFunction;
-import io.palyvos.haren.function.VectorIntraThreadSchedulingFunction;
 import io.palyvos.haren.function.SingleIntraThreadSchedulingFunction;
+import io.palyvos.haren.function.VectorIntraThreadSchedulingFunction;
+import io.palyvos.haren.function.VectorIntraThreadSchedulingFunctionImpl;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -36,7 +35,6 @@ import java.util.concurrent.CyclicBarrier;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import scheduling.Scheduler;
 
 /**
  * The scheduler class, responsible for orchestrating the execution of streaming {@link Task}s.
@@ -112,14 +110,8 @@ public class HarenScheduler implements Scheduler<Task> {
         schedulingPeriod, statisticsFolder, workerAffinity);
   }
 
-
   @Override
-  public void addTasks(Collection<Task> tasks) {
-    this.tasks.addAll(tasks);
-  }
-
-  @Override
-  public void startTasks() {
+  public void start() {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
     LOG.info("Starting Scheduler");
     LOG.info("Priority Function: {}", intraThreadFunction);
@@ -147,7 +139,13 @@ public class HarenScheduler implements Scheduler<Task> {
   }
 
   @Override
-  public void stopTasks() {
+  public void addTasks(Collection<Task> tasks) {
+    this.tasks.addAll(tasks);
+  }
+
+  @Override
+  public void stop() {
+    reconfigurationAction.stop();
     for (Thread thread : threads) {
       thread.interrupt();
       try {
@@ -162,32 +160,7 @@ public class HarenScheduler implements Scheduler<Task> {
     return workerAffinity != null ? workerAffinity[i % workerAffinity.length] : -1;
   }
 
-  @Override
-  public void activateStatistics(String folder) {
-
+  public List<Task> tasks() {
+    return tasks;
   }
-
-  @Override
-  public void enable() {
-    //FIXME: Liebre specific code, not needed for final toolkit
-    for (Task task : tasks) {
-      ((Component) task).enable();
-    }
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return true;
-  }
-
-  @Override
-  public void disable() {
-    //FIXME: Liebre specific code, not needed for final toolkit
-    for (Task task : tasks) {
-      ((Component) task).disable();
-    }
-    reconfigurationAction.disable();
-  }
-
-
 }
