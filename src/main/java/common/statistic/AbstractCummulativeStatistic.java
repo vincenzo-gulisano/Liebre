@@ -26,6 +26,8 @@ package common.statistic;
 import common.Active;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Base class for implementing cummulative statistics that record values at arbitrary intervals
@@ -35,8 +37,10 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractCummulativeStatistic implements Active {
 
+  private static final Logger LOG = LogManager.getLogger();
   private static final Pattern EXTRACT_METRIC_NAME = Pattern.compile(".+\\/(.+)\\.csv");
   protected final String metricName;
+  private boolean enabled;
 
   public AbstractCummulativeStatistic(String outputFile, boolean autoFlush) {
     final Matcher m = EXTRACT_METRIC_NAME.matcher(outputFile);
@@ -49,20 +53,27 @@ public abstract class AbstractCummulativeStatistic implements Active {
   }
 
   public final void append(long value) {
-    doAppend(value);
+    if (isEnabled()) {
+      doAppend(value);
+    }
   }
 
   @Override
   public void enable() {
+    this.enabled = true;
   }
 
   @Override
   public boolean isEnabled() {
-    return true;
+    return this.enabled;
   }
 
   @Override
   public void disable() {
+    if (!isEnabled()) {
+      LOG.warn("Disabling {} which was already disabled!", metricName);
+    }
+    this.enabled = false;
   }
 
   protected abstract void doAppend(long value);

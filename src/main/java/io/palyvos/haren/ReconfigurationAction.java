@@ -40,7 +40,6 @@ import org.apache.logging.log4j.Logger;
  * "scheduling task" of {@link HarenScheduler}. Retrieves some of the features and runs the
  * {@link io.palyvos.haren.function.InterThreadSchedulingFunction} that assigns {@link Task}s to
  * {@link AbstractExecutor}s.
- *
  */
 class ReconfigurationAction implements Runnable {
 
@@ -70,27 +69,29 @@ class ReconfigurationAction implements Runnable {
     // Statistics Initialization
     this.totalCalls = new MeterStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "Total-Calls"), STATISTIC_CALLS), false);
-    totalCalls.enable();
     this.updateTime = new MeterStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
         "Update-Features"), STATISTIC_TIME), false);
-    updateTime.enable();
     this.deploymentTime = new MeterStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Deploy-Tasks"), STATISTIC_TIME), false);
-    deploymentTime.enable();
     this.barrierEnterVariance = new HistogramStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Enter-Variance"), BARRIER_INFO), false);
-    barrierEnterVariance.enable();
     this.barrierExitVariance = new HistogramStatistic(
         StatisticPath.get(state.statisticsFolder, statisticName(
             "Exit-Variance"), BARRIER_INFO), false);
-    barrierExitVariance.enable();
-
   }
 
   static String statisticName(String action) {
     return String.format("%s-Priority-Update", action);
+  }
+
+  private void enableStatistics() {
+    totalCalls.enable();
+    updateTime.enable();
+    deploymentTime.enable();
+    barrierEnterVariance.enable();
+    barrierExitVariance.enable();
   }
 
   @Override

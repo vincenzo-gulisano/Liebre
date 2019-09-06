@@ -119,6 +119,10 @@ public abstract class AbstractExecutor implements Runnable {
     this.backoffCalls = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
         String.format("Backoff-Calls-Executor-%d", index), EXECUTED_TASK_COUNTS),
         false);
+    initTaskDependencies(state.variableFeaturesWithDependencies());
+  }
+
+  private void enableStatistics() {
     updateTime.enable();
     waitTime.enable();
     sortTime.enable();
@@ -128,7 +132,6 @@ public abstract class AbstractExecutor implements Runnable {
     laggingTasks.enable();
     dependentTasks.enable();
     backoffCalls.enable();
-    initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
   private void initTaskDependencies(Feature[] features) {
