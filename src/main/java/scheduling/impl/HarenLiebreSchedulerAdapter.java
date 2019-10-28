@@ -60,6 +60,14 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
 
   }
 
+  public void setBatchSize(int batchSize) {
+    scheduler.setBatchSize(batchSize);
+  }
+
+  public void setSchedulingPeriod(long schedulingPeriod) {
+    scheduler.setSchedulingPeriod(schedulingPeriod);
+  }
+
   @Override
   public void enable() {
     //FIXME: Liebre specific code, not needed for final toolkit

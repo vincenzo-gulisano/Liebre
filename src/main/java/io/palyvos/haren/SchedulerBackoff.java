@@ -43,9 +43,10 @@ import org.apache.commons.lang3.Validate;
  */
 class SchedulerBackoff {
 
-  private final int min, max, retries;
+  private final long min, max;
+  private final int retries;
   private final Random rand = new Random();
-  private int currentLimit, currentRetries;
+  private long currentLimit, currentRetries;
 
   /**
    * Construct a new {@link SchedulerBackoff} object with the given configuration. The parameters
@@ -62,7 +63,7 @@ class SchedulerBackoff {
    * @param retries The number of consecutive calls to {@link SchedulerBackoff#backoff(long)} or
    *     {@link SchedulerBackoff#relax()} that will actually cause a change in the backoff time.
    */
-  public SchedulerBackoff(int min, int max, int retries) {
+  public SchedulerBackoff(long min, long max, int retries) {
     this.min = Math.max(min, 1);
     this.max = Math.max(max, 1);
     Validate.isTrue(this.min > 0);
@@ -79,7 +80,7 @@ class SchedulerBackoff {
    * @param maxDelayMillis The maximum sleep time for this call, in milliseconds
    */
   public void backoff(long maxDelayMillis) {
-    int delay = rand.nextInt(currentLimit);
+    long delay = rand.nextLong() % currentLimit;
     currentRetries--;
     if (currentRetries == 0) {
       currentLimit = Math.min(2 * currentLimit, max);

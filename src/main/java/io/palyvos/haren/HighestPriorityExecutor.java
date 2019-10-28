@@ -40,12 +40,12 @@ class HighestPriorityExecutor extends AbstractExecutor {
 
   public HighestPriorityExecutor(int batchSize, int schedulingPeriodMillis,
       CyclicBarrier barrier, SchedulerState state) {
-    super(batchSize, schedulingPeriodMillis, barrier, state);
+    super(state, barrier);
   }
 
-  public HighestPriorityExecutor(int batchSize, int schedulingPeriodMillis,
-      CyclicBarrier barrier, SchedulerState state, int cpuId) {
-    super(batchSize, schedulingPeriodMillis, barrier, state, cpuId);
+  public HighestPriorityExecutor(SchedulerState state, CyclicBarrier barrier,
+      int cpuId) {
+    super(state, cpuId, barrier);
   }
 
   protected boolean runNextTask() {
@@ -55,7 +55,7 @@ class HighestPriorityExecutor extends AbstractExecutor {
         resetEqualPhase();
       }
       Task task = executorTasks.get(localIndex);
-      if (task.canRun() && task.runFor(batchSize)) {
+      if (task.canRun() && task.runFor(state.batchSize())) {
         LOG.trace("Executed {}", task);
 //        if (equalPhase) {
 //         LOG.info("Executed equal {}", task);

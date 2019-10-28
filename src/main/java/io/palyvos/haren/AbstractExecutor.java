@@ -51,11 +51,9 @@ public abstract class AbstractExecutor implements Runnable {
   private static final Logger LOG = LogManager.getLogger();
   private static final int BACKOFF_RETRIES = 3;
   private static final int TASK_UPDATE_LIMIT_FACTOR = 2;
-  protected final int batchSize;
   protected final CyclicBarrier barrier;
   protected final SchedulerState state;
   private final int index;
-  private final long schedulingPeriod;
   private final Set<Integer> runTasks = new HashSet<>();
   private final Set<TaskDependency> taskDependencies = new HashSet<>();
   private final SchedulerBackoff backoff;
@@ -71,19 +69,16 @@ public abstract class AbstractExecutor implements Runnable {
   private final int cpuId;
   protected volatile List<Task> executorTasks = Collections.emptyList();
 
-  public AbstractExecutor(int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
-      SchedulerState state) {
-    this(batchSize, schedulingPeriodMillis, barrier, state, -1);
+  public AbstractExecutor(SchedulerState state, CyclicBarrier barrier) {
+    this(state, -1, barrier);
   }
 
   public AbstractExecutor(
-      int batchSize, int schedulingPeriodMillis, CyclicBarrier barrier,
-      SchedulerState state, int cpuId) {
-    this.batchSize = batchSize;
-    this.schedulingPeriod = schedulingPeriodMillis;
+      SchedulerState state, int cpuId, CyclicBarrier barrier) {
     this.barrier = barrier;
     this.state = state;
-    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS, schedulingPeriodMillis / 10,
+    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS,
+        state.schedulingPeriod() / 10,
         BACKOFF_RETRIES);
     this.index = indexGenerator.getAndIncrement();
     this.cpuId = cpuId;
@@ -210,7 +205,7 @@ public abstract class AbstractExecutor implements Runnable {
     for (int i = 0; i < executorTasks.size(); i++) {
       Task task = executorTasks.get(i);
       if (state.timeToUpdate(task, timestamp,
-          TASK_UPDATE_LIMIT_FACTOR * schedulingPeriod)) {
+          TASK_UPDATE_LIMIT_FACTOR * state.schedulingPeriod())) {
         task.runFor(1);
         mark(task, i);
         laggingTasks.append(1);

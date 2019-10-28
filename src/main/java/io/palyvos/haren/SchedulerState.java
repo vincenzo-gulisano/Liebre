@@ -62,12 +62,13 @@ final class SchedulerState {
   private final long[] barrierEnter;
   private final long[] barrierExit;
   private long roundEndTime;
-  private final long schedulingPeriod;
+  private long schedulingPeriod;
+  private int batchSize;
 
   public SchedulerState(int nTasks, VectorIntraThreadSchedulingFunction priorityFunction,
       InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCachning,
-      String statisticsFolder, int nThreads, long schedulingPeriod) {
+      String statisticsFolder, int nThreads, long schedulingPeriod, int batchSize) {
     this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
         priorityFunction;
     this.interThreadSchedulingFunction = interThreadSchedulingFunction;
@@ -75,6 +76,7 @@ final class SchedulerState {
     this.taskFeatures = new double[nTasks][Features.length()];
     this.lastUpdateTime = new long[nTasks];
     this.schedulingPeriod = schedulingPeriod;
+    this.batchSize = batchSize;
     this.priorities = new double[nTasks][priorityFunction.dimensions()];
     this.comparator = new VectorIntraThreadSchedulingFunctionComparator(priorityFunction, priorities);
     this.barrierEnter = new long[nThreads];
@@ -184,5 +186,21 @@ final class SchedulerState {
       max = Math.max(d, max);
     }
     return max - min;
+  }
+
+  public long schedulingPeriod() {
+    return schedulingPeriod;
+  }
+
+  public void setSchedulingPeriod(long schedulingPeriod) {
+    this.schedulingPeriod = schedulingPeriod;
+  }
+
+  public int batchSize() {
+    return batchSize;
+  }
+
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
   }
 }

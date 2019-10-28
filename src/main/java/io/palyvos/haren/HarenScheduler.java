@@ -43,8 +43,6 @@ import org.apache.logging.log4j.Logger;
 public class HarenScheduler implements Scheduler<Task> {
 
   private static final Logger LOG = LogManager.getLogger();
-  private final int batchSize;
-  private final int schedulingPeriod;
   private final int nThreads;
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
@@ -53,7 +51,11 @@ public class HarenScheduler implements Scheduler<Task> {
   private final boolean priorityCaching;
   private final InterThreadSchedulingFunction interThreadFunction;
   private final int[] workerAffinity;
+  //FIXME: No need to keep this in two places, keep only in state
+  private int batchSize;
+  private long schedulingPeriod;
   private volatile ReconfigurationAction reconfigurationAction;
+  private SchedulerState state;
 
 
   /**
@@ -77,7 +79,7 @@ public class HarenScheduler implements Scheduler<Task> {
   public HarenScheduler(
       int nThreads, VectorIntraThreadSchedulingFunction intraThreadFunction,
       InterThreadSchedulingFunction interThreadFunction,
-      boolean caching, int batchSize, int schedulingPeriod, String statisticsFolder,
+      boolean caching, int batchSize, long schedulingPeriod, String statisticsFolder,
       BitSet workerAffinity) {
     this.nThreads = nThreads;
     this.intraThreadFunction = intraThreadFunction;
@@ -97,7 +99,7 @@ public class HarenScheduler implements Scheduler<Task> {
    * convenience.
    *
    * @see #HarenScheduler(int, VectorIntraThreadSchedulingFunction, InterThreadSchedulingFunction,
-   *     boolean, int, int, String, BitSet)
+   *     boolean, int, long, String, BitSet)
    */
   public HarenScheduler(int nThreads, SingleIntraThreadSchedulingFunction intraThreadFunction,
       InterThreadSchedulingFunction interThreadFunction,
@@ -120,14 +122,15 @@ public class HarenScheduler implements Scheduler<Task> {
     LOG.info("Worker threads: {}", nThreads);
     LOG.info("Scheduling Period: {} ms", schedulingPeriod);
     LOG.info("Batch Size: {}", batchSize);
-    final SchedulerState state = new SchedulerState(tasks.size(), intraThreadFunction,
-        interThreadFunction, priorityCaching, statisticsFolder, nThreads, schedulingPeriod);
+    state = new SchedulerState(tasks.size(), intraThreadFunction,
+        interThreadFunction, priorityCaching, statisticsFolder, nThreads, schedulingPeriod,
+        batchSize);
     final List<AbstractExecutor> executors = new ArrayList<>();
     this.reconfigurationAction = new ReconfigurationAction(tasks, executors, state);
     CyclicBarrier barrier = new CyclicBarrier(nThreads, reconfigurationAction);
     for (int i = 0; i < nThreads; i++) {
       int cpuId = getAffinity(i);
-      executors.add(new HighestPriorityExecutor(batchSize, schedulingPeriod, barrier, state,
+      executors.add(new HighestPriorityExecutor(state, barrier,
           cpuId));
     }
     for (int i = 0; i < executors.size(); i++) {
@@ -136,6 +139,17 @@ public class HarenScheduler implements Scheduler<Task> {
       threads.add(t);
       t.start();
     }
+  }
+
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+    state.setBatchSize(batchSize);
+
+  }
+
+  public void setSchedulingPeriod(long schedulingPeriod) {
+    this.schedulingPeriod = schedulingPeriod;
+    state.setSchedulingPeriod(schedulingPeriod);
   }
 
   @Override
