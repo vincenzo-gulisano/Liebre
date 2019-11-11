@@ -65,12 +65,16 @@ final class SchedulerState {
   private long schedulingPeriod;
   private int batchSize;
 
+  private final int nTasks;
+  private final boolean priorityCaching;
+
   public SchedulerState(int nTasks, VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction,
       InterThreadSchedulingFunction interThreadSchedulingFunction,
-      boolean priorityCachning,
+      boolean priorityCaching,
       String statisticsFolder, int nThreads, long schedulingPeriod, int batchSize) {
-    this.intraThreadSchedulingFunction = priorityCachning ? intraThreadSchedulingFunction.enableCaching(nTasks) :
-        intraThreadSchedulingFunction;
+    this.nTasks = nTasks;
+    this.priorityCaching = priorityCaching;
+    setIntraThreadSchedulingFunction(intraThreadSchedulingFunction);
     this.interThreadSchedulingFunction = interThreadSchedulingFunction;
     this.updated = new boolean[nTasks];
     this.taskFeatures = new double[nTasks][Features.length()];
@@ -211,6 +215,10 @@ final class SchedulerState {
 
   public void setIntraThreadSchedulingFunction(
       VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction) {
+    this.intraThreadSchedulingFunction =
+        (priorityCaching && !intraThreadSchedulingFunction.cachingEnabled())
+            ? intraThreadSchedulingFunction.enableCaching(nTasks)
+            : intraThreadSchedulingFunction;
     this.intraThreadSchedulingFunction = intraThreadSchedulingFunction;
   }
 }
