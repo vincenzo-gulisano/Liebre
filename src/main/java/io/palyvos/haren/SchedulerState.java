@@ -52,7 +52,7 @@ final class SchedulerState {
   final Comparator<Task> comparator;
   final String statisticsFolder;
   private final long[] lastUpdateTime;
-  private final VectorIntraThreadSchedulingFunction priorityFunction;
+  private VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction;
   private final InterThreadSchedulingFunction interThreadSchedulingFunction;
   private final Feature[] constantFeatures;
   //Non-constant features with at least one dependency
@@ -65,29 +65,30 @@ final class SchedulerState {
   private long schedulingPeriod;
   private int batchSize;
 
-  public SchedulerState(int nTasks, VectorIntraThreadSchedulingFunction priorityFunction,
+  public SchedulerState(int nTasks, VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction,
       InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCachning,
       String statisticsFolder, int nThreads, long schedulingPeriod, int batchSize) {
-    this.priorityFunction = priorityCachning ? priorityFunction.enableCaching(nTasks) :
-        priorityFunction;
+    this.intraThreadSchedulingFunction = priorityCachning ? intraThreadSchedulingFunction.enableCaching(nTasks) :
+        intraThreadSchedulingFunction;
     this.interThreadSchedulingFunction = interThreadSchedulingFunction;
     this.updated = new boolean[nTasks];
     this.taskFeatures = new double[nTasks][Features.length()];
     this.lastUpdateTime = new long[nTasks];
     this.schedulingPeriod = schedulingPeriod;
     this.batchSize = batchSize;
-    this.priorities = new double[nTasks][priorityFunction.dimensions()];
-    this.comparator = new VectorIntraThreadSchedulingFunctionComparator(priorityFunction, priorities);
+    this.priorities = new double[nTasks][intraThreadSchedulingFunction.dimensions()];
+    this.comparator = new VectorIntraThreadSchedulingFunctionComparator(
+        intraThreadSchedulingFunction, priorities);
     this.barrierEnter = new long[nThreads];
     this.barrierExit = new long[nThreads];
     this.statisticsFolder = statisticsFolder;
-    this.constantFeatures = getFeatures(priorityFunction, interThreadSchedulingFunction,
+    this.constantFeatures = getFeatures(intraThreadSchedulingFunction, interThreadSchedulingFunction,
         feature -> feature.isConstant());
-    this.variableFeaturesWithDependencies = getFeatures(priorityFunction,
+    this.variableFeaturesWithDependencies = getFeatures(intraThreadSchedulingFunction,
         interThreadSchedulingFunction,
         feature -> !feature.isConstant() && feature.dependencies().length > 0);
-    this.variableFeaturesNoDependencies = getFeatures(priorityFunction,
+    this.variableFeaturesNoDependencies = getFeatures(intraThreadSchedulingFunction,
         interThreadSchedulingFunction,
         feature -> !feature.isConstant() && feature.dependencies().length == 0);
     LOG.info("Constant Features: {}", Arrays.toString(constantFeatures));
@@ -146,8 +147,8 @@ final class SchedulerState {
     return variableFeaturesNoDependencies;
   }
 
-  VectorIntraThreadSchedulingFunction priorityFunction() {
-    return priorityFunction;
+  VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction() {
+    return intraThreadSchedulingFunction;
   }
 
   InterThreadSchedulingFunction deploymentFunction() {
@@ -202,5 +203,14 @@ final class SchedulerState {
 
   public void setBatchSize(int batchSize) {
     this.batchSize = batchSize;
+  }
+
+  public VectorIntraThreadSchedulingFunction getIntraThreadSchedulingFunction() {
+    return intraThreadSchedulingFunction;
+  }
+
+  public void setIntraThreadSchedulingFunction(
+      VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction) {
+    this.intraThreadSchedulingFunction = intraThreadSchedulingFunction;
   }
 }

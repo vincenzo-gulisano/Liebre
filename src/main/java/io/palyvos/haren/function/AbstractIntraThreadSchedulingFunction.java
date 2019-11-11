@@ -49,7 +49,7 @@ public abstract class AbstractIntraThreadSchedulingFunction implements
    * @param requiredFeatures The features used by this function.
    */
   protected AbstractIntraThreadSchedulingFunction(String name, Features... requiredFeatures) {
-    Validate.notEmpty(requiredFeatures, "Priority function has not features!");
+    Validate.notEmpty(requiredFeatures, "Priority function has no features!");
     Validate.notEmpty(name);
     this.requiredFeatures = requiredFeatures;
     this.dependentFunctions = new SingleIntraThreadSchedulingFunction[0];

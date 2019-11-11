@@ -103,7 +103,7 @@ class ReconfigurationAction implements Runnable {
     } else {
       updateFeaturesWithDependencies();
     }
-    state.priorityFunction().clearCache();
+    state.intraThreadSchedulingFunction().clearCache();
     List<List<Task>> assignments = deployTasks();
     assignTasks(assignments);
     state.updateRoundEndTime();

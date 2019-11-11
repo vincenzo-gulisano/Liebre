@@ -195,7 +195,7 @@ public abstract class AbstractExecutor implements Runnable {
   private void calculatePriorities() {
     long start = System.currentTimeMillis();
     for (Task task : executorTasks) {
-      state.priorityFunction().apply(task, state.taskFeatures, state.priorities[task.getIndex()]);
+      state.intraThreadSchedulingFunction().apply(task, state.taskFeatures, state.priorities[task.getIndex()]);
     }
     priorityTime.append(System.currentTimeMillis() - start);
   }

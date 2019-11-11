@@ -47,7 +47,7 @@ public class HarenScheduler implements Scheduler<Task> {
   private final List<Task> tasks = new ArrayList<>();
   private final List<Thread> threads = new ArrayList<>();
   private final String statisticsFolder;
-  private final VectorIntraThreadSchedulingFunction intraThreadFunction;
+  private VectorIntraThreadSchedulingFunction intraThreadFunction;
   private final boolean priorityCaching;
   private final InterThreadSchedulingFunction interThreadFunction;
   private final int[] workerAffinity;
@@ -150,6 +150,12 @@ public class HarenScheduler implements Scheduler<Task> {
   public void setSchedulingPeriod(long schedulingPeriod) {
     this.schedulingPeriod = schedulingPeriod;
     state.setSchedulingPeriod(schedulingPeriod);
+  }
+
+  public void setIntraThreadFunction(
+      VectorIntraThreadSchedulingFunction intraThreadFunction) {
+    this.intraThreadFunction = intraThreadFunction;
+    state.setIntraThreadSchedulingFunction(intraThreadFunction);
   }
 
   @Override

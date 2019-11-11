@@ -26,6 +26,7 @@ package scheduling.impl;
 import component.Component;
 import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;
+import io.palyvos.haren.function.VectorIntraThreadSchedulingFunction;
 import java.util.Collection;
 import scheduling.LiebreScheduler;
 
@@ -66,6 +67,11 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
 
   public void setSchedulingPeriod(long schedulingPeriod) {
     scheduler.setSchedulingPeriod(schedulingPeriod);
+  }
+
+  public void setIntraThreadFunction(
+      VectorIntraThreadSchedulingFunction intraThreadFunction) {
+    scheduler.setIntraThreadFunction(intraThreadFunction);
   }
 
   @Override
