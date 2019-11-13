@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -72,21 +73,28 @@ final class SchedulerState {
       InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCaching,
       String statisticsFolder, int nThreads, long schedulingPeriod, int batchSize) {
+    Validate.isTrue(nTasks > 0);
+    Validate.isTrue(nThreads > 0);
+    Validate.notNull(intraThreadSchedulingFunction);
+    Validate.notNull(interThreadSchedulingFunction);
+    Validate.notBlank(statisticsFolder);
+    // Init variables
     this.nTasks = nTasks;
     this.priorityCaching = priorityCaching;
+    setSchedulingPeriod(schedulingPeriod);
+    setBatchSize(batchSize);
     setIntraThreadSchedulingFunction(intraThreadSchedulingFunction);
+    this.statisticsFolder = statisticsFolder;
     this.interThreadSchedulingFunction = interThreadSchedulingFunction;
+    // Init more complex state
     this.updated = new boolean[nTasks];
     this.taskFeatures = new double[nTasks][Features.length()];
     this.lastUpdateTime = new long[nTasks];
-    this.schedulingPeriod = schedulingPeriod;
-    this.batchSize = batchSize;
     this.priorities = new double[nTasks][intraThreadSchedulingFunction.dimensions()];
     this.comparator = new VectorIntraThreadSchedulingFunctionComparator(
         intraThreadSchedulingFunction, priorities);
     this.barrierEnter = new long[nThreads];
     this.barrierExit = new long[nThreads];
-    this.statisticsFolder = statisticsFolder;
     this.constantFeatures = getFeatures(intraThreadSchedulingFunction, interThreadSchedulingFunction,
         feature -> feature.isConstant());
     this.variableFeaturesWithDependencies = getFeatures(intraThreadSchedulingFunction,
@@ -143,11 +151,11 @@ final class SchedulerState {
     return constantFeatures;
   }
 
-  public Feature[] variableFeaturesWithDependencies() {
+  Feature[] variableFeaturesWithDependencies() {
     return variableFeaturesWithDependencies;
   }
 
-  public Feature[] variableFeaturesNoDependencies() {
+  Feature[] variableFeaturesNoDependencies() {
     return variableFeaturesNoDependencies;
   }
 
@@ -163,7 +171,7 @@ final class SchedulerState {
    this.roundEndTime = System.currentTimeMillis() + schedulingPeriod;
   }
 
-  public long remainingRoundTime() {
+  long remainingRoundTime() {
     return roundEndTime - System.currentTimeMillis();
   }
 
@@ -193,27 +201,29 @@ final class SchedulerState {
     return max - min;
   }
 
-  public long schedulingPeriod() {
+  long schedulingPeriod() {
     return schedulingPeriod;
   }
 
-  public void setSchedulingPeriod(long schedulingPeriod) {
+  void setSchedulingPeriod(long schedulingPeriod) {
+    Validate.isTrue(schedulingPeriod > 0);
     this.schedulingPeriod = schedulingPeriod;
   }
 
-  public int batchSize() {
+  int batchSize() {
     return batchSize;
   }
 
-  public void setBatchSize(int batchSize) {
+  void setBatchSize(int batchSize) {
+    Validate.isTrue(batchSize > 0);
     this.batchSize = batchSize;
   }
 
-  public VectorIntraThreadSchedulingFunction getIntraThreadSchedulingFunction() {
+  VectorIntraThreadSchedulingFunction getIntraThreadSchedulingFunction() {
     return intraThreadSchedulingFunction;
   }
 
-  public void setIntraThreadSchedulingFunction(
+  void setIntraThreadSchedulingFunction(
       VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction) {
     this.intraThreadSchedulingFunction =
         (priorityCaching && !intraThreadSchedulingFunction.cachingEnabled())
