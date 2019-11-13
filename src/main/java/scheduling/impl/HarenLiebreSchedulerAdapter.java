@@ -76,7 +76,6 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
 
   @Override
   public void enable() {
-    //FIXME: Liebre specific code, not needed for final toolkit
     for (Task task : scheduler.tasks()) {
       ((Component) task).enable();
     }
@@ -89,7 +88,6 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
 
   @Override
   public void disable() {
-    //FIXME: Liebre specific code, not needed for final toolkit
     for (Task task : scheduler.tasks()) {
       ((Component) task).disable();
     }
