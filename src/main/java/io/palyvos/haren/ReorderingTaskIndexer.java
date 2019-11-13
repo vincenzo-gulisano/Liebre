@@ -1,5 +1,6 @@
 package io.palyvos.haren;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,8 +41,8 @@ public class ReorderingTaskIndexer implements TaskIndexer {
    * @return The new number of tasks.
    */
   @Override
-  public int registerTasks(Task... tasks) {
-    int neededIndexes = tasks.length - freeIndexes.size();
+  public int registerTasks(Collection<Task> tasks) {
+    int neededIndexes = tasks.size() - freeIndexes.size();
     for (int i = nTasks; i < nTasks + neededIndexes; i++) {
       freeIndexes.add(i);
     }
@@ -70,7 +71,7 @@ public class ReorderingTaskIndexer implements TaskIndexer {
   }
 
   @Override
-  public int unregisterTasks(Task... tasks) {
+  public int unregisterTasks(Collection<Task> tasks) {
     for (Task task : tasks) {
       unregisterTask(task);
     }

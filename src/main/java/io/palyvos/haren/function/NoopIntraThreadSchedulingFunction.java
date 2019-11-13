@@ -17,4 +17,8 @@ public class NoopIntraThreadSchedulingFunction extends AbstractIntraThreadSchedu
   public double apply(Task task, TaskIndexer indexer, double[][] features) {
     return 0;
   }
+
+  @Override
+  public void reset(int nTasks) {
+  }
 }

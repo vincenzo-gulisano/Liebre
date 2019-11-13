@@ -41,18 +41,28 @@ public interface IntraThreadSchedulingFunction {
 
   /**
    * Enable caching for a scheduling round. Caching enables a function implementation to maintain
-   * values that might be reused in the same scheduling period (if, for example, priorities of
-   * one task depend on the priority of some other task).
+   * values that might be reused in the same scheduling period (if, for example, priorities of one
+   * task depend on the priority of some other task).
    *
    * @param nTasks The (maximum) number of tasks.
    * @return {@code this} for chaining
    */
   IntraThreadSchedulingFunction enableCaching(int nTasks);
 
-  /**
-   * Clear the cache (if caching is enabled). Called at the end of every scheduling period.
-   */
+  /** Clear the cache (if caching is enabled). Called at the end of every scheduling period. */
   void clearCache();
+
+  /**
+   * Reset the state of the function, and adjust the state to support the (new) given number of
+   * tasks.
+   *
+   * @param nTasks The (new) number of tasks to be supported by this function.
+   */
+  default void reset(int nTasks) {
+    if (cachingEnabled()) {
+      enableCaching(nTasks);
+    }
+  }
 
   /**
    * Check if caching is enabled.
@@ -61,8 +71,6 @@ public interface IntraThreadSchedulingFunction {
    */
   boolean cachingEnabled();
 
-  /**
-   * @return The name of this function.
-   */
+  /** @return The name of this function. */
   String name();
 }

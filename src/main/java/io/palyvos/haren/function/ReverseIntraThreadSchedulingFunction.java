@@ -61,6 +61,11 @@ class ReverseIntraThreadSchedulingFunction implements
   }
 
   @Override
+  public void reset(int nTasks) {
+    original.reset(nTasks);
+  }
+
+  @Override
   public boolean cachingEnabled() {
     return original.cachingEnabled();
   }

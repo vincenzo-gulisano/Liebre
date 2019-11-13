@@ -106,6 +106,13 @@ public abstract class CachingIntraThreadSchedulingFunction extends
   }
 
   @Override
+  public void reset(int nTasks) {
+    if (caching) {
+      enableCaching(nTasks);
+    }
+  }
+
+  @Override
   public boolean cachingEnabled() {
     return caching;
   }

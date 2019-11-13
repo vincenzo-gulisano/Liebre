@@ -41,31 +41,35 @@ import org.apache.logging.log4j.Logger;
 final class SchedulerState {
 
   private static final Logger LOG = LogManager.getLogger();
+
+  private int nTasks;
+  // Scheduler parameters
+  private long schedulingPeriod;
+  private int batchSize;
+  private final boolean priorityCaching;
   // Features that might not be needed by any priority/deployment function
   // but are internally used by the scheduler
   private static final Feature[] SCHEDULER_REQUIRED_FEATURES = {Features.COMPONENT_TYPE};
-  private final boolean[] updated;
-  final double[][] taskFeatures;
-  final double[][] priorities;
-  final Comparator<Task> comparator;
-  final String statisticsFolder;
-  private final long[] lastUpdateTime;
-  private VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction;
-  private final InterThreadSchedulingFunction interThreadSchedulingFunction;
-  private final TaskIndexer indexer;
   private final Feature[] constantFeatures;
   // Non-constant features with at least one dependency
   private final Feature[] variableFeaturesWithDependencies;
   // Non-constant features with no dependencies
   private final Feature[] variableFeaturesNoDependencies;
+  // Task state
+  private boolean[] updated;
+  private long[] lastUpdateTime;
+  double[][] taskFeatures;
+  double[][] priorities;
+  // Thread state
   private final long[] barrierEnter;
   private final long[] barrierExit;
+  // Other
+  private VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction;
+  private final InterThreadSchedulingFunction interThreadSchedulingFunction;
+  private final TaskIndexer indexer;
+  final String statisticsFolder;
+  final Comparator<Task> comparator;
   private long roundEndTime;
-  private long schedulingPeriod;
-  private int batchSize;
-
-  private final int nTasks;
-  private final boolean priorityCaching;
 
   public SchedulerState(
       int nTasks,
@@ -162,8 +166,8 @@ final class SchedulerState {
   }
 
   void init(List<Task> tasks) {
-    //TODO: Call this in case of elasticity
-    interThreadSchedulingFunction.init(tasks, indexer, taskFeatures);
+    // TODO: Call this in case of elasticity
+    interThreadSchedulingFunction.reset(tasks, indexer, taskFeatures);
   }
 
   Feature[] constantFeatures() {
@@ -247,7 +251,62 @@ final class SchedulerState {
     this.intraThreadSchedulingFunction = intraThreadSchedulingFunction;
   }
 
-  public TaskIndexer indexer() {
+  TaskIndexer indexer() {
     return indexer;
+  }
+
+  void unregisterTasks(List<Task> tasksToRemove) {
+    for (Task task : tasksToRemove) {
+      clearTaskState(task);
+    }
+    indexer.unregisterTasks(tasksToRemove);
+  }
+
+  private void clearTaskState(Task task) {
+    LOG.info("Clearing state for removed task {}", task);
+    int taskIndex = indexer.schedulerIndex(task);
+    updated[taskIndex] = false;
+    double[] featureVector = taskFeatures[taskIndex];
+    for (int i = 0; i < featureVector.length; i++) {
+      featureVector[i] = 0;
+    }
+    double[] priorityVector = priorities[taskIndex];
+    for (int i = 0; i < priorityVector.length; i++) {
+      priorityVector[i] = 0;
+    }
+    lastUpdateTime[taskIndex] = 0;
+  }
+
+  public void registerTasks(List<Task> tasksToAdd) {
+    int newNumberOfTasks = indexer.registerTasks(tasksToAdd);
+    if (newNumberOfTasks > nTasks) {
+      resizeTaskState(newNumberOfTasks);
+    }
+    nTasks = newNumberOfTasks;
+  }
+
+  private void resizeTaskState(int newNumberOfTasks) {
+    LOG.info("Resizing task state from {} to {}...", nTasks, newNumberOfTasks);
+    boolean[] newUpdated = new boolean[newNumberOfTasks];
+    System.arraycopy(updated, 0, newUpdated, 0, updated.length);
+    this.updated = newUpdated;
+    long[] newLastUpdateTime = new long[newNumberOfTasks];
+    System.arraycopy(lastUpdateTime, 0, newLastUpdateTime, 0, lastUpdateTime.length);
+    this.lastUpdateTime = newLastUpdateTime;
+    this.taskFeatures = enlarge2DArray(taskFeatures, newNumberOfTasks, Features.length());
+    this.priorities =
+        enlarge2DArray(priorities, newNumberOfTasks, intraThreadSchedulingFunction.dimensions());
+  }
+
+  private double[][] enlarge2DArray(double[][] source, int destRows, int destCols) {
+    int rows = source.length;
+    int cols = source[0].length;
+    Validate.isTrue(destRows >= rows);
+    Validate.isTrue(destCols >= cols);
+    double[][] dest = new double[destRows][destCols];
+    for (int i = 0; i < rows; i++) {
+      System.arraycopy(source[i], 0, dest[i], 0, cols);
+    }
+    return dest;
   }
 }

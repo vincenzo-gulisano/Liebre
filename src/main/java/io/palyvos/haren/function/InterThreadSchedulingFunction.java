@@ -42,7 +42,7 @@ public interface InterThreadSchedulingFunction {
    * @param indexer
    * @param features The {@link Feature} matrix of these tasks.
    */
-  void init(List<Task> tasks, TaskIndexer indexer, double[][] features);
+  void reset(List<Task> tasks, TaskIndexer indexer, double[][] features);
 
   /**
    * Get the assignment of {@link Task}s to processing threads.

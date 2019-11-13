@@ -93,6 +93,13 @@ public class VectorIntraThreadSchedulingFunctionImpl
   }
 
   @Override
+  public void reset(int nTasks) {
+    for (SingleIntraThreadSchedulingFunction function : functions) {
+      function.reset(nTasks);
+    }
+  }
+
+  @Override
   public boolean cachingEnabled() {
     return caching;
   }
