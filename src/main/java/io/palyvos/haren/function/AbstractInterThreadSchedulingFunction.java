@@ -26,20 +26,21 @@ package io.palyvos.haren.function;
 import io.palyvos.haren.Feature;
 import io.palyvos.haren.Features;
 import io.palyvos.haren.Task;
+import io.palyvos.haren.TaskIndexer;
 import java.util.List;
 import org.apache.commons.lang3.Validate;
 
 /**
- * Abstract implementation of {@link InterThreadSchedulingFunction}, handling basic
- * functionality.
+ * Abstract implementation of {@link InterThreadSchedulingFunction}, handling basic functionality.
  */
-public abstract class AbstractInterThreadSchedulingFunction implements
-    InterThreadSchedulingFunction {
+public abstract class AbstractInterThreadSchedulingFunction
+    implements InterThreadSchedulingFunction {
 
   private final Features[] requiredFeatures;
   private final String name;
   protected double[][] features;
   protected List<Task> tasks;
+  protected TaskIndexer indexer;
 
   /**
    * Construct.
@@ -54,9 +55,10 @@ public abstract class AbstractInterThreadSchedulingFunction implements
   }
 
   @Override
-  public void init(List<Task> tasks, double[][] features) {
+  public void init(List<Task> tasks, TaskIndexer indexer, double[][] features) {
     this.features = features;
     this.tasks = tasks;
+    this.indexer = indexer;
   }
 
   public Feature[] requiredFeatures() {

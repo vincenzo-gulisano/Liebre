@@ -25,18 +25,18 @@ package io.palyvos.haren.function;
 
 import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;
+import io.palyvos.haren.TaskIndexer;
 
 public interface VectorIntraThreadSchedulingFunction extends IntraThreadSchedulingFunction {
 
   /**
    * Get the value vector of this function.
-   *
    * @param task The task to get the value for.
+   * @param indexer The {@link TaskIndexer} that will provide the "scheduler index" for th
    * @param features The feature matrix of all tasks.
    * @param output The value vector of the function for the given task and the current values of
-   *     the features.
    */
-  void apply(Task task, double[][] features, double[] output);
+  void apply(Task task, TaskIndexer indexer, double[][] features, double[] output);
 
   /**
    * Get the number of dimensions of this function (i.e., the size of the resulting vector).

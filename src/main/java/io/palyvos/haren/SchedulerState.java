@@ -37,11 +37,8 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * State object that contains information accessed by various scheduler comoponents.
- */
+/** State object that contains information accessed by various scheduler comoponents. */
 final class SchedulerState {
-
 
   private static final Logger LOG = LogManager.getLogger();
   // Features that might not be needed by any priority/deployment function
@@ -55,10 +52,11 @@ final class SchedulerState {
   private final long[] lastUpdateTime;
   private VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction;
   private final InterThreadSchedulingFunction interThreadSchedulingFunction;
+  private final TaskIndexer indexer;
   private final Feature[] constantFeatures;
-  //Non-constant features with at least one dependency
+  // Non-constant features with at least one dependency
   private final Feature[] variableFeaturesWithDependencies;
-  //Non-constant features with no dependencies
+  // Non-constant features with no dependencies
   private final Feature[] variableFeaturesNoDependencies;
   private final long[] barrierEnter;
   private final long[] barrierExit;
@@ -69,10 +67,15 @@ final class SchedulerState {
   private final int nTasks;
   private final boolean priorityCaching;
 
-  public SchedulerState(int nTasks, VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction,
+  public SchedulerState(
+      int nTasks,
+      VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction,
       InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCaching,
-      String statisticsFolder, int nThreads, long schedulingPeriod, int batchSize) {
+      String statisticsFolder,
+      int nThreads,
+      long schedulingPeriod,
+      int batchSize) {
     Validate.isTrue(nTasks > 0);
     Validate.isTrue(nThreads > 0);
     Validate.notNull(intraThreadSchedulingFunction);
@@ -87,31 +90,44 @@ final class SchedulerState {
     this.statisticsFolder = statisticsFolder;
     this.interThreadSchedulingFunction = interThreadSchedulingFunction;
     // Init more complex state
+    this.indexer = new ReorderingTaskIndexer(nTasks);
     this.updated = new boolean[nTasks];
     this.taskFeatures = new double[nTasks][Features.length()];
     this.lastUpdateTime = new long[nTasks];
     this.priorities = new double[nTasks][intraThreadSchedulingFunction.dimensions()];
-    this.comparator = new VectorIntraThreadSchedulingFunctionComparator(
-        intraThreadSchedulingFunction, priorities);
+    this.comparator =
+        new VectorIntraThreadSchedulingFunctionComparator(
+            intraThreadSchedulingFunction, priorities, indexer);
     this.barrierEnter = new long[nThreads];
     this.barrierExit = new long[nThreads];
-    this.constantFeatures = getFeatures(intraThreadSchedulingFunction, interThreadSchedulingFunction,
-        feature -> feature.isConstant());
-    this.variableFeaturesWithDependencies = getFeatures(intraThreadSchedulingFunction,
-        interThreadSchedulingFunction,
-        feature -> !feature.isConstant() && feature.dependencies().length > 0);
-    this.variableFeaturesNoDependencies = getFeatures(intraThreadSchedulingFunction,
-        interThreadSchedulingFunction,
-        feature -> !feature.isConstant() && feature.dependencies().length == 0);
+    this.constantFeatures =
+        getFeatures(
+            intraThreadSchedulingFunction,
+            interThreadSchedulingFunction,
+            feature -> feature.isConstant());
+    this.variableFeaturesWithDependencies =
+        getFeatures(
+            intraThreadSchedulingFunction,
+            interThreadSchedulingFunction,
+            feature -> !feature.isConstant() && feature.dependencies().length > 0);
+    this.variableFeaturesNoDependencies =
+        getFeatures(
+            intraThreadSchedulingFunction,
+            interThreadSchedulingFunction,
+            feature -> !feature.isConstant() && feature.dependencies().length == 0);
     LOG.info("Constant Features: {}", Arrays.toString(constantFeatures));
-    LOG.info("Variable Features with dependencies: {}", Arrays.toString(
-        variableFeaturesWithDependencies));
-    LOG.info("Variable Features without dependencies: {}",
+    LOG.info(
+        "Variable Features with dependencies: {}",
+        Arrays.toString(variableFeaturesWithDependencies));
+    LOG.info(
+        "Variable Features without dependencies: {}",
         Arrays.toString(variableFeaturesNoDependencies));
   }
 
-  private Feature[] getFeatures(IntraThreadSchedulingFunction intraThreadSchedulingFunction,
-      InterThreadSchedulingFunction interThreadSchedulingFunction, Predicate<Feature> predicate) {
+  private Feature[] getFeatures(
+      IntraThreadSchedulingFunction intraThreadSchedulingFunction,
+      InterThreadSchedulingFunction interThreadSchedulingFunction,
+      Predicate<Feature> predicate) {
     Set<Feature> allFeatures = new HashSet<>();
     allFeatures.addAll(Arrays.asList(intraThreadSchedulingFunction.requiredFeatures()));
     allFeatures.addAll(Arrays.asList(interThreadSchedulingFunction.requiredFeatures()));
@@ -119,32 +135,35 @@ final class SchedulerState {
     return allFeatures.stream().filter(predicate).toArray(Feature[]::new);
   }
 
-  private Feature[] getFeatures(IntraThreadSchedulingFunction intraThreadSchedulingFunction,
+  private Feature[] getFeatures(
+      IntraThreadSchedulingFunction intraThreadSchedulingFunction,
       InterThreadSchedulingFunction interThreadSchedulingFunction) {
-    return getFeatures(intraThreadSchedulingFunction, interThreadSchedulingFunction, feature -> true);
+    return getFeatures(
+        intraThreadSchedulingFunction, interThreadSchedulingFunction, feature -> true);
   }
 
   void markUpdated(Task task) {
-    updated[task.getIndex()] = true;
+    updated[indexer.schedulerIndex(task)] = true;
   }
 
   void markRun(Task task, long timestamp) {
-    lastUpdateTime[task.getIndex()] = timestamp;
-    updated[task.getIndex()] = true;
+    lastUpdateTime[indexer.schedulerIndex(task)] = timestamp;
+    updated[indexer.schedulerIndex(task)] = true;
   }
 
   boolean resetUpdated(Task task) {
-    boolean state = updated[task.getIndex()];
-    updated[task.getIndex()] = false;
+    boolean state = updated[indexer.schedulerIndex(task)];
+    updated[indexer.schedulerIndex(task)] = false;
     return state;
   }
 
   boolean timeToUpdate(Task task, long timestamp, long updateLimitMillis) {
-    return timestamp - lastUpdateTime[task.getIndex()] > updateLimitMillis;
+    return timestamp - lastUpdateTime[indexer.schedulerIndex(task)] > updateLimitMillis;
   }
 
   void init(List<Task> tasks) {
-    interThreadSchedulingFunction.init(tasks, taskFeatures);
+    //TODO: Call this in case of elasticity
+    interThreadSchedulingFunction.init(tasks, indexer, taskFeatures);
   }
 
   Feature[] constantFeatures() {
@@ -163,12 +182,12 @@ final class SchedulerState {
     return intraThreadSchedulingFunction;
   }
 
-  InterThreadSchedulingFunction deploymentFunction() {
+  InterThreadSchedulingFunction interThreadSchedulingFunction() {
     return interThreadSchedulingFunction;
   }
 
   void updateRoundEndTime() {
-   this.roundEndTime = System.currentTimeMillis() + schedulingPeriod;
+    this.roundEndTime = System.currentTimeMillis() + schedulingPeriod;
   }
 
   long remainingRoundTime() {
@@ -195,7 +214,7 @@ final class SchedulerState {
     long min = data[0];
     long max = data[0];
     for (long d : data) {
-      min = Math.min(d, min) ;
+      min = Math.min(d, min);
       max = Math.max(d, max);
     }
     return max - min;
@@ -219,10 +238,6 @@ final class SchedulerState {
     this.batchSize = batchSize;
   }
 
-  VectorIntraThreadSchedulingFunction getIntraThreadSchedulingFunction() {
-    return intraThreadSchedulingFunction;
-  }
-
   void setIntraThreadSchedulingFunction(
       VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction) {
     this.intraThreadSchedulingFunction =
@@ -230,5 +245,9 @@ final class SchedulerState {
             ? intraThreadSchedulingFunction.enableCaching(nTasks)
             : intraThreadSchedulingFunction;
     this.intraThreadSchedulingFunction = intraThreadSchedulingFunction;
+  }
+
+  public TaskIndexer indexer() {
+    return indexer;
   }
 }

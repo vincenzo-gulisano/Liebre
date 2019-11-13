@@ -87,8 +87,8 @@ public enum Features implements Feature {
   }
 
   @Override
-  public double get(Task task, double[][] features) {
-    return features[task.getIndex()][index];
+  public double get(Task task, TaskIndexer indexer, double[][] features) {
+    return features[indexer.schedulerIndex(task)][index];
   }
 
   @Override

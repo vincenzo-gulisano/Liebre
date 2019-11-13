@@ -24,6 +24,7 @@
 package io.palyvos.haren.function;
 
 import io.palyvos.haren.Task;
+import io.palyvos.haren.TaskIndexer;
 import java.util.Comparator;
 import org.apache.commons.lang3.Validate;
 
@@ -31,10 +32,13 @@ public class VectorIntraThreadSchedulingFunctionComparator implements Comparator
 
   private final double[][] priorities;
   private final boolean[] reverseOrder;
+  private final TaskIndexer indexer;
 
-  public VectorIntraThreadSchedulingFunctionComparator(VectorIntraThreadSchedulingFunction function, double[][] priorities) {
+  public VectorIntraThreadSchedulingFunctionComparator(VectorIntraThreadSchedulingFunction function,
+      double[][] priorities, TaskIndexer indexer) {
     Validate.isTrue(function.dimensions() == priorities[0].length);
     this.priorities = priorities;
+    this.indexer = indexer;
     this.reverseOrder = new boolean[function.dimensions()];
     for (int i = 0; i < function.dimensions(); i++) {
       reverseOrder[i] = function.isReverseOrder(i);
@@ -43,8 +47,8 @@ public class VectorIntraThreadSchedulingFunctionComparator implements Comparator
 
   @Override
   public int compare(Task task1, Task task2) {
-    double[] p1 = priorities[task1.getIndex()];
-    double[] p2 = priorities[task2.getIndex()];
+    double[] p1 = priorities[indexer.schedulerIndex(task1)];
+    double[] p2 = priorities[indexer.schedulerIndex(task2)];
     // Compare the priorities of all dimensions
     for (int k = 0; k < p1.length; k++) {
       int dimensionComparison = Double.compare(p1[k], p2[k]);

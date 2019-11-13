@@ -2,6 +2,7 @@ package io.palyvos.haren.function;
 
 import io.palyvos.haren.Features;
 import io.palyvos.haren.Task;
+import io.palyvos.haren.TaskIndexer;
 
 public class NoopIntraThreadSchedulingFunction extends AbstractIntraThreadSchedulingFunction {
 
@@ -13,7 +14,7 @@ public class NoopIntraThreadSchedulingFunction extends AbstractIntraThreadSchedu
   }
 
   @Override
-  public double apply(Task task, double[][] features) {
+  public double apply(Task task, TaskIndexer indexer, double[][] features) {
     return 0;
   }
 }

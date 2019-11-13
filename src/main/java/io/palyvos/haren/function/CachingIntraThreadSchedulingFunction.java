@@ -25,6 +25,7 @@ package io.palyvos.haren.function;
 
 import io.palyvos.haren.Features;
 import io.palyvos.haren.Task;
+import io.palyvos.haren.TaskIndexer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -61,26 +62,28 @@ public abstract class CachingIntraThreadSchedulingFunction extends
   }
 
   /**
-   * Template method in place of {@link #apply(Task, double[][])}, which automatically enforces
+   * Template method in place of {@link SingleIntraThreadSchedulingFunction#apply(Task, TaskIndexer, double[][])}, which automatically enforces
    * caching.
    *
    * @param task
+   * @param indexer
    * @param features
    * @return
    */
-  protected abstract double applyWithCachingSupport(Task task, double[][] features);
+  protected abstract double applyWithCachingSupport(Task task, TaskIndexer indexer,
+      double[][] features);
 
   @Override
-  public final double apply(Task task, double[][] features) {
+  public final double apply(Task task, TaskIndexer indexer, double[][] features) {
     if (caching) {
-      if (cache[task.getIndex()] < 0) {
-        double result = applyWithCachingSupport(task, features);
-        cache[task.getIndex()] = result;
+      if (cache[indexer.schedulerIndex(task)] < 0) {
+        double result = applyWithCachingSupport(task, indexer, features);
+        cache[indexer.schedulerIndex(task)] = result;
         return result;
       }
-      return cache[task.getIndex()];
+      return cache[indexer.schedulerIndex(task)];
     }
-    return applyWithCachingSupport(task, features);
+    return applyWithCachingSupport(task, indexer, features);
   }
 
   @Override

@@ -39,9 +39,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-/**
- * Class encompassing the exectuon logic of every worker thread of {@link HarenScheduler}.
- */
+/** Class encompassing the exectuon logic of every worker thread of {@link HarenScheduler}. */
 public abstract class AbstractExecutor implements Runnable {
 
   public static final String EXECUTOR_STATISTIC_TIME = "executor-time";
@@ -73,47 +71,76 @@ public abstract class AbstractExecutor implements Runnable {
     this(state, -1, barrier);
   }
 
-  public AbstractExecutor(
-      SchedulerState state, int cpuId, CyclicBarrier barrier) {
+  public AbstractExecutor(SchedulerState state, int cpuId, CyclicBarrier barrier) {
     this.barrier = barrier;
     this.state = state;
-    this.backoff = new SchedulerBackoff(BACKOFF_MIN_MILLIS,
-        state.schedulingPeriod() / 10,
-        BACKOFF_RETRIES);
+    this.backoff =
+        new SchedulerBackoff(BACKOFF_MIN_MILLIS, state.schedulingPeriod() / 10, BACKOFF_RETRIES);
     this.index = indexGenerator.getAndIncrement();
     this.cpuId = cpuId;
-    this.updateTime = new MeterStatistic(
-        StatisticPath.get(state.statisticsFolder, String.format(
-            "Update-Action-Executor-%d", index),
-            EXECUTOR_STATISTIC_TIME),
-        false);
-    this.sortTime = new MeterStatistic(
-        StatisticPath.get(state.statisticsFolder, String.format(
-            "Sort-Tasks-Executor-%d", index),
-            EXECUTOR_STATISTIC_TIME), false);
-    this.priorityTime = new MeterStatistic(
-        StatisticPath.get(state.statisticsFolder, String.format(
-            "Priority-Update-Executor-%d", index),
-            EXECUTOR_STATISTIC_TIME), false);
-    this.otherTime = new MeterStatistic(
-        StatisticPath.get(state.statisticsFolder, String.format(
-            "Other-Overheads-Executor-%d", index),
-            EXECUTOR_STATISTIC_TIME), false);
-    this.waitTime = new MeterStatistic(StatisticPath.get(state.statisticsFolder, String.format(
-        "Wait-Barrier-Executor-%d", index), EXECUTOR_STATISTIC_TIME),
-        false);
-    this.markedTasks = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
-        String.format("Marked-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
-        false);
-    this.laggingTasks = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
-        String.format("Lagging-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
-        false);
-    this.dependentTasks = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
-        String.format("Dependent-Tasks-Executor-%d", index), EXECUTED_TASK_COUNTS),
-        false);
-    this.backoffCalls = new MeterStatistic(StatisticPath.get(state.statisticsFolder,
-        String.format("Backoff-Calls-Executor-%d", index), EXECUTED_TASK_COUNTS),
-        false);
+    this.updateTime =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Update-Action-Executor-%d", index),
+                EXECUTOR_STATISTIC_TIME),
+            false);
+    this.sortTime =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Sort-Tasks-Executor-%d", index),
+                EXECUTOR_STATISTIC_TIME),
+            false);
+    this.priorityTime =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Priority-Update-Executor-%d", index),
+                EXECUTOR_STATISTIC_TIME),
+            false);
+    this.otherTime =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Other-Overheads-Executor-%d", index),
+                EXECUTOR_STATISTIC_TIME),
+            false);
+    this.waitTime =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Wait-Barrier-Executor-%d", index),
+                EXECUTOR_STATISTIC_TIME),
+            false);
+    this.markedTasks =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Marked-Tasks-Executor-%d", index),
+                EXECUTED_TASK_COUNTS),
+            false);
+    this.laggingTasks =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Lagging-Tasks-Executor-%d", index),
+                EXECUTED_TASK_COUNTS),
+            false);
+    this.dependentTasks =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Dependent-Tasks-Executor-%d", index),
+                EXECUTED_TASK_COUNTS),
+            false);
+    this.backoffCalls =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder,
+                String.format("Backoff-Calls-Executor-%d", index),
+                EXECUTED_TASK_COUNTS),
+            false);
     initTaskDependencies(state.variableFeaturesWithDependencies());
   }
 
@@ -195,7 +222,13 @@ public abstract class AbstractExecutor implements Runnable {
   private void calculatePriorities() {
     long start = System.currentTimeMillis();
     for (Task task : executorTasks) {
-      state.intraThreadSchedulingFunction().apply(task, state.taskFeatures, state.priorities[task.getIndex()]);
+      state
+          .intraThreadSchedulingFunction()
+          .apply(
+              task,
+              state.indexer(),
+              state.taskFeatures,
+              state.priorities[state.indexer().schedulerIndex(task)]);
     }
     priorityTime.append(System.currentTimeMillis() - start);
   }
@@ -204,8 +237,8 @@ public abstract class AbstractExecutor implements Runnable {
     long timestamp = System.currentTimeMillis();
     for (int i = 0; i < executorTasks.size(); i++) {
       Task task = executorTasks.get(i);
-      if (state.timeToUpdate(task, timestamp,
-          TASK_UPDATE_LIMIT_FACTOR * state.schedulingPeriod())) {
+      if (state.timeToUpdate(
+          task, timestamp, TASK_UPDATE_LIMIT_FACTOR * state.schedulingPeriod())) {
         task.runFor(1);
         mark(task, i);
         laggingTasks.append(1);
@@ -256,8 +289,9 @@ public abstract class AbstractExecutor implements Runnable {
     int totalDependentCount = 0;
     for (int taskIndex : runTasks) {
       Task task = executorTasks.get(taskIndex);
-      task.updateFeatures(state.variableFeaturesNoDependencies(),
-          state.taskFeatures[task.getIndex()]);
+      task.updateFeatures(
+          state.variableFeaturesNoDependencies(),
+          state.taskFeatures[state.indexer().schedulerIndex(task)]);
       state.markRun(task, markTime);
       for (TaskDependency taskDependency : taskDependencies) {
         for (Task dependent : taskDependency.dependents(task)) {
@@ -272,9 +306,9 @@ public abstract class AbstractExecutor implements Runnable {
   }
 
   /**
-   * Mark the task with that has the given index in the <b>LOCAL task list</b> as executed. Do
-   * NOT use {@link Task#getIndex()} in this function, except if it matches the local index
-   * (which it usually does not).
+   * Mark the task with that has the given index in the <b>LOCAL task list</b> as executed. Do NOT
+   * use {@link Task#getIndex()} in this function, except if it matches the local index (which it
+   * usually does not).
    *
    * @param task The task to mark
    * @param localIndex The index of the task in executorTasks
@@ -291,9 +325,11 @@ public abstract class AbstractExecutor implements Runnable {
     synchronized (AbstractExecutor.class) {
       LOG.info("-----Thread assignment-----");
       for (Task task : executorTasks) {
-        LOG.info("[{}, {}] -> {}", task,
-            Arrays.toString(state.priorities[task.getIndex()]),
-            Arrays.toString(state.taskFeatures[task.getIndex()]));
+        LOG.info(
+            "[{}, {}] -> {}",
+            task,
+            Arrays.toString(state.priorities[state.indexer().schedulerIndex(task)]),
+            Arrays.toString(state.taskFeatures[state.indexer().schedulerIndex(task)]));
       }
     }
   }

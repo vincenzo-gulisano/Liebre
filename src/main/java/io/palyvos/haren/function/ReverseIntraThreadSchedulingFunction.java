@@ -25,6 +25,7 @@ package io.palyvos.haren.function;
 
 import io.palyvos.haren.Feature;
 import io.palyvos.haren.Task;
+import io.palyvos.haren.TaskIndexer;
 
 /**
  * Decorator that reverses a {@link SingleIntraThreadSchedulingFunction}.
@@ -40,8 +41,8 @@ class ReverseIntraThreadSchedulingFunction implements
   }
 
   @Override
-  public double apply(Task task, double[][] features) {
-    return 1 / (original.apply(task, features) + PREVENT_DIV_ZERO);
+  public double apply(Task task, TaskIndexer indexer, double[][] features) {
+    return 1 / (original.apply(task, indexer, features) + PREVENT_DIV_ZERO);
   }
 
   @Override

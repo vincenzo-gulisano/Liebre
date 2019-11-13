@@ -44,10 +44,11 @@ public interface Feature {
    * Get the value of this feature.
    *
    * @param task The task that we want to retrieve the feature for.
+   * @param indexer
    * @param features The complete feature matrix of the SPE.
    * @return The value of this feature.
    */
-  double get(Task task, double[][] features);
+  double get(Task task, TaskIndexer indexer, double[][] features);
 
   /**
    * Get the dependencies of this feature to other features and tasks. It is possible for a feature

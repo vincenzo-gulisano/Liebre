@@ -25,6 +25,7 @@ package io.palyvos.haren.function;
 
 import io.palyvos.haren.Feature;
 import io.palyvos.haren.Task;
+import io.palyvos.haren.TaskIndexer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,11 +33,11 @@ import org.apache.commons.lang3.Validate;
 
 /**
  * Default implementatin of {@link VectorIntraThreadSchedulingFunction}. Generates a priority
- * vector. The value of each element of the vector is derived by one
- * {@link SingleIntraThreadSchedulingFunction}.
+ * vector. The value of each element of the vector is derived by one {@link
+ * SingleIntraThreadSchedulingFunction}.
  */
-public class VectorIntraThreadSchedulingFunctionImpl implements
-    VectorIntraThreadSchedulingFunction {
+public class VectorIntraThreadSchedulingFunctionImpl
+    implements VectorIntraThreadSchedulingFunction {
 
   protected final SingleIntraThreadSchedulingFunction[] functions;
   private final Feature[] requiredFeatures;
@@ -45,8 +46,9 @@ public class VectorIntraThreadSchedulingFunctionImpl implements
 
   /**
    * Construct.
+   *
    * @param functions The {@link SingleIntraThreadSchedulingFunction}s that will generate the
-   * priority vector.
+   *     priority vector.
    */
   public VectorIntraThreadSchedulingFunctionImpl(SingleIntraThreadSchedulingFunction... functions) {
     Validate.notEmpty(functions, "At least one function is needed!");
@@ -62,10 +64,10 @@ public class VectorIntraThreadSchedulingFunctionImpl implements
   }
 
   @Override
-  public void apply(Task task, double[][] features, double[] output) {
+  public void apply(Task task, TaskIndexer indexer, double[][] features, double[] output) {
     Validate.isTrue(output.length == functions.length);
     for (int k = 0; k < output.length; k++) {
-      output[k] = functions[k].apply(task, features);
+      output[k] = functions[k].apply(task, indexer, features);
     }
   }
 

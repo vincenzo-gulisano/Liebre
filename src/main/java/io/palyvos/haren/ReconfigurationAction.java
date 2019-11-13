@@ -36,10 +36,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * The functional object that performs the sequential part of what is referred to as the
- * "scheduling task" of {@link HarenScheduler}. Retrieves some of the features and runs the
- * {@link io.palyvos.haren.function.InterThreadSchedulingFunction} that assigns {@link Task}s to
- * {@link AbstractExecutor}s.
+ * The functional object that performs the sequential part of what is referred to as the "scheduling
+ * task" of {@link HarenScheduler}. Retrieves some of the features and runs the {@link
+ * io.palyvos.haren.function.InterThreadSchedulingFunction} that assigns {@link Task}s to {@link
+ * AbstractExecutor}s.
  */
 class ReconfigurationAction implements Runnable {
 
@@ -58,8 +58,8 @@ class ReconfigurationAction implements Runnable {
   private final AbstractCummulativeStatistic barrierExitVariance;
   private boolean firstUpdate = true;
 
-  public ReconfigurationAction(List<Task> inputTasks, List<AbstractExecutor> executors,
-      SchedulerState state) {
+  public ReconfigurationAction(
+      List<Task> inputTasks, List<AbstractExecutor> executors, SchedulerState state) {
     this.tasks = new ArrayList(inputTasks);
     Collections.sort(tasks, Comparator.comparingInt(Task::getIndex));
     this.executors = executors;
@@ -67,19 +67,30 @@ class ReconfigurationAction implements Runnable {
     this.state.init(tasks);
 
     // Statistics Initialization
-    this.totalCalls = new MeterStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "Total-Calls"), STATISTIC_CALLS), false);
-    this.updateTime = new MeterStatistic(StatisticPath.get(state.statisticsFolder, statisticName(
-        "Update-Features"), STATISTIC_TIME), false);
-    this.deploymentTime = new MeterStatistic(
-        StatisticPath.get(state.statisticsFolder, statisticName(
-            "Deploy-Tasks"), STATISTIC_TIME), false);
-    this.barrierEnterVariance = new HistogramStatistic(
-        StatisticPath.get(state.statisticsFolder, statisticName(
-            "Enter-Variance"), BARRIER_INFO), false);
-    this.barrierExitVariance = new HistogramStatistic(
-        StatisticPath.get(state.statisticsFolder, statisticName(
-            "Exit-Variance"), BARRIER_INFO), false);
+    this.totalCalls =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder, statisticName("Total-Calls"), STATISTIC_CALLS),
+            false);
+    this.updateTime =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder, statisticName("Update-Features"), STATISTIC_TIME),
+            false);
+    this.deploymentTime =
+        new MeterStatistic(
+            StatisticPath.get(
+                state.statisticsFolder, statisticName("Deploy-Tasks"), STATISTIC_TIME),
+            false);
+    this.barrierEnterVariance =
+        new HistogramStatistic(
+            StatisticPath.get(
+                state.statisticsFolder, statisticName("Enter-Variance"), BARRIER_INFO),
+            false);
+    this.barrierExitVariance =
+        new HistogramStatistic(
+            StatisticPath.get(state.statisticsFolder, statisticName("Exit-Variance"), BARRIER_INFO),
+            false);
   }
 
   static String statisticName(String action) {
@@ -116,8 +127,9 @@ class ReconfigurationAction implements Runnable {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
       if (state.resetUpdated(task)) {
-        task.updateFeatures(state.variableFeaturesWithDependencies(),
-            state.taskFeatures[task.getIndex()]);
+        task.updateFeatures(
+            state.variableFeaturesWithDependencies(),
+            state.taskFeatures[state.indexer().schedulerIndex(task)]);
       }
     }
     updateTime.append(System.currentTimeMillis() - startTime);
@@ -127,18 +139,22 @@ class ReconfigurationAction implements Runnable {
     long startTime = System.currentTimeMillis();
     for (Task task : tasks) {
       task.refreshFeatures();
-      task.updateFeatures(state.constantFeatures(), state.taskFeatures[task.getIndex()]);
-      task.updateFeatures(state.variableFeaturesNoDependencies(),
-          state.taskFeatures[task.getIndex()]);
-      task.updateFeatures(state.variableFeaturesWithDependencies(),
-          state.taskFeatures[task.getIndex()]);
+      task.updateFeatures(
+          state.constantFeatures(), state.taskFeatures[state.indexer().schedulerIndex(task)]);
+      task.updateFeatures(
+          state.variableFeaturesNoDependencies(),
+          state.taskFeatures[state.indexer().schedulerIndex(task)]);
+      task.updateFeatures(
+          state.variableFeaturesWithDependencies(),
+          state.taskFeatures[state.indexer().schedulerIndex(task)]);
     }
     updateTime.append(System.currentTimeMillis() - startTime);
   }
 
   private List<List<Task>> deployTasks() {
     long startTime = System.currentTimeMillis();
-    List<List<Task>> assignments = state.deploymentFunction().getAssignment(executors.size());
+    List<List<Task>> assignments =
+        state.interThreadSchedulingFunction().getAssignment(executors.size());
     deploymentTime.append(System.currentTimeMillis() - startTime);
     return assignments;
   }
@@ -160,5 +176,4 @@ class ReconfigurationAction implements Runnable {
     barrierEnterVariance.disable();
     barrierExitVariance.disable();
   }
-
 }
