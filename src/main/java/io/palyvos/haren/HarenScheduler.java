@@ -125,10 +125,10 @@ public class HarenScheduler implements Scheduler<Task> {
   @Override
   public void start() {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
+    stateBuilder.setTaskNumber(tasks.size()).setThreadNumber(nThreads);
     LOG.info("Starting Scheduler");
     LOG.info(stateBuilder.toString());
-    state =
-        stateBuilder.setTaskNumber(tasks.size()).setThreadNumber(nThreads).createSchedulerState();
+    state = stateBuilder.createSchedulerState();
     final List<AbstractExecutor> executors = new ArrayList<>();
     this.reconfigurationAction = new ReconfigurationAction(tasks, executors, state);
     CyclicBarrier barrier = new CyclicBarrier(nThreads, reconfigurationAction);
