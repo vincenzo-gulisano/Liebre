@@ -23,24 +23,41 @@
 
 package common.statistic;
 
-import com.codahale.metrics.Meter;
+import com.codahale.metrics.Gauge;
 
-/**
- * Statistic that records the per-second sum of the recorded value.
- */
+/** Statistic that records the per-second sum of the recorded value. */
 public class MeterStatistic extends AbstractCummulativeStatistic {
 
-	private final Meter meter;
+  private final AverageGauge gauge;
+  private static class AverageGauge implements Gauge<Long> {
+        private long startTime = System.currentTimeMillis();
+        private long sum = 0;
 
-	public MeterStatistic(String outputFile, boolean autoFlush) {
-		super(outputFile, autoFlush);
-		meter = LiebreMetricRegistry.get().meter(metricName);
-	}
+        void add(long value) {
+          synchronized (this) {
+            sum += value;
+          }
+        }
 
-	@Override
-	protected void doAppend(long v) {
-    meter.mark(v);
-	}
+        @Override
+        public Long getValue() {
+          long newTime = System.currentTimeMillis();
+          long value = (1000 * sum) / (newTime - startTime);
+          synchronized (this) {
+            startTime = newTime;
+            sum = 0;
+          }
+          return value;
+        }
+      }
 
+  public MeterStatistic(String outputFile, boolean autoFlush) {
+    super(outputFile, autoFlush);
+    gauge = (AverageGauge) LiebreMetricRegistry.get().gauge(metricName, AverageGauge::new);
+  }
 
+  @Override
+  protected void doAppend(long v) {
+    gauge.add(v);
+  }
 }
