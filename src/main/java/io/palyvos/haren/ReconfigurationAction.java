@@ -28,7 +28,7 @@ import common.statistic.HistogramStatistic;
 import common.statistic.MeterStatistic;
 import common.util.StatisticPath;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -67,7 +67,7 @@ class ReconfigurationAction implements Runnable {
     Collections.sort(tasks, Comparator.comparingInt(Task::getIndex));
     this.executors = executors;
     this.state = state;
-    this.state.init(tasks);
+    this.state.resetSchedulingFunctions(tasks);
 
     // Statistics Initialization
     this.totalCalls =
@@ -111,13 +111,13 @@ class ReconfigurationAction implements Runnable {
   @Override
   public void run() {
     Validate.isTrue(tasks.size() > 0, "No tasks given!");
-    if (firstUpdate) {
+    boolean configurationChanged = addRemoveTasks();
+    if (firstUpdate || configurationChanged) {
       updateAllFeatures();
       firstUpdate = false;
     } else {
       updateFeaturesWithDependencies();
     }
-    addRemoveTasks();
     state.intraThreadSchedulingFunction().clearCache();
     List<List<Task>> assignments = deployTasks();
     assignTasks(assignments);
@@ -125,26 +125,6 @@ class ReconfigurationAction implements Runnable {
     totalCalls.append(1);
     barrierEnterVariance.append(state.barrierEnterVariance());
     barrierExitVariance.append(state.barrierExitVariance());
-  }
-
-  private void addRemoveTasks() {
-    boolean configurationChanged = false;
-    if (!tasksToRemove.isEmpty()) {
-      state.unregisterTasks(tasksToRemove);
-      tasksToRemove.clear();
-      configurationChanged = true;
-    }
-    if (!tasksToAdd.isEmpty()) {
-      state.registerTasks(tasksToAdd);
-      tasksToAdd.clear();
-      configurationChanged = true;
-    }
-    if (configurationChanged) {
-      // Notify scheduling functions so that they can clear all their internal state
-      state.interThreadSchedulingFunction().reset(tasks, state.indexer(), state.taskFeatures);
-      // FIXME: Don't keep nTasks in multiple places!
-      state.intraThreadSchedulingFunction().reset(tasks.size());
-    }
   }
 
   private void updateFeaturesWithDependencies() {
@@ -201,11 +181,35 @@ class ReconfigurationAction implements Runnable {
     barrierExitVariance.disable();
   }
 
-  void addTasks(Task... tasks) {
-    tasksToAdd.addAll(Arrays.asList(tasks));
+  private synchronized boolean addRemoveTasks() {
+    boolean configurationChanged = false;
+    if (!tasksToRemove.isEmpty()) {
+      state.unregisterTasks(tasksToRemove);
+      configurationChanged = true;
+    }
+    if (!tasksToAdd.isEmpty()) {
+      state.registerTasks(tasksToAdd);
+      configurationChanged = true;
+    }
+    if (configurationChanged) {
+      tasks.removeAll(tasksToRemove);
+      LOG.debug("Removed tasks: {}", tasksToRemove);
+      tasks.addAll(tasksToAdd);
+      LOG.debug("Added tasks: {}", tasksToAdd);
+      tasksToRemove.clear();
+      tasksToAdd.clear();
+      // Notify scheduling functions so that they can clear all their internal state
+      state.resetSchedulingFunctions(tasks);
+      LOG.debug("Reconfiguration complete.");
+    }
+    return configurationChanged;
   }
 
-  void removeTasks(Task... tasks) {
-    tasksToRemove.addAll(Arrays.asList(tasks));
+  synchronized void addTasks(Collection<Task> tasks) {
+    tasksToAdd.addAll(tasks);
+  }
+
+  synchronized void removeTasks(Collection<Task> tasks) {
+    tasksToRemove.addAll(tasks);
   }
 }

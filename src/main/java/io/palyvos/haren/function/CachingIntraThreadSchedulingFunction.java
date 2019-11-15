@@ -106,9 +106,9 @@ public abstract class CachingIntraThreadSchedulingFunction extends
   }
 
   @Override
-  public void reset(int nTasks) {
+  public void reset(int taskCapacity) {
     if (caching) {
-      enableCaching(nTasks);
+      enableCaching(taskCapacity);
     }
   }
 

@@ -30,25 +30,29 @@ import io.palyvos.haren.TaskIndexer;
 import java.util.List;
 
 /**
- * Abstraction of a function that assigns {@link Task}s to
- * {@link HarenScheduler}'s processing threads.
+ * Abstraction of a function that assigns {@link Task}s to {@link HarenScheduler}'s processing
+ * threads.
  */
 public interface InterThreadSchedulingFunction {
 
   /**
-   * Initialize the function with the {@link Task}s that will be assigned and their
-   * {@link Feature} matrix
+   * Initialize the function with the {@link Task}s that will be assigned and their {@link Feature}
+   * matrix
+   *
    * @param tasks The {@link Task}s that this function will assign.
-   * @param indexer
+   * @param taskCapacity The maximum number of tasks that must be supported (based on the IDs that
+   *     will be provided by the {@link TaskIndexer}
+   * @param indexer The {@link TaskIndexer} that assigns scheduler indexes to {@link Task}s
    * @param features The {@link Feature} matrix of these tasks.
    */
-  void reset(List<Task> tasks, TaskIndexer indexer, double[][] features);
+  void reset(List<Task> tasks, int taskCapacity, TaskIndexer indexer, double[][] features);
 
   /**
    * Get the assignment of {@link Task}s to processing threads.
+   *
    * @param nThreads The number of available processing threads.
    * @return A {@link List}, each element of which is the {@link Task}s that are assigned to the
-   * thread with that index.
+   *     thread with that index.
    */
   List<List<Task>> getAssignment(int nThreads);
 
@@ -59,9 +63,6 @@ public interface InterThreadSchedulingFunction {
    */
   Feature[] requiredFeatures();
 
-  /**
-   * @return The name of this function.
-   */
+  /** @return The name of this function. */
   String name();
-
 }

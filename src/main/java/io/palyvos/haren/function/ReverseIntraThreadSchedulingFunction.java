@@ -61,8 +61,8 @@ class ReverseIntraThreadSchedulingFunction implements
   }
 
   @Override
-  public void reset(int nTasks) {
-    original.reset(nTasks);
+  public void reset(int taskCapacity) {
+    original.reset(taskCapacity);
   }
 
   @Override

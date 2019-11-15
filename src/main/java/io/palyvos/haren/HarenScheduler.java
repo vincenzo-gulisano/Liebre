@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 // FIXME: Remove statistics from final version
 public class HarenScheduler implements Scheduler<Task> {
 
+  private volatile boolean active;
   private static final Logger LOG = LogManager.getLogger();
   private final int nThreads;
   private final List<Task> tasks = new ArrayList<>();
@@ -125,6 +126,7 @@ public class HarenScheduler implements Scheduler<Task> {
   @Override
   public void start() {
     Validate.isTrue(tasks.size() >= nThreads, "Tasks less than threads!");
+    active = true;
     stateBuilder.setTaskNumber(tasks.size()).setThreadNumber(nThreads);
     LOG.info("Starting Scheduler");
     LOG.info(stateBuilder.toString());
@@ -144,6 +146,20 @@ public class HarenScheduler implements Scheduler<Task> {
     }
   }
 
+  @Override
+  public void stop() {
+    reconfigurationAction.stop();
+    for (Thread thread : threads) {
+      thread.interrupt();
+      try {
+        thread.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    active = false;
+  }
+
   public void setBatchSize(int batchSize) {
     state.setBatchSize(batchSize);
   }
@@ -158,20 +174,21 @@ public class HarenScheduler implements Scheduler<Task> {
 
   @Override
   public void addTasks(Collection<Task> tasks) {
-    this.tasks.addAll(tasks);
+    if (active) {
+      reconfigurationAction.addTasks(tasks);
+    } else {
+      this.tasks.addAll(tasks);
+    }
+    LOG.info("{} reconfiguration. Adding: {} tasks", reconfigurationType(), tasks.size());
   }
 
-  @Override
-  public void stop() {
-    reconfigurationAction.stop();
-    for (Thread thread : threads) {
-      thread.interrupt();
-      try {
-        thread.join();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+  public void removeTasks(Collection<Task> tasks) {
+    if (active) {
+      reconfigurationAction.removeTasks(tasks);
+    } else {
+      this.tasks.removeAll(tasks);
     }
+    LOG.info("{} reconfiguration. Removing: {} tasks", reconfigurationType(), tasks.size());
   }
 
   private int getAffinity(int i) {
@@ -180,5 +197,9 @@ public class HarenScheduler implements Scheduler<Task> {
 
   public List<Task> tasks() {
     return tasks;
+  }
+
+  private String reconfigurationType() {
+    return active ? "Live" : "Static";
   }
 }

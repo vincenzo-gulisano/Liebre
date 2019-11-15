@@ -56,11 +56,11 @@ public interface IntraThreadSchedulingFunction {
    * Reset the state of the function, and adjust the state to support the (new) given number of
    * tasks.
    *
-   * @param nTasks The (new) number of tasks to be supported by this function.
+   * @param taskCapacity The (new) maximum number of tasks to be supported by this function.
    */
-  default void reset(int nTasks) {
+  default void reset(int taskCapacity) {
     if (cachingEnabled()) {
-      enableCaching(nTasks);
+      enableCaching(taskCapacity);
     }
   }
 

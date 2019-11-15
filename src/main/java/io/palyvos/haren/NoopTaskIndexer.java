@@ -10,12 +10,17 @@ public class NoopTaskIndexer implements TaskIndexer {
   }
 
   @Override
-  public int registerTasks(Collection<Task> tasks) {
+  public void registerTasks(Collection<Task> tasks) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public int unregisterTasks(Collection<Task> tasks) {
+  public void unregisterTasks(Collection<Task> tasks) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public int indexedTasks() {
     throw new UnsupportedOperationException();
   }
 }

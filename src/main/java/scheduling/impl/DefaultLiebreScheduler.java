@@ -58,7 +58,18 @@ public class DefaultLiebreScheduler implements LiebreScheduler<Component> {
 
   @Override
   public void addTasks(Collection<Component> tasks) {
+    if (isEnabled()) {
+      throw new IllegalStateException();
+    }
     this.tasks.addAll(tasks);
+  }
+
+  @Override
+  public void removeTasks(Collection<Component> tasks) {
+    if (isEnabled()) {
+      throw new IllegalStateException();
+    }
+    this.tasks.removeAll(tasks);
   }
 
   @Override

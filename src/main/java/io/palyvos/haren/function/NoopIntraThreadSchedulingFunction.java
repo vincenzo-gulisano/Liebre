@@ -19,6 +19,6 @@ public class NoopIntraThreadSchedulingFunction extends AbstractIntraThreadSchedu
   }
 
   @Override
-  public void reset(int nTasks) {
+  public void reset(int taskCapacity) {
   }
 }

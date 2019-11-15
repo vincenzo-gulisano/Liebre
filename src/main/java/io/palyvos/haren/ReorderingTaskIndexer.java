@@ -8,14 +8,27 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * {@link TaskIndexer} that maintains an association of {@link Task} indexes to scheduler indexes to
+ * make efficient use of the scheduler data structures in case of reconfigurations.
+ *
+ * <p>Internally, it uses a {@link HashMap} to maintain the remappings of indexes. For performance
+ * reasons, only tasks whose scheduling index is different than the actual index are maintained in
+ * the internal map.
+ */
 public class ReorderingTaskIndexer implements TaskIndexer {
 
   private final Map<Integer, Integer> taskIndexes = new HashMap<>();
   private final Set<Integer> freeIndexes = new HashSet<>();
-  private int nTasks;
+  private int indexedTasksNumber;
 
-  ReorderingTaskIndexer(int nTasks) {
-    this.nTasks = nTasks;
+  /**
+   * Construct.
+   *
+   * @param indexedTasksNumber The number of tasks that are will be scheduled when this indexer is constructed.
+   */
+  ReorderingTaskIndexer(int indexedTasksNumber) {
+    this.indexedTasksNumber = indexedTasksNumber;
   }
 
   /**
@@ -30,7 +43,8 @@ public class ReorderingTaskIndexer implements TaskIndexer {
     if (taskIndexes.isEmpty()) {
       return task.getIndex();
     } else {
-      return taskIndexes.get(task.getIndex());
+      Integer mappedIndex = taskIndexes.get(task.getIndex());
+      return mappedIndex != null ? mappedIndex : task.getIndex();
     }
   }
 
@@ -38,29 +52,27 @@ public class ReorderingTaskIndexer implements TaskIndexer {
    * Register multiple tasks at a time.
    *
    * @param tasks The tasks to be registered.
-   * @return The new number of tasks.
    */
   @Override
-  public int registerTasks(Collection<Task> tasks) {
+  public synchronized void registerTasks(Collection<Task> tasks) {
     int neededIndexes = tasks.size() - freeIndexes.size();
-    for (int i = nTasks; i < nTasks + neededIndexes; i++) {
+    for (int i = indexedTasksNumber; i < indexedTasksNumber + neededIndexes; i++) {
       freeIndexes.add(i);
     }
     for (Task task : tasks) {
       registerTask(task);
     }
-    return nTasks;
   }
 
-  private void registerTask(Task task) {
-    nTasks += 1;
+  private synchronized void registerTask(Task task) {
+    indexedTasksNumber += 1;
     final boolean taskIndexIsFree = freeIndexes.remove(task.getIndex());
     if (taskIndexIsFree) {
       // No need for reordering, schedulerIndex = task.getIndex()
       return;
     } else if (freeIndexes.isEmpty()) {
       // No free indexes, create new free index and reorder
-      taskIndexes.put(nTasks - 1, task.getIndex());
+      taskIndexes.put(indexedTasksNumber - 1, task.getIndex());
     } else {
       // Use a free index for reordering
       Iterator<Integer> freeIndexIterator = freeIndexes.iterator();
@@ -71,18 +83,22 @@ public class ReorderingTaskIndexer implements TaskIndexer {
   }
 
   @Override
-  public int unregisterTasks(Collection<Task> tasks) {
+  public synchronized void unregisterTasks(Collection<Task> tasks) {
     for (Task task : tasks) {
       unregisterTask(task);
     }
-    return nTasks;
   }
 
-  private void unregisterTask(Task task) {
+  @Override
+  public int indexedTasks() {
+    return indexedTasksNumber;
+  }
+
+  private synchronized void unregisterTask(Task task) {
     // Set the "scheduler" index of the task and add it to the free indexes
     Integer reorderIndex = taskIndexes.remove(task.getIndex());
-    int schedulerIndex = Optional.of(reorderIndex).orElse(task.getIndex());
+    int schedulerIndex = Optional.ofNullable(reorderIndex).orElse(task.getIndex());
     freeIndexes.add(schedulerIndex);
-    nTasks -= 1;
+    indexedTasksNumber -= 1;
   }
 }

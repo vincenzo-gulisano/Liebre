@@ -93,9 +93,9 @@ public class VectorIntraThreadSchedulingFunctionImpl
   }
 
   @Override
-  public void reset(int nTasks) {
+  public void reset(int taskCapacity) {
     for (SingleIntraThreadSchedulingFunction function : functions) {
-      function.reset(nTasks);
+      function.reset(taskCapacity);
     }
   }
 

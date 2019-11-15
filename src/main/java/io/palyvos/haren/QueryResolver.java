@@ -40,11 +40,10 @@ public class QueryResolver {
 
   private static final Logger LOG = LogManager.getLogger();
   private final Map<Integer, List<Task>> queryToTasks = new HashMap<>();
-  private final int[] taskToQuery;
+  private final Map<Integer, Integer> taskToQuery = new HashMap<>();
   private int nQueries;
 
   public QueryResolver(List<Task> tasks) {
-    taskToQuery = new int[tasks.size()];
     resolveQueries(tasks);
   }
 
@@ -63,7 +62,7 @@ public class QueryResolver {
   }
 
   private void traverseTaskGraph(Task task) {
-    if (taskToQuery[task.getIndex()] > 0) { // Visited
+    if (getOrZero(taskToQuery, task.getIndex()) > 0) { // Visited
       return;
     }
     nQueries += 1;
@@ -73,15 +72,20 @@ public class QueryResolver {
     while (!q.isEmpty()) {
       Task current = q.removeFirst();
       final int currentIndex = current.getIndex();
-      if (taskToQuery[currentIndex] == 0) { // Not visited
+      if (getOrZero(taskToQuery, currentIndex) == 0) { // Not visited
         // Update both representations
         queryToTasks.get(nQueries).add(current);
-        taskToQuery[currentIndex] = nQueries;
+        taskToQuery.put(currentIndex, nQueries);
         // Recursively for the rest of the graph
         current.getDownstream().forEach(t -> q.addLast(t));
         current.getUpstream().forEach(t -> q.addLast(t));
       }
     }
+  }
+
+  private int getOrZero(Map<Integer, Integer> map, int key) {
+    Integer value = map.get(key);
+    return value != null ? value : 0;
   }
 
 }

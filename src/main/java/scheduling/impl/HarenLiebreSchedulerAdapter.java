@@ -23,6 +23,7 @@
 
 package scheduling.impl;
 
+import common.Active;
 import component.Component;
 import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;
@@ -43,8 +44,22 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
 
   @Override
   public void addTasks(Collection<Task> tasks) {
+    // In case of live changes, the scheduler explicitly enables the tasks
+    if (isEnabled()) {
+      tasks.stream().forEach((task -> ((Active) task).enable()));
+    }
     scheduler.addTasks(tasks);
   }
+
+  @Override
+  public void removeTasks(Collection<Task> tasks) {
+    // In case of live changes, the scheduler explicitly disables the tasks
+    if (isEnabled()) {
+      tasks.stream().forEach((task -> ((Active) task).disable()));
+    }
+    scheduler.removeTasks(tasks);
+  }
+
 
   @Override
   public void startTasks() {
@@ -92,4 +107,5 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
       ((Component) task).disable();
     }
   }
+
 }

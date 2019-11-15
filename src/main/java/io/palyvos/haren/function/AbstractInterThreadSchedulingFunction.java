@@ -55,7 +55,7 @@ public abstract class AbstractInterThreadSchedulingFunction
   }
 
   @Override
-  public void reset(List<Task> tasks, TaskIndexer indexer, double[][] features) {
+  public void reset(List<Task> tasks, int taskCapacity, TaskIndexer indexer, double[][] features) {
     this.features = features;
     this.tasks = tasks;
     this.indexer = indexer;

@@ -42,7 +42,7 @@ final class SchedulerState {
 
   private static final Logger LOG = LogManager.getLogger();
 
-  private int nTasks;
+  private int taskCapacity;
   // Scheduler parameters
   private long schedulingPeriod;
   private int batchSize;
@@ -68,11 +68,11 @@ final class SchedulerState {
   private final InterThreadSchedulingFunction interThreadSchedulingFunction;
   private final TaskIndexer indexer;
   final String statisticsFolder;
-  final Comparator<Task> comparator;
+  Comparator<Task> comparator;
   private long roundEndTime;
 
   public SchedulerState(
-      int nTasks,
+      int taskCapacity,
       VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction,
       InterThreadSchedulingFunction interThreadSchedulingFunction,
       boolean priorityCaching,
@@ -80,30 +80,27 @@ final class SchedulerState {
       int nThreads,
       long schedulingPeriod,
       int batchSize) {
-    Validate.isTrue(nTasks > 0);
+    Validate.isTrue(taskCapacity > 0);
     Validate.isTrue(nThreads > 0);
     Validate.notNull(intraThreadSchedulingFunction);
     Validate.notNull(interThreadSchedulingFunction);
     Validate.notBlank(statisticsFolder);
+    // Init complex state
+    this.indexer = new ReorderingTaskIndexer(taskCapacity);
+    this.updated = new boolean[taskCapacity];
+    this.taskFeatures = new double[taskCapacity][Features.length()];
+    this.lastUpdateTime = new long[taskCapacity];
+    this.priorities = new double[taskCapacity][intraThreadSchedulingFunction.dimensions()];
+    this.barrierEnter = new long[nThreads];
+    this.barrierExit = new long[nThreads];
     // Init variables
-    this.nTasks = nTasks;
+    this.taskCapacity = taskCapacity;
     this.priorityCaching = priorityCaching;
     setSchedulingPeriod(schedulingPeriod);
     setBatchSize(batchSize);
     setIntraThreadSchedulingFunction(intraThreadSchedulingFunction);
     this.statisticsFolder = statisticsFolder;
     this.interThreadSchedulingFunction = interThreadSchedulingFunction;
-    // Init more complex state
-    this.indexer = new ReorderingTaskIndexer(nTasks);
-    this.updated = new boolean[nTasks];
-    this.taskFeatures = new double[nTasks][Features.length()];
-    this.lastUpdateTime = new long[nTasks];
-    this.priorities = new double[nTasks][intraThreadSchedulingFunction.dimensions()];
-    this.comparator =
-        new VectorIntraThreadSchedulingFunctionComparator(
-            intraThreadSchedulingFunction, priorities, indexer);
-    this.barrierEnter = new long[nThreads];
-    this.barrierExit = new long[nThreads];
     this.constantFeatures =
         getFeatures(
             intraThreadSchedulingFunction,
@@ -163,11 +160,6 @@ final class SchedulerState {
 
   boolean timeToUpdate(Task task, long timestamp, long updateLimitMillis) {
     return timestamp - lastUpdateTime[indexer.schedulerIndex(task)] > updateLimitMillis;
-  }
-
-  void init(List<Task> tasks) {
-    // TODO: Call this in case of elasticity
-    interThreadSchedulingFunction.reset(tasks, indexer, taskFeatures);
   }
 
   Feature[] constantFeatures() {
@@ -242,13 +234,25 @@ final class SchedulerState {
     this.batchSize = batchSize;
   }
 
+  void resetSchedulingFunctions(List<Task> tasks) {
+    interThreadSchedulingFunction().reset(tasks, taskCapacity, indexer, taskFeatures);
+    intraThreadSchedulingFunction().reset(taskCapacity);
+    resetIntraThreadPriorityComparator();
+  }
+
   void setIntraThreadSchedulingFunction(
       VectorIntraThreadSchedulingFunction intraThreadSchedulingFunction) {
     this.intraThreadSchedulingFunction =
         (priorityCaching && !intraThreadSchedulingFunction.cachingEnabled())
-            ? intraThreadSchedulingFunction.enableCaching(nTasks)
+            ? intraThreadSchedulingFunction.enableCaching(taskCapacity)
             : intraThreadSchedulingFunction;
-    this.intraThreadSchedulingFunction = intraThreadSchedulingFunction;
+    resetIntraThreadPriorityComparator();
+  }
+
+  void resetIntraThreadPriorityComparator() {
+    this.comparator =
+        new VectorIntraThreadSchedulingFunctionComparator(
+            this.intraThreadSchedulingFunction, priorities, indexer);
   }
 
   TaskIndexer indexer() {
@@ -278,15 +282,18 @@ final class SchedulerState {
   }
 
   public void registerTasks(List<Task> tasksToAdd) {
-    int newNumberOfTasks = indexer.registerTasks(tasksToAdd);
-    if (newNumberOfTasks > nTasks) {
+    indexer.registerTasks(tasksToAdd);
+    int newNumberOfTasks = indexer.indexedTasks();
+    if (newNumberOfTasks > taskCapacity) {
       resizeTaskState(newNumberOfTasks);
+      // Note: In the current implementation, the number of tasks never decreases
+      // so we only do this step for additional tasks
+      taskCapacity = newNumberOfTasks;
     }
-    nTasks = newNumberOfTasks;
   }
 
   private void resizeTaskState(int newNumberOfTasks) {
-    LOG.info("Resizing task state from {} to {}...", nTasks, newNumberOfTasks);
+    LOG.info("Resizing task state from {} to {}...", taskCapacity, newNumberOfTasks);
     boolean[] newUpdated = new boolean[newNumberOfTasks];
     System.arraycopy(updated, 0, newUpdated, 0, updated.length);
     this.updated = newUpdated;
