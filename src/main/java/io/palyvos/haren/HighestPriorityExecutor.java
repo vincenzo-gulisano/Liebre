@@ -56,7 +56,6 @@ class HighestPriorityExecutor extends AbstractExecutor {
       }
       Task task = executorTasks.get(localIndex);
       if (task.canRun() && task.runFor(state.batchSize())) {
-        LOG.trace("Executed {}", task);
 //        if (equalPhase) {
 //         LOG.info("Executed equal {}", task);
 //        }

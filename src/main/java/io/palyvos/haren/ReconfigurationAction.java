@@ -31,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,11 +62,13 @@ class ReconfigurationAction implements Runnable {
   private boolean firstUpdate = true;
   private List<Task> tasksToAdd = new ArrayList<>();
   private List<Task> tasksToRemove = new ArrayList<>();
+  private final Set<Integer> taskIndexes = new HashSet<>();
 
   public ReconfigurationAction(
       List<Task> inputTasks, List<AbstractExecutor> executors, SchedulerState state) {
     this.tasks = new ArrayList(inputTasks);
     Collections.sort(tasks, Comparator.comparingInt(Task::getIndex));
+    this.taskIndexes.addAll(HarenScheduler.taskIndexes(tasks));
     this.executors = executors;
     this.state = state;
     this.state.resetSchedulingFunctions(tasks);
@@ -165,12 +169,17 @@ class ReconfigurationAction implements Runnable {
 
   private void assignTasks(List<List<Task>> assignments) {
     Validate.isTrue(assignments.size() <= executors.size(), "#assignments > #threads");
+    int taskCount = 0;
     for (int threadId = 0; threadId < executors.size(); threadId++) {
       // Give no work to executors with no assignment
       List<Task> assignment =
           threadId < assignments.size() ? assignments.get(threadId) : Collections.emptyList();
       executors.get(threadId).setTasks(assignment);
+      taskCount += assignment.size();
     }
+    Validate.isTrue(
+        taskCount == tasks.size(),
+        "It seems that the inter-thread function did not assign each task to exactly one executor!");
   }
 
   void stop() {
@@ -184,17 +193,23 @@ class ReconfigurationAction implements Runnable {
   private synchronized boolean addRemoveTasks() {
     boolean configurationChanged = false;
     if (!tasksToRemove.isEmpty()) {
+      validateTaskRemoval();
+      LOG.info("Unregistering tasks: {}", tasksToRemove);
       state.unregisterTasks(tasksToRemove);
       configurationChanged = true;
     }
     if (!tasksToAdd.isEmpty()) {
+      validateTaskAddition();
+      LOG.info("Registering tasks: {}", tasksToAdd);
       state.registerTasks(tasksToAdd);
       configurationChanged = true;
     }
     if (configurationChanged) {
       tasks.removeAll(tasksToRemove);
+      taskIndexes.removeAll(HarenScheduler.taskIndexes(tasksToRemove));
       LOG.debug("Removed tasks: {}", tasksToRemove);
       tasks.addAll(tasksToAdd);
+      taskIndexes.addAll(HarenScheduler.taskIndexes(tasksToAdd));
       LOG.debug("Added tasks: {}", tasksToAdd);
       tasksToRemove.clear();
       tasksToAdd.clear();
@@ -203,6 +218,26 @@ class ReconfigurationAction implements Runnable {
       LOG.debug("Reconfiguration complete.");
     }
     return configurationChanged;
+  }
+
+  private void validateTaskAddition() {
+    for (Task task : tasksToAdd) {
+      if (taskIndexes.contains(task.getIndex())) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Tried to add task %s which is already being scheduled!", task.toString()));
+      }
+    }
+  }
+
+  private void validateTaskRemoval() {
+    for (Task task : tasksToRemove) {
+      if (!taskIndexes.contains(task.getIndex())) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Tried to remove task %s which is not being scheduled!", task.toString()));
+      }
+    }
   }
 
   synchronized void addTasks(Collection<Task> tasks) {

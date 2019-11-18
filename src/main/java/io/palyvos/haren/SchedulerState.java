@@ -267,7 +267,7 @@ final class SchedulerState {
   }
 
   private void clearTaskState(Task task) {
-    LOG.info("Clearing state for removed task {}", task);
+    LOG.debug("Clearing state for removed task {}", task);
     int taskIndex = indexer.schedulerIndex(task);
     updated[taskIndex] = false;
     double[] featureVector = taskFeatures[taskIndex];

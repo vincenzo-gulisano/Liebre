@@ -30,8 +30,12 @@ import io.palyvos.haren.function.VectorIntraThreadSchedulingFunctionImpl;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +48,7 @@ public class HarenScheduler implements Scheduler<Task> {
   private static final Logger LOG = LogManager.getLogger();
   private final int nThreads;
   private final List<Task> tasks = new ArrayList<>();
+  private final Set<Integer> currentTaskIndexes = new HashSet<>();
   private final List<Thread> threads = new ArrayList<>();
   private final int[] workerAffinity;
   private volatile ReconfigurationAction reconfigurationAction;
@@ -177,7 +182,12 @@ public class HarenScheduler implements Scheduler<Task> {
     if (active) {
       reconfigurationAction.addTasks(tasks);
     } else {
+      Set<Integer> newTaskIndexes = taskIndexes(tasks);
+      Validate.isTrue(
+          Collections.disjoint(currentTaskIndexes, newTaskIndexes),
+          "Tried to add tasks that have already been added!");
       this.tasks.addAll(tasks);
+      this.currentTaskIndexes.addAll(newTaskIndexes);
     }
     LOG.info("{} reconfiguration. Adding: {} tasks", reconfigurationType(), tasks.size());
   }
@@ -186,7 +196,12 @@ public class HarenScheduler implements Scheduler<Task> {
     if (active) {
       reconfigurationAction.removeTasks(tasks);
     } else {
+      Set<Integer> newTaskIndexes = taskIndexes(tasks);
+      Validate.isTrue(
+          currentTaskIndexes.containsAll(newTaskIndexes),
+          "Tried to remove tasks that are not currently being scheduled.");
       this.tasks.removeAll(tasks);
+      this.currentTaskIndexes.removeAll(newTaskIndexes);
     }
     LOG.info("{} reconfiguration. Removing: {} tasks", reconfigurationType(), tasks.size());
   }
@@ -201,5 +216,9 @@ public class HarenScheduler implements Scheduler<Task> {
 
   private String reconfigurationType() {
     return active ? "Live" : "Static";
+  }
+
+  static Set<Integer> taskIndexes(Collection<Task> tasks) {
+    return tasks.stream().map(t -> t.getIndex()).collect(Collectors.toSet());
   }
 }
