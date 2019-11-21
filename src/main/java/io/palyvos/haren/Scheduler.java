@@ -25,12 +25,35 @@ package io.palyvos.haren;
 
 import java.util.Collection;
 
-public interface Scheduler<T extends Runnable> {
+/** The entity that is responsible for scheduling {@link io.palyvos.haren.Task}s in an SPE. */
+public interface Scheduler {
 
+  /**
+   * Add tasks to be scheduled by the {@link Scheduler} instance. Each {@link Task} can only be
+   * added once. The function can be called multiple times, to add different sets of tasks. If the
+   * scheduler implementation supports live reconfigurations, this function can also be called when
+   * the scheduler is running.
+   *
+   * @param tasks The tasks to be scheduled.
+   * @throws IllegalStateException if the scheduler implementation does not support live
+   *     reconfigurations and this function is called while the scheduler is running
+   */
   void addTasks(Collection<Task> tasks);
 
+  /**
+   * Remove tasks that were to be scheduled by the {@link Scheduler} instance.This function can be
+   * called multiple times, to remove different sets of tasks. If the scheduler implementation
+   * supports live reconfigurations, this function can also be called when the scheduler is running.
+   *
+   * @param tasks The tasks to be removed.
+   * @throws IllegalStateException if the scheduler implementation does not support live *
+   *     reconfigurations and this function is called while the scheduler is running
+   */
+  void removeTasks(Collection<Task> tasks);
+
+  /** Start scheduling. */
   void start();
 
+  /** Stop scheduling. */
   void stop();
-
 }

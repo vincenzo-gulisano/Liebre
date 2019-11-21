@@ -41,8 +41,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /** The scheduler class, responsible for orchestrating the execution of streaming {@link Task}s. */
-// FIXME: Remove statistics from final version
-public class HarenScheduler implements Scheduler<Task> {
+public class HarenScheduler implements Scheduler {
 
   private volatile boolean active;
   private static final Logger LOG = LogManager.getLogger();
@@ -192,6 +191,7 @@ public class HarenScheduler implements Scheduler<Task> {
     LOG.info("{} reconfiguration. Adding: {} tasks", reconfigurationType(), tasks.size());
   }
 
+  @Override
   public void removeTasks(Collection<Task> tasks) {
     if (active) {
       reconfigurationAction.removeTasks(tasks);
