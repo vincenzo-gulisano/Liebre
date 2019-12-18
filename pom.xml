@@ -88,6 +88,12 @@
       <version>4.0.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.palyvos</groupId>
+      <artifactId>haren</artifactId>
+      <version>0.1</version>
+    </dependency>
+
 
   </dependencies>
 
