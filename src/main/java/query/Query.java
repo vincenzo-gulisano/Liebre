@@ -324,7 +324,7 @@ public final class Query {
 		return this;
 	}
 	
-	public synchronized <T extends Comparable<? super T>> Query connectMRMW(
+	public synchronized <T extends Comparable<? super T>> Query connect(
 			List<StreamProducer<T>> sources,
 			List<StreamConsumer<T>> destinations) {
 		Stream<T> stream = getMWMRSortedStream(sources, destinations);

@@ -88,7 +88,7 @@ public class SGStreamExample {
 		Sink<MyTuple> sink = q.addBaseSink("O1",
 				tuple -> System.out.println(tuple));
 
-		q.connectMRMW(Arrays.asList(source1, source2),  Arrays.asList(multiply))
+		q.connect(Arrays.asList(source1, source2),  Arrays.asList(multiply))
 				.connect(multiply, sink);
 
 		q.activate();
