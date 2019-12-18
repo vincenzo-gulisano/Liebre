@@ -23,9 +23,10 @@
 
 package stream;
 
-import common.statistic.MeterStatistic;
-import common.util.StatisticPath;
-import common.util.StatisticType;
+import io.palyvos.liebre.statistics.LiebreMetrics;
+import io.palyvos.liebre.statistics.Statistic;
+import io.palyvos.liebre.statistics.StatisticFactory;
+import io.palyvos.liebre.statistics.StatisticType;
 
 /**
  * Statistic recorder for {@link Stream}s. Records the statistics {@link StatisticType#IN} and
@@ -35,8 +36,11 @@ import common.util.StatisticType;
  */
 public class StreamStatistic<T> extends StreamDecorator<T> {
 
-  private final MeterStatistic inRate;
-  private final MeterStatistic outRate;
+
+
+  private StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private final Statistic inRate;
+  private final Statistic outRate;
 
   /**
    * Construct.
@@ -47,15 +51,13 @@ public class StreamStatistic<T> extends StreamDecorator<T> {
    */
   public StreamStatistic(Stream<T> stream, String outputFolder, boolean autoFlush) {
     super(stream);
-    inRate = new MeterStatistic(StatisticPath.get(outputFolder, stream, StatisticType.IN),
-        autoFlush);
-    outRate = new MeterStatistic(StatisticPath.get(outputFolder, stream, StatisticType.OUT),
-        autoFlush);
+    inRate = statisticFactory.newCountStatistic(stream.getId(), StatisticType.IN);
+    outRate = statisticFactory.newCountStatistic(stream.getId(), StatisticType.OUT);
   }
 
   @Override
   public void addTuple(T tuple,int writer) {
-    inRate.append(1);
+    inRate.record(1);
     super.addTuple(tuple,writer);
   }
 
@@ -63,7 +65,7 @@ public class StreamStatistic<T> extends StreamDecorator<T> {
   public T getNextTuple(int reader) {
     T out = super.getNextTuple(reader);
     if (out != null) {
-      outRate.append(1);
+      outRate.record(1);
     }
     return out;
   }

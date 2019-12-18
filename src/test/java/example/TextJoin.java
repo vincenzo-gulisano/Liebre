@@ -26,7 +26,7 @@ package example;
 import java.util.Random;
 
 import common.tuple.BaseRichTuple;
-import common.util.Util;
+import io.palyvos.liebre.common.util.Util;
 import component.operator.in2.Operator2In;
 import component.operator.in2.join.JoinFunction;
 import query.Query;

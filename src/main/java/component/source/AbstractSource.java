@@ -159,14 +159,4 @@ public abstract class AbstractSource<OUT> implements Source<OUT> {
   public void setRelativeProducerIndex(int index) {
     this.relativeProducerIndex = index;
   }
-
-  @Override
-  public int getRelativeConsumerIndex() {
-    throw new UnsupportedOperationException("Sources are not consumers!");
-  }
-
-  @Override
-  public void setRelativeConsumerIndex(int index) {
-    throw new UnsupportedOperationException("Sources are not consumers!");
-  }
 }

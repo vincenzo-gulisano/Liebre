@@ -23,7 +23,7 @@
 
 package component.source;
 
-import common.Active;
+import io.palyvos.liebre.common.Active;
 import java.util.function.Function;
 
 /**

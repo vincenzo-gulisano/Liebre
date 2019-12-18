@@ -23,8 +23,8 @@
 
 package scheduling.thread;
 
-import common.Active;
-import common.util.StopJvmUncaughtExceptionHandler;
+import io.palyvos.liebre.common.Active;
+import io.palyvos.liebre.common.util.StopJvmUncaughtExceptionHandler;
 
 /**
  * Thread that can be stopped on demand.

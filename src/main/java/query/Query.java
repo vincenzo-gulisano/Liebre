@@ -24,8 +24,8 @@
 package query;
 
 import common.tuple.RichTuple;
-import common.util.backoff.BackoffFactory;
-import common.util.backoff.ExponentialBackoff;
+import io.palyvos.liebre.common.util.backoff.BackoffFactory;
+import io.palyvos.liebre.common.util.backoff.ExponentialBackoff;
 import component.Component;
 import component.StreamConsumer;
 import component.StreamProducer;
@@ -379,7 +379,7 @@ public final class Query {
 	private synchronized <T> Stream<T> getStream(
 			StreamProducer<T> source, StreamConsumer<T> destination,
 			BackoffFactory backoff) {
-		Stream<T> stream = streamFactory.newStream(source, destination,0,0,
+		Stream<T> stream = streamFactory.newStream(source, destination,
 				DEFAULT_STREAM_CAPACITY, backoff);
 		if (enabledStatistics.containsKey(StatisticType.STREAMS)) {
 			StatisticsConfiguration statConfig = enabledStatistics
@@ -394,7 +394,7 @@ public final class Query {
 	private synchronized <T extends Comparable<? super T>> Stream<T> getMWMRSortedStream(
 			List<StreamProducer<T>> sources,
 			List<StreamConsumer<T>> destinations) {
-		return streamFactory.newMWMRSortedStream(sources, destinations, 0, 0,
+		return streamFactory.newMWMRSortedStream(sources, destinations,
 				DEFAULT_MAX_LEVELS);
 		// TODO Do we want statistics here
 	}

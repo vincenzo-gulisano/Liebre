@@ -23,9 +23,10 @@
 
 package component.sink;
 
-import common.statistic.HistogramStatistic;
-import common.util.StatisticPath;
-import common.util.StatisticType;
+import io.palyvos.liebre.statistics.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticFactory;
+import io.palyvos.liebre.statistics.StatisticType;
+import io.palyvos.liebre.statistics.TimeStatistic;
 
 /**
  * Statistic decorator for {@link Sink}.
@@ -35,8 +36,10 @@ import common.util.StatisticType;
  */
 public class SinkStatistic<T> extends SinkDecorator<T> {
 
-  private final HistogramStatistic processingTimeStatistic;
-  private final HistogramStatistic executionTimeStatistic;
+  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+
+  private final TimeStatistic processingTimeStatistic;
+  private final TimeStatistic executionTimeStatistic;
 
   /**
    * Add statistics to the given component.sink.
@@ -47,10 +50,8 @@ public class SinkStatistic<T> extends SinkDecorator<T> {
    */
   public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
     super(sink);
-    this.processingTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, sink, StatisticType.PROC), autoFlush);
-    this.executionTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, sink, StatisticType.EXEC), autoFlush);
+    this.processingTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+    this.executionTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override
@@ -69,15 +70,15 @@ public class SinkStatistic<T> extends SinkDecorator<T> {
 
   @Override
   public void processTuple(T tuple) {
-    long start = System.nanoTime();
+    processingTimeStatistic.startInterval();
     super.processTuple(tuple);
-    processingTimeStatistic.append(System.nanoTime() - start);
+    processingTimeStatistic.stopInterval();
   }
 
   @Override
   public void run() {
-    long start = System.nanoTime();
+    executionTimeStatistic.startInterval();
     super.run();
-    executionTimeStatistic.append(System.nanoTime() - start);
+    executionTimeStatistic.stopInterval();
   }
 }

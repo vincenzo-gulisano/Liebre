@@ -23,22 +23,23 @@
 
 package component.source;
 
-import common.statistic.HistogramStatistic;
-import common.util.StatisticPath;
-import common.util.StatisticType;
+import io.palyvos.liebre.statistics.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticFactory;
+import io.palyvos.liebre.statistics.StatisticType;
+import io.palyvos.liebre.statistics.TimeStatistic;
 
 /**
- * Statistic decorator for {@link Source}.
- * Records, in separate CSV files, {@link StatisticType#PROC} and {@link StatisticType#EXEC}
+ * Statistic decorator for {@link Source}. Records, in separate CSV files, {@link
+ * StatisticType#PROC} and {@link StatisticType#EXEC}
  *
  * @see StatisticPath
  */
 public class SourceStatistic<T> extends SourceDecorator<T> {
 
+  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
 
-  private final HistogramStatistic processingTimeStatistic;
-  private final HistogramStatistic executionTimeStatistic;
-
+  private final TimeStatistic processingTimeStatistic;
+  private final TimeStatistic executionTimeStatistic;
   /**
    * Add statistics to the given component.source.
    *
@@ -46,13 +47,12 @@ public class SourceStatistic<T> extends SourceDecorator<T> {
    * @param outputFolder The folder where the statistics will be saved as CSV files
    * @param autoFlush The autoFlush parameter for the file buffers
    */
-  public SourceStatistic(Source<T> source, String outputFolder,
-      boolean autoFlush) {
+  public SourceStatistic(Source<T> source, String outputFolder, boolean autoFlush) {
     super(source);
-    this.processingTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, source, StatisticType.PROC), autoFlush);
-    this.executionTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, source, StatisticType.EXEC), autoFlush);
+    this.processingTimeStatistic =
+        statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+    this.executionTimeStatistic =
+        statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override
@@ -71,16 +71,16 @@ public class SourceStatistic<T> extends SourceDecorator<T> {
 
   @Override
   public T getNextTuple() {
-    long start = System.nanoTime();
+    executionTimeStatistic.startInterval();
     T tuple = super.getNextTuple();
-    processingTimeStatistic.append(System.nanoTime() - start);
+    executionTimeStatistic.stopInterval();
     return tuple;
   }
 
   @Override
   public void run() {
-    long start = System.nanoTime();
+    executionTimeStatistic.startInterval();
     super.run();
-    executionTimeStatistic.append(System.nanoTime() - start);
+    executionTimeStatistic.stopInterval();
   }
 }

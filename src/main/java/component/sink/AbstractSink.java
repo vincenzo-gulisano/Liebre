@@ -46,9 +46,9 @@ public abstract class AbstractSink<IN> implements Sink<IN> {
    *
    * @param id The unique ID of this component.
    */
-  public AbstractSink(String id,int relativeConsumerIndex) {
+  public AbstractSink(String id, int relativeConsumerIndex) {
     state = new ComponentState<>(id, ComponentType.SINK);
-    this.relativeConsumerIndex=relativeConsumerIndex;
+    this.relativeConsumerIndex = relativeConsumerIndex;
   }
 
   @Override
@@ -148,23 +148,13 @@ public abstract class AbstractSink<IN> implements Sink<IN> {
     return processCommand.getRate();
   }
 
-	@Override
-	public int getRelativeConsumerIndex() {
-		return relativeConsumerIndex;
-	}
+  @Override
+  public int getRelativeConsumerIndex() {
+    return relativeConsumerIndex;
+  }
 
-	@Override
-	public void setRelativeConsumerIndex(int index) {
-		this.relativeConsumerIndex = index;
-	}
-
-	@Override
-	public int getRelativeProducerIndex() {
-		throw new UnsupportedOperationException("Sink is not a producer!");
-	}
-
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		throw new UnsupportedOperationException("Sink is not a producer!");
-	}
+  @Override
+  public void setRelativeConsumerIndex(int index) {
+    this.relativeConsumerIndex = index;
+  }
 }

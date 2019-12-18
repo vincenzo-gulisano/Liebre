@@ -23,7 +23,7 @@
 
 package component.sink;
 
-import common.Active;
+import io.palyvos.liebre.common.Active;
 import java.util.function.Consumer;
 
 /**

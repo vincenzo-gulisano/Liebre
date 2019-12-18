@@ -1,6 +1,6 @@
 package stream;
 
-import common.util.backoff.BackoffFactory;
+import io.palyvos.liebre.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
 import java.util.List;
@@ -13,23 +13,23 @@ public class BackoffStreamFactory implements StreamFactory {
 
 	@Override
 	public <T> Stream<T> newStream(StreamProducer<T> from,
-			StreamConsumer<T> to, int relativeProducerIndex,
-			int relativeConsumerIndex, int capacity, BackoffFactory backoff) {
+			StreamConsumer<T> to,
+			int capacity, BackoffFactory backoff) {
 		Validate.isTrue(backoff == BackoffFactory.NOOP,
 				"This stream does not support Backoff!");
 		return new BlockingStream<>(getStreamId(from, to),
-				indexes.getAndIncrement(), relativeProducerIndex,
-				relativeConsumerIndex, from, to, capacity);
+				indexes.getAndIncrement(),
+				from, to, capacity);
 	}
 
 	@Override
 	public <T extends Comparable<? super T>> Stream<T> newMWMRSortedStream(
 			List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations,
-			int relativeProducerIndex, int relativeConsumerIndex, int maxLevels) {
+			int maxLevels) {
 		// TODO Ugly to get index 0 by default?
 		return new SGStream<T>(getStreamId(sources.get(0), destinations.get(0)),
-				indexes.getAndIncrement(), relativeProducerIndex,
-				relativeConsumerIndex, maxLevels, sources.size(),
+				indexes.getAndIncrement(),
+				maxLevels, sources.size(),
 				destinations.size(), sources, destinations);
 	}
 

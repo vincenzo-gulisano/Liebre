@@ -22,8 +22,6 @@ public class SGStream<T extends Comparable<? super T>> implements Stream<T> {
 
 	private String id;
 	private int index;
-	private final int relativeProducerIndex;
-	private final int relativeConsumerIndex;
 	private boolean enabled;
 	private ScaleGate<T> sg;
 	private List<StreamProducer<T>> sources;
@@ -31,13 +29,11 @@ public class SGStream<T extends Comparable<? super T>> implements Stream<T> {
 
 	private TuplesFromAll barrier;
 
-	public SGStream(String id, int index, int relativeProducerIndex,
-			int relativeConsumerIndex, int maxLevels, int writers, int readers,
+	public SGStream(String id, int index,
+			int maxLevels, int writers, int readers,
 			List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations) {
 		this.id = id;
 		this.index = index;
-		this.relativeProducerIndex = relativeProducerIndex;
-		this.relativeConsumerIndex = relativeConsumerIndex;
 		enabled = false;
 		this.sg = new ScaleGateAArrImpl(maxLevels, writers, readers);
 		this.sources = sources;
@@ -98,27 +94,6 @@ public class SGStream<T extends Comparable<? super T>> implements Stream<T> {
 		return destinations;
 	}
 
-	@Override
-	public int getRelativeProducerIndex() {
-		return relativeProducerIndex;
-	}
-
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		throw new UnsupportedOperationException(
-				"relativeProducerIndex cannot be changed for a stream");
-	}
-
-	@Override
-	public int getRelativeConsumerIndex() {
-		return relativeConsumerIndex;
-	}
-
-	@Override
-	public void setRelativeConsumerIndex(int index) {
-		throw new UnsupportedOperationException(
-				"setRelativeConsumerIndex cannot be changed for a stream");
-	}
 
 	@Override
 	public boolean offer(T tuple, int writer) {

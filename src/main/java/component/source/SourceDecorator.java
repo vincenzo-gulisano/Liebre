@@ -144,7 +144,6 @@ public class SourceDecorator<OUT> implements Source<OUT> {
     return decorated.toString();
   }
 
-
   @Override
   public int getPriority() {
     return decorated.getPriority();
@@ -155,23 +154,13 @@ public class SourceDecorator<OUT> implements Source<OUT> {
     decorated.setPriority(priority);
   }
 
-	@Override
-	public int getRelativeProducerIndex() {
-		return decorated.getRelativeProducerIndex();
-	}
+  @Override
+  public int getRelativeProducerIndex() {
+    return decorated.getRelativeProducerIndex();
+  }
 
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		decorated.setRelativeProducerIndex(index);
-	}
-
-	@Override
-	public int getRelativeConsumerIndex() {
-		return decorated.getRelativeConsumerIndex();
-	}
-
-	@Override
-	public void setRelativeConsumerIndex(int index) {
-		decorated.setRelativeConsumerIndex(index);
-	}
+  @Override
+  public void setRelativeProducerIndex(int index) {
+    decorated.setRelativeProducerIndex(index);
+  }
 }

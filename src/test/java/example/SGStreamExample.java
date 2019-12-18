@@ -23,13 +23,15 @@
 
 package example;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import common.tuple.BaseRichTuple;
-import common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.BaseOperator1In;
 import component.sink.Sink;
 import component.source.Source;
 import component.source.SourceFunction;
+import io.palyvos.liebre.common.util.Util;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +45,8 @@ public class SGStreamExample {
 		// final String reportFolder = args[0];
 
 		Query q = new Query();
+		Injector injector = Guice.createInjector(new ExampleModule());
+		q.activateStatistics("test");
 		// q.activateStatistics(reportFolder);
 		Source<MyTuple> source1 = q.addBaseSource("S1",
 				new SourceFunction<MyTuple>() {

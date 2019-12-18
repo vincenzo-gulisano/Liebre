@@ -23,7 +23,7 @@
 
 package component.source;
 
-import common.Active;
+import io.palyvos.liebre.common.Active;
 import component.FeatureTranslator;
 import java.util.function.Supplier;
 

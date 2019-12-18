@@ -23,9 +23,10 @@
 
 package component.operator.in1;
 
-import common.statistic.HistogramStatistic;
-import common.util.StatisticPath;
-import common.util.StatisticType;
+import io.palyvos.liebre.statistics.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticFactory;
+import io.palyvos.liebre.statistics.StatisticType;
+import io.palyvos.liebre.statistics.TimeStatistic;
 import java.util.List;
 
 /**
@@ -38,8 +39,9 @@ import java.util.List;
 public class Operator1InStatistic<IN, OUT> extends
     Operator1InDecorator<IN, OUT> {
 
-  private final HistogramStatistic processingTimeStatistic;
-  private final HistogramStatistic executionTimeStatistic;
+  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private final TimeStatistic processingTimeStatistic;
+  private final TimeStatistic executionTimeStatistic;
 
   /**
    * Add statistics to the given component.operator.
@@ -51,10 +53,8 @@ public class Operator1InStatistic<IN, OUT> extends
   public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder,
       boolean autoFlush) {
     super(operator);
-    this.processingTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, operator, StatisticType.PROC), autoFlush);
-    this.executionTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, operator, StatisticType.EXEC), autoFlush);
+    this.processingTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+    this.executionTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override
@@ -73,16 +73,16 @@ public class Operator1InStatistic<IN, OUT> extends
 
   @Override
   public List<OUT> processTupleIn1(IN tuple) {
-    long start = System.nanoTime();
+    processingTimeStatistic.startInterval();
     List<OUT> outTuples = super.processTupleIn1(tuple);
-    processingTimeStatistic.append(System.nanoTime() - start);
+    processingTimeStatistic.stopInterval();
     return outTuples;
   }
 
   @Override
   public void run() {
-    long start = System.nanoTime();
+    executionTimeStatistic.startInterval();
     super.run();
-    executionTimeStatistic.append(System.nanoTime() - start);
+    executionTimeStatistic.stopInterval();
   }
 }

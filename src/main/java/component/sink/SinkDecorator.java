@@ -145,16 +145,6 @@ public class SinkDecorator<IN> implements Sink<IN> {
   }
   
 	@Override
-	public int getRelativeProducerIndex() {
-		return decorated.getRelativeProducerIndex();
-	}
-
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		decorated.setRelativeProducerIndex(index);
-	}
-
-	@Override
 	public int getRelativeConsumerIndex() {
 		return decorated.getRelativeConsumerIndex();
 	}

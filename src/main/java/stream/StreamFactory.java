@@ -23,7 +23,7 @@
 
 package stream;
 
-import common.util.backoff.BackoffFactory;
+import io.palyvos.liebre.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
 import java.util.List;
@@ -34,14 +34,14 @@ import java.util.List;
 public interface StreamFactory {
 
 	<T> Stream<T> newStream(StreamProducer<T> from,
-			StreamConsumer<T> to, int relativeProducerIndex,
-			int relativeConsumerIndex, int capacity, BackoffFactory backoff);
+			StreamConsumer<T> to,
+			int capacity, BackoffFactory backoff);
 
 	default <T> Stream<T> newStream(StreamProducer<T> from,
 			StreamConsumer<T> to, int relativeProducerIndex,
 			int relativeConsumerIndex, int capacity) {
-		return newStream(from, to, relativeProducerIndex,
-				relativeConsumerIndex, capacity, BackoffFactory.NOOP);
+		return newStream(from, to,
+				capacity, BackoffFactory.NOOP);
 	}
 
 	default <T> String getStreamId(StreamProducer<T> from,
@@ -51,5 +51,6 @@ public interface StreamFactory {
 
 	<T extends Comparable<? super T>> Stream<T> newMWMRSortedStream(
 			List<StreamProducer<T>> sources,
-			List<StreamConsumer<T>> destinations, int relativeProducerIndex, int relativeConsumerIndex, int maxLevels);
+			List<StreamConsumer<T>> destinations,
+			int maxLevels);
 }

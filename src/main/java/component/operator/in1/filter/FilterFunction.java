@@ -23,7 +23,7 @@
 
 package component.operator.in1.filter;
 
-import common.Active;
+import io.palyvos.liebre.common.Active;
 import java.util.function.Predicate;
 
 /**

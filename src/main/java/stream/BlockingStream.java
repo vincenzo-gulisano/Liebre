@@ -40,8 +40,6 @@ public class BlockingStream<T> implements Stream<T> {
   private final int capacity;
   private final String id;
   private final int index;
-  private final int relativeProducerIndex;
-  private final int relativeConsumerIndex;
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
   private volatile boolean enabled;
@@ -52,8 +50,7 @@ public class BlockingStream<T> implements Stream<T> {
 
   /**
    * Construct.
-   *
-   * @param id The unique ID of the stream.
+   *  @param id The unique ID of the stream.
    * @param index The unique index of the stream.
    * @param source The producer
    * @param destination The consumer
@@ -62,8 +59,6 @@ public class BlockingStream<T> implements Stream<T> {
   BlockingStream(
       String id,
       int index,
-      int relativeProducerIndex,
-      int relativeConsumerIndex,
       StreamProducer<T> source,
       StreamConsumer<T> destination,
       int capacity) {
@@ -71,8 +66,6 @@ public class BlockingStream<T> implements Stream<T> {
     this.stream = new ArrayBlockingQueue<>(capacity);
     this.id = id;
     this.index = index;
-    this.relativeProducerIndex = relativeProducerIndex;
-    this.relativeConsumerIndex = relativeConsumerIndex;
     this.source = source;
     this.destination = destination;
   }
@@ -190,24 +183,4 @@ public class BlockingStream<T> implements Stream<T> {
         .toString();
   }
 
-  @Override
-  public int getRelativeProducerIndex() {
-    return relativeProducerIndex;
-  }
-
-  @Override
-  public void setRelativeProducerIndex(int index) {
-    throw new UnsupportedOperationException("relativeProducerIndex cannot be changed for a stream");
-  }
-
-  @Override
-  public int getRelativeConsumerIndex() {
-    return relativeConsumerIndex;
-  }
-
-  @Override
-  public void setRelativeConsumerIndex(int index) {
-    throw new UnsupportedOperationException(
-        "setRelativeConsumerIndex cannot be changed for a stream");
-  }
 }

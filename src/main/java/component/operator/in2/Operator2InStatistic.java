@@ -23,22 +23,23 @@
 
 package component.operator.in2;
 
-import common.statistic.HistogramStatistic;
-import common.util.StatisticPath;
-import common.util.StatisticType;
+import io.palyvos.liebre.statistics.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticFactory;
+import io.palyvos.liebre.statistics.StatisticType;
+import io.palyvos.liebre.statistics.TimeStatistic;
 import java.util.List;
 
 /**
  * Statistic decorator for {@link Operator2In}.
  * Records, in separate CSV files, {@link StatisticType#PROC} and {@link StatisticType#EXEC}
  *
- * @see StatisticPath
  */
 public class Operator2InStatistic<IN, IN2, OUT>
     extends Operator2InDecorator<IN, IN2, OUT> {
 
-  private final HistogramStatistic processingTimeStatistic;
-  private final HistogramStatistic executionTimeStatistic;
+  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private final TimeStatistic processingTimeStatistic;
+  private final TimeStatistic executionTimeStatistic;
 
   /**
    * Add statistics to the given component.operator.
@@ -50,10 +51,8 @@ public class Operator2InStatistic<IN, IN2, OUT>
   public Operator2InStatistic(Operator2In<IN, IN2, OUT> operator, String outputFolder,
       boolean autoFlush) {
     super(operator);
-    this.processingTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, operator, StatisticType.PROC), autoFlush);
-    this.executionTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, operator, StatisticType.EXEC), autoFlush);
+    this.processingTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+    this.executionTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override
@@ -72,24 +71,24 @@ public class Operator2InStatistic<IN, IN2, OUT>
 
   @Override
   public List<OUT> processTupleIn1(IN tuple) {
-    long start = System.nanoTime();
+    processingTimeStatistic.startInterval();
     List<OUT> outTuples = super.processTupleIn1(tuple);
-    processingTimeStatistic.append(System.nanoTime() - start);
+    processingTimeStatistic.stopInterval();
     return outTuples;
   }
 
   @Override
   public List<OUT> processTupleIn2(IN2 tuple) {
-    long start = System.nanoTime();
+    processingTimeStatistic.startInterval();
     List<OUT> outTuples = super.processTupleIn2(tuple);
-    processingTimeStatistic.append(System.nanoTime() - start);
+    processingTimeStatistic.stopInterval();
     return outTuples;
   }
 
   @Override
   public void run() {
-    long start = System.nanoTime();
+    executionTimeStatistic.startInterval();
     super.run();
-    executionTimeStatistic.append(System.nanoTime() - start);
+    executionTimeStatistic.stopInterval();
   }
 }

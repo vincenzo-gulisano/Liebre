@@ -24,8 +24,8 @@
 package stream;
 
 import common.tuple.RichTuple;
-import common.util.backoff.Backoff;
-import common.util.backoff.BackoffFactory;
+import io.palyvos.liebre.common.util.backoff.Backoff;
+import io.palyvos.liebre.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
 import java.util.Arrays;
@@ -41,8 +41,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  *
  * @param <T> The type of tuples transferred by this {@link Stream}.
  * @see StreamFactory
- * @see common.util.backoff.ExponentialBackoff
- * @see common.util.backoff.NoopBackoff
+ * @see io.palyvos.liebre.common.util.backoff.ExponentialBackoff
+ * @see io.palyvos.liebre.common.util.backoff.NoopBackoff
  */
 public class BackoffStream<T> implements Stream<T> {
 
@@ -51,8 +51,6 @@ public class BackoffStream<T> implements Stream<T> {
   private final int capacity;
   private final String id;
   private final int index;
-  private final int relativeProducerIndex;
-  private final int relativeConsumerIndex;
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
   private final Backoff readBackoff;
@@ -65,20 +63,17 @@ public class BackoffStream<T> implements Stream<T> {
 
   /**
    * Construct.
-   *
-   * @param id The unique ID of the stream.
+   *  @param id The unique ID of the stream.
    * @param index The unique index of the stream.
    * @param source The producer
    * @param destination The consumer
    * @param capacity The capacity that the stream will try to enforce with the {@link Backoff}
-   *     strategy.
+*     strategy.
    * @param backoff The backoff strategy.
    */
   BackoffStream(
       String id,
       int index,
-      int relativeProducerIndex,
-      int relativeConsumerIndex,
       StreamProducer<T> source,
       StreamConsumer<T> destination,
       int capacity,
@@ -86,22 +81,11 @@ public class BackoffStream<T> implements Stream<T> {
     this.capacity = capacity;
     this.id = id;
     this.index = index;
-    this.relativeProducerIndex = relativeProducerIndex;
-    this.relativeConsumerIndex = relativeConsumerIndex;
     this.source = source;
     this.destination = destination;
     this.readBackoff = backoff.newInstance();
     this.writeBackoff = backoff.newInstance();
   }
-
-  /**
-   * Get a {@link StreamFactory} implementation for {@link BackoffStream}s.
-   *
-   * @return A factory that generates {@link BackoffStream}s.
-   */
-  //	public static StreamFactory factory() {
-  //		return Factory.INSTANCE;
-  //	}
 
   @Override
   public void addTuple(T tuple, int writer) {
@@ -222,26 +206,4 @@ public class BackoffStream<T> implements Stream<T> {
         .toString();
   }
 
-  // FIXME: Rename GlobalStreamFactory to BackoffStreamFactory
-
-  @Override
-  public int getRelativeProducerIndex() {
-    return relativeProducerIndex;
-  }
-
-  @Override
-  public void setRelativeProducerIndex(int index) {
-    throw new UnsupportedOperationException("relativeProducerIndex cannot be changed for a stream");
-  }
-
-  @Override
-  public int getRelativeConsumerIndex() {
-    return relativeConsumerIndex;
-  }
-
-  @Override
-  public void setRelativeConsumerIndex(int index) {
-    throw new UnsupportedOperationException(
-        "setRelativeConsumerIndex cannot be changed for a stream");
-  }
 }

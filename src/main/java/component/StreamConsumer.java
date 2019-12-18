@@ -23,8 +23,8 @@
 
 package component;
 
-import common.Named;
 import common.tuple.RichTuple;
+import io.palyvos.liebre.common.Named;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -33,123 +33,123 @@ import stream.Stream;
 /**
  * A stream {@link Component} that consumes tuples.
  *
- * @param <IN>
- *            The input type for this component.
+ * @param <IN> The input type for this component.
  */
 public interface StreamConsumer<IN> extends Named, Component {
 
-	/**
-	 * Connect this consumer with the given {@link StreamProducer} using the
-	 * provided stream. Different implementations allow one or more calls to
-	 * this function.
-	 *
-	 * @param source
-	 *            The producer feeding this consumer.
-	 * @param stream
-	 *            The {@link Stream} that forms the data connection.
-	 * @see ConnectionsNumber
-	 */
-	void addInput(StreamProducer<IN> source, Stream<IN> stream);
+  /**
+   * Connect this consumer with the given {@link StreamProducer} using the provided stream.
+   * Different implementations allow one or more calls to this function.
+   *
+   * @param source The producer feeding this consumer.
+   * @param stream The {@link Stream} that forms the data connection.
+   * @see ConnectionsNumber
+   */
+  void addInput(StreamProducer<IN> source, Stream<IN> stream);
 
-	/**
-	 * Get the input {@link Stream} of this consumer, if is the type of consumer
-	 * that always has a unique input. {@link StreamConsumer}s that cannot
-	 * conform to this interface can throw {@link UnsupportedOperationException}
-	 * (this is done for example in
-	 * {@link component.operator.union.UnionOperator})
-	 *
-	 * @return The unique input stream of this consumer.
-	 */
-	Stream<IN> getInput() throws UnsupportedOperationException;
+  /**
+   * Get the input {@link Stream} of this consumer, if is the type of consumer that always has a
+   * unique input. {@link StreamConsumer}s that cannot conform to this interface can throw {@link
+   * UnsupportedOperationException} (this is done for example in {@link
+   * component.operator.union.UnionOperator})
+   *
+   * @return The unique input stream of this consumer.
+   */
+  Stream<IN> getInput() throws UnsupportedOperationException;
 
-	/**
-	 * Get all the input {@link Stream}s of this consumer.
-	 *
-	 * @param <T>
-	 *            The superclass of all input contents (in the case of input
-	 *            streams of different types, as in
-	 *            {@link component.operator.in2.Operator2In}.
-	 * @return All the input streams of this consumer.
-	 */
-	<T> Collection<? extends Stream<T>> getInputs();
+  /**
+   * Get all the input {@link Stream}s of this consumer.
+   *
+   * @param <T> The superclass of all input contents (in the case of input streams of different
+   *     types, as in {@link component.operator.in2.Operator2In}.
+   * @return All the input streams of this consumer.
+   */
+  <T> Collection<? extends Stream<T>> getInputs();
 
-	@Override
-	default int getTopologicalOrder() {
-		for (Stream<?> input : getInputs()) {
-			int upstreamOrder = input.getSources().get(0).getTopologicalOrder();
-			return upstreamOrder + 1;
-			// TODO check this, why a return in a for that looks like is going
-			// in any case to fire on the fisrt loop iteration?
-			// TODO fix! this is an hack for now...
-		}
-		throw new IllegalStateException("StreamConsumer with no inputs!");
-	}
+  @Override
+  default int getTopologicalOrder() {
+    for (Stream<?> input : getInputs()) {
+      int upstreamOrder = input.getSources().get(0).getTopologicalOrder();
+      return upstreamOrder + 1;
+      // TODO check this, why a return in a for that looks like is going
+      // in any case to fire on the fisrt loop iteration?
+      // TODO fix! this is an hack for now...
+    }
+    throw new IllegalStateException("StreamConsumer with no inputs!");
+  }
 
-	@Override
-	default List<Component> getUpstream() {
-		List<Component> upstream = new ArrayList<>();
-		for (Stream<?> input : getInputs()) {
-			for (StreamProducer<?> op : input.getSources()) {
-				upstream.add(op);
-			}
-		}
-		return upstream;
-	}
+  @Override
+  default List<Component> getUpstream() {
+    List<Component> upstream = new ArrayList<>();
+    for (Stream<?> input : getInputs()) {
+      for (StreamProducer<?> op : input.getSources()) {
+        upstream.add(op);
+      }
+    }
+    return upstream;
+  }
 
-	/**
-	 * Get the latency at the head of the queue of the component. Warning: This
-	 * will fail if the component is not processing
-	 * {@link common.tuple.RichTuple}s.
-	 *
-	 * @return The head latency of the Component (averaged over all the inputs).
-	 */
-	@Override
-	default double getHeadArrivalTime() {
-		Collection<? extends Stream<?>> inputs = getInputs();
-		long latencySum = 0;
-		for (Stream<?> input : inputs) {
-			Object head = input.peek(getRelativeConsumerIndex());
-			if (head != null) {
-				if (head instanceof RichTuple == false) {
-					// This stream has no latency info
-					continue;
-				}
-				RichTuple headTuple = (RichTuple) head;
-				latencySum += headTuple.getStimulus();
-			}
-		}
-		return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum
-				/ inputs.size();
-	}
+  /**
+   * Get the latency at the head of the queue of the component. Warning: This will fail if the
+   * component is not processing {@link common.tuple.RichTuple}s.
+   *
+   * @return The head latency of the Component (averaged over all the inputs).
+   */
+  @Override
+  default double getHeadArrivalTime() {
+    Collection<? extends Stream<?>> inputs = getInputs();
+    long latencySum = 0;
+    for (Stream<?> input : inputs) {
+      Object head = input.peek(getRelativeConsumerIndex());
+      if (head != null) {
+        if (head instanceof RichTuple == false) {
+          // This stream has no latency info
+          continue;
+        }
+        RichTuple headTuple = (RichTuple) head;
+        latencySum += headTuple.getStimulus();
+      }
+    }
+    return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
+  }
 
-	@Override
-	default double getAverageArrivalTime() {
-		Collection<? extends Stream<?>> inputs = getInputs();
-		long latencySum = 0;
-		for (Stream<?> input : inputs) {
-			latencySum += input.getAverageArrivalTime();
-		}
-		return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum
-				/ inputs.size();
-	}
+  @Override
+  default double getAverageArrivalTime() {
+    Collection<? extends Stream<?>> inputs = getInputs();
+    long latencySum = 0;
+    for (Stream<?> input : inputs) {
+      latencySum += input.getAverageArrivalTime();
+    }
+    return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
+  }
 
-	default int getPriority() {
-		int priority = -1;
-		// Consumer's priority is the maximum priority of the upstream nodes
-		for (Stream<?> input : getInputs()) {
-			for (StreamProducer<?> s : input.getSources()) {
-			priority = Math.max(s.getPriority(), priority); }
-		}
-		return priority;
-	}
+  default int getPriority() {
+    int priority = -1;
+    // Consumer's priority is the maximum priority of the upstream nodes
+    for (Stream<?> input : getInputs()) {
+      for (StreamProducer<?> s : input.getSources()) {
+        priority = Math.max(s.getPriority(), priority);
+      }
+    }
+    return priority;
+  }
 
-	@Override
-	default long getInputQueueSize() {
-		long size = 0;
-		for (Stream<?> input : getInputs()) {
-			size += input.size();
-		}
-		return size;
-	}
+  @Override
+  default long getInputQueueSize() {
+    long size = 0;
+    for (Stream<?> input : getInputs()) {
+      size += input.size();
+    }
+    return size;
+  }
 
+  /**
+   * Get the relative index (starting in 0) of this entity with respect to a connected upstream
+   * entity
+   *
+   * @return The relative index of this entity as consumer of its connected upstream entity
+   */
+  int getRelativeConsumerIndex();
+
+  void setRelativeConsumerIndex(int index);
 }

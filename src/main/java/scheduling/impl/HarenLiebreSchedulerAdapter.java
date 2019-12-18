@@ -23,7 +23,7 @@
 
 package scheduling.impl;
 
-import common.Active;
+import io.palyvos.liebre.common.Active;
 import component.Component;
 import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;

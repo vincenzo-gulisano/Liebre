@@ -23,7 +23,7 @@
 
 package component.source;
 
-import common.util.Util;
+import io.palyvos.liebre.common.util.Util;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

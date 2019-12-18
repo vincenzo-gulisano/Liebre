@@ -23,8 +23,8 @@
 
 package example;
 
-import common.util.Util;
-import common.util.backoff.BackoffFactory;
+import io.palyvos.liebre.common.util.Util;
+import io.palyvos.liebre.common.util.backoff.BackoffFactory;
 import component.operator.Operator;
 import component.sink.Sink;
 import component.source.Source;

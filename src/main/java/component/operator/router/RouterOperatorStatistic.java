@@ -23,22 +23,24 @@
 
 package component.operator.router;
 
-import common.statistic.HistogramStatistic;
-import common.util.StatisticPath;
-import common.util.StatisticType;
+import io.palyvos.liebre.statistics.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticFactory;
+import io.palyvos.liebre.statistics.StatisticType;
+import io.palyvos.liebre.statistics.TimeStatistic;
 import java.util.Collection;
 import stream.Stream;
 
 /**
- * Statistic decorator for {@link RouterOperator}.
- * Records, in separate CSV files, {@link StatisticType#PROC} and {@link StatisticType#EXEC}
+ * Statistic decorator for {@link RouterOperator}. Records, in separate CSV files, {@link
+ * StatisticType#PROC} and {@link StatisticType#EXEC}
  *
  * @see StatisticPath
  */
 public class RouterOperatorStatistic<T> extends RouterOperatorDecorator<T> {
 
-  private final HistogramStatistic processingTimeStatistic;
-  private final HistogramStatistic executionTimeStatistic;
+  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private final TimeStatistic processingTimeStatistic;
+  private final TimeStatistic executionTimeStatistic;
 
   /**
    * Add statistics to the given component.operator.
@@ -47,13 +49,13 @@ public class RouterOperatorStatistic<T> extends RouterOperatorDecorator<T> {
    * @param outputFolder The folder where the statistics will be saved as CSV files
    * @param autoFlush The autoFlush parameter for the file buffers
    */
-  public RouterOperatorStatistic(RouterOperator<T> operator, String outputFolder,
-      boolean autoFlush) {
+  public RouterOperatorStatistic(
+      RouterOperator<T> operator, String outputFolder, boolean autoFlush) {
     super(operator);
-    this.processingTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, operator, StatisticType.PROC), autoFlush);
-    this.executionTimeStatistic = new HistogramStatistic(
-        StatisticPath.get(outputFolder, operator, StatisticType.EXEC), autoFlush);
+    this.processingTimeStatistic =
+        statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+    this.executionTimeStatistic =
+        statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override
@@ -72,16 +74,16 @@ public class RouterOperatorStatistic<T> extends RouterOperatorDecorator<T> {
 
   @Override
   public Collection<? extends Stream<T>> chooseOutputs(T tuple) {
-    long start = System.nanoTime();
+    processingTimeStatistic.startInterval();
     Collection<? extends Stream<T>> chosenOutputs = super.chooseOutputs(tuple);
-    processingTimeStatistic.append(System.nanoTime() - start);
+    processingTimeStatistic.stopInterval();
     return chosenOutputs;
   }
 
   @Override
   public void run() {
-    long start = System.nanoTime();
+    executionTimeStatistic.startInterval();
     super.run();
-    executionTimeStatistic.append(System.nanoTime() - start);
+    executionTimeStatistic.stopInterval();
   }
 }

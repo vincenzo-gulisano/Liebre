@@ -28,126 +28,104 @@ import component.StreamProducer;
 import java.util.List;
 
 /**
- * Basic decorator for {@link Stream} instances. Delegates all function cals to
- * the decorated instance.
+ * Basic decorator for {@link Stream} instances. Delegates all function cals to the decorated
+ * instance.
  *
- * @param <T>
- *            The type of tuples transferred by the stream.
+ * @param <T> The type of tuples transferred by the stream.
  */
 public class StreamDecorator<T> implements Stream<T> {
 
-	private final Stream<T> decorated;
+  private final Stream<T> decorated;
 
-	/**
-	 * Construct.
-	 *
-	 * @param decorated
-	 *            The stream to be decorated.
-	 */
-	public StreamDecorator(Stream<T> decorated) {
-		this.decorated = decorated;
-	}
+  /**
+   * Construct.
+   *
+   * @param decorated The stream to be decorated.
+   */
+  public StreamDecorator(Stream<T> decorated) {
+    this.decorated = decorated;
+  }
 
-	@Override
-	public void enable() {
-		decorated.enable();
-	}
+  @Override
+  public void enable() {
+    decorated.enable();
+  }
 
-	@Override
-	public boolean isEnabled() {
-		return decorated.isEnabled();
-	}
+  @Override
+  public boolean isEnabled() {
+    return decorated.isEnabled();
+  }
 
-	@Override
-	public void disable() {
-		decorated.disable();
-	}
+  @Override
+  public void disable() {
+    decorated.disable();
+  }
 
-	@Override
-	public String getId() {
-		return decorated.getId();
-	}
+  @Override
+  public String getId() {
+    return decorated.getId();
+  }
 
-	@Override
-	public int getIndex() {
-		return decorated.getIndex();
-	}
+  @Override
+  public int getIndex() {
+    return decorated.getIndex();
+  }
 
-	@Override
-	public void addTuple(T tuple, int writer) {
-		decorated.addTuple(tuple, writer);
-	}
+  @Override
+  public void addTuple(T tuple, int writer) {
+    decorated.addTuple(tuple, writer);
+  }
 
-	@Override
-	public T getNextTuple(int reader) {
-		return decorated.getNextTuple(reader);
-	}
+  @Override
+  public T getNextTuple(int reader) {
+    return decorated.getNextTuple(reader);
+  }
 
-	@Override
-	public T peek(int reader) {
-		return decorated.peek(reader);
-	}
+  @Override
+  public T peek(int reader) {
+    return decorated.peek(reader);
+  }
 
-	@Override
-	public int size() {
-		return decorated.size();
-	}
+  @Override
+  public int size() {
+    return decorated.size();
+  }
 
-	@Override
-	public int remainingCapacity() {
-		return decorated.remainingCapacity();
-	}
+  @Override
+  public int remainingCapacity() {
+    return decorated.remainingCapacity();
+  }
 
-	@Override
-	public boolean offer(T tuple, int writer) {
-		return decorated.offer(tuple, writer);
-	}
+  @Override
+  public boolean offer(T tuple, int writer) {
+    return decorated.offer(tuple, writer);
+  }
 
-	@Override
-	public T poll(int reader) {
-		return decorated.poll(reader);
-	}
+  @Override
+  public T poll(int reader) {
+    return decorated.poll(reader);
+  }
 
-	@Override
-	public String toString() {
-		return decorated.toString();
-	}
+  @Override
+  public String toString() {
+    return decorated.toString();
+  }
 
-	public List<StreamProducer<T>> getSources() {
-		return decorated.getSources();
-	}
+  public List<StreamProducer<T>> getSources() {
+    return decorated.getSources();
+  }
 
-	public List<StreamConsumer<T>> getDestinations() {
-		return decorated.getDestinations();
-	}
+  public List<StreamConsumer<T>> getDestinations() {
+    return decorated.getDestinations();
+  }
 
-	@Override
-	public void resetArrivalTime() {
-		decorated.resetArrivalTime();
-	}
+  @Override
+  public void resetArrivalTime() {
+    decorated.resetArrivalTime();
+  }
 
-	@Override
-	public double getAverageArrivalTime() {
-		return decorated.getAverageArrivalTime();
-	}
-	
-	@Override
-	public int getRelativeProducerIndex() {
-		return decorated.getRelativeProducerIndex();
-	}
-
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		decorated.setRelativeProducerIndex(index);
-	}
-
-	@Override
-	public int getRelativeConsumerIndex() {
-		return decorated.getRelativeConsumerIndex();
-	}
-
-	@Override
-	public void setRelativeConsumerIndex(int index) {
-		decorated.setRelativeConsumerIndex(index);
-	}
+  @Override
+  public double getAverageArrivalTime() {
+    return decorated.getAverageArrivalTime();
+  }
 }

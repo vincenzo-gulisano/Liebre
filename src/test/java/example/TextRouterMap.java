@@ -24,7 +24,7 @@
 package example;
 
 import common.tuple.BaseRichTuple;
-import common.util.Util;
+import io.palyvos.liebre.common.util.Util;
 import java.io.File;
 import component.operator.Operator;
 import query.Query;
