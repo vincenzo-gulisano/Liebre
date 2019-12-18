@@ -21,22 +21,25 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.toolkit;
+package common.statistic;
 
-public interface MultiPriorityFunction extends PriorityFunction {
+import com.codahale.metrics.Histogram;
 
-  void apply(Task task, double[][] features, double[] output);
+/**
+ * Statistic that writes the per-second average of the recorded value.
+ */
+public class HistogramStatistic extends AbstractCummulativeStatistic {
 
-  int dimensions();
+	private final Histogram histogram;
 
-  @Override
-  MultiPriorityFunction enableCaching(int nTasks);
+	public HistogramStatistic(String outputFile, boolean autoFlush) {
+		super(outputFile, autoFlush);
+		histogram = LiebreMetricRegistry.get().histogram(metricName);
+	}
 
-  /**
-   * The value of {@link SinglePriorityFunction#reverseOrder()} for the function at the given index.
-   *
-   * @param i The index of the function
-   * @return {@code true} if lower values of priority imply higher priority
-   */
-  boolean reverseOrder(int i);
+	@Override
+	protected void doAppend(long v) {
+    histogram.update(v);
+	}
+
 }

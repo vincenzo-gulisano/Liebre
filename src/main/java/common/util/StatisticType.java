@@ -23,12 +23,15 @@
 
 package common.util;
 
+import common.statistic.HistogramStatistic;
+import common.statistic.MeterStatistic;
+
 /**
  * Predefined types of component statistics that can be recorded automatically in liebre. This
  * enum is only used to provide consistent naming, together with {@link StatisticPath}.
  *
- * @see common.statistic.AverageStatistic
- * @see common.statistic.CountStatistic
+ * @see HistogramStatistic
+ * @see MeterStatistic
  */
 public enum StatisticType {
   /**

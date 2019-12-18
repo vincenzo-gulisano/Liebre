@@ -34,8 +34,8 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import scheduling.Scheduler;
-import scheduling.impl.DefaultScheduler;
+import scheduling.LiebreScheduler;
+import scheduling.impl.DefaultLiebreScheduler;
 import stream.GlobalStreamFactory;
 import stream.Stream;
 import stream.StreamFactory;
@@ -86,7 +86,7 @@ import component.source.TextSourceFunction;
  * helper methods. It also handles the connections of the components with the
  * correct types of {@link Stream}s and the activation/deactivation of the
  * query. Activating the query also starts executing it by delegating this work
- * to the provided {@link Scheduler} implementation.
+ * to the provided {@link LiebreScheduler} implementation.
  */
 public final class Query {
 
@@ -96,7 +96,7 @@ public final class Query {
 	private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
 	private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
 	private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
-	private final Scheduler scheduler;
+	private final LiebreScheduler LiebreScheduler;
 	private final Map<StatisticType, StatisticsConfiguration> enabledStatistics = new HashMap<>();
 	private final StreamFactory streamFactory;
 	private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
@@ -106,18 +106,18 @@ public final class Query {
 	 * Construct.
 	 */
 	public Query() {
-		this(new DefaultScheduler(), new GlobalStreamFactory());
+		this(new DefaultLiebreScheduler(), new GlobalStreamFactory());
 	}
 
 	/**
 	 * Construct.
 	 *
-	 * @param scheduler
-	 *            The scheduler implementation to use when executing the query
+	 * @param LiebreScheduler
+	 *            The LiebreScheduler implementation to use when executing the query
 	 *            after Query{@link #activate()} is called.
 	 */
-	public Query(Scheduler scheduler, StreamFactory streamFactory) {
-		this.scheduler = scheduler;
+	public Query(LiebreScheduler LiebreScheduler, StreamFactory streamFactory) {
+		this.LiebreScheduler = LiebreScheduler;
 		// Set a default backoff value
 		//setBackoff(1, 20, 5);
 		this.streamFactory = streamFactory;
@@ -413,11 +413,11 @@ public final class Query {
 				"Components: {} Sources, {} Operators, {} Sinks, {} Streams",
 				sources.size(), operators.size(), sinks.size(), streams()
 						.size());
-		scheduler.addTasks(sinks.values());
-		scheduler.addTasks(operators.values());
-		scheduler.addTasks(sources.values());
-		scheduler.enable();
-		scheduler.startTasks();
+		LiebreScheduler.addTasks(sinks.values());
+		LiebreScheduler.addTasks(operators.values());
+		LiebreScheduler.addTasks(sources.values());
+		LiebreScheduler.enable();
+		LiebreScheduler.startTasks();
 		active = true;
 	}
 
@@ -429,9 +429,9 @@ public final class Query {
 			return;
 		}
 		LOGGER.info("Deactivating query...");
-		scheduler.disable();
+		LiebreScheduler.disable();
 		LOGGER.info("Waiting for threads to terminate...");
-		scheduler.stopTasks();
+		LiebreScheduler.stopTasks();
 		LOGGER.info("DONE!");
 		active = false;
 	}

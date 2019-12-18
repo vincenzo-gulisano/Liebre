@@ -43,7 +43,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   private static final long MILLIS_TO_NANOS = 1000000;
   protected final T component;
   // The actual alpha that we use, changing depending on the actual update period length
-  private double alpha = 0.2;
+  private volatile double alpha = 0.2;
   private volatile long tuplesWritten;
   private volatile long tuplesRead;
   private volatile long processingTimeNanos;
@@ -115,13 +115,15 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     this.tuplesRead = this.tuplesWritten = this.processingTimeNanos = 0;
   }
 
-
   private void updateRateAndAlpha() {
     final long currentTime = System.currentTimeMillis();
     final long updatePeriod = currentTime - lastUpdateTime;
+    if (updatePeriod == 0) {
+      return;
+    }
     // Update alpha value
     this.alpha = Math.min(TARGET_ALPHA, TARGET_ALPHA * updatePeriod / TARGET_UPDATE_PERIOD);
-    final double currentRate =  tuplesRead / (double) (MILLIS_TO_NANOS * updatePeriod);
+    final double currentRate = tuplesRead / (double) (MILLIS_TO_NANOS * updatePeriod);
     this.rate = movingAverage(currentRate, rate);
     this.lastUpdateTime = currentTime;
   }
@@ -144,5 +146,4 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
 
   @Override
   public abstract void process();
-
 }

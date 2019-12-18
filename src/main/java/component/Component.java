@@ -26,8 +26,8 @@ import common.Active;
 import common.Named;
 import java.util.Collections;
 import java.util.List;
-import scheduling.toolkit.Feature;
-import scheduling.toolkit.Task;
+import io.palyvos.haren.Feature;
+import io.palyvos.haren.Task;
 
 /**
  * Base interface for all stream components such as Sources, Sinks and Operators.

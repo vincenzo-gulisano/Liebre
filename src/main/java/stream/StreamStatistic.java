@@ -23,7 +23,7 @@
 
 package stream;
 
-import common.statistic.CountStatistic;
+import common.statistic.MeterStatistic;
 import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
@@ -36,8 +36,8 @@ import common.util.StatisticType;
  */
 public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
 
-  private final CountStatistic inRate;
-  private final CountStatistic outRate;
+  private final MeterStatistic inRate;
+  private final MeterStatistic outRate;
 
   /**
    * Construct.
@@ -48,9 +48,9 @@ public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
    */
   public StreamStatistic(Stream<T> stream, String outputFolder, boolean autoFlush) {
     super(stream);
-    inRate = new CountStatistic(StatisticPath.get(outputFolder, stream, StatisticType.IN),
+    inRate = new MeterStatistic(StatisticPath.get(outputFolder, stream, StatisticType.IN),
         autoFlush);
-    outRate = new CountStatistic(StatisticPath.get(outputFolder, stream, StatisticType.OUT),
+    outRate = new MeterStatistic(StatisticPath.get(outputFolder, stream, StatisticType.OUT),
         autoFlush);
   }
 
