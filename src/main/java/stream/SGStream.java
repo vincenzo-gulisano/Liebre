@@ -1,20 +1,18 @@
 package stream;
 
-import java.util.List;
-
 import common.scalegate.ScaleGate;
 import common.scalegate.ScaleGateAArrImpl;
 import common.scalegate.TuplesFromAll;
-import common.tuple.RichTuple;
 import component.StreamConsumer;
 import component.StreamProducer;
+import java.util.List;
 
 /*
  * Assumption: all writers and reader threads are distinct
  * (i.e., this class is not safe when used in combination
  * with custom thread scheduling)
  */
-public class SGStream<T extends RichTuple> implements Stream<T> {
+public class SGStream<T extends Comparable<? super T>> implements Stream<T> {
 
 	// TODO Am I using id in the right way?
 	// TODO Am I using index in the right way?
@@ -27,7 +25,7 @@ public class SGStream<T extends RichTuple> implements Stream<T> {
 	private final int relativeProducerIndex;
 	private final int relativeConsumerIndex;
 	private boolean enabled;
-	private ScaleGate sg;
+	private ScaleGate<T> sg;
 	private List<StreamProducer<T>> sources;
 	private List<StreamConsumer<T>> destinations;
 

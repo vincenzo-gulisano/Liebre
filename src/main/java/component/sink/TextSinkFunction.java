@@ -24,14 +24,13 @@
 package component.sink;
 
 import common.Active;
-import common.tuple.Tuple;
 import java.util.function.Function;
 
 /**
  * Function from tuples to strings. Used by {@link TextFileSink}.
  * @param <IN> The type of input tuples.
  */
-public interface TextSinkFunction<IN extends Tuple> extends Active, Function<IN, String> {
+public interface TextSinkFunction<IN> extends Active, Function<IN, String> {
 
   @Override
   default void enable() {

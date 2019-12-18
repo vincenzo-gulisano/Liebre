@@ -23,14 +23,13 @@
 
 package example;
 
-import common.tuple.Tuple;
 import common.util.Util;
-import java.io.File;
 import component.operator.Operator;
 import component.operator.in1.map.MapFunction;
-import query.Query;
 import component.sink.Sink;
 import component.source.Source;
+import java.io.File;
+import query.Query;
 
 public class TextMap1 {
 
@@ -69,7 +68,7 @@ public class TextMap1 {
 
   }
 
-  private static class MyTuple implements Tuple {
+  private static class MyTuple {
 
     public long timestamp;
     public int key;

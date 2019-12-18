@@ -23,10 +23,8 @@
 
 package component.operator.in1;
 
-import java.util.List;
-
-import common.tuple.Tuple;
 import component.operator.Operator;
+import java.util.List;
 
 /**
  * {@link Operator} with one input and one output. Can produce multiple output tuples for every
@@ -35,7 +33,7 @@ import component.operator.Operator;
  * @param <IN> The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public interface Operator1In<IN extends Tuple, OUT extends Tuple> extends Operator<IN, OUT> {
+public interface Operator1In<IN, OUT> extends Operator<IN, OUT> {
 
   /**
    * Apply a function to the input tuple, transforming it into zero or more output tuples.

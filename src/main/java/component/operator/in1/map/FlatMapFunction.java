@@ -24,7 +24,6 @@
 package component.operator.in1.map;
 
 import common.Active;
-import common.tuple.Tuple;
 import java.util.List;
 
 /**
@@ -34,7 +33,7 @@ import java.util.List;
  * @param <OUT> The type of the output tuple(s).
  */
 @FunctionalInterface
-public interface FlatMapFunction<IN extends Tuple, OUT extends Tuple> extends Active {
+public interface FlatMapFunction<IN, OUT> extends Active {
 
   /**
    * Apply a function mapping the input to zero or more output tuples. If no tuples are to be

@@ -23,10 +23,8 @@
 
 package component.operator.in2;
 
-import java.util.List;
-
-import common.tuple.Tuple;
 import component.AbstractProcessCommand;
+import java.util.List;
 import stream.Stream;
 
 /**
@@ -34,7 +32,7 @@ import stream.Stream;
  *
  * @see AbstractProcessCommand
  */
-class ProcessCommand2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
+class ProcessCommand2In<IN, IN2, OUT>
     extends AbstractProcessCommand<Operator2In<IN, IN2, OUT>> {
 
   public ProcessCommand2In(Operator2In<IN, IN2, OUT> operator) {

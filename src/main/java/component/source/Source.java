@@ -23,7 +23,6 @@
 
 package component.source;
 
-import common.tuple.Tuple;
 import component.StreamProducer;
 
 /**
@@ -33,7 +32,7 @@ import component.StreamProducer;
  *
  * @param <OUT> The type of output tuples.
  */
-public interface Source<OUT extends Tuple> extends StreamProducer<OUT> {
+public interface Source<OUT> extends StreamProducer<OUT> {
 
   OUT getNextTuple();
 

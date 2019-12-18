@@ -23,36 +23,33 @@
 
 package stream;
 
-import java.util.List;
-
+import common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
-import common.tuple.RichTuple;
-import common.tuple.Tuple;
-import common.util.backoff.BackoffFactory;
+import java.util.List;
 
 /**
  * Factory for {@link Stream}s.
  */
 public interface StreamFactory {
 
-	<T extends Tuple> Stream<T> newStream(StreamProducer<T> from,
+	<T> Stream<T> newStream(StreamProducer<T> from,
 			StreamConsumer<T> to, int relativeProducerIndex,
 			int relativeConsumerIndex, int capacity, BackoffFactory backoff);
 
-	default <T extends Tuple> Stream<T> newStream(StreamProducer<T> from,
+	default <T> Stream<T> newStream(StreamProducer<T> from,
 			StreamConsumer<T> to, int relativeProducerIndex,
 			int relativeConsumerIndex, int capacity) {
 		return newStream(from, to, relativeProducerIndex,
 				relativeConsumerIndex, capacity, BackoffFactory.NOOP);
 	}
 
-	default <T extends Tuple> String getStreamId(StreamProducer<T> from,
+	default <T> String getStreamId(StreamProducer<T> from,
 			StreamConsumer<T> to) {
 		return String.format("%s_%s", from.getId(), to.getId());
 	}
 
-	<T extends RichTuple> Stream<T> newMWMRSortedStream(
+	<T extends Comparable<? super T>> Stream<T> newMWMRSortedStream(
 			List<StreamProducer<T>> sources,
 			List<StreamConsumer<T>> destinations, int relativeProducerIndex, int relativeConsumerIndex, int maxLevels);
 }

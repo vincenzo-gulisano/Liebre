@@ -23,14 +23,11 @@
 
 package component.sink;
 
-import component.StreamProducer;
 import component.ComponentState;
 import component.ComponentType;
 import component.ConnectionsNumber;
-import common.tuple.Tuple;
-
+import component.StreamProducer;
 import java.util.Collection;
-
 import stream.Stream;
 
 /**
@@ -38,10 +35,10 @@ import stream.Stream;
  *
  * @param <IN> The type of input tuples
  */
-public abstract class AbstractSink<IN extends Tuple> implements Sink<IN> {
+public abstract class AbstractSink<IN> implements Sink<IN> {
 
   private static final int INPUT_KEY = 0;
-  protected final ComponentState<IN, Tuple> state;
+  protected final ComponentState<IN, ?> state;
   private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
   private int relativeConsumerIndex;
   /**

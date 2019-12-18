@@ -23,11 +23,10 @@
 
 package component.operator.union;
 
-import common.tuple.Tuple;
 import component.AbstractProcessCommand;
 import stream.Stream;
 
-public class UnionProcessCommand<T extends Tuple> extends AbstractProcessCommand<UnionOperator<T>> {
+public class UnionProcessCommand<T> extends AbstractProcessCommand<UnionOperator<T>> {
 
   protected UnionProcessCommand(UnionOperator<T> component) {
     super(component);

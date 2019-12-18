@@ -24,10 +24,9 @@
 package component.operator.router;
 
 import component.ComponentType;
+import component.ConnectionsNumber;
 import component.StreamConsumer;
 import component.StreamProducer;
-import component.ConnectionsNumber;
-import common.tuple.Tuple;
 import java.util.Collection;
 import stream.Stream;
 
@@ -37,7 +36,7 @@ import stream.Stream;
  * @param <T> The type of input/output tuples.
  * @author palivosd
  */
-public class RouterOperatorDecorator<T extends Tuple> implements RouterOperator<T> {
+public class RouterOperatorDecorator<T> implements RouterOperator<T> {
 
   private final RouterOperator<T> decorated;
   private final ProcessCommandRouter<T> processingCommand = new ProcessCommandRouter<>(this);

@@ -23,29 +23,25 @@
 
 package component.source;
 
-import component.StreamConsumer;
 import component.ComponentState;
 import component.ComponentType;
 import component.ConnectionsNumber;
-import common.tuple.Tuple;
-
+import component.StreamConsumer;
 import java.util.Collection;
-
 import stream.Stream;
 
-
-public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
+public abstract class AbstractSource<OUT> implements Source<OUT> {
 
   private static final int OUTPUT_KEY = 0;
-  protected final ComponentState<Tuple, OUT> state;
+  protected final ComponentState<?, OUT> state;
   private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
 
   private int priority;
   private int relativeProducerIndex;
 
-  public AbstractSource(String id,int relativeProducerIndex) {
+  public AbstractSource(String id, int relativeProducerIndex) {
     this.state = new ComponentState<>(id, ComponentType.SOURCE);
-    this.relativeProducerIndex=relativeProducerIndex;
+    this.relativeProducerIndex = relativeProducerIndex;
   }
 
   @Override
@@ -154,23 +150,23 @@ public abstract class AbstractSource<OUT extends Tuple> implements Source<OUT> {
     return getId();
   }
 
-	@Override
-	public int getRelativeProducerIndex() {
-		return relativeProducerIndex;
-	}
+  @Override
+  public int getRelativeProducerIndex() {
+    return relativeProducerIndex;
+  }
 
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		this.relativeProducerIndex = index;
-	}
+  @Override
+  public void setRelativeProducerIndex(int index) {
+    this.relativeProducerIndex = index;
+  }
 
-	@Override
-	public int getRelativeConsumerIndex() {
-		throw new UnsupportedOperationException("Sources are not consumers!");
-	}
+  @Override
+  public int getRelativeConsumerIndex() {
+    throw new UnsupportedOperationException("Sources are not consumers!");
+  }
 
-	@Override
-	public void setRelativeConsumerIndex(int index) {
-		throw new UnsupportedOperationException("Sources are not consumers!");
-	}
+  @Override
+  public void setRelativeConsumerIndex(int index) {
+    throw new UnsupportedOperationException("Sources are not consumers!");
+  }
 }

@@ -23,12 +23,6 @@
 
 package example;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-
-import query.Query;
-
 import common.tuple.BaseRichTuple;
 import common.util.Util;
 import component.operator.Operator;
@@ -36,6 +30,11 @@ import component.operator.in1.BaseOperator1In;
 import component.sink.Sink;
 import component.source.Source;
 import component.source.SourceFunction;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
+import query.Query;
 
 public class SGStreamExample {
 
@@ -89,7 +88,7 @@ public class SGStreamExample {
 		Sink<MyTuple> sink = q.addBaseSink("O1",
 				tuple -> System.out.println(tuple));
 
-		q.connect(Util.makeList(source1, source2), Util.makeList(multiply))
+		q.connectMRMW(Arrays.asList(source1, source2),  Arrays.asList(multiply))
 				.connect(multiply, sink);
 
 		q.activate();
@@ -98,7 +97,7 @@ public class SGStreamExample {
 
 	}
 
-	private static class MyTuple extends BaseRichTuple {
+	private static class MyTuple extends BaseRichTuple implements Comparable<BaseRichTuple> {
 
 		public String source;
 		public int value;
@@ -111,7 +110,6 @@ public class SGStreamExample {
 
 		@Override
 		public String toString() {
-			// TODO Auto-generated method stub
 			return getTimestamp() + "," + getKey() + "," + source + "," + value;
 		}
 	}

@@ -23,7 +23,6 @@
 
 package component.sink;
 
-import common.tuple.Tuple;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -35,7 +34,7 @@ import java.io.PrintWriter;
  * @param <IN> The type of input tuples.
  * @see TextSinkFunction
  */
-public class TextFileSink<IN extends Tuple> extends AbstractSink<IN> {
+public class TextFileSink<IN> extends AbstractSink<IN> {
 
   private final TextSinkFunction<IN> function;
   private PrintWriter pw;

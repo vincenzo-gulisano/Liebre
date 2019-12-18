@@ -23,7 +23,6 @@
 
 package component.source;
 
-import common.tuple.Tuple;
 import org.apache.commons.lang3.Validate;
 
 /**
@@ -31,7 +30,7 @@ import org.apache.commons.lang3.Validate;
  *
  * @param <OUT> The type of output tuples.
  */
-public class BaseSource<OUT extends Tuple> extends AbstractSource<OUT> {
+public class BaseSource<OUT> extends AbstractSource<OUT> {
 
   private final SourceFunction<OUT> function;
 

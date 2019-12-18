@@ -23,26 +23,7 @@
 
 package query;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang3.Validate;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import scheduling.LiebreScheduler;
-import scheduling.impl.DefaultLiebreScheduler;
-import stream.GlobalStreamFactory;
-import stream.Stream;
-import stream.StreamFactory;
-import stream.StreamStatistic;
-
 import common.tuple.RichTuple;
-import common.tuple.Tuple;
 import common.util.backoff.BackoffFactory;
 import common.util.backoff.ExponentialBackoff;
 import component.Component;
@@ -79,6 +60,21 @@ import component.source.SourceFunction;
 import component.source.SourceStatistic;
 import component.source.TextFileSource;
 import component.source.TextSourceFunction;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import scheduling.LiebreScheduler;
+import scheduling.impl.DefaultLiebreScheduler;
+import stream.BackoffStreamFactory;
+import stream.Stream;
+import stream.StreamFactory;
+import stream.StreamStatistic;
 
 /**
  * The main execution unit. Acts as a factory for the stream {@link Component}s
@@ -93,9 +89,9 @@ public final class Query {
 	private static final Logger LOGGER = LogManager.getLogger();
 	public static final int DEFAULT_STREAM_CAPACITY = 10000;
 	public static final int DEFAULT_MAX_LEVELS = 3;
-	private final Map<String, Operator<? extends Tuple, ? extends Tuple>> operators = new HashMap<>();
-	private final Map<String, Source<? extends Tuple>> sources = new HashMap<>();
-	private final Map<String, Sink<? extends Tuple>> sinks = new HashMap<>();
+	private final Map<String, Operator<?, ?>> operators = new HashMap<>();
+	private final Map<String, Source<?>> sources = new HashMap<>();
+	private final Map<String, Sink<?>> sinks = new HashMap<>();
 	private final LiebreScheduler LiebreScheduler;
 	private final Map<StatisticType, StatisticsConfiguration> enabledStatistics = new HashMap<>();
 	private final StreamFactory streamFactory;
@@ -106,7 +102,7 @@ public final class Query {
 	 * Construct.
 	 */
 	public Query() {
-		this(new DefaultLiebreScheduler(), new GlobalStreamFactory());
+		this(new DefaultLiebreScheduler(), new BackoffStreamFactory());
 	}
 
 	/**
@@ -185,7 +181,7 @@ public final class Query {
 		this.defaultBackoff = backoffFactory;
 	}
 
-	public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addOperator(
+	public synchronized <IN, OUT> Operator<IN, OUT> addOperator(
 			Operator1In<IN, OUT> operator) {
 		Operator<IN, OUT> decoratedOperator = operator;
 		if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
@@ -206,22 +202,22 @@ public final class Query {
 				identifier,0,0, windowSize, windowSlide, window));
 	}
 
-	public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addMapOperator(
+	public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
 			String identifier, MapFunction<IN, OUT> mapFunction) {
 		return addOperator(new MapOperator<IN, OUT>(identifier,0,0, mapFunction));
 	}
 
-	public synchronized <IN extends Tuple, OUT extends Tuple> Operator<IN, OUT> addFlatMapOperator(
+	public synchronized <IN, OUT> Operator<IN, OUT> addFlatMapOperator(
 			String identifier, FlatMapFunction<IN, OUT> mapFunction) {
 		return addOperator(new FlatMapOperator<IN, OUT>(identifier,0,0, mapFunction));
 	}
 
-	public synchronized <T extends Tuple> Operator<T, T> addFilterOperator(
+	public synchronized <T> Operator<T, T> addFilterOperator(
 			String identifier, FilterFunction<T> filterF) {
 		return addOperator(new FilterOperator<T>(identifier,0,0, filterF));
 	}
 
-	public synchronized <T extends Tuple> RouterOperator<T> addRouterOperator(
+	public synchronized <T> RouterOperator<T> addRouterOperator(
 			String identifier) {
 		RouterOperator<T> router = new BaseRouterOperator<T>(identifier,0,0);
 		if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
@@ -234,19 +230,19 @@ public final class Query {
 		return router;
 	}
 
-	public synchronized <T extends Tuple> UnionOperator<T> addUnionOperator(
+	public synchronized <T> UnionOperator<T> addUnionOperator(
 			UnionOperator<T> union) {
 		saveComponent(operators, union, "component/operator");
 		return union;
 	}
 
-	public synchronized <T extends Tuple> UnionOperator<T> addUnionOperator(
+	public synchronized <T> UnionOperator<T> addUnionOperator(
 			String identifier) {
 		UnionOperator<T> union = new UnionOperator<>(identifier,0,0);
 		return addUnionOperator(union);
 	}
 
-	public synchronized <T extends Tuple> Source<T> addSource(Source<T> source) {
+	public synchronized <T> Source<T> addSource(Source<T> source) {
 		Source<T> decoratedSource = source;
 		if (enabledStatistics.containsKey(StatisticType.SOURCES)) {
 			StatisticsConfiguration statConfig = enabledStatistics
@@ -258,17 +254,17 @@ public final class Query {
 		return decoratedSource;
 	}
 
-	public synchronized <T extends Tuple> Source<T> addBaseSource(String id,
+	public synchronized <T> Source<T> addBaseSource(String id,
 			SourceFunction<T> function) {
 		return addSource(new BaseSource<>(id,0, function));
 	}
 
-	public synchronized <T extends Tuple> Source<T> addTextFileSource(
+	public synchronized <T> Source<T> addTextFileSource(
 			String id, String filename, TextSourceFunction<T> function) {
 		return addSource(new TextFileSource(id, 0,filename, function));
 	}
 
-	public synchronized <T extends Tuple> Sink<T> addSink(Sink<T> sink) {
+	public synchronized <T> Sink<T> addSink(Sink<T> sink) {
 		Sink<T> decoratedSink = sink;
 		if (enabledStatistics.containsKey(StatisticType.SINKS)) {
 			StatisticsConfiguration statConfig = enabledStatistics
@@ -280,17 +276,17 @@ public final class Query {
 		return decoratedSink;
 	}
 
-	public synchronized <T extends Tuple> Sink<T> addBaseSink(String id,
+	public synchronized <T> Sink<T> addBaseSink(String id,
 			SinkFunction<T> sinkFunction) {
 		return addSink(new BaseSink<>(id,0, sinkFunction));
 	}
 
-	public synchronized <T extends Tuple> Sink<T> addTextFileSink(String id,
+	public synchronized <T> Sink<T> addTextFileSink(String id,
 			String file, TextSinkFunction<T> function) {
 		return addSink(new TextFileSink<>(id,0, file, function));
 	}
 
-	public synchronized <OUT extends Tuple, IN extends Tuple, IN2 extends Tuple> Operator2In<IN, IN2, OUT> addOperator2In(
+	public synchronized <OUT, IN, IN2> Operator2In<IN, IN2, OUT> addOperator2In(
 			Operator2In<IN, IN2, OUT> operator) {
 		Operator2In<IN, IN2, OUT> decoratedOperator = operator;
 		if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
@@ -310,12 +306,12 @@ public final class Query {
 				windowSize, joinFunction));
 	}
 
-	public synchronized <T extends Tuple> Query connect(
+	public synchronized <T> Query connect(
 			StreamProducer<T> source, StreamConsumer<T> destination) {
 		return connect(source, destination, defaultBackoff);
 	}
 
-	public synchronized <T extends Tuple> Query connect(
+	public synchronized <T> Query connect(
 			StreamProducer<T> source, StreamConsumer<T> destination,
 			BackoffFactory backoff) {
 		Validate.isTrue(
@@ -328,7 +324,7 @@ public final class Query {
 		return this;
 	}
 	
-	public synchronized <T extends RichTuple> Query connect(
+	public synchronized <T extends Comparable<? super T>> Query connectMRMW(
 			List<StreamProducer<T>> sources,
 			List<StreamConsumer<T>> destinations) {
 		Stream<T> stream = getMWMRSortedStream(sources, destinations);
@@ -351,12 +347,12 @@ public final class Query {
 		return this;
 	}
 
-	public synchronized <T extends Tuple> Query connect2inLeft(
+	public synchronized <T> Query connect2inLeft(
 			StreamProducer<T> source, Operator2In<T, ?, ?> destination) {
 		return connect2inLeft(source, destination, defaultBackoff);
 	}
 
-	public synchronized <T extends Tuple> Query connect2inLeft(
+	public synchronized <T> Query connect2inLeft(
 			StreamProducer<T> source, Operator2In<T, ?, ?> destination,
 			BackoffFactory backoff) {
 		Stream<T> stream = getStream(source, destination, backoff);
@@ -365,12 +361,12 @@ public final class Query {
 		return this;
 	}
 
-	public synchronized <T extends Tuple> Query connect2inRight(
+	public synchronized <T> Query connect2inRight(
 			StreamProducer<T> source, Operator2In<?, T, ?> destination) {
 		return connect2inRight(source, destination, defaultBackoff);
 	}
 
-	public synchronized <T extends Tuple> Query connect2inRight(
+	public synchronized <T> Query connect2inRight(
 			StreamProducer<T> source, Operator2In<?, T, ?> destination,
 			BackoffFactory backoff) {
 		Stream<T> stream = getStream(source, destination.secondInputView(),
@@ -380,7 +376,7 @@ public final class Query {
 		return this;
 	}
 
-	private synchronized <T extends Tuple> Stream<T> getStream(
+	private synchronized <T> Stream<T> getStream(
 			StreamProducer<T> source, StreamConsumer<T> destination,
 			BackoffFactory backoff) {
 		Stream<T> stream = streamFactory.newStream(source, destination,0,0,
@@ -395,7 +391,7 @@ public final class Query {
 		}
 	}
 	
-	private synchronized <T extends RichTuple> Stream<T> getMWMRSortedStream(
+	private synchronized <T extends Comparable<? super T>> Stream<T> getMWMRSortedStream(
 			List<StreamProducer<T>> sources,
 			List<StreamConsumer<T>> destinations) {
 		return streamFactory.newMWMRSortedStream(sources, destinations, 0, 0,

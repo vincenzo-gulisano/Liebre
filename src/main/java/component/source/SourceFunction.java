@@ -24,7 +24,6 @@
 package component.source;
 
 import common.Active;
-import common.tuple.Tuple;
 import component.FeatureTranslator;
 import java.util.function.Supplier;
 
@@ -33,7 +32,7 @@ import java.util.function.Supplier;
  *
  * @param <OUT> The type of supplied tuples.
  */
-public interface SourceFunction<OUT extends Tuple> extends Active, Supplier<OUT> {
+public interface SourceFunction<OUT> extends Active, Supplier<OUT> {
 
   @Override
   default void enable() {

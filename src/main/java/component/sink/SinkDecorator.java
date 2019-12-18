@@ -24,9 +24,8 @@
 package component.sink;
 
 import component.ComponentType;
-import component.StreamProducer;
 import component.ConnectionsNumber;
-import common.tuple.Tuple;
+import component.StreamProducer;
 import java.util.Collection;
 import stream.Stream;
 
@@ -36,7 +35,7 @@ import stream.Stream;
  * @param <IN> The type of input tuples.
  * @author palivosd
  */
-public class SinkDecorator<IN extends Tuple> implements Sink<IN> {
+public class SinkDecorator<IN> implements Sink<IN> {
 
   private final Sink<IN> decorated;
   private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);

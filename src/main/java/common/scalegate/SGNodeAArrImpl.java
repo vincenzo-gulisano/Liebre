@@ -25,18 +25,16 @@ package common.scalegate;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-import common.tuple.RichTuple;
 
-
-public class SGNodeAArrImpl {
+public class SGNodeAArrImpl<T extends Comparable<T>> {
 
     final AtomicReferenceArray<SGNodeAArrImpl> next;
-    final RichTuple obj;
+    final T obj;
     final ScaleGateAArrImpl.WriterThreadLocalData ln;
     final int writerID;
     volatile boolean assigned;
     
-	public SGNodeAArrImpl (int levels, RichTuple t, ScaleGateAArrImpl.WriterThreadLocalData ln, int writerID) {
+	public SGNodeAArrImpl (int levels, T t, ScaleGateAArrImpl.WriterThreadLocalData ln, int writerID) {
 	next = new AtomicReferenceArray<SGNodeAArrImpl>(levels);
 	for (int i = 0; i < levels; i++) {
 	    	next.set(i, null);
@@ -51,7 +49,7 @@ public class SGNodeAArrImpl {
 	return next.get(level);
     }
 
-    public RichTuple getTuple() {
+    public T getTuple() {
 	return this.obj;
     }
 

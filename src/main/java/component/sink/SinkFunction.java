@@ -24,14 +24,13 @@
 package component.sink;
 
 import common.Active;
-import common.tuple.Tuple;
 import java.util.function.Consumer;
 
 /**
  * Function that works on all tuples accepted by a {@link BaseSink}.
  * @param <IN> The type of input tuples.
  */
-public interface SinkFunction<IN extends Tuple> extends Active, Consumer<IN> {
+public interface SinkFunction<IN> extends Active, Consumer<IN> {
 
   @Override
   default void enable() {

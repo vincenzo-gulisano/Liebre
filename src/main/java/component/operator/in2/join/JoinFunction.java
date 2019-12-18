@@ -23,7 +23,6 @@
 
 package component.operator.in2.join;
 
-import common.tuple.Tuple;
 import java.util.function.BiFunction;
 
 /**
@@ -34,7 +33,7 @@ import java.util.function.BiFunction;
  * @param <IN2> The input type of the second tuple.
  * @param <OUT> The resulting tuple type.
  */
-public interface JoinFunction<IN1 extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends
+public interface JoinFunction<IN1, IN2, OUT> extends
     BiFunction<IN1, IN2, OUT> {
 
 

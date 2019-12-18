@@ -23,16 +23,13 @@
 
 package component.operator.in2;
 
-import component.StreamConsumer;
-import component.StreamProducer;
 import component.ComponentState;
 import component.ComponentType;
 import component.ConnectionsNumber;
-import common.tuple.Tuple;
-
-import java.util.Collection;
-
+import component.StreamConsumer;
+import component.StreamProducer;
 import component.operator.Operator;
+import java.util.Collection;
 import stream.Stream;
 
 /**
@@ -45,10 +42,10 @@ import stream.Stream;
  * @param <OUT>
  *            The type of the tuples in the output.
  */
-public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
+public abstract class BaseOperator2In<IN, IN2, OUT>
 		implements Operator2In<IN, IN2, OUT> {
 
-	private final ComponentState<Tuple, OUT> state;
+	private final ComponentState<Object, OUT> state;
 	private final Operator<IN2, OUT> secondInputView;
 	private int relativeProducerIndex;
 	private int relativeConsumerIndex;
@@ -91,12 +88,12 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 
 	@Override
 	public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
-		state.addInput(INPUT1_KEY, (Stream<Tuple>) stream);
+		state.addInput(INPUT1_KEY, (Stream<Object>) stream);
 	}
 
 	@Override
 	public void addInput2(StreamProducer<IN2> source, Stream<IN2> stream) {
-		state.addInput(INPUT2_KEY, (Stream<Tuple>) stream);
+		state.addInput(INPUT2_KEY, (Stream<Object>) stream);
 	}
 
 	@Override
@@ -115,7 +112,7 @@ public abstract class BaseOperator2In<IN extends Tuple, IN2 extends Tuple, OUT e
 	}
 
 	@Override
-	public Collection<? extends Stream<Tuple>> getInputs() {
+	public Collection<? extends Stream<?>> getInputs() {
 		return state.getInputs();
 	}
 

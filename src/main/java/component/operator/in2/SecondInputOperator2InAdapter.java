@@ -24,13 +24,12 @@
 package component.operator.in2;
 
 import component.ComponentType;
+import component.ConnectionsNumber;
 import component.StreamConsumer;
 import component.StreamProducer;
-import component.ConnectionsNumber;
-import common.tuple.Tuple;
+import component.operator.Operator;
 import java.util.Collection;
 import java.util.List;
-import component.operator.Operator;
 import stream.Stream;
 
 
@@ -39,7 +38,7 @@ import stream.Stream;
  * component.operator.in1.Operator1In} with its
  * main input being the second input of this {@link Operator2In}.
  */
-class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> implements
+class SecondInputOperator2InAdapter<IN, OUT> implements
     Operator<IN, OUT> {
 
   private final Operator2In<?, IN, OUT> decorated;
@@ -73,7 +72,7 @@ class SecondInputOperator2InAdapter<IN extends Tuple, OUT extends Tuple> impleme
   }
 
   @Override
-  public Collection<? extends Stream<Tuple>> getInputs() {
+  public Collection<? extends Stream<?>> getInputs() {
     return decorated.getInputs();
   }
 

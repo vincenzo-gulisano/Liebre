@@ -24,7 +24,6 @@
 package component.operator.router;
 
 import common.statistic.HistogramStatistic;
-import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
 import java.util.Collection;
@@ -36,7 +35,7 @@ import stream.Stream;
  *
  * @see StatisticPath
  */
-public class RouterOperatorStatistic<T extends Tuple> extends RouterOperatorDecorator<T> {
+public class RouterOperatorStatistic<T> extends RouterOperatorDecorator<T> {
 
   private final HistogramStatistic processingTimeStatistic;
   private final HistogramStatistic executionTimeStatistic;

@@ -24,9 +24,8 @@
 package component.source;
 
 import component.ComponentType;
-import component.StreamConsumer;
 import component.ConnectionsNumber;
-import common.tuple.Tuple;
+import component.StreamConsumer;
 import java.util.Collection;
 import stream.Stream;
 
@@ -36,7 +35,7 @@ import stream.Stream;
  * @param <OUT> The type of output tuples.
  * @author palivosd
  */
-public class SourceDecorator<OUT extends Tuple> implements Source<OUT> {
+public class SourceDecorator<OUT> implements Source<OUT> {
 
   private final Source<OUT> decorated;
   private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);

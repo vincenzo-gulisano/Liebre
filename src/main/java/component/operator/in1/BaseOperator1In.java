@@ -24,7 +24,6 @@
 package component.operator.in1;
 
 import component.ComponentType;
-import common.tuple.Tuple;
 import component.operator.AbstractOperator;
 
 /**
@@ -37,7 +36,7 @@ import component.operator.AbstractOperator;
  *
  * @author palivosd
  */
-public abstract class BaseOperator1In<IN extends Tuple, OUT extends Tuple>
+public abstract class BaseOperator1In<IN, OUT>
 		extends AbstractOperator<IN, OUT> implements Operator1In<IN, OUT> {
 
 	private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(

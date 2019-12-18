@@ -27,7 +27,7 @@ package common.tuple;
  * Tuple object that has a key, a timestamp and a stimulus time (e.g. the time it entered the
  * system).
  */
-public interface RichTuple extends Tuple,Comparable<RichTuple> {
+public interface RichTuple {
 
   long getTimestamp();
 

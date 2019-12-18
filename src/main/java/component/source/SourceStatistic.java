@@ -24,7 +24,6 @@
 package component.source;
 
 import common.statistic.HistogramStatistic;
-import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
 
@@ -34,7 +33,7 @@ import common.util.StatisticType;
  *
  * @see StatisticPath
  */
-public class SourceStatistic<T extends Tuple> extends SourceDecorator<T> {
+public class SourceStatistic<T> extends SourceDecorator<T> {
 
 
   private final HistogramStatistic processingTimeStatistic;

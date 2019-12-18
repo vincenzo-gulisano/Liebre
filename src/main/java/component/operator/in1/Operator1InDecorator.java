@@ -23,16 +23,13 @@
 
 package component.operator.in1;
 
-import java.util.Collection;
-import java.util.List;
-
-import stream.Stream;
-
-import common.tuple.Tuple;
 import component.ComponentType;
 import component.ConnectionsNumber;
 import component.StreamConsumer;
 import component.StreamProducer;
+import java.util.Collection;
+import java.util.List;
+import stream.Stream;
 
 /**
  * Base decorator for {@link Operator1In}. Delegates all function calls to the
@@ -44,7 +41,7 @@ import component.StreamProducer;
  *            The type of output tuples.
  * @author palivosd
  */
-public class Operator1InDecorator<IN extends Tuple, OUT extends Tuple>
+public class Operator1InDecorator<IN, OUT>
 		implements Operator1In<IN, OUT> {
 
 	private final Operator1In<IN, OUT> decorated;

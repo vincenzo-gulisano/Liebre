@@ -24,7 +24,6 @@
 package component;
 
 import common.Named;
-import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,7 +35,7 @@ import stream.Stream;
  * @param <OUT>
  *            The output type of this component.
  */
-public interface StreamProducer<OUT extends Tuple> extends Named, Component {
+public interface StreamProducer<OUT> extends Named, Component {
 
 	/**
 	 * Connect this producer with the given {@link StreamConsumer} using the

@@ -23,9 +23,8 @@
 
 package component.operator.union;
 
-import component.StreamProducer;
 import component.ComponentType;
-import common.tuple.Tuple;
+import component.StreamProducer;
 import component.operator.AbstractOperator;
 import stream.Stream;
 
@@ -35,7 +34,7 @@ import stream.Stream;
  *
  * @param <T> The type of input/output tuples.
  */
-public class UnionOperator<T extends Tuple> extends AbstractOperator<T, T> {
+public class UnionOperator<T> extends AbstractOperator<T, T> {
 
   private final UnionProcessCommand<T> processCommand = new UnionProcessCommand<>(this);
 

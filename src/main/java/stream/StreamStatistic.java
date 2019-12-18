@@ -24,7 +24,6 @@
 package stream;
 
 import common.statistic.MeterStatistic;
-import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
 
@@ -34,7 +33,7 @@ import common.util.StatisticType;
  *
  * @param <T> The type of tuples transferred by the stream.
  */
-public class StreamStatistic<T extends Tuple> extends StreamDecorator<T> {
+public class StreamStatistic<T> extends StreamDecorator<T> {
 
   private final MeterStatistic inRate;
   private final MeterStatistic outRate;

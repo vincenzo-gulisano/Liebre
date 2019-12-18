@@ -23,7 +23,6 @@
 
 package example;
 
-import common.tuple.Tuple;
 import common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.BaseOperator1In;
@@ -73,7 +72,7 @@ public class SimpleQuery {
 
   }
 
-  private static class MyTuple implements Tuple {
+  private static class MyTuple {
 
     public long timestamp;
     public int key;

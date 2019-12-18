@@ -23,7 +23,6 @@
 
 package component.source;
 
-import common.tuple.Tuple;
 import common.util.Util;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -38,7 +37,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @param <OUT> The type of produced tuples.
  */
-public class TextFileSource<OUT extends Tuple> extends AbstractSource<OUT> {
+public class TextFileSource<OUT> extends AbstractSource<OUT> {
 
   private static final Logger LOGGER = LogManager.getLogger();
   private final TextSourceFunction<OUT> function;

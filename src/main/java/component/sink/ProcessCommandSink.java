@@ -23,9 +23,8 @@
 
 package component.sink;
 
-import component.ProcessCommand;
-import common.tuple.Tuple;
 import component.AbstractProcessCommand;
+import component.ProcessCommand;
 import stream.Stream;
 
 /**
@@ -33,7 +32,7 @@ import stream.Stream;
  *
  * @param <T> The type of input tuples.
  */
-class ProcessCommandSink<T extends Tuple> extends AbstractProcessCommand<Sink<T>> {
+class ProcessCommandSink<T> extends AbstractProcessCommand<Sink<T>> {
 
   public ProcessCommandSink(Sink<T> sink) {
     super(sink);

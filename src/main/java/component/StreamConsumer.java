@@ -25,7 +25,6 @@ package component;
 
 import common.Named;
 import common.tuple.RichTuple;
-import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +36,7 @@ import stream.Stream;
  * @param <IN>
  *            The input type for this component.
  */
-public interface StreamConsumer<IN extends Tuple> extends Named, Component {
+public interface StreamConsumer<IN> extends Named, Component {
 
 	/**
 	 * Connect this consumer with the given {@link StreamProducer} using the
@@ -72,7 +71,7 @@ public interface StreamConsumer<IN extends Tuple> extends Named, Component {
 	 *            {@link component.operator.in2.Operator2In}.
 	 * @return All the input streams of this consumer.
 	 */
-	<T extends Tuple> Collection<? extends Stream<T>> getInputs();
+	<T> Collection<? extends Stream<T>> getInputs();
 
 	@Override
 	default int getTopologicalOrder() {

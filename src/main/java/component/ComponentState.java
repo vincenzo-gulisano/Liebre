@@ -22,7 +22,6 @@
  */
 package component;
 
-import common.tuple.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +39,7 @@ import stream.Stream;
  * @param <OUT> The type of the outputs of the component where the state belongs to.
  * @author palivosd
  */
-public final class ComponentState<IN extends Tuple, OUT extends Tuple> {
+public final class ComponentState<IN, OUT> {
 
   private static AtomicInteger nextIndex = new AtomicInteger();
   private final ComponentType type;

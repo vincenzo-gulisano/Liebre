@@ -25,7 +25,6 @@ package component.operator;
 
 import component.StreamConsumer;
 import component.StreamProducer;
-import common.tuple.Tuple;
 
 /**
  * An component.operator is a processing unit that both consumes and produces tuples.
@@ -33,7 +32,7 @@ import common.tuple.Tuple;
  * @param <IN> The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public interface Operator<IN extends Tuple, OUT extends Tuple> extends StreamConsumer<IN>,
+public interface Operator<IN, OUT> extends StreamConsumer<IN>,
     StreamProducer<OUT> {
 
 }

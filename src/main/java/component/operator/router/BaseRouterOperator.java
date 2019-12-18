@@ -23,11 +23,10 @@
 
 package component.operator.router;
 
-import component.StreamConsumer;
 import component.ComponentType;
-import common.tuple.Tuple;
-import java.util.Collection;
+import component.StreamConsumer;
 import component.operator.AbstractOperator;
+import java.util.Collection;
 import stream.Stream;
 
 /**
@@ -35,7 +34,7 @@ import stream.Stream;
  *
  * @param <T> The type of input/output tuples.
  */
-public class BaseRouterOperator<T extends Tuple> extends AbstractOperator<T, T> implements
+public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements
     RouterOperator<T> {
 
   private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);

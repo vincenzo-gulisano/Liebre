@@ -24,15 +24,12 @@
 package component.operator.in2;
 
 import component.ComponentType;
+import component.ConnectionsNumber;
 import component.StreamConsumer;
 import component.StreamProducer;
-import component.ConnectionsNumber;
-import common.tuple.Tuple;
-
+import component.operator.Operator;
 import java.util.Collection;
 import java.util.List;
-
-import component.operator.Operator;
 import stream.Stream;
 
 /**
@@ -47,7 +44,7 @@ import stream.Stream;
  *            The type of output tuples.
  * @author palivosd
  */
-public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple>
+public class Operator2InDecorator<IN, IN2, OUT>
 		implements Operator2In<IN, IN2, OUT> {
 
 	private final Operator2In<IN, IN2, OUT> decorated;
@@ -80,7 +77,7 @@ public class Operator2InDecorator<IN extends Tuple, IN2 extends Tuple, OUT exten
 	}
 
 	@Override
-	public Collection<? extends Stream<Tuple>> getInputs() {
+	public Collection<? extends Stream<?>> getInputs() {
 		return decorated.getInputs();
 	}
 

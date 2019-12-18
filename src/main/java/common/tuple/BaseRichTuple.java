@@ -30,7 +30,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 /**
  * {@link RichTuple} default implementation.
  */
-public class BaseRichTuple implements RichTuple {
+public class BaseRichTuple implements RichTuple, Comparable<BaseRichTuple> {
 
 	protected final long timestamp;
 	protected final long stimulus;
@@ -92,7 +92,7 @@ public class BaseRichTuple implements RichTuple {
 	}
 
 	@Override
-	public int compareTo(RichTuple o) {
+	public int compareTo(BaseRichTuple o) {
 		if (this.timestamp == o.getTimestamp()) {
 			return 0;
 		} else {

@@ -23,16 +23,13 @@
 
 package component.operator;
 
-import java.util.Collection;
-
-import stream.Stream;
-
-import common.tuple.Tuple;
 import component.ComponentState;
 import component.ComponentType;
 import component.ConnectionsNumber;
 import component.StreamConsumer;
 import component.StreamProducer;
+import java.util.Collection;
+import stream.Stream;
 
 /**
  * Abstract implementation of {@link Operator} that handles basic changes to the state of the
@@ -41,7 +38,7 @@ import component.StreamProducer;
  * @param <IN> The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public abstract class AbstractOperator<IN extends Tuple, OUT extends Tuple> implements
+public abstract class AbstractOperator<IN, OUT> implements
     Operator<IN, OUT> {
 
   protected final ComponentState<IN, OUT> state;

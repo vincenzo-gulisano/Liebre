@@ -24,7 +24,6 @@
 package component.sink;
 
 import common.statistic.HistogramStatistic;
-import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
 
@@ -34,7 +33,7 @@ import common.util.StatisticType;
  *
  * @see StatisticPath
  */
-public class SinkStatistic<T extends Tuple> extends SinkDecorator<T> {
+public class SinkStatistic<T> extends SinkDecorator<T> {
 
   private final HistogramStatistic processingTimeStatistic;
   private final HistogramStatistic executionTimeStatistic;

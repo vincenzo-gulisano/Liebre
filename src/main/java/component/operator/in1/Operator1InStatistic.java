@@ -24,7 +24,6 @@
 package component.operator.in1;
 
 import common.statistic.HistogramStatistic;
-import common.tuple.Tuple;
 import common.util.StatisticPath;
 import common.util.StatisticType;
 import java.util.List;
@@ -36,7 +35,7 @@ import java.util.List;
  * @see StatisticType
  * @see StatisticPath
  */
-public class Operator1InStatistic<IN extends Tuple, OUT extends Tuple> extends
+public class Operator1InStatistic<IN, OUT> extends
     Operator1InDecorator<IN, OUT> {
 
   private final HistogramStatistic processingTimeStatistic;

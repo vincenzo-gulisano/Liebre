@@ -23,9 +23,8 @@
 
 package component.operator.router;
 
-import common.tuple.Tuple;
-import component.ProcessCommand;
 import component.AbstractProcessCommand;
+import component.ProcessCommand;
 import stream.Stream;
 
 /**
@@ -33,7 +32,7 @@ import stream.Stream;
  *
  * @param <T> The type of input/output tuples.
  */
-class ProcessCommandRouter<T extends Tuple> extends
+class ProcessCommandRouter<T> extends
     AbstractProcessCommand<RouterOperator<T>> {
 
   protected ProcessCommandRouter(RouterOperator<T> operator) {

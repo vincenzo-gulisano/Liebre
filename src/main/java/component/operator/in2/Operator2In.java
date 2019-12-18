@@ -23,12 +23,10 @@
 
 package component.operator.in2;
 
-import java.util.List;
-
 import component.StreamProducer;
-import common.tuple.Tuple;
 import component.operator.Operator;
 import component.operator.in1.Operator1In;
+import java.util.List;
 import stream.Stream;
 
 /**
@@ -38,7 +36,7 @@ import stream.Stream;
  * @param <IN2> The type of the tuples in the second input stream.
  * @param <OUT> The type of the tuples in the output stream.
  */
-public interface Operator2In<IN extends Tuple, IN2 extends Tuple, OUT extends Tuple> extends
+public interface Operator2In<IN, IN2, OUT> extends
     Operator1In<IN, OUT> {
 
   /**

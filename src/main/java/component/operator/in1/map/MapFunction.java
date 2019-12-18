@@ -24,13 +24,12 @@
 package component.operator.in1.map;
 
 import common.Active;
-import common.tuple.Tuple;
 import java.util.function.Function;
 
 /**
  * Function that maps an input tuple to an output tuple. Returns null if no result is produced.
  */
-public interface MapFunction<IN extends Tuple, OUT extends Tuple> extends Active, Function<IN,
+public interface MapFunction<IN, OUT> extends Active, Function<IN,
     OUT> {
 
   @Override

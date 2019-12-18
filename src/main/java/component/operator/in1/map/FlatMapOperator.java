@@ -23,10 +23,8 @@
 
 package component.operator.in1.map;
 
-import java.util.List;
-
-import common.tuple.Tuple;
 import component.operator.in1.BaseOperator1In;
+import java.util.List;
 import org.apache.commons.lang3.Validate;
 
 /**
@@ -36,7 +34,7 @@ import org.apache.commons.lang3.Validate;
  * @param <IN> The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public class FlatMapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator1In<IN, OUT> {
+public class FlatMapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
 
   private FlatMapFunction<IN, OUT> map;
 

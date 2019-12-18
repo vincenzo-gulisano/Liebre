@@ -23,11 +23,9 @@
 
 package stream;
 
-import java.util.List;
-
-import common.tuple.Tuple;
 import component.StreamConsumer;
 import component.StreamProducer;
+import java.util.List;
 
 /**
  * Basic decorator for {@link Stream} instances. Delegates all function cals to
@@ -36,7 +34,7 @@ import component.StreamProducer;
  * @param <T>
  *            The type of tuples transferred by the stream.
  */
-public class StreamDecorator<T extends Tuple> implements Stream<T> {
+public class StreamDecorator<T> implements Stream<T> {
 
 	private final Stream<T> decorated;
 

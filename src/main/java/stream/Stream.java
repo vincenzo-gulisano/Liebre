@@ -23,13 +23,11 @@
 
 package stream;
 
-import java.util.List;
-
 import common.Active;
 import common.Named;
 import component.StreamConsumer;
 import component.StreamProducer;
-import common.tuple.Tuple;
+import java.util.List;
 
 /**
  * An ordered one-on-one stream that connects exactly one {@link StreamProducer} and one {@link
@@ -37,7 +35,7 @@ import common.tuple.Tuple;
  *
  * @param <T> The type of values that can be transfered inside the stream
  */
-public interface Stream<T extends Tuple> extends Active, Named {
+public interface Stream<T> extends Active, Named {
 
   void addTuple(T tuple,int writer);
 

@@ -23,7 +23,6 @@
 
 package component.sink;
 
-import common.tuple.Tuple;
 import org.apache.commons.lang3.Validate;
 
 /**
@@ -32,7 +31,7 @@ import org.apache.commons.lang3.Validate;
  *
  * @param <IN> The type of input tuples.
  */
-public class BaseSink<IN extends Tuple> extends AbstractSink<IN> {
+public class BaseSink<IN> extends AbstractSink<IN> {
 
   private final SinkFunction<IN> function;
 

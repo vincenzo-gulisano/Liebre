@@ -23,11 +23,10 @@
 
 package component.source;
 
-import common.tuple.Tuple;
 import component.AbstractProcessCommand;
 import stream.Stream;
 
-class ProcessCommandSource<T extends Tuple> extends AbstractProcessCommand<Source<T>> {
+class ProcessCommandSource<T> extends AbstractProcessCommand<Source<T>> {
 
 	public ProcessCommandSource(Source<T> source) {
     super(source);

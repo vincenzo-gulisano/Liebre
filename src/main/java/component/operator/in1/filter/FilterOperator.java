@@ -23,11 +23,9 @@
 
 package component.operator.in1.filter;
 
+import component.operator.in1.BaseOperator1In;
 import java.util.LinkedList;
 import java.util.List;
-
-import common.tuple.Tuple;
-import component.operator.in1.BaseOperator1In;
 import org.apache.commons.lang3.Validate;
 
 /**
@@ -37,7 +35,7 @@ import org.apache.commons.lang3.Validate;
  *
  * @param <T> The type of the tuples.
  */
-public class FilterOperator<T extends Tuple> extends BaseOperator1In<T, T> {
+public class FilterOperator<T> extends BaseOperator1In<T, T> {
 
   protected FilterFunction<T> filter;
 

@@ -23,11 +23,9 @@
 
 package component.operator.in1.map;
 
+import component.operator.in1.BaseOperator1In;
 import java.util.LinkedList;
 import java.util.List;
-
-import common.tuple.Tuple;
-import component.operator.in1.BaseOperator1In;
 import org.apache.commons.lang3.Validate;
 
 /**
@@ -37,7 +35,7 @@ import org.apache.commons.lang3.Validate;
  * @param <IN> The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public class MapOperator<IN extends Tuple, OUT extends Tuple> extends BaseOperator1In<IN, OUT> {
+public class MapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
 
   private MapFunction<IN, OUT> map;
 
