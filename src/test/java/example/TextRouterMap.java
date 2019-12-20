@@ -41,7 +41,6 @@ public class TextRouterMap {
     final String outputFile2 = reportFolder + File.separator + "TextRouterMap_Out2.out.csv";
     Query q = new Query();
 
-    q.activateStatistics(reportFolder);
     Source<MyTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
       Util.sleep(15);
       String[] tokens = line.split(",");

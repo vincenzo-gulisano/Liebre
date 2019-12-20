@@ -24,14 +24,11 @@
 package query;
 
 import common.tuple.RichTuple;
-import io.palyvos.liebre.common.util.backoff.BackoffFactory;
-import io.palyvos.liebre.common.util.backoff.ExponentialBackoff;
 import component.Component;
 import component.StreamConsumer;
 import component.StreamProducer;
 import component.operator.Operator;
 import component.operator.in1.Operator1In;
-import component.operator.in1.Operator1InStatistic;
 import component.operator.in1.aggregate.TimeBasedSingleWindow;
 import component.operator.in1.aggregate.TimeBasedSingleWindowAggregate;
 import component.operator.in1.filter.FilterFunction;
@@ -41,25 +38,23 @@ import component.operator.in1.map.FlatMapOperator;
 import component.operator.in1.map.MapFunction;
 import component.operator.in1.map.MapOperator;
 import component.operator.in2.Operator2In;
-import component.operator.in2.Operator2InStatistic;
 import component.operator.in2.join.JoinFunction;
 import component.operator.in2.join.TimeBasedJoin;
 import component.operator.router.BaseRouterOperator;
 import component.operator.router.RouterOperator;
-import component.operator.router.RouterOperatorStatistic;
 import component.operator.union.UnionOperator;
 import component.sink.BaseSink;
 import component.sink.Sink;
 import component.sink.SinkFunction;
-import component.sink.SinkStatistic;
 import component.sink.TextFileSink;
 import component.sink.TextSinkFunction;
 import component.source.BaseSource;
 import component.source.Source;
 import component.source.SourceFunction;
-import component.source.SourceStatistic;
 import component.source.TextFileSource;
 import component.source.TextSourceFunction;
+import io.palyvos.liebre.common.util.backoff.BackoffFactory;
+import io.palyvos.liebre.common.util.backoff.ExponentialBackoff;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,397 +69,286 @@ import scheduling.impl.DefaultLiebreScheduler;
 import stream.BackoffStreamFactory;
 import stream.Stream;
 import stream.StreamFactory;
-import stream.StreamStatistic;
 
 /**
- * The main execution unit. Acts as a factory for the stream {@link Component}s
- * such as {@link Operator}s, {@link Source}s and {@link Sink}s through various
- * helper methods. It also handles the connections of the components with the
- * correct types of {@link Stream}s and the activation/deactivation of the
- * query. Activating the query also starts executing it by delegating this work
- * to the provided {@link LiebreScheduler} implementation.
+ * The main execution unit. Acts as a factory for the stream {@link Component}s such as {@link
+ * Operator}s, {@link Source}s and {@link Sink}s through various helper methods. It also handles the
+ * connections of the components with the correct types of {@link Stream}s and the
+ * activation/deactivation of the query. Activating the query also starts executing it by delegating
+ * this work to the provided {@link LiebreScheduler} implementation.
  */
 public final class Query {
 
-	private static final Logger LOGGER = LogManager.getLogger();
-	public static final int DEFAULT_STREAM_CAPACITY = 10000;
-	public static final int DEFAULT_MAX_LEVELS = 3;
-	private final Map<String, Operator<?, ?>> operators = new HashMap<>();
-	private final Map<String, Source<?>> sources = new HashMap<>();
-	private final Map<String, Sink<?>> sinks = new HashMap<>();
-	private final LiebreScheduler LiebreScheduler;
-	private final Map<StatisticType, StatisticsConfiguration> enabledStatistics = new HashMap<>();
-	private final StreamFactory streamFactory;
-	private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
-	private boolean active;
+  private static final Logger LOGGER = LogManager.getLogger();
+  public static final int DEFAULT_STREAM_CAPACITY = 10000;
+  public static final int DEFAULT_MAX_LEVELS = 3;
+  private final Map<String, Operator<?, ?>> operators = new HashMap<>();
+  private final Map<String, Source<?>> sources = new HashMap<>();
+  private final Map<String, Sink<?>> sinks = new HashMap<>();
+  private final LiebreScheduler LiebreScheduler;
+  private final StreamFactory streamFactory;
+  private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
+  private boolean active;
 
-	/**
-	 * Construct.
-	 */
-	public Query() {
-		this(new DefaultLiebreScheduler(), new BackoffStreamFactory());
-	}
+  /** Construct. */
+  public Query() {
+    this(new DefaultLiebreScheduler(), new BackoffStreamFactory());
+  }
 
-	/**
-	 * Construct.
-	 *
-	 * @param LiebreScheduler
-	 *            The LiebreScheduler implementation to use when executing the query
-	 *            after Query{@link #activate()} is called.
-	 */
-	public Query(LiebreScheduler LiebreScheduler, StreamFactory streamFactory) {
-		this.LiebreScheduler = LiebreScheduler;
-		// Set a default backoff value
-		//setBackoff(1, 20, 5);
-		this.streamFactory = streamFactory;
-	}
+  /**
+   * Construct.
+   *
+   * @param LiebreScheduler The LiebreScheduler implementation to use when executing the query after
+   *     Query{@link #activate()} is called.
+   */
+  public Query(LiebreScheduler LiebreScheduler, StreamFactory streamFactory) {
+    this.LiebreScheduler = LiebreScheduler;
+    this.streamFactory = streamFactory;
+  }
 
-	/**
-	 * Activate all statistics.
-	 *
-	 * @param statisticsFolder
-	 *            The folder to save the statistics to.
-	 */
-	public synchronized void activateStatistics(String statisticsFolder) {
-		activateStatistics(statisticsFolder, true);
-	}
+  /**
+   * Set the parameters for the default {@link ExponentialBackoff} strategy.
+   *
+   * @param min The minimum backoff limit
+   * @param max The maximum backoff limit
+   * @param retries The number of retries before the backoff limit is updated.
+   */
+  public synchronized void setBackoff(int min, int max, int retries) {
+    this.defaultBackoff = ExponentialBackoff.factory(min, max, retries);
+  }
 
-	/**
-	 * Activate all statistics.
-	 *
-	 * @param statisticsFolder
-	 *            The folder to save the statistics to.
-	 * @param autoFlush
-	 *            Control whether the file bufferrs are autoFlushed or not.
-	 */
-	public synchronized void activateStatistics(String statisticsFolder,
-			boolean autoFlush) {
-		for (StatisticType type : StatisticType.values()) {
-			activateStatistic(statisticsFolder, autoFlush, type);
-		}
-	}
+  public synchronized void setBackoff(BackoffFactory backoffFactory) {
+    this.defaultBackoff = backoffFactory;
+  }
 
-	/**
-	 * Activate a specific statistic.
-	 *
-	 * @param statisticsFolder
-	 *            The folder to save the statistics to.
-	 * @param autoFlush
-	 *            Control whether the file bufferrs are autoFlushed or not.
-	 * @param type
-	 *            The type of statistic to activate.
-	 */
-	public synchronized void activateStatistic(String statisticsFolder,
-			boolean autoFlush, StatisticType type) {
-		Validate.isTrue(!enabledStatistics.containsKey(type),
-				"Statistics for %s already enabled", type);
-		LOGGER.info("Enabling statistics for {}", type.name().toLowerCase());
-		enabledStatistics.put(type, new StatisticsConfiguration(
-				statisticsFolder, autoFlush));
-	}
+  public synchronized <IN, OUT> Operator<IN, OUT> addOperator(Operator1In<IN, OUT> operator) {
+    saveComponent(operators, operator, "component/operator");
+    return operator;
+  }
 
-	/**
-	 * Set the parameters for the default {@link ExponentialBackoff} strategy.
-	 * 
-	 * @param min
-	 *            The minimum backoff limit
-	 * @param max
-	 *            The maximum backoff limit
-	 * @param retries
-	 *            The number of retries before the backoff limit is updated.
-	 */
-	public synchronized void setBackoff(int min, int max, int retries) {
-		this.defaultBackoff = ExponentialBackoff.factory(min, max, retries);
-	}
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+      Operator<IN, OUT> addAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide) {
 
-	public synchronized void setBackoff(BackoffFactory backoffFactory) {
-		this.defaultBackoff = backoffFactory;
-	}
+    return addOperator(
+        new TimeBasedSingleWindowAggregate<IN, OUT>(
+            identifier, 0, 0, windowSize, windowSlide, window));
+  }
 
-	public synchronized <IN, OUT> Operator<IN, OUT> addOperator(
-			Operator1In<IN, OUT> operator) {
-		Operator<IN, OUT> decoratedOperator = operator;
-		if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
-			StatisticsConfiguration statConfig = enabledStatistics
-					.get(StatisticType.OPERATORS);
-			decoratedOperator = new Operator1InStatistic<IN, OUT>(operator,
-					statConfig.folder(), statConfig.autoFlush());
-		}
-		saveComponent(operators, decoratedOperator, "component/operator");
-		return decoratedOperator;
-	}
+  public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
+      String identifier, MapFunction<IN, OUT> mapFunction) {
+    return addOperator(new MapOperator<IN, OUT>(identifier, 0, 0, mapFunction));
+  }
 
-	public synchronized <IN extends RichTuple, OUT extends RichTuple> Operator<IN, OUT> addAggregateOperator(
-			String identifier, TimeBasedSingleWindow<IN, OUT> window,
-			long windowSize, long windowSlide) {
+  public synchronized <IN, OUT> Operator<IN, OUT> addFlatMapOperator(
+      String identifier, FlatMapFunction<IN, OUT> mapFunction) {
+    return addOperator(new FlatMapOperator<IN, OUT>(identifier, 0, 0, mapFunction));
+  }
 
-		return addOperator(new TimeBasedSingleWindowAggregate<IN, OUT>(
-				identifier,0,0, windowSize, windowSlide, window));
-	}
+  public synchronized <T> Operator<T, T> addFilterOperator(
+      String identifier, FilterFunction<T> filterF) {
+    return addOperator(new FilterOperator<T>(identifier, 0, 0, filterF));
+  }
 
-	public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
-			String identifier, MapFunction<IN, OUT> mapFunction) {
-		return addOperator(new MapOperator<IN, OUT>(identifier,0,0, mapFunction));
-	}
+  public synchronized <T> RouterOperator<T> addRouterOperator(String identifier) {
+    RouterOperator<T> router = new BaseRouterOperator<T>(identifier, 0, 0);
+    saveComponent(operators, router, "component/operator");
+    return router;
+  }
 
-	public synchronized <IN, OUT> Operator<IN, OUT> addFlatMapOperator(
-			String identifier, FlatMapFunction<IN, OUT> mapFunction) {
-		return addOperator(new FlatMapOperator<IN, OUT>(identifier,0,0, mapFunction));
-	}
+  public synchronized <T> UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
+    saveComponent(operators, union, "component/operator");
+    return union;
+  }
 
-	public synchronized <T> Operator<T, T> addFilterOperator(
-			String identifier, FilterFunction<T> filterF) {
-		return addOperator(new FilterOperator<T>(identifier,0,0, filterF));
-	}
+  public synchronized <T> UnionOperator<T> addUnionOperator(String identifier) {
+    UnionOperator<T> union = new UnionOperator<>(identifier, 0, 0);
+    return addUnionOperator(union);
+  }
 
-	public synchronized <T> RouterOperator<T> addRouterOperator(
-			String identifier) {
-		RouterOperator<T> router = new BaseRouterOperator<T>(identifier,0,0);
-		if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
-			StatisticsConfiguration statConfig = enabledStatistics
-					.get(StatisticType.OPERATORS);
-			router = new RouterOperatorStatistic<T>(router,
-					statConfig.folder(), statConfig.autoFlush());
-		}
-		saveComponent(operators, router, "component/operator");
-		return router;
-	}
+  public synchronized <T> Source<T> addSource(Source<T> source) {
+    saveComponent(sources, source, "component/source");
+    return source;
+  }
 
-	public synchronized <T> UnionOperator<T> addUnionOperator(
-			UnionOperator<T> union) {
-		saveComponent(operators, union, "component/operator");
-		return union;
-	}
+  public synchronized <T> Source<T> addBaseSource(String id, SourceFunction<T> function) {
+    return addSource(new BaseSource<>(id, 0, function));
+  }
 
-	public synchronized <T> UnionOperator<T> addUnionOperator(
-			String identifier) {
-		UnionOperator<T> union = new UnionOperator<>(identifier,0,0);
-		return addUnionOperator(union);
-	}
+  public synchronized <T> Source<T> addTextFileSource(
+      String id, String filename, TextSourceFunction<T> function) {
+    return addSource(new TextFileSource(id, 0, filename, function));
+  }
 
-	public synchronized <T> Source<T> addSource(Source<T> source) {
-		Source<T> decoratedSource = source;
-		if (enabledStatistics.containsKey(StatisticType.SOURCES)) {
-			StatisticsConfiguration statConfig = enabledStatistics
-					.get(StatisticType.SOURCES);
-			decoratedSource = new SourceStatistic<T>(decoratedSource,
-					statConfig.folder(), statConfig.autoFlush());
-		}
-		saveComponent(sources, decoratedSource, "component/source");
-		return decoratedSource;
-	}
+  public synchronized <T> Sink<T> addSink(Sink<T> sink) {
+    saveComponent(sinks, sink, "component/sink");
+    return sink;
+  }
 
-	public synchronized <T> Source<T> addBaseSource(String id,
-			SourceFunction<T> function) {
-		return addSource(new BaseSource<>(id,0, function));
-	}
+  public synchronized <T> Sink<T> addBaseSink(String id, SinkFunction<T> sinkFunction) {
+    return addSink(new BaseSink<>(id, 0, sinkFunction));
+  }
 
-	public synchronized <T> Source<T> addTextFileSource(
-			String id, String filename, TextSourceFunction<T> function) {
-		return addSource(new TextFileSource(id, 0,filename, function));
-	}
+  public synchronized <T> Sink<T> addTextFileSink(
+      String id, String file, TextSinkFunction<T> function) {
+    return addSink(new TextFileSink<>(id, 0, file, function));
+  }
 
-	public synchronized <T> Sink<T> addSink(Sink<T> sink) {
-		Sink<T> decoratedSink = sink;
-		if (enabledStatistics.containsKey(StatisticType.SINKS)) {
-			StatisticsConfiguration statConfig = enabledStatistics
-					.get(StatisticType.SINKS);
-			decoratedSink = new SinkStatistic<T>(sink, statConfig.folder(),
-					statConfig.autoFlush());
-		}
-		saveComponent(sinks, decoratedSink, "component/sink");
-		return decoratedSink;
-	}
+  public synchronized <OUT, IN, IN2> Operator2In<IN, IN2, OUT> addOperator2In(
+      Operator2In<IN, IN2, OUT> operator) {
+    saveComponent(operators, operator, "operator2in");
+    return operator;
+  }
 
-	public synchronized <T> Sink<T> addBaseSink(String id,
-			SinkFunction<T> sinkFunction) {
-		return addSink(new BaseSink<>(id,0, sinkFunction));
-	}
+  public synchronized <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple>
+      Operator2In<IN, IN2, OUT> addJoinOperator(
+          String identifier, JoinFunction<IN, IN2, OUT> joinFunction, long windowSize) {
+    return addOperator2In(new TimeBasedJoin<>(identifier, 0, 0, windowSize, joinFunction));
+  }
 
-	public synchronized <T> Sink<T> addTextFileSink(String id,
-			String file, TextSinkFunction<T> function) {
-		return addSink(new TextFileSink<>(id,0, file, function));
-	}
+  public synchronized <T> Query connect(StreamProducer<T> source, StreamConsumer<T> destination) {
+    return connect(source, destination, defaultBackoff);
+  }
 
-	public synchronized <OUT, IN, IN2> Operator2In<IN, IN2, OUT> addOperator2In(
-			Operator2In<IN, IN2, OUT> operator) {
-		Operator2In<IN, IN2, OUT> decoratedOperator = operator;
-		if (enabledStatistics.containsKey(StatisticType.OPERATORS)) {
-			StatisticsConfiguration statConfig = enabledStatistics
-					.get(StatisticType.OPERATORS);
-			decoratedOperator = new Operator2InStatistic<IN, IN2, OUT>(
-					operator, statConfig.folder(), statConfig.autoFlush());
-		}
-		saveComponent(operators, decoratedOperator, "operator2in");
-		return decoratedOperator;
-	}
+  public synchronized <T> Query connect(
+      StreamProducer<T> source, StreamConsumer<T> destination, BackoffFactory backoff) {
+    Validate.isTrue(
+        destination instanceof Operator2In == false,
+        "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
+        destination.getId());
+    Stream<T> stream = getStream(source, destination, backoff);
+    source.addOutput(destination, stream);
+    destination.addInput(source, stream);
+    return this;
+  }
 
-	public synchronized <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple> Operator2In<IN, IN2, OUT> addJoinOperator(
-			String identifier, JoinFunction<IN, IN2, OUT> joinFunction,
-			long windowSize) {
-		return addOperator2In(new TimeBasedJoin<IN, IN2, OUT>(identifier,0,0,
-				windowSize, joinFunction));
-	}
+  public synchronized <T extends Comparable<? super T>> Query connect(
+      List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations) {
+    Stream<T> stream = getMWMRSortedStream(sources, destinations);
+    int i = 0;
+    for (StreamProducer<T> s : sources) {
+      for (StreamConsumer<T> d : destinations) {
+        s.addOutput(d, stream);
+      }
+      s.setRelativeProducerIndex(i);
+      i++;
+    }
+    i = 0;
+    for (StreamConsumer<T> d : destinations) {
+      for (StreamProducer<T> s : sources) {
+        d.addInput(s, stream);
+      }
+      d.setRelativeConsumerIndex(i);
+      i++;
+    }
+    return this;
+  }
 
-	public synchronized <T> Query connect(
-			StreamProducer<T> source, StreamConsumer<T> destination) {
-		return connect(source, destination, defaultBackoff);
-	}
+  public synchronized <T> Query connect2inLeft(
+      StreamProducer<T> source, Operator2In<T, ?, ?> destination) {
+    return connect2inLeft(source, destination, defaultBackoff);
+  }
 
-	public synchronized <T> Query connect(
-			StreamProducer<T> source, StreamConsumer<T> destination,
-			BackoffFactory backoff) {
-		Validate.isTrue(
-				destination instanceof Operator2In == false,
-				"Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
-				destination.getId());
-		Stream<T> stream = getStream(source, destination, backoff);
-		source.addOutput(destination, stream);
-		destination.addInput(source, stream);
-		return this;
-	}
-	
-	public synchronized <T extends Comparable<? super T>> Query connect(
-			List<StreamProducer<T>> sources,
-			List<StreamConsumer<T>> destinations) {
-		Stream<T> stream = getMWMRSortedStream(sources, destinations);
-		int i = 0;
-		for (StreamProducer<T> s : sources) {
-			for (StreamConsumer<T> d : destinations) {
-				s.addOutput(d, stream);
-			}
-			s.setRelativeProducerIndex(i);
-			i++;
-		}
-		i = 0;
-		for (StreamConsumer<T> d : destinations) {
-			for (StreamProducer<T> s : sources) {
-				d.addInput(s, stream);
-			}
-			d.setRelativeConsumerIndex(i);
-			i++;
-		}
-		return this;
-	}
+  public synchronized <T> Query connect2inLeft(
+      StreamProducer<T> source, Operator2In<T, ?, ?> destination, BackoffFactory backoff) {
+    Stream<T> stream = getStream(source, destination, backoff);
+    source.addOutput(destination, stream);
+    destination.addInput(source, stream);
+    return this;
+  }
 
-	public synchronized <T> Query connect2inLeft(
-			StreamProducer<T> source, Operator2In<T, ?, ?> destination) {
-		return connect2inLeft(source, destination, defaultBackoff);
-	}
+  public synchronized <T> Query connect2inRight(
+      StreamProducer<T> source, Operator2In<?, T, ?> destination) {
+    return connect2inRight(source, destination, defaultBackoff);
+  }
 
-	public synchronized <T> Query connect2inLeft(
-			StreamProducer<T> source, Operator2In<T, ?, ?> destination,
-			BackoffFactory backoff) {
-		Stream<T> stream = getStream(source, destination, backoff);
-		source.addOutput(destination, stream);
-		destination.addInput(source, stream);
-		return this;
-	}
+  public synchronized <T> Query connect2inRight(
+      StreamProducer<T> source, Operator2In<?, T, ?> destination, BackoffFactory backoff) {
+    Stream<T> stream = getStream(source, destination.secondInputView(), backoff);
+    source.addOutput(destination.secondInputView(), stream);
+    destination.addInput2(source, stream);
+    return this;
+  }
 
-	public synchronized <T> Query connect2inRight(
-			StreamProducer<T> source, Operator2In<?, T, ?> destination) {
-		return connect2inRight(source, destination, defaultBackoff);
-	}
+  private synchronized <T> Stream<T> getStream(
+      StreamProducer<T> source, StreamConsumer<T> destination, BackoffFactory backoff) {
+    Stream<T> stream =
+        streamFactory.newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
+    return stream;
+  }
 
-	public synchronized <T> Query connect2inRight(
-			StreamProducer<T> source, Operator2In<?, T, ?> destination,
-			BackoffFactory backoff) {
-		Stream<T> stream = getStream(source, destination.secondInputView(),
-				backoff);
-		source.addOutput(destination.secondInputView(), stream);
-		destination.addInput2(source, stream);
-		return this;
-	}
+  private synchronized <T extends Comparable<? super T>> Stream<T> getMWMRSortedStream(
+      List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations) {
+    return streamFactory.newMWMRSortedStream(sources, destinations, DEFAULT_MAX_LEVELS);
+  }
 
-	private synchronized <T> Stream<T> getStream(
-			StreamProducer<T> source, StreamConsumer<T> destination,
-			BackoffFactory backoff) {
-		Stream<T> stream = streamFactory.newStream(source, destination,
-				DEFAULT_STREAM_CAPACITY, backoff);
-		if (enabledStatistics.containsKey(StatisticType.STREAMS)) {
-			StatisticsConfiguration statConfig = enabledStatistics
-					.get(StatisticType.STREAMS);
-			return new StreamStatistic<>(stream, statConfig.folder(),
-					statConfig.autoFlush());
-		} else {
-			return stream;
-		}
-	}
-	
-	private synchronized <T extends Comparable<? super T>> Stream<T> getMWMRSortedStream(
-			List<StreamProducer<T>> sources,
-			List<StreamConsumer<T>> destinations) {
-		return streamFactory.newMWMRSortedStream(sources, destinations,
-				DEFAULT_MAX_LEVELS);
-		// TODO Do we want statistics here
-	}
+  /** Activate and start executing the query. */
+  public synchronized void activate() {
 
-	/**
-	 * Activate and start executing the query.
-	 */
-	public synchronized void activate() {
+    LOGGER.info("Activating query...");
+    LOGGER.info(
+        "Components: {} Sources, {} Operators, {} Sinks, {} Streams",
+        sources.size(),
+        operators.size(),
+        sinks.size(),
+        streams().size());
+    LiebreScheduler.addTasks(sinks.values());
+    LiebreScheduler.addTasks(operators.values());
+    LiebreScheduler.addTasks(sources.values());
+    LiebreScheduler.enable();
+    LiebreScheduler.startTasks();
+    active = true;
+  }
 
-		LOGGER.info("Activating query...");
-		LOGGER.info(
-				"Components: {} Sources, {} Operators, {} Sinks, {} Streams",
-				sources.size(), operators.size(), sinks.size(), streams()
-						.size());
-		LiebreScheduler.addTasks(sinks.values());
-		LiebreScheduler.addTasks(operators.values());
-		LiebreScheduler.addTasks(sources.values());
-		LiebreScheduler.enable();
-		LiebreScheduler.startTasks();
-		active = true;
-	}
+  /** Deactivate and stop executing the query. */
+  public synchronized void deActivate() {
+    if (!active) {
+      return;
+    }
+    LOGGER.info("Deactivating query...");
+    LiebreScheduler.disable();
+    LOGGER.info("Waiting for threads to terminate...");
+    LiebreScheduler.stopTasks();
+    LOGGER.info("DONE!");
+    active = false;
+  }
 
-	/**
-	 * Deactivate and stop executing the query.
-	 */
-	public synchronized void deActivate() {
-		if (!active) {
-			return;
-		}
-		LOGGER.info("Deactivating query...");
-		LiebreScheduler.disable();
-		LOGGER.info("Waiting for threads to terminate...");
-		LiebreScheduler.stopTasks();
-		LOGGER.info("DONE!");
-		active = false;
-	}
+  /**
+   * Get the number of sources in the query.
+   *
+   * @return The number of sources.
+   */
+  public int sourcesNumber() {
+    return sources.size();
+  }
 
-	/**
-	 * Get the number of sources in the query.
-	 * 
-	 * @return The number of sources.
-	 */
-	public int sourcesNumber() {
-		return sources.size();
-	}
+  Collection<Source<?>> sources() {
+    return sources.values();
+  }
 
-	Collection<Source<?>> sources() {
-		return sources.values();
-	}
+  private Set<Stream<?>> streams() {
+    Set<Stream<?>> streams = new HashSet<>();
+    for (Operator<?, ?> op : operators.values()) {
+      streams.addAll(op.getInputs());
+    }
+    return streams;
+  }
 
-	private Set<Stream<?>> streams() {
-		Set<Stream<?>> streams = new HashSet<>();
-		for (Operator<?, ?> op : operators.values()) {
-			streams.addAll(op.getInputs());
-		}
-		return streams;
-	}
-
-	private <T extends Component> void saveComponent(Map<String, T> map,
-			T component, String type) {
-		Validate.validState(!map.containsKey(component.getId()),
-				"A component of type %s  with id '%s' has already been added!",
-				type, component);
-		Validate.notNull(component);
-		if (component.getId().contains("_")) {
-			LOGGER.warn(
-					"It is best to avoid component IDs that contain an underscore because it will make it more difficult to analyze statistics date. Offending component: {}",
-					component);
-		}
-		map.put(component.getId(), component);
-	}
-
+  private <T extends Component> void saveComponent(Map<String, T> map, T component, String type) {
+    Validate.validState(
+        !map.containsKey(component.getId()),
+        "A component of type %s  with id '%s' has already been added!",
+        type,
+        component);
+    Validate.notNull(component);
+    if (component.getId().contains("_")) {
+      LOGGER.warn(
+          "It is best to avoid component IDs that contain an underscore because it will make it more difficult to analyze statistics date. Offending component: {}",
+          component);
+    }
+    map.put(component.getId(), component);
+  }
 }

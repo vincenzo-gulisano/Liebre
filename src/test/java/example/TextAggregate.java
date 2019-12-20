@@ -44,8 +44,6 @@ public class TextAggregate {
 
     Query q = new Query();
 
-    q.activateStatistics(reportFolder);
-
     Source<InputTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
         String[] tokens = line.split(",");
         return new InputTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),

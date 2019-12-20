@@ -46,7 +46,6 @@ public class SGStreamExample {
 
 		Query q = new Query();
 		Injector injector = Guice.createInjector(new ExampleModule());
-		q.activateStatistics("test");
 		// q.activateStatistics(reportFolder);
 		Source<MyTuple> source1 = q.addBaseSource("S1",
 				new SourceFunction<MyTuple>() {

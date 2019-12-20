@@ -40,7 +40,6 @@ public class SimpleQuery {
     final String reportFolder = args[0];
 
     Query q = new Query();
-    q.activateStatistics(reportFolder);
     Source<MyTuple> source = q.addBaseSource("I1", new SourceFunction<MyTuple>() {
       private final Random r = new Random();
 

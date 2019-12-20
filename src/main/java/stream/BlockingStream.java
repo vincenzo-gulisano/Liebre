@@ -33,13 +33,11 @@ import java.util.concurrent.BlockingQueue;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 // TODO: BlockingStream Factory
-public class BlockingStream<T> implements Stream<T> {
+public class BlockingStream<T> extends AbstractStream<T> {
 
   private static final double EMA_ALPHA = 0.01;
   private final BlockingQueue<T> stream;
   private final int capacity;
-  private final String id;
-  private final int index;
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
   private volatile boolean enabled;
@@ -62,16 +60,15 @@ public class BlockingStream<T> implements Stream<T> {
       StreamProducer<T> source,
       StreamConsumer<T> destination,
       int capacity) {
+    super(id, index);
     this.capacity = capacity;
     this.stream = new ArrayBlockingQueue<>(capacity);
-    this.id = id;
-    this.index = index;
     this.source = source;
     this.destination = destination;
   }
 
   @Override
-  public void addTuple(T tuple, int writer) {
+  public void doAddTuple(T tuple, int writer) {
     try {
       stream.put(tuple);
       if (tuple instanceof RichTuple) {
@@ -93,7 +90,7 @@ public class BlockingStream<T> implements Stream<T> {
   }
 
   @Override
-  public T getNextTuple(int reader) {
+  public T doGetNextTuple(int reader) {
     try {
       return stream.take();
     } catch (InterruptedException e) {
@@ -101,11 +98,6 @@ public class BlockingStream<T> implements Stream<T> {
       Thread.currentThread().interrupt();
       return null;
     }
-  }
-
-  @Override
-  public final T poll(int reader) {
-    throw new UnsupportedOperationException("Use BackoffStream for non-blocking behavior");
   }
 
   @Override
@@ -143,31 +135,6 @@ public class BlockingStream<T> implements Stream<T> {
   @Override
   public double getAverageArrivalTime() {
     return averageArrivalTime;
-  }
-
-  @Override
-  public void enable() {
-    enabled = true;
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return enabled;
-  }
-
-  @Override
-  public void disable() {
-    enabled = false;
-  }
-
-  @Override
-  public String getId() {
-    return id;
-  }
-
-  @Override
-  public int getIndex() {
-    return index;
   }
 
   @Override

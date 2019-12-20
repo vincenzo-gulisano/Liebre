@@ -42,8 +42,6 @@ public class TextUnion {
 
     Query q = new Query();
 
-    q.activateStatistics(reportFolder);
-
     Source<MyTuple> i1 = q.addTextFileSource("i1", inputFile1, line -> {
       Util.sleep(5);
       String[] tokens = line.split(",");

@@ -39,7 +39,6 @@ public class TextMap2 {
     final String outputFile = reportFolder + File.separator + "TextMap2.out.csv";
     Query q = new Query();
 
-    q.activateStatistics(reportFolder);
     Source<InputTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
       Util.sleep(100);
       String[] tokens = line.split(",");

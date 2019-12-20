@@ -43,8 +43,6 @@ public class TextJoin {
 
     Query q = new Query();
 
-    q.activateStatistics(reportFolder);
-
     Source<InputTuple1> i1 = q.addBaseSource("i1", new SourceFunction<InputTuple1>() {
       private final Random r = new Random();
 

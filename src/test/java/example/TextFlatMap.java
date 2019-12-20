@@ -43,7 +43,6 @@ public class TextFlatMap {
 
     Query q = new Query();
 
-    q.activateStatistics(reportFolder);
     Source<MyTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
       Util.sleep(100);
       String[] tokens = line.split(",");

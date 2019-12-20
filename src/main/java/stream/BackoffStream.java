@@ -44,13 +44,11 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  * @see io.palyvos.liebre.common.util.backoff.ExponentialBackoff
  * @see io.palyvos.liebre.common.util.backoff.NoopBackoff
  */
-public class BackoffStream<T> implements Stream<T> {
+public class BackoffStream<T> extends AbstractStream<T> {
 
   private static final double EMA_ALPHA = 0.5;
   private final Queue<T> stream = new ConcurrentLinkedQueue<>();
   private final int capacity;
-  private final String id;
-  private final int index;
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
   private final Backoff readBackoff;
@@ -78,9 +76,8 @@ public class BackoffStream<T> implements Stream<T> {
       StreamConsumer<T> destination,
       int capacity,
       BackoffFactory backoff) {
+    super(id, index);
     this.capacity = capacity;
-    this.id = id;
-    this.index = index;
     this.source = source;
     this.destination = destination;
     this.readBackoff = backoff.newInstance();
@@ -88,7 +85,7 @@ public class BackoffStream<T> implements Stream<T> {
   }
 
   @Override
-  public void addTuple(T tuple, int writer) {
+  public void doAddTuple(T tuple, int writer) {
     if (offer(tuple, writer)) {
       writeBackoff.relax();
       return;
@@ -112,23 +109,15 @@ public class BackoffStream<T> implements Stream<T> {
   }
 
   @Override
-  public T getNextTuple(int reader) {
-    T tuple = poll(reader);
+  public T doGetNextTuple(int reader) {
+    T tuple = stream.poll();
     if (tuple != null) {
       readBackoff.relax();
+      tuplesRead++;
       return tuple;
     }
     readBackoff.backoff();
     return null;
-  }
-
-  @Override
-  public final T poll(int reader) {
-    T tuple = stream.poll();
-    if (tuple != null) {
-      tuplesRead++;
-    }
-    return tuple;
   }
 
   @Override

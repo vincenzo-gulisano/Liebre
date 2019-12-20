@@ -43,8 +43,6 @@ public interface Stream<T> extends Active, Named {
 
   T getNextTuple(int reader);
 
-  T poll(int reader);
-
   T peek(int reader);
 
   int remainingCapacity();
