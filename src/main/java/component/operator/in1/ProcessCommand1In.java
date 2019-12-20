@@ -32,31 +32,27 @@ import stream.Stream;
  *
  * @see AbstractProcessCommand
  */
-class ProcessCommand1In<IN, OUT> extends
-		AbstractProcessCommand<Operator1In<IN, OUT>> {
+class ProcessCommand1In<IN, OUT> extends AbstractProcessCommand<Operator1In<IN, OUT>> {
 
-	protected ProcessCommand1In(Operator1In<IN, OUT> operator) {
-		super(operator);
-	}
+  protected ProcessCommand1In(Operator1In<IN, OUT> operator) {
+    super(operator);
+  }
 
-	@Override
-	public final void process() {
-		Stream<IN> input = component.getInput();
-		Stream<OUT> output = component.getOutput();
+  @Override
+  public final void process() {
+    Stream<IN> input = component.getInput();
+    Stream<OUT> output = component.getOutput();
 
-		IN inTuple = input.getNextTuple(component
-				.getRelativeConsumerIndex());
-		if (inTuple != null) {
-			increaseTuplesRead();
-			List<OUT> outTuples = component.processTupleIn1(inTuple);
-			if (outTuples != null) {
-				for (OUT t : outTuples) {
-					increaseTuplesWritten();
-					output.addTuple(t, component
-							.getRelativeProducerIndex());
-				}
-			}
-		}
-	}
-
+    IN inTuple = input.getNextTuple(component.getRelativeConsumerIndex());
+    if (inTuple != null) {
+      increaseTuplesRead();
+      List<OUT> outTuples = component.processTupleIn1(inTuple);
+      if (outTuples != null) {
+        for (OUT t : outTuples) {
+          increaseTuplesWritten();
+          output.addTuple(t, component.getRelativeProducerIndex());
+        }
+      }
+    }
+  }
 }

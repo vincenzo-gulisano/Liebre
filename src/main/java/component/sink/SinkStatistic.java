@@ -23,9 +23,9 @@
 
 package component.sink;
 
-import io.palyvos.liebre.statistics.LiebreMetrics;
-import io.palyvos.liebre.statistics.StatisticFactory;
-import io.palyvos.liebre.statistics.StatisticType;
+import common.statistic.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticsFactory;
+import common.statistic.StatisticType;
 import io.palyvos.liebre.statistics.TimeStatistic;
 
 /**
@@ -36,7 +36,7 @@ import io.palyvos.liebre.statistics.TimeStatistic;
  */
 public class SinkStatistic<T> extends SinkDecorator<T> {
 
-  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private final StatisticsFactory statisticsFactory = LiebreMetrics.statistiscFactory();
 
   private final TimeStatistic processingTimeStatistic;
   private final TimeStatistic executionTimeStatistic;
@@ -50,8 +50,8 @@ public class SinkStatistic<T> extends SinkDecorator<T> {
    */
   public SinkStatistic(Sink<T> sink, String outputFolder, boolean autoFlush) {
     super(sink);
-    this.processingTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
-    this.executionTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
+    this.processingTimeStatistic = statisticsFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+    this.executionTimeStatistic = statisticsFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override

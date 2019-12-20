@@ -25,9 +25,8 @@ package component;
 
 /**
  * Encapsulation of the basic execution logic for all {@link Component}s. This is required in order
- * to have reusable decorators without the need to duplicate code (i.e. the
- * process() function) and without having to resort to method interceptors.
- * <br/>
+ * to have reusable decorators without the need to duplicate code (i.e. the process() function) and
+ * without having to resort to method interceptors. <br>
  *
  * @param <T> The component.operator subclass used.
  * @author palivosd
@@ -91,13 +90,11 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   }
 
   /**
-   * Update the cost and selectivity based on the tuples processed and the time it took.
-   * <br/>
-   * <b>WARNING: The variables for the metrics are available only the execution happens with
-   * {@link #runFor(int)}
-   * !</b> <br/>
-   * <b>WARNING: This is not thread safe! It should either be run from the operator thread or
-   * from another thread while the operator is stopped. The results are visible to all threads.</b>
+   * Update the cost and selectivity based on the tuples processed and the time it took. <br>
+   * <b>WARNING: The variables for the metrics are available only the execution happens with {@link
+   * #runFor(int)} !</b> <br>
+   * <b>WARNING: This is not thread safe! It should either be run from the operator thread or from
+   * another thread while the operator is stopped. The results are visible to all threads.</b>
    */
   public final void updateMetrics() {
     updateRateAndAlpha();

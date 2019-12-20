@@ -155,7 +155,7 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
 
   }
 
-  private class WinCounter {
+  private static class WinCounter {
 
     private long count = 0;
 

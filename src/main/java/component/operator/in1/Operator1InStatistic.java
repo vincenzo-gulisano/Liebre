@@ -23,9 +23,9 @@
 
 package component.operator.in1;
 
-import io.palyvos.liebre.statistics.LiebreMetrics;
-import io.palyvos.liebre.statistics.StatisticFactory;
-import io.palyvos.liebre.statistics.StatisticType;
+import common.statistic.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticsFactory;
+import common.statistic.StatisticType;
 import io.palyvos.liebre.statistics.TimeStatistic;
 import java.util.List;
 
@@ -39,7 +39,7 @@ import java.util.List;
 public class Operator1InStatistic<IN, OUT> extends
     Operator1InDecorator<IN, OUT> {
 
-  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private final StatisticsFactory statisticsFactory = LiebreMetrics.statistiscFactory();
   private final TimeStatistic processingTimeStatistic;
   private final TimeStatistic executionTimeStatistic;
 
@@ -53,8 +53,8 @@ public class Operator1InStatistic<IN, OUT> extends
   public Operator1InStatistic(Operator1In<IN, OUT> operator, String outputFolder,
       boolean autoFlush) {
     super(operator);
-    this.processingTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
-    this.executionTimeStatistic = statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
+    this.processingTimeStatistic = statisticsFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+    this.executionTimeStatistic = statisticsFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override

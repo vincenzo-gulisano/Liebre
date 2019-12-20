@@ -23,9 +23,9 @@
 
 package component.operator.router;
 
-import io.palyvos.liebre.statistics.LiebreMetrics;
-import io.palyvos.liebre.statistics.StatisticFactory;
-import io.palyvos.liebre.statistics.StatisticType;
+import common.statistic.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticsFactory;
+import common.statistic.StatisticType;
 import io.palyvos.liebre.statistics.TimeStatistic;
 import java.util.Collection;
 import stream.Stream;
@@ -38,7 +38,7 @@ import stream.Stream;
  */
 public class RouterOperatorStatistic<T> extends RouterOperatorDecorator<T> {
 
-  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private final StatisticsFactory statisticsFactory = LiebreMetrics.statistiscFactory();
   private final TimeStatistic processingTimeStatistic;
   private final TimeStatistic executionTimeStatistic;
 
@@ -53,9 +53,9 @@ public class RouterOperatorStatistic<T> extends RouterOperatorDecorator<T> {
       RouterOperator<T> operator, String outputFolder, boolean autoFlush) {
     super(operator);
     this.processingTimeStatistic =
-        statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+        statisticsFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
     this.executionTimeStatistic =
-        statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
+        statisticsFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override

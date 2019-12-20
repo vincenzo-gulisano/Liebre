@@ -23,10 +23,10 @@
 
 package stream;
 
-import io.palyvos.liebre.statistics.LiebreMetrics;
+import common.statistic.LiebreMetrics;
 import io.palyvos.liebre.statistics.Statistic;
-import io.palyvos.liebre.statistics.StatisticFactory;
-import io.palyvos.liebre.statistics.StatisticType;
+import io.palyvos.liebre.statistics.StatisticsFactory;
+import common.statistic.StatisticType;
 
 /**
  * Statistic recorder for {@link Stream}s. Records the statistics {@link StatisticType#IN} and
@@ -38,7 +38,7 @@ public class StreamStatistic<T> extends StreamDecorator<T> {
 
 
 
-  private StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private StatisticsFactory statisticsFactory = LiebreMetrics.statistiscFactory();
   private final Statistic inRate;
   private final Statistic outRate;
 
@@ -51,8 +51,8 @@ public class StreamStatistic<T> extends StreamDecorator<T> {
    */
   public StreamStatistic(Stream<T> stream, String outputFolder, boolean autoFlush) {
     super(stream);
-    inRate = statisticFactory.newCountStatistic(stream.getId(), StatisticType.IN);
-    outRate = statisticFactory.newCountStatistic(stream.getId(), StatisticType.OUT);
+    inRate = statisticsFactory.newCountStatistic(stream.getId(), StatisticType.IN);
+    outRate = statisticsFactory.newCountStatistic(stream.getId(), StatisticType.OUT);
   }
 
   @Override

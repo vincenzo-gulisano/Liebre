@@ -23,9 +23,9 @@
 
 package component.source;
 
-import io.palyvos.liebre.statistics.LiebreMetrics;
-import io.palyvos.liebre.statistics.StatisticFactory;
-import io.palyvos.liebre.statistics.StatisticType;
+import common.statistic.LiebreMetrics;
+import io.palyvos.liebre.statistics.StatisticsFactory;
+import common.statistic.StatisticType;
 import io.palyvos.liebre.statistics.TimeStatistic;
 
 /**
@@ -36,7 +36,7 @@ import io.palyvos.liebre.statistics.TimeStatistic;
  */
 public class SourceStatistic<T> extends SourceDecorator<T> {
 
-  private final StatisticFactory statisticFactory = LiebreMetrics.statistiscFactory();
+  private final StatisticsFactory statisticsFactory = LiebreMetrics.statistiscFactory();
 
   private final TimeStatistic processingTimeStatistic;
   private final TimeStatistic executionTimeStatistic;
@@ -50,9 +50,9 @@ public class SourceStatistic<T> extends SourceDecorator<T> {
   public SourceStatistic(Source<T> source, String outputFolder, boolean autoFlush) {
     super(source);
     this.processingTimeStatistic =
-        statisticFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
+        statisticsFactory.newAverageTimeStatistic(getId(), StatisticType.PROC);
     this.executionTimeStatistic =
-        statisticFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
+        statisticsFactory.newAverageTimeStatistic(getId(), StatisticType.EXEC);
   }
 
   @Override
