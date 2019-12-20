@@ -36,11 +36,10 @@ public class BaseSource<OUT> extends AbstractSource<OUT> {
 
   /**
    * Construct.
-   *
-   * @param id The unique ID of this component.
+   *  @param id The unique ID of this component.
    * @param function The {@link SourceFunction} that generates the output tuples.
    */
-  public BaseSource(String id,int relativeProducerIndex, SourceFunction<OUT> function) {
+  public BaseSource(String id, SourceFunction<OUT> function) {
     super(id);
     Validate.notNull(function, "function");
     this.function = function;

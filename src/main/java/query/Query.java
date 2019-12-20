@@ -175,12 +175,12 @@ public final class Query {
   }
 
   public synchronized <T> Source<T> addBaseSource(String id, SourceFunction<T> function) {
-    return addSource(new BaseSource<>(id, 0, function));
+    return addSource(new BaseSource<>(id, function));
   }
 
   public synchronized <T> Source<T> addTextFileSource(
       String id, String filename, TextSourceFunction<T> function) {
-    return addSource(new TextFileSource(id, 0, filename, function));
+    return addSource(new TextFileSource(id, filename, function));
   }
 
   public synchronized <T> Sink<T> addSink(Sink<T> sink) {
@@ -189,12 +189,12 @@ public final class Query {
   }
 
   public synchronized <T> Sink<T> addBaseSink(String id, SinkFunction<T> sinkFunction) {
-    return addSink(new BaseSink<>(id, 0, sinkFunction));
+    return addSink(new BaseSink<>(id, sinkFunction));
   }
 
   public synchronized <T> Sink<T> addTextFileSink(
       String id, String file, TextSinkFunction<T> function) {
-    return addSink(new TextFileSink<>(id, 0, file, function));
+    return addSink(new TextFileSink<>(id, file, function));
   }
 
   public synchronized <OUT, IN, IN2> Operator2In<IN, IN2, OUT> addOperator2In(

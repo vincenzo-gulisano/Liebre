@@ -46,12 +46,12 @@ public class TextFileSource<OUT> extends AbstractSource<OUT> {
 
   /**
    * Construct.
-   *
-   * @param id The unique ID of this component.
+   *  @param id The unique ID of this component.
    * @param filename The file path where the data is read from.
    * @param function The {@link TextSourceFunction} that converts raw text lines to tuples.
    */
-  public TextFileSource(String id,int relativeProducerIndex, String filename, TextSourceFunction<OUT> function) {
+  public TextFileSource(String id, String filename,
+      TextSourceFunction<OUT> function) {
     super(id);
     Validate.notNull(function, "function");
     this.function = function;

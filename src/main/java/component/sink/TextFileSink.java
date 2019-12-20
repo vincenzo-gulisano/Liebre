@@ -41,16 +41,17 @@ public class TextFileSink<IN> extends AbstractSink<IN> {
 
   /**
    * Construct.
-   *
-   * @param id The unique ID of this component.
+   *  @param id The unique ID of this component.
    * @param filename The file path to write the data to.
    * @param function The {@link TextSinkFunction} that will map every input tuple to a string.
    */
-  public TextFileSink(String id, int relativeConsumerIndex, String filename, TextSinkFunction<IN> function) {
-    this(id, relativeConsumerIndex, filename, function, true);
+  public TextFileSink(String id, String filename,
+      TextSinkFunction<IN> function) {
+    this(id, filename, function, true);
   }
 
-  protected TextFileSink(String id, int relativeConsumerIndex, String filename, TextSinkFunction<IN> function,
+  protected TextFileSink(String id, String filename,
+      TextSinkFunction<IN> function,
       boolean autoFlush) {
     super(id);
     try {
