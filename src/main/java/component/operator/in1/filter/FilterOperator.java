@@ -39,23 +39,22 @@ public class FilterOperator<T> extends BaseOperator1In<T, T> {
 
   protected FilterFunction<T> filter;
 
-	public FilterOperator(String id, int relativeProducerIndex,
-			int relativeConsumerIndex, FilterFunction<T> filter) {
-		super(id);
-		Validate.notNull(filter, "filter");
-		this.filter = filter;
-	}
+  public FilterOperator(String id, FilterFunction<T> filter) {
+    super(id);
+    Validate.notNull(filter, "filter");
+    this.filter = filter;
+  }
 
   @Override
   public void enable() {
-    super.enable();
     filter.enable();
+    super.enable();
   }
 
   @Override
   public void disable() {
-    filter.disable();
     super.disable();
+    filter.disable();
   }
 
   @Override
@@ -65,5 +64,10 @@ public class FilterOperator<T> extends BaseOperator1In<T, T> {
       result.add(tuple);
     }
     return result;
+  }
+
+  @Override
+  public boolean canRun() {
+    return filter.canRun() && super.canRun();
   }
 }

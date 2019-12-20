@@ -23,12 +23,11 @@
 
 package example;
 
-import io.palyvos.dcs.common.util.Util;
+import com.google.inject.Guice;
 import component.operator.Operator;
-import component.operator.in1.filter.FilterFunction;
-import component.operator.in1.map.MapFunction;
 import component.sink.Sink;
 import component.source.Source;
+import io.palyvos.dcs.common.util.Util;
 import java.io.File;
 import query.Query;
 
@@ -38,55 +37,37 @@ public class TextMapFilter {
     final String reportFolder = args[0];
     final String inputFile = args[1];
     final String outputFile = reportFolder + File.separator + "TextMapFilter.out.csv";
+
+    Guice.createInjector(new ExampleModule());
     Query q = new Query();
 
-    Source<MyTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
-      Util.sleep(15);
-      String[] tokens = line.split(",");
-      return new MyTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
-          Integer.valueOf(tokens[2]));
-    });
+    Source<String> i1 = q.addTextFileSource("I1", inputFile);
 
-    Operator<MyTuple, MyTuple> multiply = q
-        .addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
-          @Override
-          public MyTuple apply(MyTuple tuple) {
-            return new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2);
-          }
-        });
+    Operator<String, MyTuple> inputReader =
+        q.addMapOperator(
+            "map",
+            line -> {
+              Util.sleep(100);
+              String[] tokens = line.split(",");
+              return new MyTuple(
+                  Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+            });
 
-    Operator<MyTuple, MyTuple> filter = q
-        .addFilterOperator("filter", new FilterFunction<MyTuple>() {
+    Operator<MyTuple, MyTuple> multiply =
+        q.addMapOperator(
+            "multiply", tuple -> new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
 
-          @Override
-          public boolean test(MyTuple tuple) {
-            return tuple.value >= 150;
-          }
+    Operator<MyTuple, MyTuple> filter = q.addFilterOperator("filter", tuple -> tuple.value >= 150);
 
-        });
+    Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile, true);
 
-    Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
-      return tuple.timestamp + "," + tuple.key + "," + tuple.value;
-    });
-
-    q.connect(i1, multiply).connect(multiply, filter).connect(filter, o1);
+    q.connect(i1, inputReader)
+        .connect(inputReader, multiply)
+        .connect(multiply, filter)
+        .connect(filter, o1);
 
     q.activate();
     Util.sleep(20000);
     q.deActivate();
-
-  }
-
-  private static class MyTuple {
-
-    public long timestamp;
-    public int key;
-    public int value;
-
-    public MyTuple(long timestamp, int key, int value) {
-      this.timestamp = timestamp;
-      this.key = key;
-      this.value = value;
-    }
   }
 }

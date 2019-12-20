@@ -50,7 +50,7 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
   }
 
   @Override
-  protected void process() {
+  protected final void process() {
     OUT tuple = getNextTuple();
     Stream<OUT> output = getOutput();
     if (tuple != null) {

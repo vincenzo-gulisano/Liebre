@@ -23,15 +23,16 @@
 
 package example;
 
+import com.google.inject.Guice;
 import common.tuple.BaseRichTuple;
-import io.palyvos.dcs.common.util.Util;
-import java.io.File;
 import component.operator.Operator;
 import component.operator.in1.aggregate.BaseTimeBasedSingleWindow;
 import component.operator.in1.aggregate.TimeBasedSingleWindow;
-import query.Query;
 import component.sink.Sink;
 import component.source.Source;
+import io.palyvos.dcs.common.util.Util;
+import java.io.File;
+import query.Query;
 
 public class TextAggregate {
 
@@ -42,31 +43,31 @@ public class TextAggregate {
     final long WINDOW_SIZE = 100;
     final long WINDOW_SLIDE = 20;
 
+    Guice.createInjector(new ExampleModule());
+
     Query q = new Query();
 
-    Source<InputTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
-        String[] tokens = line.split(",");
-        return new InputTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
-            Integer.valueOf(tokens[2]));
-      });
+    Source<String> i1 = q.addTextFileSource("I1", inputFile);
 
-    ;
+    Operator<String, InputTuple> inputReader =
+        q.addMapOperator(
+            "map",
+            line -> {
+              String[] tokens = line.split(",");
+              return new InputTuple(
+                  Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+            });
 
-    Operator<InputTuple, OutputTuple> aggregate = q
-        .addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE,
-            WINDOW_SLIDE);
+    Operator<InputTuple, OutputTuple> aggregate =
+        q.addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE, WINDOW_SLIDE);
 
-    Sink<OutputTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
-        return tuple.getTimestamp() + "," + tuple.getKey() + "," + tuple.count + ","
-            + tuple.average;
-    });
+    Sink<OutputTuple> o1 = q.addTextFileSink("o1", outputFile, true);
 
-    q.connect(i1, aggregate).connect(aggregate, o1);
+    q.connect(i1, inputReader).connect(inputReader, aggregate).connect(aggregate, o1);
 
     q.activate();
     Util.sleep(30000);
     q.deActivate();
-
   }
 
   private static class InputTuple extends BaseRichTuple {
@@ -118,6 +119,5 @@ public class TextAggregate {
     public TimeBasedSingleWindow<InputTuple, OutputTuple> factory() {
       return new AverageWindow();
     }
-
   }
 }

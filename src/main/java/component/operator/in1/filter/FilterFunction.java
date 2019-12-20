@@ -23,7 +23,7 @@
 
 package component.operator.in1.filter;
 
-import io.palyvos.dcs.common.Active;
+import component.ComponentFunction;
 import java.util.function.Predicate;
 
 /**
@@ -31,18 +31,6 @@ import java.util.function.Predicate;
  *
  * @param <T> The type of tuples handled by the predicate.
  */
-public interface FilterFunction<T> extends Active, Predicate<T> {
+public interface FilterFunction<T> extends ComponentFunction, Predicate<T> {
 
-  @Override
-  default void enable() {
-  }
-
-  @Override
-  default boolean isEnabled() {
-    return true;
-  }
-
-  @Override
-  default void disable() {
-  }
 }

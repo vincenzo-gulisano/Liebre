@@ -61,7 +61,7 @@ public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractComponent<Ob
   }
 
   @Override
-  protected void process() {
+  protected final void process() {
     Stream<IN> input1 = getInput();
     Stream<IN2> input2 = getInput2();
     Stream<OUT> output = getOutput();

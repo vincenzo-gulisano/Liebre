@@ -23,7 +23,7 @@
 
 package component.source;
 
-import io.palyvos.dcs.common.Active;
+import component.ComponentFunction;
 import component.FeatureTranslator;
 import java.util.function.Supplier;
 
@@ -32,20 +32,7 @@ import java.util.function.Supplier;
  *
  * @param <OUT> The type of supplied tuples.
  */
-public interface SourceFunction<OUT> extends Active, Supplier<OUT> {
-
-  @Override
-  default void enable() {
-  }
-
-  @Override
-  default boolean isEnabled() {
-    return true;
-  }
-
-  @Override
-  default void disable() {
-  }
+public interface SourceFunction<OUT> extends ComponentFunction, Supplier<OUT> {
 
   default double getHeadArrivalTime() {
     return FeatureTranslator.NO_ARRIVAL_TIME;
@@ -54,6 +41,4 @@ public interface SourceFunction<OUT> extends Active, Supplier<OUT> {
   default double getAverageArrivalTime() {
     return FeatureTranslator.NO_ARRIVAL_TIME;
   }
-
-
 }

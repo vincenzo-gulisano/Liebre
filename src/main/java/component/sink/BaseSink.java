@@ -48,19 +48,25 @@ public class BaseSink<IN> extends AbstractSink<IN> {
 
   @Override
   public void processTuple(IN tuple) {
-    function.accept(tuple);
+    if (function.isEnabled()) {
+      function.accept(tuple);
+    }
   }
 
   @Override
   public void enable() {
-    super.enable();
     function.enable();
+    super.enable();
   }
 
   @Override
   public void disable() {
-    function.disable();
     super.disable();
+    function.disable();
   }
 
+  @Override
+  public boolean canRun() {
+    return function.canRun() && super.canRun();
+  }
 }

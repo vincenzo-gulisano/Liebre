@@ -23,6 +23,7 @@
 
 package example;
 
+import com.google.inject.Guice;
 import io.palyvos.dcs.common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.BaseOperator1In;
@@ -37,7 +38,7 @@ import query.Query;
 public class SimpleQuery {
 
   public static void main(String[] args) {
-    final String reportFolder = args[0];
+    Guice.createInjector(new ExampleModule());
 
     Query q = new Query();
     Source<MyTuple> source = q.addBaseSource("I1", new SourceFunction<MyTuple>() {

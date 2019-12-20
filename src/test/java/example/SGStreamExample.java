@@ -24,7 +24,6 @@
 package example;
 
 import com.google.inject.Guice;
-import com.google.inject.Injector;
 import common.tuple.BaseRichTuple;
 import component.operator.Operator;
 import component.operator.in1.BaseOperator1In;
@@ -42,10 +41,9 @@ public class SGStreamExample {
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		// final String reportFolder = args[0];
+		Guice.createInjector(new ExampleModule());
 
 		Query q = new Query();
-		Injector injector = Guice.createInjector(new ExampleModule());
 		// q.activateStatistics(reportFolder);
 		Source<MyTuple> source1 = q.addBaseSource("S1",
 				new SourceFunction<MyTuple>() {

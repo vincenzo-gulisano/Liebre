@@ -134,11 +134,11 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
     return state.getType();
   }
 
-  public ConnectionsNumber inputsNumber() {
+  public final ConnectionsNumber inputsNumber() {
     return state.inputsNumber();
   }
 
-  public ConnectionsNumber outputsNumber() {
+  public final ConnectionsNumber outputsNumber() {
     return state.outputsNumber();
   }
 

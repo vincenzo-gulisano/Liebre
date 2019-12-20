@@ -46,13 +46,11 @@ import component.operator.union.UnionOperator;
 import component.sink.BaseSink;
 import component.sink.Sink;
 import component.sink.SinkFunction;
-import component.sink.TextFileSink;
-import component.sink.TextSinkFunction;
+import component.sink.TextFileSinkFunction;
 import component.source.BaseSource;
 import component.source.Source;
 import component.source.SourceFunction;
-import component.source.TextFileSource;
-import component.source.TextSourceFunction;
+import component.source.TextFileSourceFunction;
 import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import io.palyvos.dcs.common.util.backoff.ExponentialBackoff;
 import java.util.Collection;
@@ -140,17 +138,17 @@ public final class Query {
 
   public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
       String identifier, MapFunction<IN, OUT> mapFunction) {
-    return addOperator(new MapOperator<IN, OUT>(identifier, 0, 0, mapFunction));
+    return addOperator(new MapOperator<IN, OUT>(identifier, mapFunction));
   }
 
   public synchronized <IN, OUT> Operator<IN, OUT> addFlatMapOperator(
       String identifier, FlatMapFunction<IN, OUT> mapFunction) {
-    return addOperator(new FlatMapOperator<IN, OUT>(identifier, 0, 0, mapFunction));
+    return addOperator(new FlatMapOperator<IN, OUT>(identifier, mapFunction));
   }
 
   public synchronized <T> Operator<T, T> addFilterOperator(
       String identifier, FilterFunction<T> filterF) {
-    return addOperator(new FilterOperator<T>(identifier, 0, 0, filterF));
+    return addOperator(new FilterOperator<T>(identifier, filterF));
   }
 
   public synchronized <T> RouterOperator<T> addRouterOperator(String identifier) {
@@ -178,13 +176,12 @@ public final class Query {
     return addSource(new BaseSource<>(id, function));
   }
 
-  public synchronized <T> Source<T> addTextFileSource(
-      String id, String filename, TextSourceFunction<T> function) {
-    return addSource(new TextFileSource(id, filename, function));
+  public synchronized Source<String> addTextFileSource(String id, String path) {
+    return addSource(new BaseSource<>(id, new TextFileSourceFunction(path)));
   }
 
   public synchronized <T> Sink<T> addSink(Sink<T> sink) {
-    saveComponent(sinks, sink, "component/sink");
+    saveComponent(sinks, sink, "sink");
     return sink;
   }
 
@@ -192,9 +189,8 @@ public final class Query {
     return addSink(new BaseSink<>(id, sinkFunction));
   }
 
-  public synchronized <T> Sink<T> addTextFileSink(
-      String id, String file, TextSinkFunction<T> function) {
-    return addSink(new TextFileSink<>(id, file, function));
+  public synchronized <T> Sink<T> addTextFileSink(String id, String path, boolean autoFlush) {
+    return addSink(new BaseSink<>(id, new TextFileSinkFunction<>(path, autoFlush)));
   }
 
   public synchronized <OUT, IN, IN2> Operator2In<IN, IN2, OUT> addOperator2In(

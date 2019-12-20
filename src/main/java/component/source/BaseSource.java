@@ -62,14 +62,18 @@ public class BaseSource<OUT> extends AbstractSource<OUT> {
 
   @Override
   public void enable() {
-    super.enable();
     function.enable();
+    super.enable();
   }
 
   @Override
   public void disable() {
-    function.disable();
     super.disable();
+    function.disable();
   }
 
+  @Override
+  public boolean canRun() {
+    return function.canRun() && super.canRun();
+  }
 }

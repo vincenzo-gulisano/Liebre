@@ -23,25 +23,8 @@
 
 package component.operator.in1.map;
 
-import io.palyvos.dcs.common.Active;
+import component.ComponentFunction;
 import java.util.function.Function;
 
-/**
- * Function that maps an input tuple to an output tuple. Returns null if no result is produced.
- */
-public interface MapFunction<IN, OUT> extends Active, Function<IN,
-    OUT> {
-
-  @Override
-  default void enable() {
-  }
-
-  @Override
-  default boolean isEnabled() {
-    return true;
-  }
-
-  @Override
-  default void disable() {
-  }
-}
+/** Function that maps an input tuple to an output tuple. Returns null if no result is produced. */
+public interface MapFunction<IN, OUT> extends ComponentFunction, Function<IN, OUT> {}

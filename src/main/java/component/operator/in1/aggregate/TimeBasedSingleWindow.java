@@ -24,6 +24,7 @@
 package component.operator.in1.aggregate;
 
 import common.tuple.RichTuple;
+import component.ComponentFunction;
 
 /**
  * Time-based, stateful window of an aggregate function. The important functions which need to be
@@ -35,7 +36,8 @@ import common.tuple.RichTuple;
  * @param <IN> The type of the input tuples.
  * @param <OUT> The type of the output tuples.
  */
-public interface TimeBasedSingleWindow<IN extends RichTuple, OUT extends RichTuple> {
+public interface TimeBasedSingleWindow<IN extends RichTuple, OUT extends RichTuple> extends
+    ComponentFunction {
 
   /**
    * Generate a new {@link TimeBasedSingleWindow} with the same configuration and probably a clear

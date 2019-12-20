@@ -29,8 +29,8 @@ import java.util.List;
 import org.apache.commons.lang3.Validate;
 
 /**
- * {@link component.operator.Operator} that applies a given {@link MapFunction} to each tuple of its input
- * stream.
+ * {@link component.operator.Operator} that applies a given {@link MapFunction} to each tuple of its
+ * input stream.
  *
  * @param <IN> The type of input tuples.
  * @param <OUT> The type of output tuples.
@@ -45,23 +45,22 @@ public class MapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
    * @param id The unique id of this component.operator.
    * @param map The {@link MapFunction} to be applied to every input tuple.
    */
-	public MapOperator(String id, int relativeProducerIndex,
-			int relativeConsumerIndex, MapFunction<IN, OUT> map) {
-		super(id);
-		Validate.notNull(map, "map");
-		this.map = map;
-	}
+  public MapOperator(String id, MapFunction<IN, OUT> map) {
+    super(id);
+    Validate.notNull(map, "map");
+    this.map = map;
+  }
 
   @Override
   public void enable() {
-    super.enable();
     map.enable();
+    super.enable();
   }
 
   @Override
   public void disable() {
-    map.disable();
     super.disable();
+    map.disable();
   }
 
   @Override
@@ -74,4 +73,8 @@ public class MapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
     return result;
   }
 
+  @Override
+  public boolean canRun() {
+    return map.canRun() && super.canRun();
+  }
 }

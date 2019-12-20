@@ -46,7 +46,7 @@ public class UnionOperator<T> extends AbstractOperator<T, T> {
   }
 
   @Override
-  protected void process() {
+  protected final void process() {
     Stream<T> output = getOutput();
     for (Stream<T> in : getInputs()) {
       T inTuple = in.getNextTuple(getRelativeConsumerIndex());

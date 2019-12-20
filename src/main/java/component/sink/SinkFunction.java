@@ -23,26 +23,13 @@
 
 package component.sink;
 
-import io.palyvos.dcs.common.Active;
+import component.ComponentFunction;
 import java.util.function.Consumer;
 
 /**
  * Function that works on all tuples accepted by a {@link BaseSink}.
  * @param <IN> The type of input tuples.
  */
-public interface SinkFunction<IN> extends Active, Consumer<IN> {
-
-  @Override
-  default void enable() {
-  }
-
-  @Override
-  default boolean isEnabled() {
-    return true;
-  }
-
-  @Override
-  default void disable() {
-  }
+public interface SinkFunction<IN> extends ComponentFunction, Consumer<IN> {
 
 }

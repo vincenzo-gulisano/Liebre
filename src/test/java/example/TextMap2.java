@@ -23,11 +23,11 @@
 
 package example;
 
-import io.palyvos.dcs.common.util.Util;
+import com.google.inject.Guice;
 import component.operator.Operator;
-import component.operator.in1.map.MapFunction;
 import component.sink.Sink;
 import component.source.Source;
+import io.palyvos.dcs.common.util.Util;
 import java.io.File;
 import query.Query;
 
@@ -37,47 +37,33 @@ public class TextMap2 {
     final String reportFolder = args[0];
     final String inputFile = args[1];
     final String outputFile = reportFolder + File.separator + "TextMap2.out.csv";
+
+    Guice.createInjector(new ExampleModule());
+
     Query q = new Query();
 
-    Source<InputTuple> i1 = q.addTextFileSource("I1", inputFile, line -> {
-      Util.sleep(100);
-      String[] tokens = line.split(",");
-      return new InputTuple(Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]),
-          Integer.valueOf(tokens[2]));
-    });
+    Source<String> i1 = q.addTextFileSource("I1", inputFile);
 
-    Operator<InputTuple, OutputTuple> transform = q.addMapOperator("transform",
-        new MapFunction<InputTuple, OutputTuple>() {
-          @Override
-          public OutputTuple apply(InputTuple tuple) {
-            return new OutputTuple(tuple);
-          }
-        });
+    Operator<String, MyTuple> inputReader =
+        q.addMapOperator(
+            "map",
+            line -> {
+              Util.sleep(100);
+              String[] tokens = line.split(",");
+              return new MyTuple(
+                  Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+            });
 
-    Sink<OutputTuple> o1 = q.addTextFileSink("o1", outputFile, tuple -> {
-      return tuple.timestamp + "," + tuple.key + "," + tuple.valueA + "," + tuple.valueB + ","
-          + tuple.valueC;
-    });
+    Operator<MyTuple, OutputTuple> transform =
+        q.addMapOperator("transform", tuple -> new OutputTuple(tuple));
 
-    q.connect(i1, transform).connect(transform, o1);
+    Sink<OutputTuple> o1 = q.addTextFileSink("o1", outputFile, true);
+
+    q.connect(i1, inputReader).connect(inputReader, transform).connect(transform, o1);
 
     q.activate();
     Util.sleep(40000);
     q.deActivate();
-
-  }
-
-  private static class InputTuple {
-
-    public long timestamp;
-    public int key;
-    public int value;
-
-    public InputTuple(long timestamp, int key, int value) {
-      this.timestamp = timestamp;
-      this.key = key;
-      this.value = value;
-    }
   }
 
   private static class OutputTuple {
@@ -88,7 +74,7 @@ public class TextMap2 {
     public int valueB;
     public int valueC;
 
-    public OutputTuple(InputTuple t) {
+    public OutputTuple(MyTuple t) {
       this.timestamp = t.timestamp;
       this.key = t.key;
       this.valueA = t.value * 2;

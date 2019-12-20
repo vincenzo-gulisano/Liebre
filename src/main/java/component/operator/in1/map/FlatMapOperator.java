@@ -40,12 +40,11 @@ public class FlatMapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
 
   /**
    * Construct.
-   *
-   * @param id The unique id of this component.operator.
+   *  @param id The unique id of this component.operator.
    * @param map The {@link FlatMapFunction} that will be applied to each input tuple.
    */
-	public FlatMapOperator(String id, int relativeProducerIndex,
-			int relativeConsumerIndex, FlatMapFunction<IN, OUT> map) {
+	public FlatMapOperator(String id,
+      FlatMapFunction<IN, OUT> map) {
 		super(id);
 		Validate.notNull(map, "map");
 		this.map = map;
@@ -53,18 +52,23 @@ public class FlatMapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
 
   @Override
   public void enable() {
-    super.enable();
     map.enable();
+    super.enable();
   }
 
   @Override
   public void disable() {
-    map.disable();
     super.disable();
+    map.disable();
   }
 
   @Override
   public List<OUT> processTupleIn1(IN tuple) {
     return map.apply(tuple);
+  }
+
+  @Override
+  public boolean canRun() {
+    return map.canRun() && super.canRun();
   }
 }

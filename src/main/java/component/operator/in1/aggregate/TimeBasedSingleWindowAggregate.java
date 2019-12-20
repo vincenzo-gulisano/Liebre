@@ -155,6 +155,23 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
 
   }
 
+  @Override
+  public void enable() {
+    aggregateWindow.enable();
+    super.enable();
+  }
+
+  @Override
+  public void disable() {
+    super.disable();
+    aggregateWindow.disable();
+  }
+
+  @Override
+  public boolean canRun() {
+    return aggregateWindow.canRun() && super.canRun();
+  }
+
   private static class WinCounter {
 
     private long count = 0;

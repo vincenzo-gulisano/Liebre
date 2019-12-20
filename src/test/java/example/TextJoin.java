@@ -23,6 +23,7 @@
 
 package example;
 
+import com.google.inject.Guice;
 import java.util.Random;
 
 import common.tuple.BaseRichTuple;
@@ -39,7 +40,7 @@ public class TextJoin {
 
   public static void main(String[] args) {
 
-    final String reportFolder = args[0];
+    Guice.createInjector(new ExampleModule());
 
     Query q = new Query();
 

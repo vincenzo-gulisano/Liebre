@@ -179,4 +179,20 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
     return in2TuplesBuffer.poll();
   }
 
+  @Override
+  public void enable() {
+    joinFunction.enable();
+    super.enable();
+  }
+
+  @Override
+  public void disable() {
+    super.disable();
+    joinFunction.disable();
+  }
+
+  @Override
+  public boolean canRun() {
+    return joinFunction.canRun() && super.canRun();
+  }
 }

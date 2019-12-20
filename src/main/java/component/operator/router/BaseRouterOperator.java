@@ -41,7 +41,7 @@ public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements Rou
   }
 
   @Override
-  protected void process() {
+  protected final void process() {
     Stream<T> input = getInput();
     T inTuple = input.getNextTuple(getRelativeConsumerIndex());
     if (inTuple != null) {

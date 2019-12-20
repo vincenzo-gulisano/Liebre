@@ -23,26 +23,52 @@
 
 package component.sink;
 
-import io.palyvos.dcs.common.Active;
-import java.util.function.Function;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Function from tuples to strings. Used by {@link TextFileSink}.
  * @param <IN> The type of input tuples.
  */
-public interface TextSinkFunction<IN> extends Active, Function<IN, String> {
+public class TextFileSinkFunction<IN> implements SinkFunction<IN> {
 
-  @Override
-  default void enable() {
+  private final String path;
+  private final boolean autoFlush;
+  private boolean enabled;
+  private PrintWriter writer;
+
+  public TextFileSinkFunction(String path, boolean autoFlush) {
+    Validate.notBlank(path, "path");
+    this.path = path;
+    this.autoFlush = true;
   }
 
   @Override
-  default boolean isEnabled() {
-    return true;
+  public void accept(IN in) {
+    writer.println(in);
   }
 
   @Override
-  default void disable() {
+  public void enable() {
+    try {
+      this.writer = new PrintWriter(new FileWriter(path), autoFlush);
+    } catch (IOException e) {
+      throw new IllegalArgumentException(String.format("Cannot write to file :%s", path));
+    }
+    this.enabled = true;
   }
 
+  @Override
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  @Override
+  public void disable() {
+    this.enabled = false;
+    writer.flush();
+    writer.close();
+  }
 }

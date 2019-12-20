@@ -23,7 +23,7 @@
 
 package component.operator.in1.map;
 
-import io.palyvos.dcs.common.Active;
+import component.ComponentFunction;
 import java.util.List;
 
 /**
@@ -33,7 +33,7 @@ import java.util.List;
  * @param <OUT> The type of the output tuple(s).
  */
 @FunctionalInterface
-public interface FlatMapFunction<IN, OUT> extends Active {
+public interface FlatMapFunction<IN, OUT> extends ComponentFunction {
 
   /**
    * Apply a function mapping the input to zero or more output tuples. If no tuples are to be
@@ -43,18 +43,4 @@ public interface FlatMapFunction<IN, OUT> extends Active {
    * @return The result of the function.
    */
   List<OUT> apply(IN tuple);
-
-  @Override
-  default void enable() {
-  }
-
-  @Override
-  default boolean isEnabled() {
-    return true;
-  }
-
-  @Override
-  default void disable() {
-  }
-
 }
