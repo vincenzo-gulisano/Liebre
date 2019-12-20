@@ -30,7 +30,8 @@ import io.palyvos.dcs.common.metrics.MetricsFactory;
 
 public final class LiebreContext {
 
-  private static final MetricRegistry registry = new MetricRegistry();
+  @Inject
+  private static MetricRegistry dropwizardMetricRegistry;
 
   @Inject
   @Named("operator")
@@ -46,8 +47,8 @@ public final class LiebreContext {
 
   private LiebreContext() {}
 
-  public static MetricRegistry registry() {
-    return registry;
+  public static MetricRegistry dropwizardMetricRegistry() {
+    return dropwizardMetricRegistry;
   }
 
   public static MetricsFactory operatorMetricsFactory() {
