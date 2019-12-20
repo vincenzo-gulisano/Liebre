@@ -40,6 +40,10 @@ public final class LiebreContext {
   @Named("stream")
   private static StatisticsFactory streamStatisticsFactory;
 
+  @Inject
+  @Named("user")
+  private static StatisticsFactory userStatisticsFactory;
+
   private LiebreContext() {}
 
   public static MetricRegistry registry() {
@@ -52,5 +56,9 @@ public final class LiebreContext {
 
   public static StatisticsFactory streamStatisticsFactory() {
     return streamStatisticsFactory;
+  }
+
+  public static StatisticsFactory userStatisticsFactory() {
+    return userStatisticsFactory;
   }
 }

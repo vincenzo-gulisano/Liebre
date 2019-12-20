@@ -43,9 +43,8 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
    *
    * @param id The unique ID of this component.
    */
-  public AbstractSink(String id, int relativeConsumerIndex) {
+  public AbstractSink(String id) {
     super(id, ComponentType.SINK);
-    this.relativeConsumerIndex = relativeConsumerIndex;
   }
 
   @Override

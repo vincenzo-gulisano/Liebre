@@ -41,8 +41,8 @@ public class UnionOperator<T> extends AbstractOperator<T, T> {
    *
    * @param id The unique ID of the component.operator.
    */
-  public UnionOperator(String id, int relativeProducerIndex, int relativeConsumerIndex) {
-    super(id, ComponentType.UNION, relativeProducerIndex, relativeConsumerIndex);
+  public UnionOperator(String id) {
+    super(id, ComponentType.UNION);
   }
 
   @Override

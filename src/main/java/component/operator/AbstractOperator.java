@@ -46,10 +46,8 @@ public abstract class AbstractOperator<IN, OUT> extends AbstractComponent<IN, OU
   private int relativeConsumerIndex;
 
   public AbstractOperator(
-      String id, ComponentType type, int relativeProducerIndex, int relativeConsumerIndex) {
+      String id, ComponentType type) {
     super(id, type);
-    this.relativeProducerIndex = relativeProducerIndex;
-    this.relativeConsumerIndex = relativeConsumerIndex;
   }
 
   @Override

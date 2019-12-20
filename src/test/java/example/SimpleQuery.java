@@ -51,7 +51,7 @@ public class SimpleQuery {
     });
 
     Operator<MyTuple, MyTuple> multiply = q
-        .addOperator(new BaseOperator1In<MyTuple, MyTuple>("M",0,0) {
+        .addOperator(new BaseOperator1In<MyTuple, MyTuple>("M") {
           @Override
           public List<MyTuple> processTupleIn1(MyTuple tuple) {
             List<MyTuple> result = new LinkedList<MyTuple>();

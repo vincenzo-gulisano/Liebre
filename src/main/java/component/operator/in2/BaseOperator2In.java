@@ -55,11 +55,9 @@ public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractComponent<Ob
    *
    * @param id The unique ID of this component.operator.
    */
-  public BaseOperator2In(String id, int relativeProducerIndex, int relativeConsumerIndex) {
+  public BaseOperator2In(String id) {
     super(id, ComponentType.OPERATOR2IN);
     this.secondInputView = new SecondInputOperator2InAdapter<>(this);
-    this.relativeProducerIndex = relativeProducerIndex;
-    this.relativeConsumerIndex = relativeConsumerIndex;
   }
 
   @Override

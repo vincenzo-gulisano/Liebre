@@ -43,8 +43,8 @@ public abstract class BaseOperator1In<IN, OUT> extends AbstractOperator<IN, OUT>
    *
    * @param id The unique id of this component.
    */
-  public BaseOperator1In(String id, int relativeProducerIndex, int relativeConsumerIndex) {
-    super(id, ComponentType.OPERATOR, relativeProducerIndex, relativeConsumerIndex);
+  public BaseOperator1In(String id) {
+    super(id, ComponentType.OPERATOR);
   }
 
   @Override

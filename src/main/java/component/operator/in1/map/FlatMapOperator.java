@@ -46,7 +46,7 @@ public class FlatMapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
    */
 	public FlatMapOperator(String id, int relativeProducerIndex,
 			int relativeConsumerIndex, FlatMapFunction<IN, OUT> map) {
-		super(id, relativeProducerIndex, relativeConsumerIndex);
+		super(id);
 		Validate.notNull(map, "map");
 		this.map = map;
 	}

@@ -42,7 +42,7 @@ public class BaseSink<IN> extends AbstractSink<IN> {
    * @param function The function to be applied to each input tuple.
    */
   public BaseSink(String id, int relativeConsumerIndex, SinkFunction<IN> function) {
-    super(id,relativeConsumerIndex);
+    super(id);
     Validate.notNull(function, "function");
     this.function = function;
   }

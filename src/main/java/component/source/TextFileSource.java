@@ -52,7 +52,7 @@ public class TextFileSource<OUT> extends AbstractSource<OUT> {
    * @param function The {@link TextSourceFunction} that converts raw text lines to tuples.
    */
   public TextFileSource(String id,int relativeProducerIndex, String filename, TextSourceFunction<OUT> function) {
-    super(id,relativeProducerIndex);
+    super(id);
     Validate.notNull(function, "function");
     this.function = function;
     try {

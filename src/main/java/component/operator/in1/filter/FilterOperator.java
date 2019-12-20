@@ -41,7 +41,7 @@ public class FilterOperator<T> extends BaseOperator1In<T, T> {
 
 	public FilterOperator(String id, int relativeProducerIndex,
 			int relativeConsumerIndex, FilterFunction<T> filter) {
-		super(id, relativeProducerIndex, relativeConsumerIndex);
+		super(id);
 		Validate.notNull(filter, "filter");
 		this.filter = filter;
 	}

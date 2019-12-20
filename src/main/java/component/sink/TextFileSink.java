@@ -52,7 +52,7 @@ public class TextFileSink<IN> extends AbstractSink<IN> {
 
   protected TextFileSink(String id, int relativeConsumerIndex, String filename, TextSinkFunction<IN> function,
       boolean autoFlush) {
-    super(id,relativeConsumerIndex);
+    super(id);
     try {
       this.pw = new PrintWriter(new FileWriter(filename), autoFlush);
     } catch (IOException e) {

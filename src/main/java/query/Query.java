@@ -154,7 +154,7 @@ public final class Query {
   }
 
   public synchronized <T> RouterOperator<T> addRouterOperator(String identifier) {
-    RouterOperator<T> router = new BaseRouterOperator<T>(identifier, 0, 0);
+    RouterOperator<T> router = new BaseRouterOperator<T>(identifier);
     saveComponent(operators, router, "component/operator");
     return router;
   }
@@ -165,7 +165,7 @@ public final class Query {
   }
 
   public synchronized <T> UnionOperator<T> addUnionOperator(String identifier) {
-    UnionOperator<T> union = new UnionOperator<>(identifier, 0, 0);
+    UnionOperator<T> union = new UnionOperator<>(identifier);
     return addUnionOperator(union);
   }
 

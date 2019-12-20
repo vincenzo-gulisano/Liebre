@@ -36,8 +36,8 @@ import stream.Stream;
  */
 public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements RouterOperator<T> {
 
-  public BaseRouterOperator(String id, int relativeProducerIndex, int relativeConsumerIndex) {
-    super(id, ComponentType.ROUTER, relativeProducerIndex, relativeConsumerIndex);
+  public BaseRouterOperator(String id) {
+    super(id, ComponentType.ROUTER);
   }
 
   @Override

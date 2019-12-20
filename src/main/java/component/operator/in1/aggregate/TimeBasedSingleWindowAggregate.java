@@ -54,7 +54,7 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
   public TimeBasedSingleWindowAggregate(String id,int relativeProducerIndex,int relativeConsumerIndex, long windowSize,
       long windowSlide,
       TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
-    super(id,relativeProducerIndex,relativeConsumerIndex);
+    super(id);
     tuples = new LinkedList<IN>();
     windows = new TreeMap<Long, HashMap<String, TimeBasedSingleWindow<IN, OUT>>>();
     windowsCounters = new TreeMap<Long, HashMap<String, WinCounter>>();

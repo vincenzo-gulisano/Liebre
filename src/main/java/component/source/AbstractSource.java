@@ -34,9 +34,8 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
   private static final int OUTPUT_KEY = 0;
   private int relativeProducerIndex;
 
-  public AbstractSource(String id, int relativeProducerIndex) {
+  public AbstractSource(String id) {
     super(id, ComponentType.SOURCE);
-    this.relativeProducerIndex = relativeProducerIndex;
   }
 
   @Override

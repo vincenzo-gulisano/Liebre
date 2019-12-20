@@ -15,9 +15,18 @@ public class ExampleModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(StatisticsFactory.class).annotatedWith(Names.named("stream")).to(FileStatisticsFactory.class).asEagerSingleton();
-    bind(StatisticsFactory.class).annotatedWith(Names.named("operator")).to(
-        FileStatisticsNoTimeStatisticsFactory.class).asEagerSingleton();
+    bind(StatisticsFactory.class)
+        .annotatedWith(Names.named("stream"))
+        .to(FileStatisticsFactory.class)
+        .asEagerSingleton();
+    bind(StatisticsFactory.class)
+        .annotatedWith(Names.named("operator"))
+        .to(FileStatisticsNoTimeStatisticsFactory.class)
+        .asEagerSingleton();
+    bind(StatisticsFactory.class)
+        .annotatedWith(Names.named("user"))
+        .to(FileStatisticsFactory.class)
+        .asEagerSingleton();
     bind(StatisticName.class).to(DefaultStatisticName.class);
     bind(MetricRegistry.class).in(Singleton.class);
     bindConstant().annotatedWith(Names.named("statisticsFolder")).to("test");

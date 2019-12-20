@@ -47,7 +47,7 @@ public class MapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
    */
 	public MapOperator(String id, int relativeProducerIndex,
 			int relativeConsumerIndex, MapFunction<IN, OUT> map) {
-		super(id, relativeProducerIndex, relativeConsumerIndex);
+		super(id);
 		Validate.notNull(map, "map");
 		this.map = map;
 	}

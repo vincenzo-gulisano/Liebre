@@ -71,7 +71,7 @@ public class SGStreamExample {
 				});
 
 		Operator<MyTuple, MyTuple> multiply = q
-				.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M", 0, 0) {
+				.addOperator(new BaseOperator1In<MyTuple, MyTuple>("M") {
 
 					long lastTimestamp = -1;
 

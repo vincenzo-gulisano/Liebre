@@ -59,7 +59,7 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
    */
   public TimeBasedJoin(String id,int relativeProducerIndex, int relativeConsumerIndex, long windowSize,
       JoinFunction<IN, IN2, OUT> joinFunction) {
-    super(id,relativeProducerIndex,relativeConsumerIndex);
+    super(id);
     this.ws = windowSize;
     this.joinFunction = joinFunction;
 
