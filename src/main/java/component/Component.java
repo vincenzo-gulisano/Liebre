@@ -22,8 +22,8 @@
  */
 package component;
 
-import io.palyvos.liebre.common.Active;
-import io.palyvos.liebre.common.Named;
+import io.palyvos.dcs.common.Active;
+import io.palyvos.dcs.common.Named;
 import java.util.Collections;
 import java.util.List;
 import io.palyvos.haren.Feature;

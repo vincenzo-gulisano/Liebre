@@ -1,6 +1,6 @@
 package stream;
 
-import io.palyvos.liebre.common.util.backoff.BackoffFactory;
+import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
 import java.util.List;
@@ -15,7 +15,7 @@ public class BackoffStreamFactory implements StreamFactory {
 	public <T> Stream<T> newStream(StreamProducer<T> from,
 			StreamConsumer<T> to,
 			int capacity, BackoffFactory backoff) {
-		Validate.isTrue(backoff == BackoffFactory.NOOP,
+		Validate.isTrue(backoff == BackoffFactory.INACTIVE,
 				"This stream does not support Backoff!");
 		return new BlockingStream<>(getStreamId(from, to),
 				indexes.getAndIncrement(),

@@ -24,10 +24,11 @@
 package stream;
 
 import common.tuple.RichTuple;
-import io.palyvos.liebre.common.util.backoff.Backoff;
-import io.palyvos.liebre.common.util.backoff.BackoffFactory;
+import io.palyvos.dcs.common.util.backoff.Backoff;
+import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
+import io.palyvos.dcs.common.util.backoff.InactiveBackoff;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
@@ -41,8 +42,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  *
  * @param <T> The type of tuples transferred by this {@link Stream}.
  * @see StreamFactory
- * @see io.palyvos.liebre.common.util.backoff.ExponentialBackoff
- * @see io.palyvos.liebre.common.util.backoff.NoopBackoff
+ * @see io.palyvos.dcs.common.util.backoff.ExponentialBackoff
+ * @see InactiveBackoff
  */
 public class BackoffStream<T> extends AbstractStream<T> {
 

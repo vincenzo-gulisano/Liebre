@@ -23,7 +23,7 @@
 
 package scheduling;
 
-import io.palyvos.liebre.common.Active;
+import io.palyvos.dcs.common.Active;
 import java.util.Collection;
 
 /**
@@ -62,12 +62,5 @@ public interface LiebreScheduler<T extends Runnable> extends Active {
 
   /** Stop the running tasks. */
   void stopTasks();
-
-  /**
-   * Activate statistics for this scheduler instance
-   *
-   * @param folder The folder to save the statistics to
-   */
-  void activateStatistics(String folder);
 
 }

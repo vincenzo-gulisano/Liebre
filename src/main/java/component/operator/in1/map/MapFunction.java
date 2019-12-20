@@ -23,7 +23,7 @@
 
 package component.operator.in1.map;
 
-import io.palyvos.liebre.common.Active;
+import io.palyvos.dcs.common.Active;
 import java.util.function.Function;
 
 /**

@@ -23,7 +23,7 @@
 
 package example;
 
-import io.palyvos.liebre.common.util.Util;
+import io.palyvos.dcs.common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.filter.FilterFunction;
 import component.operator.in1.map.MapFunction;

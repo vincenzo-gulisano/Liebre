@@ -23,8 +23,8 @@
 
 package example;
 
-import io.palyvos.liebre.common.util.Util;
-import io.palyvos.liebre.common.util.backoff.BackoffFactory;
+import io.palyvos.dcs.common.util.Util;
+import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import component.operator.Operator;
 import component.sink.Sink;
 import component.source.Source;
@@ -64,7 +64,7 @@ public class TextUnion {
     });
 
     q.connect(i1, union);
-    q.connect(i2, union, BackoffFactory.NOOP);
+    q.connect(i2, union, BackoffFactory.INACTIVE);
     q.connect(union, o1);
 
     q.activate();

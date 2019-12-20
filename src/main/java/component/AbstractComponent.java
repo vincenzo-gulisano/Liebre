@@ -1,7 +1,7 @@
 package component;
 
-import io.palyvos.liebre.statistics.Statistic;
-import io.palyvos.liebre.statistics.TimeStatistic;
+import io.palyvos.dcs.common.metrics.Metric;
+import io.palyvos.dcs.common.metrics.TimeMetric;
 import query.LiebreContext;
 
 public abstract class AbstractComponent<IN, OUT> implements Component {
@@ -27,14 +27,14 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
   private volatile double cost = 1;
   private volatile double rate = 0;
 
-  private final TimeStatistic executionTimeStatistic;
-  private final Statistic rateStatistic;
+  private final TimeMetric executionTimeMetric;
+  private final Metric rateMetric;
 
   public AbstractComponent(String id, ComponentType type) {
     this.state = new ComponentState<>(id, type);
-    this.executionTimeStatistic =
-        LiebreContext.operatorStatistiscFactory().newAverageTimeStatistic(id, "EXEC");
-    this.rateStatistic = LiebreContext.operatorStatistiscFactory().newCountStatistic(id, "RATE");
+    this.executionTimeMetric =
+        LiebreContext.operatorMetricsFactory().newAverageTimeMetric(id, "EXEC");
+    this.rateMetric = LiebreContext.operatorMetricsFactory().newCountMetric(id, "RATE");
   }
 
   @Override
@@ -58,9 +58,9 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
   @Override
   public final void run() {
     if (isEnabled()) {
-      executionTimeStatistic.startInterval();
+      executionTimeMetric.startInterval();
       process();
-      executionTimeStatistic.stopInterval();
+      executionTimeMetric.stopInterval();
     }
   }
 
@@ -68,7 +68,7 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
 
   protected final void increaseTuplesRead() {
     tuplesRead++;
-    rateStatistic.record(1);
+    rateMetric.record(1);
   }
 
   protected final void increaseTuplesWritten() {
@@ -144,15 +144,15 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
   }
 
   public void enable() {
-    executionTimeStatistic.enable();
-    rateStatistic.enable();
+    executionTimeMetric.enable();
+    rateMetric.enable();
     state.enable();
   }
 
   public void disable() {
     state.disable();
-    executionTimeStatistic.disable();
-    rateStatistic.disable();
+    executionTimeMetric.disable();
+    rateMetric.disable();
   }
 
   public boolean isEnabled() {

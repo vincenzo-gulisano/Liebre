@@ -4,33 +4,33 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
-import io.palyvos.liebre.statistics.DefaultStatisticName;
-import io.palyvos.liebre.statistics.FileStatisticsFactory;
-import io.palyvos.liebre.statistics.FileStatisticsNoTimeStatisticsFactory;
-import io.palyvos.liebre.statistics.StatisticName;
-import io.palyvos.liebre.statistics.StatisticsFactory;
+import io.palyvos.dcs.common.metrics.DefaultMetricName;
+import io.palyvos.dcs.common.metrics.FileMetricsFactory;
+import io.palyvos.dcs.common.metrics.FileMetricsNoTimeMetricsFactory;
+import io.palyvos.dcs.common.metrics.MetricName;
+import io.palyvos.dcs.common.metrics.MetricsFactory;
 import query.LiebreContext;
 
 public class ExampleModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(StatisticsFactory.class)
+    bind(MetricsFactory.class)
         .annotatedWith(Names.named("stream"))
-        .to(FileStatisticsFactory.class)
+        .to(FileMetricsFactory.class)
         .asEagerSingleton();
-    bind(StatisticsFactory.class)
+    bind(MetricsFactory.class)
         .annotatedWith(Names.named("operator"))
-        .to(FileStatisticsNoTimeStatisticsFactory.class)
+        .to(FileMetricsNoTimeMetricsFactory.class)
         .asEagerSingleton();
-    bind(StatisticsFactory.class)
+    bind(MetricsFactory.class)
         .annotatedWith(Names.named("user"))
-        .to(FileStatisticsFactory.class)
+        .to(FileMetricsFactory.class)
         .asEagerSingleton();
-    bind(StatisticName.class).to(DefaultStatisticName.class);
+    bind(MetricName.class).to(DefaultMetricName.class);
     bind(MetricRegistry.class).in(Singleton.class);
-    bindConstant().annotatedWith(Names.named("statisticsFolder")).to("test");
-    bindConstant().annotatedWith(Names.named("statisticsAutoFlush")).to(true);
+    bindConstant().annotatedWith(Names.named("metricsFolder")).to("test");
+    bindConstant().annotatedWith(Names.named("metricsAutoFlush")).to(true);
     requestStaticInjection(LiebreContext.class);
   }
 }

@@ -24,7 +24,7 @@
 package component;
 
 import common.tuple.RichTuple;
-import io.palyvos.liebre.common.Named;
+import io.palyvos.dcs.common.Named;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

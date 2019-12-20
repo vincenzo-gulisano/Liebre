@@ -53,8 +53,8 @@ import component.source.Source;
 import component.source.SourceFunction;
 import component.source.TextFileSource;
 import component.source.TextSourceFunction;
-import io.palyvos.liebre.common.util.backoff.BackoffFactory;
-import io.palyvos.liebre.common.util.backoff.ExponentialBackoff;
+import io.palyvos.dcs.common.util.backoff.BackoffFactory;
+import io.palyvos.dcs.common.util.backoff.ExponentialBackoff;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,7 +87,7 @@ public final class Query {
   private final Map<String, Sink<?>> sinks = new HashMap<>();
   private final LiebreScheduler LiebreScheduler;
   private final StreamFactory streamFactory;
-  private BackoffFactory defaultBackoff = BackoffFactory.NOOP;
+  private BackoffFactory defaultBackoff = BackoffFactory.INACTIVE;
   private boolean active;
 
   /** Construct. */

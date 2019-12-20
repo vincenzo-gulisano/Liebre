@@ -23,8 +23,8 @@
 
 package stream;
 
-import io.palyvos.liebre.common.Active;
-import io.palyvos.liebre.common.Named;
+import io.palyvos.dcs.common.Active;
+import io.palyvos.dcs.common.Named;
 import component.StreamConsumer;
 import component.StreamProducer;
 import java.util.List;

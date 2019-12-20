@@ -1,37 +1,37 @@
 package stream;
 
 import query.LiebreContext;
-import io.palyvos.liebre.statistics.Statistic;
+import io.palyvos.dcs.common.metrics.Metric;
 
 public abstract class AbstractStream<T> implements Stream<T> {
 
-  public static final String STATISTIC_IN = "IN";
-  public static final String STATISTIC_OUT = "OUT";
+  public static final String METRIC_IN = "IN";
+  public static final String METRIC_OUT = "OUT";
   protected final String id;
   protected final int index;
   private volatile boolean enabled;
 
-  private final Statistic inStatistic;
-  private final Statistic outStatistic;
+  private final Metric inMetric;
+  private final Metric outMetric;
 
   public AbstractStream(String id, int index) {
     this.id = id;
     this.index = index;
-    inStatistic = LiebreContext.streamStatisticsFactory().newCountStatistic(id, STATISTIC_IN);
-    outStatistic = LiebreContext.streamStatisticsFactory().newCountStatistic(id, STATISTIC_OUT);
+    inMetric = LiebreContext.streamMetricsFactory().newCountMetric(id, METRIC_IN);
+    outMetric = LiebreContext.streamMetricsFactory().newCountMetric(id, METRIC_OUT);
   }
 
   @Override
   public final void addTuple(T tuple, int writer) {
     doAddTuple(tuple, writer);
-    inStatistic.record(1);
+    inMetric.record(1);
   }
 
   @Override
   public final T getNextTuple(int reader) {
     T tuple = doGetNextTuple(reader);
     if (tuple != null) {
-      outStatistic.record(1);
+      outMetric.record(1);
     }
     return tuple;
   }
@@ -42,8 +42,8 @@ public abstract class AbstractStream<T> implements Stream<T> {
 
   @Override
   public void enable() {
-    inStatistic.enable();
-    outStatistic.enable();
+    inMetric.enable();
+    outMetric.enable();
     this.enabled = true;
   }
 
@@ -55,8 +55,8 @@ public abstract class AbstractStream<T> implements Stream<T> {
   @Override
   public void disable() {
     this.enabled = false;
-    inStatistic.disable();
-    outStatistic.disable();
+    inMetric.disable();
+    outMetric.disable();
   }
 
   @Override

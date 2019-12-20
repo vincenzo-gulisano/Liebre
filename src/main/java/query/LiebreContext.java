@@ -26,7 +26,7 @@ package query;
 import com.codahale.metrics.MetricRegistry;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import io.palyvos.liebre.statistics.StatisticsFactory;
+import io.palyvos.dcs.common.metrics.MetricsFactory;
 
 public final class LiebreContext {
 
@@ -34,15 +34,15 @@ public final class LiebreContext {
 
   @Inject
   @Named("operator")
-  private static StatisticsFactory operatorStatisticsFactory;
+  private static MetricsFactory operatorMetricsFactory;
 
   @Inject
   @Named("stream")
-  private static StatisticsFactory streamStatisticsFactory;
+  private static MetricsFactory streamMetricsFactory;
 
   @Inject
   @Named("user")
-  private static StatisticsFactory userStatisticsFactory;
+  private static MetricsFactory userMetricsFactory;
 
   private LiebreContext() {}
 
@@ -50,15 +50,15 @@ public final class LiebreContext {
     return registry;
   }
 
-  public static StatisticsFactory operatorStatistiscFactory() {
-    return operatorStatisticsFactory;
+  public static MetricsFactory operatorMetricsFactory() {
+    return operatorMetricsFactory;
   }
 
-  public static StatisticsFactory streamStatisticsFactory() {
-    return streamStatisticsFactory;
+  public static MetricsFactory streamMetricsFactory() {
+    return streamMetricsFactory;
   }
 
-  public static StatisticsFactory userStatisticsFactory() {
-    return userStatisticsFactory;
+  public static MetricsFactory userMetricsFactory() {
+    return userMetricsFactory;
   }
 }

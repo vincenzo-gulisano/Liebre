@@ -124,10 +124,5 @@ public class DefaultLiebreScheduler implements LiebreScheduler<Component> {
     }
   }
 
-  @Override
-  public void activateStatistics(String folder) {
-    LOGGER.info("No statistics available");
-  }
-
 }
 

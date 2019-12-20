@@ -23,7 +23,7 @@
 
 package stream;
 
-import io.palyvos.liebre.common.util.backoff.BackoffFactory;
+import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
 import java.util.List;
@@ -41,7 +41,7 @@ public interface StreamFactory {
 			StreamConsumer<T> to, int relativeProducerIndex,
 			int relativeConsumerIndex, int capacity) {
 		return newStream(from, to,
-				capacity, BackoffFactory.NOOP);
+				capacity, BackoffFactory.INACTIVE);
 	}
 
 	default <T> String getStreamId(StreamProducer<T> from,

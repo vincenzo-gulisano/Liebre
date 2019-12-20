@@ -23,7 +23,7 @@
 
 package scheduling.impl;
 
-import io.palyvos.liebre.common.Active;
+import io.palyvos.dcs.common.Active;
 import component.Component;
 import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;
@@ -69,11 +69,6 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
   @Override
   public void stopTasks() {
     scheduler.stop();
-  }
-
-  @Override
-  public void activateStatistics(String folder) {
-
   }
 
   public void setBatchSize(int batchSize) {
