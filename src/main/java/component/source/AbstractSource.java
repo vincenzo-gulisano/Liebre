@@ -23,24 +23,19 @@
 
 package component.source;
 
-import component.ComponentState;
 import component.ComponentType;
-import component.ConnectionsNumber;
 import component.StreamConsumer;
 import java.util.Collection;
 import stream.Stream;
 
-public abstract class AbstractSource<OUT> implements Source<OUT> {
+public abstract class AbstractSource<OUT> extends component.AbstractComponent<Void, OUT>
+    implements Source<OUT> {
 
   private static final int OUTPUT_KEY = 0;
-  protected final ComponentState<?, OUT> state;
-  private final ProcessCommandSource<OUT> processCommand = new ProcessCommandSource<>(this);
-
-  private int priority;
   private int relativeProducerIndex;
 
   public AbstractSource(String id, int relativeProducerIndex) {
-    this.state = new ComponentState<>(id, ComponentType.SOURCE);
+    super(id, ComponentType.SOURCE);
     this.relativeProducerIndex = relativeProducerIndex;
   }
 
@@ -50,13 +45,19 @@ public abstract class AbstractSource<OUT> implements Source<OUT> {
   }
 
   @Override
-  public ComponentType getType() {
-    return state.getType();
+  public Stream<OUT> getOutput() {
+    return state.getOutput(OUTPUT_KEY);
   }
 
   @Override
-  public Stream<OUT> getOutput() {
-    return state.getOutput(OUTPUT_KEY);
+  protected void process() {
+    OUT tuple = getNextTuple();
+    Stream<OUT> output = getOutput();
+    if (tuple != null) {
+      increaseTuplesRead();
+      increaseTuplesWritten();
+      output.addTuple(tuple, getRelativeProducerIndex());
+    }
   }
 
   @Override
@@ -64,90 +65,8 @@ public abstract class AbstractSource<OUT> implements Source<OUT> {
     return state.getOutputs();
   }
 
-  @Override
-  public void updateMetrics() {
-    processCommand.updateMetrics();
-  }
-
-  @Override
-  public double getSelectivity() {
-    return processCommand.getSelectivity();
-  }
-
-  @Override
-  public double getCost() {
-    return processCommand.getCost();
-  }
-
-  @Override
-  public double getRate() {
-    return processCommand.getRate();
-  }
-
-  @Override
-  public boolean runFor(int times) {
-    return processCommand.runFor(times);
-  }
-
-  @Override
   public boolean canRun() {
     return getOutput().remainingCapacity() > 0;
-  }
-
-  @Override
-  public void run() {
-    processCommand.run();
-  }
-
-  @Override
-  public ConnectionsNumber inputsNumber() {
-    return state.inputsNumber();
-  }
-
-  @Override
-  public ConnectionsNumber outputsNumber() {
-    return state.outputsNumber();
-  }
-
-  @Override
-  public void enable() {
-    state.enable();
-  }
-
-  @Override
-  public void disable() {
-    state.disable();
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return state.isEnabled();
-  }
-
-  @Override
-  public abstract OUT getNextTuple();
-
-  @Override
-  public String getId() {
-    return state.getId();
-  }
-
-  public int getPriority() {
-    return priority;
-  }
-
-  public void setPriority(int priority) {
-    this.priority = priority;
-  }
-
-  @Override
-  public int getIndex() {
-    return state.getIndex();
-  }
-
-  @Override
-  public String toString() {
-    return getId();
   }
 
   @Override

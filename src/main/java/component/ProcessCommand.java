@@ -30,10 +30,21 @@ package component;
  */
 public interface ProcessCommand extends Runnable {
 
+  void updateMetrics();
+
+  double getSelectivity();
+
+  double getCost();
+
+  double getRate();
+
   /**
    * The main processing function of the component
    */
   void process();
+
+  @Override
+  void run();
 
   /**
    * Execute {@link #run()} for the given number of repetitions.

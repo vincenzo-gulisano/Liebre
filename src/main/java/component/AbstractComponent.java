@@ -1,37 +1,12 @@
-/*
- * Copyright (C) 2017-2019
- *   Vincenzo Gulisano
- *   Dimitris Palyvos-Giannas
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Contact:
- *   Vincenzo Gulisano info@vincenzogulisano.com
- *   Dimitris Palyvos-Giannas palyvos@chalmers.se
- */
-
 package component;
 
-/**
- * Encapsulation of the basic execution logic for all {@link Component}s. This is required in order
- * to have reusable decorators without the need to duplicate code (i.e. the process() function) and
- * without having to resort to method interceptors. <br>
- *
- * @param <T> The component.operator subclass used.
- * @author palivosd
- */
-public abstract class AbstractProcessCommand<T extends Component> implements ProcessCommand {
+import common.statistic.LiebreMetrics;
+import io.palyvos.liebre.statistics.TimeStatistic;
+
+public abstract class AbstractComponent<IN, OUT> implements Component {
+
+  protected final ComponentState<IN, OUT> state;
+  private int priority;
 
   // Exponential moving average alpha parameter
   // for cost and selectivity moving averages
@@ -40,27 +15,23 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
   // The update period that the target alpha would be applied to, in millis
   private static final long TARGET_UPDATE_PERIOD = 1000;
   private static final long MILLIS_TO_NANOS = 1000000;
-  protected final T component;
   // The actual alpha that we use, changing depending on the actual update period length
   private volatile double alpha = 0.2;
   private volatile long tuplesWritten;
   private volatile long tuplesRead;
   private volatile long processingTimeNanos;
   private volatile long lastUpdateTime = System.currentTimeMillis();
-
   private volatile double selectivity = 1;
+
   private volatile double cost = 1;
   private volatile double rate = 0;
 
-  protected AbstractProcessCommand(T component) {
-    this.component = component;
-  }
+  private final TimeStatistic executionTimeStatistic;
 
-  @Override
-  public final void run() {
-    if (component.isEnabled()) {
-      process();
-    }
+  public AbstractComponent(String id, ComponentType type) {
+    this.state = new ComponentState<>(id, type);
+    this.executionTimeStatistic =
+        LiebreMetrics.statistiscFactory().newAverageTimeStatistic(id, "EXEC");
   }
 
   @Override
@@ -71,7 +42,7 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     long startTime = System.nanoTime();
     // Process while the component is enabled, the rounds are not finished and there is actually
     // processing happening at every execution
-    while (component.isEnabled() && executions < rounds) {
+    while (isEnabled() && executions < rounds) {
       run();
       executions += 1;
     }
@@ -80,6 +51,17 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     processingTimeNanos += (endTime - startTime);
     return tuplesReadBefore != tuplesRead || tuplesWrittenBefore != tuplesWritten;
   }
+
+  @Override
+  public final void run() {
+    if (isEnabled()) {
+      executionTimeStatistic.startInterval();
+      process();
+      executionTimeStatistic.stopInterval();
+    }
+  }
+
+  protected abstract void process();
 
   protected final void increaseTuplesRead() {
     tuplesRead++;
@@ -145,6 +127,50 @@ public abstract class AbstractProcessCommand<T extends Component> implements Pro
     return rate;
   }
 
+  public ComponentType getType() {
+    return state.getType();
+  }
+
+  public ConnectionsNumber inputsNumber() {
+    return state.inputsNumber();
+  }
+
+  public ConnectionsNumber outputsNumber() {
+    return state.outputsNumber();
+  }
+
+  public void enable() {
+    executionTimeStatistic.enable();
+    state.enable();
+  }
+
+  public void disable() {
+    state.disable();
+    executionTimeStatistic.disable();
+  }
+
+  public boolean isEnabled() {
+    return state.isEnabled();
+  }
+
+  public String getId() {
+    return state.getId();
+  }
+
+  public int getPriority() {
+    return priority;
+  }
+
+  public void setPriority(int priority) {
+    this.priority = priority;
+  }
+
+  public int getIndex() {
+    return state.getIndex();
+  }
+
   @Override
-  public abstract void process();
+  public String toString() {
+    return getId();
+  }
 }
