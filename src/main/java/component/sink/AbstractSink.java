@@ -23,9 +23,8 @@
 
 package component.sink;
 
-import component.ComponentState;
+import component.AbstractComponent;
 import component.ComponentType;
-import component.ConnectionsNumber;
 import component.StreamProducer;
 import java.util.Collection;
 import stream.Stream;
@@ -35,11 +34,9 @@ import stream.Stream;
  *
  * @param <IN> The type of input tuples
  */
-public abstract class AbstractSink<IN> implements Sink<IN> {
+public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> implements Sink<IN> {
 
   private static final int INPUT_KEY = 0;
-  protected final ComponentState<IN, ?> state;
-  private final ProcessCommandSink<IN> processCommand = new ProcessCommandSink<>(this);
   private int relativeConsumerIndex;
   /**
    * Construct.
@@ -47,13 +44,19 @@ public abstract class AbstractSink<IN> implements Sink<IN> {
    * @param id The unique ID of this component.
    */
   public AbstractSink(String id, int relativeConsumerIndex) {
-    state = new ComponentState<>(id, ComponentType.SINK);
+    super(id, ComponentType.SINK);
     this.relativeConsumerIndex = relativeConsumerIndex;
   }
 
   @Override
-  public ComponentType getType() {
-    return state.getType();
+  protected void process() {
+    Stream<IN> input = getInput();
+    IN tuple = input.getNextTuple(getRelativeConsumerIndex());
+    if (tuple != null) {
+      increaseTuplesRead();
+      increaseTuplesWritten();
+      processTuple(tuple);
+    }
   }
 
   @Override
@@ -72,81 +75,11 @@ public abstract class AbstractSink<IN> implements Sink<IN> {
   }
 
   @Override
-  public boolean runFor(int times) {
-    return processCommand.runFor(times);
-  }
-
-  @Override
   public boolean canRun() {
     return getInput().size() > 0;
   }
 
-  @Override
-  public void run() {
-    processCommand.run();
-  }
-
-  @Override
-  public void enable() {
-    state.enable();
-  }
-
-  @Override
-  public void disable() {
-    state.disable();
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return state.isEnabled();
-  }
-
-  @Override
-  public String getId() {
-    return state.getId();
-  }
-
-  @Override
-  public int getIndex() {
-    return state.getIndex();
-  }
-
   public abstract void processTuple(IN tuple);
-
-  @Override
-  public ConnectionsNumber inputsNumber() {
-    return state.inputsNumber();
-  }
-
-  @Override
-  public ConnectionsNumber outputsNumber() {
-    return state.outputsNumber();
-  }
-
-  @Override
-  public String toString() {
-    return getId();
-  }
-
-  @Override
-  public void updateMetrics() {
-    processCommand.updateMetrics();
-  }
-
-  @Override
-  public double getSelectivity() {
-    return processCommand.getSelectivity();
-  }
-
-  @Override
-  public double getCost() {
-    return processCommand.getCost();
-  }
-
-  @Override
-  public double getRate() {
-    return processCommand.getRate();
-  }
 
   @Override
   public int getRelativeConsumerIndex() {
