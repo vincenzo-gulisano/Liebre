@@ -23,14 +23,24 @@
 
 package query;
 
-/**
- * Different types of statistics that can be recorded by a {@link Query}.
- */
-public enum StatisticType {
-  STREAMS,
-  SOURCES,
-  SINKS,
-  OPERATORS,
-  SCHEDULING,
-  PRIORITIES;
+import com.codahale.metrics.MetricRegistry;
+import com.google.inject.Inject;
+import io.palyvos.liebre.statistics.StatisticsFactory;
+
+public final class LiebreContext {
+
+  private static final MetricRegistry registry = new MetricRegistry();
+
+  @Inject
+  private static StatisticsFactory statisticsFactory;
+
+  private LiebreContext() {}
+
+  public static MetricRegistry registry() {
+    return registry;
+  }
+
+  public static StatisticsFactory statistiscFactory() {
+    return statisticsFactory;
+  }
 }

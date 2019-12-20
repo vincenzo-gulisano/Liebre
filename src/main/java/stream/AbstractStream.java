@@ -1,6 +1,6 @@
 package stream;
 
-import common.statistic.LiebreMetrics;
+import query.LiebreContext;
 import io.palyvos.liebre.statistics.Statistic;
 import io.palyvos.liebre.statistics.StatisticsFactory;
 
@@ -12,7 +12,7 @@ public abstract class AbstractStream<T> implements Stream<T> {
   protected final int index;
   private volatile boolean enabled;
 
-  private StatisticsFactory statisticsFactory = LiebreMetrics.statistiscFactory();
+  private StatisticsFactory statisticsFactory = LiebreContext.statistiscFactory();
   private final Statistic inStatistic;
   private final Statistic outStatistic;
 

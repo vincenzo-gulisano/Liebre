@@ -4,7 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.name.Names;
-import common.statistic.LiebreMetrics;
+import query.LiebreContext;
 import io.palyvos.liebre.statistics.DefaultStatisticName;
 import io.palyvos.liebre.statistics.FileStatisticsFactory;
 import io.palyvos.liebre.statistics.StatisticName;
@@ -19,6 +19,6 @@ public class ExampleModule extends AbstractModule {
     bind(MetricRegistry.class).in(Singleton.class);
     bindConstant().annotatedWith(Names.named("statisticsFolder")).to("test");
     bindConstant().annotatedWith(Names.named("statisticsAutoFlush")).to(true);
-    requestStaticInjection(LiebreMetrics.class);
+    requestStaticInjection(LiebreContext.class);
   }
 }

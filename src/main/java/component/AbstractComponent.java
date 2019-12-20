@@ -1,6 +1,6 @@
 package component;
 
-import common.statistic.LiebreMetrics;
+import query.LiebreContext;
 import io.palyvos.liebre.statistics.TimeStatistic;
 
 public abstract class AbstractComponent<IN, OUT> implements Component {
@@ -31,7 +31,7 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
   public AbstractComponent(String id, ComponentType type) {
     this.state = new ComponentState<>(id, type);
     this.executionTimeStatistic =
-        LiebreMetrics.statistiscFactory().newAverageTimeStatistic(id, "EXEC");
+        LiebreContext.statistiscFactory().newAverageTimeStatistic(id, "EXEC");
   }
 
   @Override
