@@ -34,13 +34,23 @@ import stream.Stream;
  *
  * @param <T> The type of input/output tuples.
  */
-public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements
-    RouterOperator<T> {
+public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements RouterOperator<T> {
 
-  private final ProcessCommandRouter<T> processCommand = new ProcessCommandRouter<>(this);
+  public BaseRouterOperator(String id, int relativeProducerIndex, int relativeConsumerIndex) {
+    super(id, ComponentType.ROUTER, relativeProducerIndex, relativeConsumerIndex);
+  }
 
-  public BaseRouterOperator(String id,int relativeProducerIndex,int relativeConsumerIndex) {
-    super(id, ComponentType.ROUTER,relativeProducerIndex,relativeConsumerIndex);
+  @Override
+  protected void process() {
+    Stream<T> input = getInput();
+    T inTuple = input.getNextTuple(getRelativeConsumerIndex());
+    if (inTuple != null) {
+      increaseTuplesRead();
+      for (Stream<T> output : chooseOutputs(inTuple)) {
+        increaseTuplesWritten();
+        output.addTuple(inTuple, getRelativeProducerIndex());
+      }
+    }
   }
 
   @Override
@@ -63,51 +73,11 @@ public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements
     if (getInput().size() == 0) {
       return false;
     }
-    for (Stream<?> output: getOutputs()) {
+    for (Stream<?> output : getOutputs()) {
       if (output.remainingCapacity() > 0) {
         return true;
       }
     }
     return false;
-  }
-
-  @Override
-  public void run() {
-    processCommand.run();
-  }
-
-  @Override
-  public void enable() {
-    super.enable();
-  }
-
-  @Override
-  public void disable() {
-    super.disable();
-  }
-
-  @Override
-  public void updateMetrics() {
-    processCommand.updateMetrics();
-  }
-
-  @Override
-  public double getSelectivity() {
-    return processCommand.getSelectivity();
-  }
-
-  @Override
-  public double getCost() {
-    return processCommand.getCost();
-  }
-
-  @Override
-  public double getRate() {
-    return processCommand.getRate();
-  }
-
-  @Override
-  public boolean runFor(int times) {
-    return processCommand.runFor(times);
   }
 }

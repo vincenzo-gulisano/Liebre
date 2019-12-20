@@ -36,15 +36,26 @@ import stream.Stream;
  */
 public class UnionOperator<T> extends AbstractOperator<T, T> {
 
-  private final UnionProcessCommand<T> processCommand = new UnionProcessCommand<>(this);
-
   /**
    * Construct.
    *
    * @param id The unique ID of the component.operator.
    */
-  public UnionOperator(String id,int relativeProducerIndex,int relativeConsumerIndex) {
-    super(id, ComponentType.UNION,relativeProducerIndex,relativeConsumerIndex);
+  public UnionOperator(String id, int relativeProducerIndex, int relativeConsumerIndex) {
+    super(id, ComponentType.UNION, relativeProducerIndex, relativeConsumerIndex);
+  }
+
+  @Override
+  protected void process() {
+    Stream<T> output = getOutput();
+    for (Stream<T> in : getInputs()) {
+      T inTuple = in.getNextTuple(getRelativeConsumerIndex());
+      if (inTuple != null) {
+        increaseTuplesRead();
+        increaseTuplesWritten();
+        output.addTuple(inTuple, getRelativeProducerIndex());
+      }
+    }
   }
 
   @Override
@@ -55,8 +66,7 @@ public class UnionOperator<T> extends AbstractOperator<T, T> {
   /**
    * Not meaningful in this component.operator, use {@link #getInputs()} instead.
    *
-   * @throws UnsupportedOperationException always, since {@link UnionOperator} has multiple
-   *     inputs.
+   * @throws UnsupportedOperationException always, since {@link UnionOperator} has multiple inputs.
    */
   @Override
   public Stream<T> getInput() {
@@ -75,35 +85,5 @@ public class UnionOperator<T> extends AbstractOperator<T, T> {
       }
     }
     return false;
-  }
-
-  @Override
-  public void run() {
-    processCommand.run();
-  }
-
-  @Override
-  public boolean runFor(int times) {
-    return processCommand.runFor(times);
-  }
-
-  @Override
-  public void updateMetrics() {
-    processCommand.updateMetrics();
-  }
-
-  @Override
-  public double getSelectivity() {
-    return processCommand.getSelectivity();
-  }
-
-  @Override
-  public double getCost() {
-    return processCommand.getCost();
-  }
-
-  @Override
-  public double getRate() {
-    return processCommand.getRate();
   }
 }

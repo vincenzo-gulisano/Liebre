@@ -25,62 +25,43 @@ package component.operator.in1;
 
 import component.ComponentType;
 import component.operator.AbstractOperator;
+import java.util.List;
+import stream.Stream;
 
 /**
  * Default abstract implementation of {@link Operator1In}.
  *
- * @param <IN>
- *            The type of input tuples.
- * @param <OUT>
- *            The type of output tuples.
- *
+ * @param <IN> The type of input tuples.
+ * @param <OUT> The type of output tuples.
  * @author palivosd
  */
-public abstract class BaseOperator1In<IN, OUT>
-		extends AbstractOperator<IN, OUT> implements Operator1In<IN, OUT> {
+public abstract class BaseOperator1In<IN, OUT> extends AbstractOperator<IN, OUT>
+    implements Operator1In<IN, OUT> {
 
-	private final ProcessCommand1In<IN, OUT> processCommand = new ProcessCommand1In<>(
-			this);
+  /**
+   * Construct.
+   *
+   * @param id The unique id of this component.
+   */
+  public BaseOperator1In(String id, int relativeProducerIndex, int relativeConsumerIndex) {
+    super(id, ComponentType.OPERATOR, relativeProducerIndex, relativeConsumerIndex);
+  }
 
-	/**
-	 * Construct.
-	 *
-	 * @param id
-	 *            The unique id of this component.
-	 */
-	public BaseOperator1In(String id, int relativeProducerIndex,
-			int relativeConsumerIndex) {
-		super(id, ComponentType.OPERATOR, relativeProducerIndex,
-				relativeConsumerIndex);
-	}
+  @Override
+  protected void process() {
+    Stream<IN> input = getInput();
+    Stream<OUT> output = getOutput();
 
-	@Override
-	public boolean runFor(int times) {
-		return processCommand.runFor(times);
-	}
-
-	@Override
-	public void run() {
-		processCommand.run();
-	}
-
-	@Override
-	public double getSelectivity() {
-		return processCommand.getSelectivity();
-	}
-
-	@Override
-	public double getCost() {
-		return processCommand.getCost();
-	}
-
-	@Override
-	public double getRate() {
-		return processCommand.getRate();
-	}
-
-	@Override
-	public void updateMetrics() {
-		processCommand.updateMetrics();
-	}
+    IN inTuple = input.getNextTuple(getRelativeConsumerIndex());
+    if (inTuple != null) {
+      increaseTuplesRead();
+      List<OUT> outTuples = processTupleIn1(inTuple);
+      if (outTuples != null) {
+        for (OUT t : outTuples) {
+          increaseTuplesWritten();
+          output.addTuple(t, getRelativeProducerIndex());
+        }
+      }
+    }
+  }
 }

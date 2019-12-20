@@ -23,198 +23,148 @@
 
 package component.operator.in2;
 
-import component.ComponentState;
+import component.AbstractComponent;
 import component.ComponentType;
-import component.ConnectionsNumber;
 import component.StreamConsumer;
 import component.StreamProducer;
 import component.operator.Operator;
 import java.util.Collection;
+import java.util.List;
 import stream.Stream;
 
 /**
  * Base abstract {@link Operator2In} implementation.
  *
- * @param <IN>
- *            The type of the tuples in the first input.
- * @param <IN2>
- *            The type of the tuples in the second input.
- * @param <OUT>
- *            The type of the tuples in the output.
+ * @param <IN> The type of the tuples in the first input.
+ * @param <IN2> The type of the tuples in the second input.
+ * @param <OUT> The type of the tuples in the output.
  */
-public abstract class BaseOperator2In<IN, IN2, OUT>
-		implements Operator2In<IN, IN2, OUT> {
+public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractComponent<Object, OUT>
+    implements Operator2In<IN, IN2, OUT> {
 
-	private final ComponentState<Object, OUT> state;
-	private final Operator<IN2, OUT> secondInputView;
-	private int relativeProducerIndex;
-	private int relativeConsumerIndex;
+  private final Operator<IN2, OUT> secondInputView;
+  private int relativeProducerIndex;
+  private int relativeConsumerIndex;
 
-	private final int INPUT1_KEY = 0;
-	private final int INPUT2_KEY = 1;
-	private final int OUTPUT_KEY = 0;
+  private final int INPUT1_KEY = 0;
+  private final int INPUT2_KEY = 1;
+  private final int OUTPUT_KEY = 0;
 
-	private final ProcessCommand2In<IN, IN2, OUT> processCommand = new ProcessCommand2In<>(
-			this);
+  /**
+   * Construct.
+   *
+   * @param id The unique ID of this component.operator.
+   */
+  public BaseOperator2In(String id, int relativeProducerIndex, int relativeConsumerIndex) {
+    super(id, ComponentType.OPERATOR2IN);
+    this.secondInputView = new SecondInputOperator2InAdapter<>(this);
+    this.relativeProducerIndex = relativeProducerIndex;
+    this.relativeConsumerIndex = relativeConsumerIndex;
+  }
 
-	/**
-	 * Construct.
-	 *
-	 * @param id
-	 *            The unique ID of this component.operator.
-	 */
-	public BaseOperator2In(String id, int relativeProducerIndex,
-			int relativeConsumerIndex) {
-		this.state = new ComponentState<>(id, ComponentType.OPERATOR2IN);
-		this.secondInputView = new SecondInputOperator2InAdapter<>(this);
-		this.relativeProducerIndex = relativeProducerIndex;
-		this.relativeConsumerIndex = relativeConsumerIndex;
-	}
+  @Override
+  protected void process() {
+    Stream<IN> input1 = getInput();
+    Stream<IN2> input2 = getInput2();
+    Stream<OUT> output = getOutput();
 
-	@Override
-	public ComponentType getType() {
-		return state.getType();
-	}
+    IN inTuple1 = input1.getNextTuple(getRelativeConsumerIndex());
+    IN2 inTuple2 = input2.getNextTuple(getRelativeConsumerIndex());
+    if (inTuple1 != null) {
+      increaseTuplesRead();
+      List<OUT> outTuples = processTupleIn1(inTuple1);
+      if (outTuples != null) {
+        for (OUT t : outTuples) {
+          increaseTuplesWritten();
+          output.addTuple(t, getRelativeProducerIndex());
+        }
+      }
+    }
+    if (inTuple2 != null) {
+      increaseTuplesRead();
+      List<OUT> outTuples = processTupleIn2(inTuple2);
+      if (outTuples != null) {
+        for (OUT t : outTuples) {
+          increaseTuplesWritten();
+          output.addTuple(t, getRelativeProducerIndex());
+        }
+      }
+    }
+  }
 
-	@Override
-	public Stream<IN> getInput() {
-		return (Stream<IN>) state.getInput(INPUT1_KEY);
-	}
+  @Override
+  public ComponentType getType() {
+    return state.getType();
+  }
 
-	@Override
-	public Stream<IN2> getInput2() {
-		return (Stream<IN2>) state.getInput(INPUT2_KEY);
-	}
+  @Override
+  public Stream<IN> getInput() {
+    return (Stream<IN>) state.getInput(INPUT1_KEY);
+  }
 
-	@Override
-	public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
-		state.addInput(INPUT1_KEY, (Stream<Object>) stream);
-	}
+  @Override
+  public Stream<IN2> getInput2() {
+    return (Stream<IN2>) state.getInput(INPUT2_KEY);
+  }
 
-	@Override
-	public void addInput2(StreamProducer<IN2> source, Stream<IN2> stream) {
-		state.addInput(INPUT2_KEY, (Stream<Object>) stream);
-	}
+  @Override
+  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+    state.addInput(INPUT1_KEY, (Stream<Object>) stream);
+  }
 
-	@Override
-	public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
-		state.addOutput(OUTPUT_KEY, stream);
-	}
+  @Override
+  public void addInput2(StreamProducer<IN2> source, Stream<IN2> stream) {
+    state.addInput(INPUT2_KEY, (Stream<Object>) stream);
+  }
 
-	@Override
-	public Stream<OUT> getOutput() {
-		return state.getOutput();
-	}
+  @Override
+  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+    state.addOutput(OUTPUT_KEY, stream);
+  }
 
-	@Override
-	public Collection<? extends Stream<OUT>> getOutputs() {
-		return state.getOutputs();
-	}
+  @Override
+  public Stream<OUT> getOutput() {
+    return state.getOutput();
+  }
 
-	@Override
-	public Collection<? extends Stream<?>> getInputs() {
-		return state.getInputs();
-	}
+  @Override
+  public Collection<? extends Stream<OUT>> getOutputs() {
+    return state.getOutputs();
+  }
 
-	@Override
-	public void updateMetrics() {
-		processCommand.updateMetrics();
-	}
+  @Override
+  public Collection<? extends Stream<?>> getInputs() {
+    return state.getInputs();
+  }
 
-	@Override
-	public double getSelectivity() {
-		return processCommand.getSelectivity();
-	}
 
-	@Override
-	public double getCost() {
-		return processCommand.getCost();
-	}
+  @Override
+  public boolean canRun() {
+    return getInput().size() > 0 && getInput2().size() > 0 && getOutput().remainingCapacity() > 0;
+  }
 
-	@Override
-	public double getRate() {
-		return processCommand.getRate();
-	}
 
-	@Override
-	public boolean runFor(int times) {
-		return processCommand.runFor(times);
-	}
+  @Override
+  public Operator<IN2, OUT> secondInputView() {
+    return secondInputView;
+  }
 
-	@Override
-	public boolean canRun() {
-		return getInput().size() > 0 && getInput2().size() > 0
-				&& getOutput().remainingCapacity() > 0;
-	}
+  public int getRelativeProducerIndex() {
+    return relativeProducerIndex;
+  }
 
-	@Override
-	public void run() {
-		processCommand.run();
-	}
+  @Override
+  public void setRelativeProducerIndex(int index) {
+    this.relativeProducerIndex = index;
+  }
 
-	@Override
-	public void enable() {
-		state.enable();
-	}
+  @Override
+  public int getRelativeConsumerIndex() {
+    return relativeConsumerIndex;
+  }
 
-	@Override
-	public void disable() {
-		state.disable();
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return state.isEnabled();
-	}
-
-	@Override
-	public Operator<IN2, OUT> secondInputView() {
-		return secondInputView;
-	}
-
-	@Override
-	public String getId() {
-		return state.getId();
-	}
-
-	@Override
-	public int getIndex() {
-		return state.getIndex();
-	}
-
-	@Override
-	public ConnectionsNumber inputsNumber() {
-		return state.inputsNumber();
-	}
-
-	@Override
-	public ConnectionsNumber outputsNumber() {
-		return state.outputsNumber();
-	}
-
-	@Override
-	public String toString() {
-		return getId();
-	}
-
-	@Override
-	public int getRelativeProducerIndex() {
-		return relativeProducerIndex;
-	}
-
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		this.relativeProducerIndex=index;
-	}
-	
-	@Override
-	public int getRelativeConsumerIndex() {
-		return relativeConsumerIndex;
-	}
-	
-	@Override
-	public void setRelativeConsumerIndex(int index) {
-		this.relativeConsumerIndex=index;
-	}
-
+  @Override
+  public void setRelativeConsumerIndex(int index) {
+    this.relativeConsumerIndex = index;
+  }
 }

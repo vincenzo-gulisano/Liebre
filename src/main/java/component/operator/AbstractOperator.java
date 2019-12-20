@@ -23,9 +23,8 @@
 
 package component.operator;
 
-import component.ComponentState;
+import component.AbstractComponent;
 import component.ComponentType;
-import component.ConnectionsNumber;
 import component.StreamConsumer;
 import component.StreamProducer;
 import java.util.Collection;
@@ -38,19 +37,19 @@ import stream.Stream;
  * @param <IN> The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public abstract class AbstractOperator<IN, OUT> implements
-    Operator<IN, OUT> {
+public abstract class AbstractOperator<IN, OUT> extends AbstractComponent<IN, OUT>
+    implements Operator<IN, OUT> {
 
-  protected final ComponentState<IN, OUT> state;
   private final int INPUT_KEY = 0;
   private final int OUTPUT_KEY = 0;
   private int relativeProducerIndex;
   private int relativeConsumerIndex;
 
-  public AbstractOperator(String id, ComponentType type, int relativeProducerIndex, int relativeConsumerIndex) {
-    state = new ComponentState<>(id, type);
-    this.relativeProducerIndex=relativeProducerIndex;
-    this.relativeConsumerIndex=relativeConsumerIndex;
+  public AbstractOperator(
+      String id, ComponentType type, int relativeProducerIndex, int relativeConsumerIndex) {
+    super(id, type);
+    this.relativeProducerIndex = relativeProducerIndex;
+    this.relativeConsumerIndex = relativeConsumerIndex;
   }
 
   @Override
@@ -92,63 +91,22 @@ public abstract class AbstractOperator<IN, OUT> implements
   }
 
   @Override
-  public void enable() {
-    state.enable();
+  public int getRelativeProducerIndex() {
+    return relativeProducerIndex;
   }
 
   @Override
-  public void disable() {
-    state.disable();
+  public void setRelativeProducerIndex(int index) {
+    this.relativeProducerIndex = index;
   }
 
   @Override
-  public boolean isEnabled() {
-    return state.isEnabled();
+  public int getRelativeConsumerIndex() {
+    return relativeConsumerIndex;
   }
 
   @Override
-  public String getId() {
-    return state.getId();
+  public void setRelativeConsumerIndex(int index) {
+    this.relativeConsumerIndex = index;
   }
-
-  @Override
-  public int getIndex() {
-    return state.getIndex();
-  }
-
-  @Override
-  public String toString() {
-    return getId();
-  }
-
-  @Override
-  public ConnectionsNumber inputsNumber() {
-    return state.inputsNumber();
-  }
-
-  @Override
-  public ConnectionsNumber outputsNumber() {
-    return state.outputsNumber();
-  }
-
-	@Override
-	public int getRelativeProducerIndex() {
-		return relativeProducerIndex;
-	}
-
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		this.relativeProducerIndex = index;
-	}
-
-	@Override
-	public int getRelativeConsumerIndex() {
-		return relativeConsumerIndex;
-	}
-
-	@Override
-	public void setRelativeConsumerIndex(int index) {
-		this.relativeConsumerIndex = index;
-	}
-
 }
