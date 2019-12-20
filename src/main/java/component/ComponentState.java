@@ -124,8 +124,7 @@ public final class ComponentState<IN, OUT> {
    * Enable the state. Should always be called when calling {@link Component#enable()}
    */
   public void enable() {
-	  // TODO disabled validation
-//    type.validate(this);
+    type.validate(this);
     for (Stream<?> input : inputs) {
       input.enable();
     }

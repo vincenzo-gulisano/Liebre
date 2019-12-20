@@ -24,6 +24,7 @@
 package component;
 
 import org.apache.commons.lang3.Validate;
+import stream.SGStream;
 
 /**
  * Enum representing the various types of components which are available as separate subclasses.
@@ -42,20 +43,31 @@ public enum ComponentType {
   private final ConnectionsNumber inputsNumber;
   private final ConnectionsNumber outputsNumber;
 
-  ComponentType(ConnectionsNumber inputsNumber,
-      ConnectionsNumber outputsNumber) {
+  ComponentType(ConnectionsNumber inputsNumber, ConnectionsNumber outputsNumber) {
     this.inputsNumber = inputsNumber;
     this.outputsNumber = outputsNumber;
   }
 
   void validateInputs(ComponentState<?, ?> state) {
+    long sgInputCount =
+        state.getInputs().stream().filter(input -> input instanceof SGStream).count();
     int size = state.getInputs().size();
-    Validate.validState(inputsNumber.isValid(size), "Invalid inputs number for component '%s': %d", state.getId(), size);
+    Validate.validState(
+        sgInputCount > 0 || inputsNumber.isValid(size),
+        "Invalid inputs number for component '%s': %d",
+        state.getId(),
+        size);
   }
 
   void validateOutputs(ComponentState<?, ?> state) {
+    long sgOutputCount =
+        state.getInputs().stream().filter(input -> input instanceof SGStream).count();
     int size = state.getOutputs().size();
-    Validate.validState(outputsNumber.isValid(size), "Invalid outputs number for component '%s': %d", state.getId(), size);
+    Validate.validState(
+        sgOutputCount > 0 || outputsNumber.isValid(size),
+        "Invalid outputs number for component '%s': %d",
+        state.getId(),
+        size);
   }
 
   void validate(ComponentState<?, ?> state) {
