@@ -32,7 +32,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-// TODO: BlockingStream Factory
 public class BlockingStream<T> extends AbstractStream<T> {
 
   private static final double EMA_ALPHA = 0.01;
@@ -40,7 +39,6 @@ public class BlockingStream<T> extends AbstractStream<T> {
   private final int capacity;
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
-  private volatile boolean enabled;
   private volatile long tuplesRead;
   private volatile long tuplesWritten;
 

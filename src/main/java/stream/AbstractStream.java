@@ -9,7 +9,7 @@ public abstract class AbstractStream<T> implements Stream<T> {
   public static final String METRIC_OUT = "OUT";
   protected final String id;
   protected final int index;
-  private volatile boolean enabled;
+  protected boolean enabled;
 
   private final Metric inMetric;
   private final Metric outMetric;

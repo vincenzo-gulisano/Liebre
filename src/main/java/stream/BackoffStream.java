@@ -54,7 +54,6 @@ public class BackoffStream<T> extends AbstractStream<T> {
   private final StreamConsumer<T> destination;
   private final Backoff readBackoff;
   private final Backoff writeBackoff;
-  private volatile boolean enabled;
   private volatile long tuplesRead;
   private volatile long tuplesWritten;
 
@@ -156,21 +155,6 @@ public class BackoffStream<T> extends AbstractStream<T> {
   @Override
   public double getAverageArrivalTime() {
     return averageArrivalTime;
-  }
-
-  @Override
-  public void enable() {
-    enabled = true;
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return enabled;
-  }
-
-  @Override
-  public void disable() {
-    enabled = false;
   }
 
   @Override
