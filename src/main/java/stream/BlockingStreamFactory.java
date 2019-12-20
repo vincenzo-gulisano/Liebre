@@ -13,8 +13,9 @@ public class BlockingStreamFactory implements StreamFactory {
   @Override
   public <T> Stream<T> newStream(
       StreamProducer<T> from, StreamConsumer<T> to, int capacity, BackoffFactory backoff) {
-    return new BackoffStream<>(
-        getStreamId(from, to), indexes.getAndIncrement(), from, to, capacity, backoff);
+    return new BlockingStream<>(getStreamId(from, to),
+        indexes.getAndIncrement(),
+        from, to, capacity);
   }
 
   @Override

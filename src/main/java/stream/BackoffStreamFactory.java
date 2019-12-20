@@ -17,9 +17,8 @@ public class BackoffStreamFactory implements StreamFactory {
 			int capacity, BackoffFactory backoff) {
 		Validate.isTrue(backoff == BackoffFactory.INACTIVE,
 				"This stream does not support Backoff!");
-		return new BlockingStream<>(getStreamId(from, to),
-				indexes.getAndIncrement(),
-				from, to, capacity);
+		return new BackoffStream<>(
+				getStreamId(from, to), indexes.getAndIncrement(), from, to, capacity, backoff);
 	}
 
 	@Override
