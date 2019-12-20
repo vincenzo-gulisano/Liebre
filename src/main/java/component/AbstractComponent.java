@@ -1,7 +1,8 @@
 package component;
 
-import query.LiebreContext;
+import io.palyvos.liebre.statistics.Statistic;
 import io.palyvos.liebre.statistics.TimeStatistic;
+import query.LiebreContext;
 
 public abstract class AbstractComponent<IN, OUT> implements Component {
 
@@ -27,11 +28,13 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
   private volatile double rate = 0;
 
   private final TimeStatistic executionTimeStatistic;
+  private final Statistic rateStatistic;
 
   public AbstractComponent(String id, ComponentType type) {
     this.state = new ComponentState<>(id, type);
     this.executionTimeStatistic =
-        LiebreContext.statistiscFactory().newAverageTimeStatistic(id, "EXEC");
+        LiebreContext.operatorStatistiscFactory().newAverageTimeStatistic(id, "EXEC");
+    this.rateStatistic = LiebreContext.operatorStatistiscFactory().newCountStatistic(id, "RATE");
   }
 
   @Override
@@ -65,6 +68,7 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
 
   protected final void increaseTuplesRead() {
     tuplesRead++;
+    rateStatistic.record(1);
   }
 
   protected final void increaseTuplesWritten() {
@@ -141,12 +145,14 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
 
   public void enable() {
     executionTimeStatistic.enable();
+    rateStatistic.enable();
     state.enable();
   }
 
   public void disable() {
     state.disable();
     executionTimeStatistic.disable();
+    rateStatistic.disable();
   }
 
   public boolean isEnabled() {

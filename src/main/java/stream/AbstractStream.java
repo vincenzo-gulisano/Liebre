@@ -2,7 +2,6 @@ package stream;
 
 import query.LiebreContext;
 import io.palyvos.liebre.statistics.Statistic;
-import io.palyvos.liebre.statistics.StatisticsFactory;
 
 public abstract class AbstractStream<T> implements Stream<T> {
 
@@ -12,15 +11,14 @@ public abstract class AbstractStream<T> implements Stream<T> {
   protected final int index;
   private volatile boolean enabled;
 
-  private StatisticsFactory statisticsFactory = LiebreContext.statistiscFactory();
   private final Statistic inStatistic;
   private final Statistic outStatistic;
 
   public AbstractStream(String id, int index) {
     this.id = id;
     this.index = index;
-    inStatistic = statisticsFactory.newCountStatistic(id, STATISTIC_IN);
-    outStatistic = statisticsFactory.newCountStatistic(id, STATISTIC_OUT);
+    inStatistic = LiebreContext.streamStatisticsFactory().newCountStatistic(id, STATISTIC_IN);
+    outStatistic = LiebreContext.streamStatisticsFactory().newCountStatistic(id, STATISTIC_OUT);
   }
 
   @Override
