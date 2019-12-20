@@ -31,6 +31,7 @@ import stream.Stream;
 public abstract class AbstractSource<OUT> extends component.AbstractComponent<Void, OUT>
     implements Source<OUT> {
 
+  private int priority;
   private static final int OUTPUT_KEY = 0;
   private int relativeProducerIndex;
 
@@ -76,5 +77,13 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
   @Override
   public void setRelativeProducerIndex(int index) {
     this.relativeProducerIndex = index;
+  }
+
+  public int getPriority() {
+    return priority;
+  }
+
+  public void setPriority(int priority) {
+    this.priority = priority;
   }
 }

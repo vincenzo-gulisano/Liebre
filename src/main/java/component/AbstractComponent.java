@@ -7,7 +7,6 @@ import query.LiebreContext;
 public abstract class AbstractComponent<IN, OUT> implements Component {
 
   protected final ComponentState<IN, OUT> state;
-  private int priority;
 
   // Exponential moving average alpha parameter
   // for cost and selectivity moving averages
@@ -163,13 +162,6 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
     return state.getId();
   }
 
-  public int getPriority() {
-    return priority;
-  }
-
-  public void setPriority(int priority) {
-    this.priority = priority;
-  }
 
   public int getIndex() {
     return state.getIndex();
