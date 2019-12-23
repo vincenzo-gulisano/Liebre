@@ -37,7 +37,7 @@ import stream.Stream;
 public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> implements Sink<IN> {
 
   private static final int INPUT_KEY = 0;
-  private int relativeConsumerIndex;
+
   /**
    * Construct.
    *
@@ -79,14 +79,4 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
   }
 
   public abstract void processTuple(IN tuple);
-
-  @Override
-  public int getRelativeConsumerIndex() {
-    return relativeConsumerIndex;
-  }
-
-  @Override
-  public void setRelativeConsumerIndex(int index) {
-    this.relativeConsumerIndex = index;
-  }
 }

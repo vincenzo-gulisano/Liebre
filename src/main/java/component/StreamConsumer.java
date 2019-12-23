@@ -99,7 +99,7 @@ public interface StreamConsumer<IN> extends Named, Component {
     Collection<? extends Stream<?>> inputs = getInputs();
     long latencySum = 0;
     for (Stream<?> input : inputs) {
-      Object head = input.peek(getRelativeConsumerIndex());
+      Object head = input.peek(getIndex());
       if (head != null) {
         if (head instanceof RichTuple == false) {
           // This stream has no latency info
@@ -142,13 +142,4 @@ public interface StreamConsumer<IN> extends Named, Component {
     return size;
   }
 
-  /**
-   * Get the relative index (starting in 0) of this entity with respect to a connected upstream
-   * entity
-   *
-   * @return The relative index of this entity as consumer of its connected upstream entity
-   */
-  int getRelativeConsumerIndex();
-
-  void setRelativeConsumerIndex(int index);
 }

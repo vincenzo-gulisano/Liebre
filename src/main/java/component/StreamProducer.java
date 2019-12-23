@@ -83,13 +83,4 @@ public interface StreamProducer<OUT> extends Named, Component {
     return size;
   }
 
-  /**
-   * Get the relative index (starting in 0) of this entity with respect to a connected downstream
-   * entity
-   *
-   * @return The relative index of this entity as producer of its connected downstream entity
-   */
-  int getRelativeProducerIndex();
-
-  void setRelativeProducerIndex(int index);
 }

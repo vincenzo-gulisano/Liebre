@@ -161,23 +161,4 @@ class SecondInputOperator2InAdapter<IN, OUT> implements
     return decorated.getOutput();
   }
 
-	@Override
-	public int getRelativeProducerIndex() {
-		return decorated.getRelativeProducerIndex();
-	}
-
-	@Override
-	public void setRelativeProducerIndex(int index) {
-		decorated.setRelativeProducerIndex(index);
-	}
-
-	@Override
-	public int getRelativeConsumerIndex() {
-		return decorated.getRelativeConsumerIndex();
-	}
-
-	@Override
-	public void setRelativeConsumerIndex(int index) {
-		decorated.setRelativeConsumerIndex(index);
-	}
 }

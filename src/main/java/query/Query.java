@@ -134,7 +134,7 @@ public final class Query {
 
     return addOperator(
         new TimeBasedSingleWindowAggregate<IN, OUT>(
-            identifier, 0, 0, windowSize, windowSlide, window));
+            identifier, windowSize, windowSlide, window));
   }
 
   public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
@@ -203,7 +203,7 @@ public final class Query {
   public synchronized <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple>
       Operator2In<IN, IN2, OUT> addJoinOperator(
           String identifier, JoinFunction<IN, IN2, OUT> joinFunction, long windowSize) {
-    return addOperator2In(new TimeBasedJoin<>(identifier, 0, 0, windowSize, joinFunction));
+    return addOperator2In(new TimeBasedJoin<>(identifier, windowSize, joinFunction));
   }
 
   public synchronized <T> Query connect(StreamProducer<T> producer, StreamConsumer<T> consumer) {

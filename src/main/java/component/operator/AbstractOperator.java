@@ -42,8 +42,6 @@ public abstract class AbstractOperator<IN, OUT> extends AbstractComponent<IN, OU
 
   private final int INPUT_KEY = 0;
   private final int OUTPUT_KEY = 0;
-  private int relativeProducerIndex;
-  private int relativeConsumerIndex;
 
   public AbstractOperator(
       String id, ComponentType type) {
@@ -88,23 +86,4 @@ public abstract class AbstractOperator<IN, OUT> extends AbstractComponent<IN, OU
     return getInput().size() > 0 && getOutput().remainingCapacity() > 0;
   }
 
-  @Override
-  public int getRelativeProducerIndex() {
-    return relativeProducerIndex;
-  }
-
-  @Override
-  public void setRelativeProducerIndex(int index) {
-    this.relativeProducerIndex = index;
-  }
-
-  @Override
-  public int getRelativeConsumerIndex() {
-    return relativeConsumerIndex;
-  }
-
-  @Override
-  public void setRelativeConsumerIndex(int index) {
-    this.relativeConsumerIndex = index;
-  }
 }

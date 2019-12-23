@@ -23,15 +23,14 @@
 
 package component.operator.in2.join;
 
+import common.tuple.RichTuple;
+import component.operator.in2.BaseOperator2In;
 import java.util.LinkedList;
 import java.util.List;
 
-import common.tuple.RichTuple;
-import component.operator.in2.BaseOperator2In;
-
 /**
- * Join component.operator that applies a {@link JoinFunction} to two input streams using time-based windows,
- * emitting a new stream as a result.
+ * Join component.operator that applies a {@link JoinFunction} to two input streams using time-based
+ * windows, emitting a new stream as a result.
  *
  * @param <IN> The type of the tuples in the first input stream.
  * @param <IN2> The type of the tuples in the second input stream.
@@ -53,12 +52,10 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
    *
    * @param id The unique ID of the component.operator.
    * @param windowSize The size of the window, in the same units as {@link
-   * RichTuple#getTimestamp()}.
+   *     RichTuple#getTimestamp()}.
    * @param joinFunction The {@link JoinFunction} that will be applied to every pair of tuples
-   * inside the same time window.
    */
-  public TimeBasedJoin(String id,int relativeProducerIndex, int relativeConsumerIndex, long windowSize,
-      JoinFunction<IN, IN2, OUT> joinFunction) {
+  public TimeBasedJoin(String id, long windowSize, JoinFunction<IN, IN2, OUT> joinFunction) {
     super(id);
     this.ws = windowSize;
     this.joinFunction = joinFunction;
@@ -97,9 +94,7 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
             if (result != null) {
               results.add(result);
             }
-
           }
-
         }
 
         in1Tuples.add(tuple);
@@ -117,18 +112,14 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
             if (result != null) {
               results.add(result);
             }
-
           }
-
         }
 
         in2Tuples.add(tuple);
-
       }
     }
 
     return results;
-
   }
 
   @Override
@@ -136,7 +127,6 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
 
     in1buffer(tuple);
     return processReadyTuples();
-
   }
 
   @Override
@@ -144,7 +134,6 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
 
     in2buffer(tuple);
     return processReadyTuples();
-
   }
 
   private boolean in1buffered() {

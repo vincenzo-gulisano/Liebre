@@ -33,7 +33,6 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
 
   private int priority;
   private static final int OUTPUT_KEY = 0;
-  private int relativeProducerIndex;
 
   public AbstractSource(String id) {
     super(id, ComponentType.SOURCE);
@@ -67,16 +66,6 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
 
   public boolean canRun() {
     return getOutput().remainingCapacity() > 0;
-  }
-
-  @Override
-  public int getRelativeProducerIndex() {
-    return relativeProducerIndex;
-  }
-
-  @Override
-  public void setRelativeProducerIndex(int index) {
-    this.relativeProducerIndex = index;
   }
 
   public int getPriority() {

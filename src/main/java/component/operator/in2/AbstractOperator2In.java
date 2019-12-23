@@ -15,8 +15,6 @@ public abstract class AbstractOperator2In<IN, IN2, OUT> extends AbstractComponen
   private final int INPUT1_KEY = 0;
   private final int INPUT2_KEY = 1;
   private final int OUTPUT_KEY = 0;
-  private int relativeProducerIndex;
-  private int relativeConsumerIndex;
 
   public AbstractOperator2In(String id, ComponentType type) {
     super(id, type);
@@ -71,26 +69,6 @@ public abstract class AbstractOperator2In<IN, IN2, OUT> extends AbstractComponen
   @Override
   public Operator<IN2, OUT> secondInputView() {
     return secondInputView;
-  }
-
-  @Override
-  public int getRelativeProducerIndex() {
-    return relativeProducerIndex;
-  }
-
-  @Override
-  public void setRelativeProducerIndex(int index) {
-    this.relativeProducerIndex = index;
-  }
-
-  @Override
-  public int getRelativeConsumerIndex() {
-    return relativeConsumerIndex;
-  }
-
-  @Override
-  public void setRelativeConsumerIndex(int index) {
-    this.relativeConsumerIndex = index;
   }
 
   @Override
