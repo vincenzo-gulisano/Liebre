@@ -81,6 +81,9 @@ public final class Query {
   private static final Logger LOGGER = LogManager.getLogger();
   public static final int DEFAULT_STREAM_CAPACITY = 10000;
   public static final int DEFAULT_SGSTREAM_MAX_LEVELS = 3;
+  public static final String OPERATOR = "operator";
+  public static final String SOURCE = "source";
+  public static final String SINK = "sink";
   private final Map<String, Operator<?, ?>> operators = new HashMap<>();
   private final Map<String, Source<?>> sources = new HashMap<>();
   private final Map<String, Sink<?>> sinks = new HashMap<>();
@@ -133,8 +136,7 @@ public final class Query {
           long windowSlide) {
 
     return addOperator(
-        new TimeBasedSingleWindowAggregate<IN, OUT>(
-            identifier, windowSize, windowSlide, window));
+        new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window));
   }
 
   public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
@@ -154,12 +156,12 @@ public final class Query {
 
   public synchronized <T> RouterOperator<T> addRouterOperator(String identifier) {
     RouterOperator<T> router = new BaseRouterOperator<T>(identifier);
-    saveComponent(operators, router, "operator");
+    saveComponent(operators, router, OPERATOR);
     return router;
   }
 
   public synchronized <T> UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
-    saveComponent(operators, union, "operator");
+    saveComponent(operators, union, OPERATOR);
     return union;
   }
 
@@ -169,7 +171,7 @@ public final class Query {
   }
 
   public synchronized <T> Source<T> addSource(Source<T> source) {
-    saveComponent(sources, source, "source");
+    saveComponent(sources, source, SOURCE);
     return source;
   }
 
@@ -182,7 +184,7 @@ public final class Query {
   }
 
   public synchronized <T> Sink<T> addSink(Sink<T> sink) {
-    saveComponent(sinks, sink, "sink");
+    saveComponent(sinks, sink, SINK);
     return sink;
   }
 
@@ -224,7 +226,8 @@ public final class Query {
 
   public synchronized <T extends Comparable<? super T>> Query connect(
       List<StreamProducer<T>> producers, List<StreamConsumer<T>> consumers) {
-    MWMRStream<T> stream = streamFactory.newMWMRStream(producers, consumers, DEFAULT_SGSTREAM_MAX_LEVELS);
+    MWMRStream<T> stream =
+        streamFactory.newMWMRStream(producers, consumers, DEFAULT_SGSTREAM_MAX_LEVELS);
     for (StreamProducer<T> producer : producers) {
       stream.registerProducer(producer);
       for (StreamConsumer<T> consumer : consumers) {

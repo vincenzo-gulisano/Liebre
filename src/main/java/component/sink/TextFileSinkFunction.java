@@ -29,7 +29,8 @@ import java.io.PrintWriter;
 import org.apache.commons.lang3.Validate;
 
 /**
- * Function from tuples to strings. Used by {@link TextFileSink}.
+ * Function from tuples to strings.
+ *
  * @param <IN> The type of input tuples.
  */
 public class TextFileSinkFunction<IN> implements SinkFunction<IN> {
