@@ -154,7 +154,6 @@ public class ScaleGateAArrImpl<T extends Comparable<T>> implements ScaleGate<T> 
   protected static class ReaderThreadLocalData<T extends Comparable<T>> {
     SGNodeAArrImpl<T> localHead;
 
-
     public ReaderThreadLocalData(SGNodeAArrImpl<T> lhead) {
       localHead = lhead;
     }
