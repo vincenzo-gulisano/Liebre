@@ -79,7 +79,7 @@ public final class Query {
 
   private static final Logger LOGGER = LogManager.getLogger();
   public static final int DEFAULT_STREAM_CAPACITY = 10000;
-  public static final int DEFAULT_MAX_LEVELS = 3;
+  public static final int DEFAULT_SGSTREAM_MAX_LEVELS = 3;
   private final Map<String, Operator<?, ?>> operators = new HashMap<>();
   private final Map<String, Source<?>> sources = new HashMap<>();
   private final Map<String, Sink<?>> sinks = new HashMap<>();
@@ -153,12 +153,12 @@ public final class Query {
 
   public synchronized <T> RouterOperator<T> addRouterOperator(String identifier) {
     RouterOperator<T> router = new BaseRouterOperator<T>(identifier);
-    saveComponent(operators, router, "component/operator");
+    saveComponent(operators, router, "operator");
     return router;
   }
 
   public synchronized <T> UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
-    saveComponent(operators, union, "component/operator");
+    saveComponent(operators, union, "operator");
     return union;
   }
 
@@ -168,7 +168,7 @@ public final class Query {
   }
 
   public synchronized <T> Source<T> addSource(Source<T> source) {
-    saveComponent(sources, source, "component/source");
+    saveComponent(sources, source, "source");
     return source;
   }
 
@@ -278,7 +278,7 @@ public final class Query {
 
   private synchronized <T extends Comparable<? super T>> Stream<T> getMWMRSortedStream(
       List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations) {
-    return streamFactory.newMWMRSortedStream(sources, destinations, DEFAULT_MAX_LEVELS);
+    return streamFactory.newMWMRSortedStream(sources, destinations, DEFAULT_SGSTREAM_MAX_LEVELS);
   }
 
   /** Activate and start executing the query. */

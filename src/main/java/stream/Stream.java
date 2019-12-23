@@ -23,23 +23,23 @@
 
 package stream;
 
-import io.palyvos.dcs.common.Active;
-import io.palyvos.dcs.common.Named;
 import component.StreamConsumer;
 import component.StreamProducer;
+import io.palyvos.dcs.common.Active;
+import io.palyvos.dcs.common.Named;
 import java.util.List;
 
 /**
  * An ordered one-on-one stream that connects exactly one {@link StreamProducer} and one {@link
  * StreamConsumer}.
  *
- * @param <T> The type of values that can be transfered inside the stream
+ * @param <T> The type of values that can be transferred inside the stream
  */
 public interface Stream<T> extends Active, Named {
 
-  void addTuple(T tuple,int writer);
+  void addTuple(T tuple, int writer);
 
-  boolean offer(T tuple,int writer);
+  boolean offer(T tuple, int writer);
 
   T getNextTuple(int reader);
 
@@ -56,5 +56,4 @@ public interface Stream<T> extends Active, Named {
   void resetArrivalTime();
 
   double getAverageArrivalTime();
-
 }
