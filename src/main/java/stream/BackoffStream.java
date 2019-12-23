@@ -85,8 +85,8 @@ public class BackoffStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public void doAddTuple(T tuple, int writer) {
-    if (offer(tuple, writer)) {
+  public void doAddTuple(T tuple, int producerIndex) {
+    if (offer(tuple, producerIndex)) {
       writeBackoff.relax();
       return;
     }
@@ -109,7 +109,7 @@ public class BackoffStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public T doGetNextTuple(int reader) {
+  public T doGetNextTuple(int consumerIndex) {
     T tuple = stream.poll();
     if (tuple != null) {
       readBackoff.relax();

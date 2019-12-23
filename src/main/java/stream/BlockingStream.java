@@ -66,7 +66,7 @@ public class BlockingStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public void doAddTuple(T tuple, int writer) {
+  public void doAddTuple(T tuple, int producerIndex) {
     try {
       stream.put(tuple);
       if (tuple instanceof RichTuple) {
@@ -88,7 +88,7 @@ public class BlockingStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public T doGetNextTuple(int reader) {
+  public T doGetNextTuple(int consumerIndex) {
     try {
       return stream.take();
     } catch (InterruptedException e) {

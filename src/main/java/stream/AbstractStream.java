@@ -36,9 +36,9 @@ public abstract class AbstractStream<T> implements Stream<T> {
     return tuple;
   }
 
-  protected abstract T doGetNextTuple(int reader);
+  protected abstract T doGetNextTuple(int consumerIndex);
 
-  protected abstract void doAddTuple(T tuple, int writer);
+  protected abstract void doAddTuple(T tuple, int producerIndex);
 
   @Override
   public void enable() {
