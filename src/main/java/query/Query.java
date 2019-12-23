@@ -225,21 +225,17 @@ public final class Query {
   public synchronized <T extends Comparable<? super T>> Query connect(
       List<StreamProducer<T>> producers, List<StreamConsumer<T>> consumers) {
     MWMRStream<T> stream = streamFactory.newMWMRStream(producers, consumers, DEFAULT_SGSTREAM_MAX_LEVELS);
-    int i = 0;
-    for (StreamProducer<T> s : producers) {
-      for (StreamConsumer<T> d : consumers) {
-        s.addOutput(d, stream);
+    for (StreamProducer<T> producer : producers) {
+      stream.registerProducer(producer);
+      for (StreamConsumer<T> consumer : consumers) {
+        producer.addOutput(consumer, stream);
       }
-      s.setRelativeProducerIndex(i);
-      i++;
     }
-    i = 0;
-    for (StreamConsumer<T> d : consumers) {
-      for (StreamProducer<T> s : producers) {
-        d.addInput(s, stream);
+    for (StreamConsumer<T> consumer : consumers) {
+      stream.registerConsumer(consumer);
+      for (StreamProducer<T> producer : producers) {
+        consumer.addInput(producer, stream);
       }
-      d.setRelativeConsumerIndex(i);
-      i++;
     }
     return this;
   }

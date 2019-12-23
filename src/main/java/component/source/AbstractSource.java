@@ -56,7 +56,7 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
     if (tuple != null) {
       increaseTuplesRead();
       increaseTuplesWritten();
-      output.addTuple(tuple, getRelativeProducerIndex());
+      output.addTuple(tuple, getIndex());
     }
   }
 

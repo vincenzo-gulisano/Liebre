@@ -52,14 +52,14 @@ public abstract class BaseOperator1In<IN, OUT> extends AbstractOperator<IN, OUT>
     Stream<IN> input = getInput();
     Stream<OUT> output = getOutput();
 
-    IN inTuple = input.getNextTuple(getRelativeConsumerIndex());
+    IN inTuple = input.getNextTuple(getIndex());
     if (inTuple != null) {
       increaseTuplesRead();
       List<OUT> outTuples = processTupleIn1(inTuple);
       if (outTuples != null) {
         for (OUT t : outTuples) {
           increaseTuplesWritten();
-          output.addTuple(t, getRelativeProducerIndex());
+          output.addTuple(t, getIndex());
         }
       }
     }

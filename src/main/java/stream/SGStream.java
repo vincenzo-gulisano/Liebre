@@ -55,12 +55,12 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
 
   @Override
   public void registerProducer(StreamProducer<T> producer) {
-    consumerMapping.put(producer.getIndex(), producerIndexer.getAndIncrement());
+    producerMapping.put(producer.getIndex(), producerIndexer.getAndIncrement());
   }
 
   @Override
   public void registerConsumer(StreamConsumer<T> consumer) {
-    producerMapping.put(consumer.getIndex(), consumerIndexer.getAndIncrement());
+    consumerMapping.put(consumer.getIndex(), consumerIndexer.getAndIncrement());
   }
 
   @Override
@@ -75,14 +75,14 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
 
   @Override
   public void doAddTuple(T tuple, int producerIndex) {
-    sg.addTuple(tuple, producerIndex);
+    sg.addTuple(tuple, producerMapping.get(producerIndex));
   }
 
   @Override
   public T doGetNextTuple(int consumerIndex) {
     while (barrier.receivedTupleFromEachInput()) {}
 
-    return sg.getNextReadyTuple(consumerIndex);
+    return sg.getNextReadyTuple(consumerMapping.get(consumerIndex));
   }
 
   @Override

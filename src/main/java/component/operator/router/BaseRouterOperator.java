@@ -43,12 +43,12 @@ public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements Rou
   @Override
   protected final void process() {
     Stream<T> input = getInput();
-    T inTuple = input.getNextTuple(getRelativeConsumerIndex());
+    T inTuple = input.getNextTuple(getIndex());
     if (inTuple != null) {
       increaseTuplesRead();
       for (Stream<T> output : chooseOutputs(inTuple)) {
         increaseTuplesWritten();
-        output.addTuple(inTuple, getRelativeProducerIndex());
+        output.addTuple(inTuple, getIndex());
       }
     }
   }

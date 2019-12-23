@@ -50,7 +50,7 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
   @Override
   protected final void process() {
     Stream<IN> input = getInput();
-    IN tuple = input.getNextTuple(getRelativeConsumerIndex());
+    IN tuple = input.getNextTuple(getIndex());
     if (tuple != null) {
       increaseTuplesRead();
       increaseTuplesWritten();

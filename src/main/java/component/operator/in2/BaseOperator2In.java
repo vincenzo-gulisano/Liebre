@@ -66,15 +66,15 @@ public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractComponent<Ob
     Stream<IN2> input2 = getInput2();
     Stream<OUT> output = getOutput();
 
-    IN inTuple1 = input1.getNextTuple(getRelativeConsumerIndex());
-    IN2 inTuple2 = input2.getNextTuple(getRelativeConsumerIndex());
+    IN inTuple1 = input1.getNextTuple(getIndex());
+    IN2 inTuple2 = input2.getNextTuple(getIndex());
     if (inTuple1 != null) {
       increaseTuplesRead();
       List<OUT> outTuples = processTupleIn1(inTuple1);
       if (outTuples != null) {
         for (OUT t : outTuples) {
           increaseTuplesWritten();
-          output.addTuple(t, getRelativeProducerIndex());
+          output.addTuple(t, getIndex());
         }
       }
     }
@@ -84,7 +84,7 @@ public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractComponent<Ob
       if (outTuples != null) {
         for (OUT t : outTuples) {
           increaseTuplesWritten();
-          output.addTuple(t, getRelativeProducerIndex());
+          output.addTuple(t, getIndex());
         }
       }
     }
