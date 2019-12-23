@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import io.palyvos.haren.Feature;
 import io.palyvos.haren.Task;
+import scheduling.FeatureTranslator;
 
 /**
  * Base interface for all stream components such as Sources, Sinks and Operators.

@@ -28,6 +28,7 @@ import io.palyvos.dcs.common.Named;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import scheduling.FeatureTranslator;
 import stream.Stream;
 
 /**

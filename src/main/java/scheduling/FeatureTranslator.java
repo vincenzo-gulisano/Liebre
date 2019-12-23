@@ -21,10 +21,11 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package component;
+package scheduling;
 
 import static io.palyvos.haren.Features.*;
 
+import component.Component;
 import io.palyvos.haren.Feature;
 import io.palyvos.haren.FeatureHelper;
 

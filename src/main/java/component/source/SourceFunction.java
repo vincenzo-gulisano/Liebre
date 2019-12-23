@@ -24,7 +24,7 @@
 package component.source;
 
 import component.ComponentFunction;
-import component.FeatureTranslator;
+import scheduling.FeatureTranslator;
 import java.util.function.Supplier;
 
 /**
