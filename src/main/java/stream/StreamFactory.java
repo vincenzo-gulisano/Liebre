@@ -23,34 +23,26 @@
 
 package stream;
 
-import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
+import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import java.util.List;
 
-/**
- * Factory for {@link Stream}s.
- */
+/** Factory for {@link Stream}s. */
 public interface StreamFactory {
 
-	<T> Stream<T> newStream(StreamProducer<T> from,
-			StreamConsumer<T> to,
-			int capacity, BackoffFactory backoff);
+  <T> Stream<T> newStream(
+      StreamProducer<T> from, StreamConsumer<T> to, int capacity, BackoffFactory backoff);
 
-	default <T> Stream<T> newStream(StreamProducer<T> from,
-			StreamConsumer<T> to, int relativeProducerIndex,
-			int relativeConsumerIndex, int capacity) {
-		return newStream(from, to,
-				capacity, BackoffFactory.INACTIVE);
-	}
+  default <T> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to, int capacity) {
+    return newStream(from, to, capacity, BackoffFactory.INACTIVE);
+  }
 
-	default <T> String getStreamId(StreamProducer<T> from,
-			StreamConsumer<T> to) {
-		return String.format("%s_%s", from.getId(), to.getId());
-	}
+  <T extends Comparable<? super T>> MWMRStream<T> newMWMRStream(
+      List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations, int maxLevels);
 
-	<T extends Comparable<? super T>> Stream<T> newMWMRSortedStream(
-			List<StreamProducer<T>> sources,
-			List<StreamConsumer<T>> destinations,
-			int maxLevels);
+  default String getStreamId(StreamProducer<?> from, StreamConsumer<?> to) {
+    return String.format("%s_%s", from.getId(), to.getId());
+  }
+
 }

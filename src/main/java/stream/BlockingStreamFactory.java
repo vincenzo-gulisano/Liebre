@@ -19,7 +19,7 @@ public class BlockingStreamFactory implements StreamFactory {
   }
 
   @Override
-  public <T extends Comparable<? super T>> Stream<T> newMWMRSortedStream(
+  public <T extends Comparable<? super T>> MWMRStream<T> newMWMRStream(
       List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations, int maxLevels) {
     return new SGStream<T>(getStreamId(sources.get(0), destinations.get(0)),
         indexes.getAndIncrement(),

@@ -15,7 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * (i.e., this class is not safe when used in combination
  * with custom thread scheduling)
  */
-public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T> {
+public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T> implements
+    MWMRStream<T> {
 
   public static final String SGSTREAM_UNSUPPORTED = "Cannot invoke this function on SGStream";
 
@@ -52,10 +53,12 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
     barrier.setSize(writers);
   }
 
+  @Override
   public void registerReader(int readerIndex) {
     readerMapping.put(readerIndex, readerIndexer.getAndIncrement());
   }
 
+  @Override
   public void registerWriter(int writerIndex) {
     writerMapping.put(writerIndex, writerIndexer.getAndIncrement());
   }

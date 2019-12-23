@@ -22,7 +22,7 @@ public class BackoffStreamFactory implements StreamFactory {
 	}
 
 	@Override
-	public <T extends Comparable<? super T>> Stream<T> newMWMRSortedStream(
+	public <T extends Comparable<? super T>> MWMRStream<T> newMWMRStream(
 			List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations,
 			int maxLevels) {
 		// TODO Ugly to get index 0 by default?

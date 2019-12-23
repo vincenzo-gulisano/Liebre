@@ -278,7 +278,7 @@ public final class Query {
 
   private synchronized <T extends Comparable<? super T>> Stream<T> getMWMRSortedStream(
       List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations) {
-    return streamFactory.newMWMRSortedStream(sources, destinations, DEFAULT_SGSTREAM_MAX_LEVELS);
+    return streamFactory.newMWMRStream(sources, destinations, DEFAULT_SGSTREAM_MAX_LEVELS);
   }
 
   /** Activate and start executing the query. */
