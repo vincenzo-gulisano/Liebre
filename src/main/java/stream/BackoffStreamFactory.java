@@ -1,8 +1,9 @@
 package stream;
 
-import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
+import io.palyvos.dcs.common.util.backoff.Backoff;
+import io.palyvos.dcs.common.util.backoff.InactiveBackoff;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.Validate;
@@ -14,9 +15,7 @@ public class BackoffStreamFactory implements StreamFactory {
 	@Override
 	public <T> Stream<T> newStream(StreamProducer<T> from,
 			StreamConsumer<T> to,
-			int capacity, BackoffFactory backoff) {
-		Validate.isTrue(backoff == BackoffFactory.INACTIVE,
-				"This stream does not support Backoff!");
+			int capacity, Backoff backoff) {
 		return new BackoffStream<>(
 				getStreamId(from, to), indexes.getAndIncrement(), from, to, capacity, backoff);
 	}

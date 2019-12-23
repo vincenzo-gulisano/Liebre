@@ -25,7 +25,6 @@ package stream;
 
 import common.tuple.RichTuple;
 import io.palyvos.dcs.common.util.backoff.Backoff;
-import io.palyvos.dcs.common.util.backoff.BackoffFactory;
 import component.StreamConsumer;
 import component.StreamProducer;
 import io.palyvos.dcs.common.util.backoff.InactiveBackoff;
@@ -75,7 +74,7 @@ public class BackoffStream<T> extends AbstractStream<T> {
       StreamProducer<T> source,
       StreamConsumer<T> destination,
       int capacity,
-      BackoffFactory backoff) {
+      Backoff backoff) {
     super(id, index);
     this.capacity = capacity;
     this.source = source;

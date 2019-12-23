@@ -51,7 +51,7 @@ import component.source.BaseSource;
 import component.source.Source;
 import component.source.SourceFunction;
 import component.source.TextFileSourceFunction;
-import io.palyvos.dcs.common.util.backoff.BackoffFactory;
+import io.palyvos.dcs.common.util.backoff.Backoff;
 import io.palyvos.dcs.common.util.backoff.ExponentialBackoff;
 import java.util.Collection;
 import java.util.HashMap;
@@ -86,7 +86,7 @@ public final class Query {
   private final Map<String, Sink<?>> sinks = new HashMap<>();
   private final LiebreScheduler LiebreScheduler;
   private final StreamFactory streamFactory;
-  private BackoffFactory defaultBackoff = BackoffFactory.INACTIVE;
+  private Backoff defaultBackoff = new ExponentialBackoff(1, 10, 3);
   private boolean active;
 
   /** Construct. */
@@ -113,11 +113,11 @@ public final class Query {
    * @param retries The number of retries before the backoff limit is updated.
    */
   public synchronized void setBackoff(int min, int max, int retries) {
-    this.defaultBackoff = ExponentialBackoff.factory(min, max, retries);
+    this.defaultBackoff = new ExponentialBackoff(min, max, retries);
   }
 
-  public synchronized void setBackoff(BackoffFactory backoffFactory) {
-    this.defaultBackoff = backoffFactory;
+  public synchronized void setBackoff(Backoff backoff) {
+    this.defaultBackoff = backoff;
   }
 
   public synchronized <IN, OUT> Operator<IN, OUT> addOperator(Operator1In<IN, OUT> operator) {
@@ -211,7 +211,7 @@ public final class Query {
   }
 
   public synchronized <T> Query connect(
-      StreamProducer<T> producer, StreamConsumer<T> consumer, BackoffFactory backoff) {
+      StreamProducer<T> producer, StreamConsumer<T> consumer, Backoff backoff) {
     Validate.isTrue(
         consumer instanceof Operator2In == false,
         "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
@@ -246,7 +246,7 @@ public final class Query {
   }
 
   public synchronized <T> Query connect2inLeft(
-      StreamProducer<T> producer, Operator2In<T, ?, ?> consumer, BackoffFactory backoff) {
+      StreamProducer<T> producer, Operator2In<T, ?, ?> consumer, Backoff backoff) {
     Stream<T> stream = getStream(producer, consumer, backoff);
     producer.addOutput(consumer, stream);
     consumer.addInput(producer, stream);
@@ -259,7 +259,7 @@ public final class Query {
   }
 
   public synchronized <T> Query connect2inRight(
-      StreamProducer<T> producer, Operator2In<?, T, ?> consumer, BackoffFactory backoff) {
+      StreamProducer<T> producer, Operator2In<?, T, ?> consumer, Backoff backoff) {
     Stream<T> stream = getStream(producer, consumer.secondInputView(), backoff);
     producer.addOutput(consumer.secondInputView(), stream);
     consumer.addInput2(producer, stream);
@@ -267,7 +267,7 @@ public final class Query {
   }
 
   private synchronized <T> Stream<T> getStream(
-      StreamProducer<T> producer, StreamConsumer<T> consumer, BackoffFactory backoff) {
+      StreamProducer<T> producer, StreamConsumer<T> consumer, Backoff backoff) {
     Stream<T> stream =
         streamFactory.newStream(producer, consumer, DEFAULT_STREAM_CAPACITY, backoff);
     return stream;

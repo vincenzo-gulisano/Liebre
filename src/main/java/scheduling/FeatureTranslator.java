@@ -38,7 +38,7 @@ public class FeatureTranslator {
 
   }
 
-  static double get(Feature feature, Component component) {
+  public static double get(Feature feature, Component component) {
     if (feature == COST) {
       return component.getCost();
     } else if (feature == SELECTIVITY) {

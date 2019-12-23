@@ -28,7 +28,7 @@ import component.operator.Operator;
 import component.sink.Sink;
 import component.source.Source;
 import io.palyvos.dcs.common.util.Util;
-import io.palyvos.dcs.common.util.backoff.BackoffFactory;
+import io.palyvos.dcs.common.util.backoff.InactiveBackoff;
 import java.io.File;
 import query.Query;
 
@@ -73,7 +73,7 @@ public class TextUnion {
     Sink<MyTuple> o1 = q.addTextFileSink("o1", outputFile, true);
 
     q.connect(i1, inputReader1).connect(inputReader1, union);
-    q.connect(i2, inputReader2).connect(inputReader2, union, BackoffFactory.INACTIVE);
+    q.connect(i2, inputReader2).connect(inputReader2, union, InactiveBackoff.INSTANCE);
     q.connect(union, o1);
 
     q.activate();

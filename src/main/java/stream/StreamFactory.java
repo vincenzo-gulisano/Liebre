@@ -25,17 +25,18 @@ package stream;
 
 import component.StreamConsumer;
 import component.StreamProducer;
-import io.palyvos.dcs.common.util.backoff.BackoffFactory;
+import io.palyvos.dcs.common.util.backoff.Backoff;
+import io.palyvos.dcs.common.util.backoff.InactiveBackoff;
 import java.util.List;
 
 /** Factory for {@link Stream}s. */
 public interface StreamFactory {
 
   <T> Stream<T> newStream(
-      StreamProducer<T> from, StreamConsumer<T> to, int capacity, BackoffFactory backoff);
+      StreamProducer<T> from, StreamConsumer<T> to, int capacity, Backoff backoff);
 
   default <T> Stream<T> newStream(StreamProducer<T> from, StreamConsumer<T> to, int capacity) {
-    return newStream(from, to, capacity, BackoffFactory.INACTIVE);
+    return newStream(from, to, capacity, InactiveBackoff.INSTANCE);
   }
 
   <T extends Comparable<? super T>> MWMRStream<T> newMWMRStream(
