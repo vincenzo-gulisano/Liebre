@@ -1,8 +1,11 @@
 package stream;
 
+import component.StreamConsumer;
+import component.StreamProducer;
+
 public interface MWMRStream<T> extends Stream<T> {
 
-  void registerReader(int readerIndex);
+  void registerProducer(StreamProducer<T> producer);
 
-  void registerWriter(int writerIndex);
+  void registerConsumer(StreamConsumer<T> consumer);
 }

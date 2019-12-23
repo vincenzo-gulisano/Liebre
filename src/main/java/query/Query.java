@@ -65,6 +65,7 @@ import org.apache.logging.log4j.Logger;
 import scheduling.LiebreScheduler;
 import scheduling.impl.DefaultLiebreScheduler;
 import stream.BackoffStreamFactory;
+import stream.MWMRStream;
 import stream.Stream;
 import stream.StreamFactory;
 
@@ -205,36 +206,36 @@ public final class Query {
     return addOperator2In(new TimeBasedJoin<>(identifier, 0, 0, windowSize, joinFunction));
   }
 
-  public synchronized <T> Query connect(StreamProducer<T> source, StreamConsumer<T> destination) {
-    return connect(source, destination, defaultBackoff);
+  public synchronized <T> Query connect(StreamProducer<T> producer, StreamConsumer<T> consumer) {
+    return connect(producer, consumer, defaultBackoff);
   }
 
   public synchronized <T> Query connect(
-      StreamProducer<T> source, StreamConsumer<T> destination, BackoffFactory backoff) {
+      StreamProducer<T> producer, StreamConsumer<T> consumer, BackoffFactory backoff) {
     Validate.isTrue(
-        destination instanceof Operator2In == false,
+        consumer instanceof Operator2In == false,
         "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
-        destination.getId());
-    Stream<T> stream = getStream(source, destination, backoff);
-    source.addOutput(destination, stream);
-    destination.addInput(source, stream);
+        consumer.getId());
+    Stream<T> stream = getStream(producer, consumer, backoff);
+    producer.addOutput(consumer, stream);
+    consumer.addInput(producer, stream);
     return this;
   }
 
   public synchronized <T extends Comparable<? super T>> Query connect(
-      List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations) {
-    Stream<T> stream = getMWMRSortedStream(sources, destinations);
+      List<StreamProducer<T>> producers, List<StreamConsumer<T>> consumers) {
+    MWMRStream<T> stream = streamFactory.newMWMRStream(producers, consumers, DEFAULT_SGSTREAM_MAX_LEVELS);
     int i = 0;
-    for (StreamProducer<T> s : sources) {
-      for (StreamConsumer<T> d : destinations) {
+    for (StreamProducer<T> s : producers) {
+      for (StreamConsumer<T> d : consumers) {
         s.addOutput(d, stream);
       }
       s.setRelativeProducerIndex(i);
       i++;
     }
     i = 0;
-    for (StreamConsumer<T> d : destinations) {
-      for (StreamProducer<T> s : sources) {
+    for (StreamConsumer<T> d : consumers) {
+      for (StreamProducer<T> s : producers) {
         d.addInput(s, stream);
       }
       d.setRelativeConsumerIndex(i);
@@ -244,41 +245,36 @@ public final class Query {
   }
 
   public synchronized <T> Query connect2inLeft(
-      StreamProducer<T> source, Operator2In<T, ?, ?> destination) {
-    return connect2inLeft(source, destination, defaultBackoff);
+      StreamProducer<T> producer, Operator2In<T, ?, ?> consumer) {
+    return connect2inLeft(producer, consumer, defaultBackoff);
   }
 
   public synchronized <T> Query connect2inLeft(
-      StreamProducer<T> source, Operator2In<T, ?, ?> destination, BackoffFactory backoff) {
-    Stream<T> stream = getStream(source, destination, backoff);
-    source.addOutput(destination, stream);
-    destination.addInput(source, stream);
+      StreamProducer<T> producer, Operator2In<T, ?, ?> consumer, BackoffFactory backoff) {
+    Stream<T> stream = getStream(producer, consumer, backoff);
+    producer.addOutput(consumer, stream);
+    consumer.addInput(producer, stream);
     return this;
   }
 
   public synchronized <T> Query connect2inRight(
-      StreamProducer<T> source, Operator2In<?, T, ?> destination) {
-    return connect2inRight(source, destination, defaultBackoff);
+      StreamProducer<T> producer, Operator2In<?, T, ?> consumer) {
+    return connect2inRight(producer, consumer, defaultBackoff);
   }
 
   public synchronized <T> Query connect2inRight(
-      StreamProducer<T> source, Operator2In<?, T, ?> destination, BackoffFactory backoff) {
-    Stream<T> stream = getStream(source, destination.secondInputView(), backoff);
-    source.addOutput(destination.secondInputView(), stream);
-    destination.addInput2(source, stream);
+      StreamProducer<T> producer, Operator2In<?, T, ?> consumer, BackoffFactory backoff) {
+    Stream<T> stream = getStream(producer, consumer.secondInputView(), backoff);
+    producer.addOutput(consumer.secondInputView(), stream);
+    consumer.addInput2(producer, stream);
     return this;
   }
 
   private synchronized <T> Stream<T> getStream(
-      StreamProducer<T> source, StreamConsumer<T> destination, BackoffFactory backoff) {
+      StreamProducer<T> producer, StreamConsumer<T> consumer, BackoffFactory backoff) {
     Stream<T> stream =
-        streamFactory.newStream(source, destination, DEFAULT_STREAM_CAPACITY, backoff);
+        streamFactory.newStream(producer, consumer, DEFAULT_STREAM_CAPACITY, backoff);
     return stream;
-  }
-
-  private synchronized <T extends Comparable<? super T>> Stream<T> getMWMRSortedStream(
-      List<StreamProducer<T>> sources, List<StreamConsumer<T>> destinations) {
-    return streamFactory.newMWMRStream(sources, destinations, DEFAULT_SGSTREAM_MAX_LEVELS);
   }
 
   /** Activate and start executing the query. */
