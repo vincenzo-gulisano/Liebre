@@ -68,14 +68,13 @@ public interface StreamConsumer<IN> extends Named, Component {
 
   @Override
   default int getTopologicalOrder() {
+    int maxUpstreamOrder = 0;
     for (Stream<?> input : getInputs()) {
-      int upstreamOrder = input.getSources().get(0).getTopologicalOrder();
-      return upstreamOrder + 1;
-      // TODO check this, why a return in a for that looks like is going
-      // in any case to fire on the fisrt loop iteration?
-      // TODO fix! this is an hack for now...
+      for (StreamProducer<?> source : input.getSources()) {
+        maxUpstreamOrder = Math.max(source.getTopologicalOrder(), maxUpstreamOrder);
+      }
     }
-    throw new IllegalStateException("StreamConsumer with no inputs!");
+    return maxUpstreamOrder + 1;
   }
 
   @Override
