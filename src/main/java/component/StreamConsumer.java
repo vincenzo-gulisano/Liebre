@@ -70,7 +70,7 @@ public interface StreamConsumer<IN> extends Named, Component {
   default int getTopologicalOrder() {
     int maxUpstreamOrder = 0;
     for (Stream<?> input : getInputs()) {
-      for (StreamProducer<?> source : input.getSources()) {
+      for (StreamProducer<?> source : input.producers()) {
         maxUpstreamOrder = Math.max(source.getTopologicalOrder(), maxUpstreamOrder);
       }
     }
@@ -81,7 +81,7 @@ public interface StreamConsumer<IN> extends Named, Component {
   default List<Component> getUpstream() {
     List<Component> upstream = new ArrayList<>();
     for (Stream<?> input : getInputs()) {
-      for (StreamProducer<?> op : input.getSources()) {
+      for (StreamProducer<?> op : input.producers()) {
         upstream.add(op);
       }
     }
@@ -117,7 +117,7 @@ public interface StreamConsumer<IN> extends Named, Component {
     Collection<? extends Stream<?>> inputs = getInputs();
     long latencySum = 0;
     for (Stream<?> input : inputs) {
-      latencySum += input.getAverageArrivalTime();
+      latencySum += input.averageArrivalTime();
     }
     return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
   }
@@ -126,7 +126,7 @@ public interface StreamConsumer<IN> extends Named, Component {
     int priority = -1;
     // Consumer's priority is the maximum priority of the upstream nodes
     for (Stream<?> input : getInputs()) {
-      for (StreamProducer<?> s : input.getSources()) {
+      for (StreamProducer<?> s : input.producers()) {
         priority = Math.max(s.getPriority(), priority);
       }
     }

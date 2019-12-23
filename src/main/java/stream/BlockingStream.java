@@ -83,7 +83,7 @@ public class BlockingStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public final boolean offer(T tuple, int writer) {
+  public final boolean offer(T tuple, int producerIndex) {
     throw new UnsupportedOperationException("Use BackoffStream for non-blocking behavior");
   }
 
@@ -99,7 +99,7 @@ public class BlockingStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public final T peek(int reader) {
+  public final T peek(int consumerIndex) {
     return stream.peek();
   }
 
@@ -114,13 +114,13 @@ public class BlockingStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public List<StreamProducer<T>> getSources() {
+  public List<StreamProducer<T>> producers() {
   	//FIXME: Optimize
     return Arrays.asList(source);
   }
 
   @Override
-  public List<StreamConsumer<T>> getDestinations() {
+  public List<StreamConsumer<T>> consumers() {
     //FIXME: Optimize
     return Arrays.asList(destination);
   }
@@ -131,7 +131,7 @@ public class BlockingStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public double getAverageArrivalTime() {
+  public double averageArrivalTime() {
     return averageArrivalTime;
   }
 

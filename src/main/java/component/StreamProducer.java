@@ -67,7 +67,7 @@ public interface StreamProducer<OUT> extends Named, Component {
   default List<Component> getDownstream() {
     List<Component> downstream = new ArrayList<>();
     for (Stream<?> output : getOutputs()) {
-      for (StreamConsumer<?> op : output.getDestinations()) {
+      for (StreamConsumer<?> op : output.consumers()) {
         downstream.add(op);
       }
     }

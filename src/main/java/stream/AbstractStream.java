@@ -22,14 +22,14 @@ public abstract class AbstractStream<T> implements Stream<T> {
   }
 
   @Override
-  public final void addTuple(T tuple, int writer) {
-    doAddTuple(tuple, writer);
+  public final void addTuple(T tuple, int producerIndex) {
+    doAddTuple(tuple, producerIndex);
     inMetric.record(1);
   }
 
   @Override
-  public final T getNextTuple(int reader) {
-    T tuple = doGetNextTuple(reader);
+  public final T getNextTuple(int consumerIndex) {
+    T tuple = doGetNextTuple(consumerIndex);
     if (tuple != null) {
       outMetric.record(1);
     }

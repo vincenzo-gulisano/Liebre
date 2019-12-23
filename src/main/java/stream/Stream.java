@@ -37,23 +37,23 @@ import java.util.List;
  */
 public interface Stream<T> extends Active, Named {
 
-  void addTuple(T tuple, int writer);
+  void addTuple(T tuple, int producerIndex);
 
-  boolean offer(T tuple, int writer);
+  boolean offer(T tuple, int producerIndex);
 
-  T getNextTuple(int reader);
+  T getNextTuple(int consumerIndex);
 
-  T peek(int reader);
+  T peek(int consumerIndex);
 
   int remainingCapacity();
 
   int size();
 
-  List<StreamProducer<T>> getSources();
+  List<StreamProducer<T>> producers();
 
-  List<StreamConsumer<T>> getDestinations();
+  List<StreamConsumer<T>> consumers();
 
   void resetArrivalTime();
 
-  double getAverageArrivalTime();
+  double averageArrivalTime();
 }
