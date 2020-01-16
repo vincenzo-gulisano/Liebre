@@ -21,54 +21,31 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.thread;
 
-import io.palyvos.dcs.common.Active;
-import common.util.StopJvmUncaughtExceptionHandler;
+package io.palyvos.dcs.common;
 
 /**
- * Thread that can be stopped on demand.
- * 
- * @author palivosd
+ * Interface that marks entities that have a unique ID and numerical index.
  *
+ * @author palivosd
  */
-public abstract class LiebreThread extends Thread implements Active {
-	private final int index;
+public interface Named {
 
-	public LiebreThread() {
-		this(-1);
-	}
+  /**
+   * Get the unique ID of the entity.
+   *
+   * @return The unique ID of the entity.
+   */
+  String getId();
 
-	public LiebreThread(int index) {
-		this.index = index;
-		setDefaultUncaughtExceptionHandler(StopJvmUncaughtExceptionHandler.INSTANCE);
-	}
+  /**
+   * Get the unique numerical index of the entity.
+   *
+   * @return The unique numerical index of the entity.
+   */
+  int getIndex();
+  
 
-	@Override
-	public void run() {
-		while (isEnabled()) {
-			doRun();
-		}
-	}
-
-	protected abstract void doRun();
-
-	@Override
-	public void enable() {
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return !isInterrupted();
-	}
-
-	@Override
-	public void disable() {
-		interrupt();
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
+  
+  
 }

@@ -27,8 +27,8 @@ import com.google.inject.Guice;
 import component.operator.Operator;
 import component.sink.Sink;
 import component.source.Source;
-import io.palyvos.dcs.common.util.Util;
-import io.palyvos.dcs.common.util.backoff.InactiveBackoff;
+import common.util.Util;
+import common.util.backoff.InactiveBackoff;
 import java.io.File;
 import query.Query;
 

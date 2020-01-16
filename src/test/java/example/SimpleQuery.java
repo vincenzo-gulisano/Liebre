@@ -24,7 +24,7 @@
 package example;
 
 import com.google.inject.Guice;
-import io.palyvos.dcs.common.util.Util;
+import common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.BaseOperator1In;
 import component.sink.Sink;

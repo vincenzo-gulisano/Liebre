@@ -2,8 +2,8 @@ package stream;
 
 import component.StreamConsumer;
 import component.StreamProducer;
-import io.palyvos.dcs.common.util.backoff.Backoff;
-import io.palyvos.dcs.common.util.backoff.InactiveBackoff;
+import common.util.backoff.Backoff;
+import common.util.backoff.InactiveBackoff;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.Validate;

@@ -24,7 +24,7 @@
 package component.source;
 
 import component.ComponentFunction;
-import scheduling.FeatureTranslator;
+import scheduling.haren.HarenFeatureTranslator;
 import java.util.function.Supplier;
 
 /**
@@ -35,10 +35,10 @@ import java.util.function.Supplier;
 public interface SourceFunction<OUT> extends ComponentFunction, Supplier<OUT> {
 
   default double getHeadArrivalTime() {
-    return FeatureTranslator.NO_ARRIVAL_TIME;
+    return HarenFeatureTranslator.NO_ARRIVAL_TIME;
   }
 
   default double getAverageArrivalTime() {
-    return FeatureTranslator.NO_ARRIVAL_TIME;
+    return HarenFeatureTranslator.NO_ARRIVAL_TIME;
   }
 }

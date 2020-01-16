@@ -21,54 +21,27 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.thread;
+package common.util;
 
-import io.palyvos.dcs.common.Active;
-import common.util.StopJvmUncaughtExceptionHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
- * Thread that can be stopped on demand.
- * 
- * @author palivosd
+ * Sometimes it is useful to stop the whole system in case a processing thread crashes. This
+ * exception handler achieves just this. When used and a thread throws an uncaught exception, the
+ * whole JVM will stop to speed up bug detection and resolution.
  *
+ * @author palivosd
  */
-public abstract class LiebreThread extends Thread implements Active {
-	private final int index;
+public enum StopJvmUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+  INSTANCE;
+  private final Logger LOGGER = LogManager.getLogger();
 
-	public LiebreThread() {
-		this(-1);
-	}
-
-	public LiebreThread(int index) {
-		this.index = index;
-		setDefaultUncaughtExceptionHandler(StopJvmUncaughtExceptionHandler.INSTANCE);
-	}
-
-	@Override
-	public void run() {
-		while (isEnabled()) {
-			doRun();
-		}
-	}
-
-	protected abstract void doRun();
-
-	@Override
-	public void enable() {
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return !isInterrupted();
-	}
-
-	@Override
-	public void disable() {
-		interrupt();
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
+  @Override
+  public void uncaughtException(Thread t, Throwable e) {
+    LOGGER.error("{} crashed", t, e);
+    LOGGER.error("Details: {}", e);
+    LOGGER.error("Shutting down");
+    System.exit(1);
+  }
 }

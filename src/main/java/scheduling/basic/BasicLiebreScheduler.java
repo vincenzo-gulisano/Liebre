@@ -21,7 +21,7 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.impl;
+package scheduling.basic;
 
 import component.Component;
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ import scheduling.thread.BasicWorkerThread;
  *
  * @author palivosd
  */
-public class DefaultLiebreScheduler implements LiebreScheduler<Component> {
+public class BasicLiebreScheduler implements LiebreScheduler<Component> {
 
   private static final Logger LOGGER = LogManager.getLogger();
 
@@ -48,11 +48,11 @@ public class DefaultLiebreScheduler implements LiebreScheduler<Component> {
   private final BitSet affinity;
   private volatile boolean enabled;
 
-  public DefaultLiebreScheduler() {
+  public BasicLiebreScheduler() {
     this(null);
   }
 
-  public DefaultLiebreScheduler(BitSet affinity) {
+  public BasicLiebreScheduler(BitSet affinity) {
     this.affinity = affinity;
   }
 

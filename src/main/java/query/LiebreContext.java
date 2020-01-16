@@ -26,7 +26,7 @@ package query;
 import com.codahale.metrics.MetricRegistry;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import io.palyvos.dcs.common.metrics.MetricsFactory;
+import common.metrics.MetricsFactory;
 
 public final class LiebreContext {
 

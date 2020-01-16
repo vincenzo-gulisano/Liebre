@@ -30,7 +30,7 @@ import component.operator.in1.aggregate.BaseTimeBasedSingleWindow;
 import component.operator.in1.aggregate.TimeBasedSingleWindow;
 import component.sink.Sink;
 import component.source.Source;
-import io.palyvos.dcs.common.util.Util;
+import common.util.Util;
 import java.io.File;
 import query.Query;
 

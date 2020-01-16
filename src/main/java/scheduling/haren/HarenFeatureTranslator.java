@@ -21,7 +21,7 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling;
+package scheduling.haren;
 
 import static io.palyvos.haren.Features.*;
 
@@ -29,12 +29,12 @@ import component.Component;
 import io.palyvos.haren.Feature;
 import io.palyvos.haren.FeatureHelper;
 
-public class FeatureTranslator {
+public class HarenFeatureTranslator {
 
   public static final double NO_ARRIVAL_TIME = FeatureHelper.NO_ARRIVAL_TIME;
   public static final long MAX_QUEUE_SIZE = FeatureHelper.MAX_QUEUE_SIZE;
 
-  private FeatureTranslator() {
+  private HarenFeatureTranslator() {
 
   }
 

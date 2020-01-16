@@ -1,7 +1,7 @@
 package component;
 
-import io.palyvos.dcs.common.metrics.Metric;
-import io.palyvos.dcs.common.metrics.TimeMetric;
+import common.metrics.Metric;
+import common.metrics.TimeMetric;
 import query.LiebreContext;
 
 public abstract class AbstractComponent<IN, OUT> implements Component {

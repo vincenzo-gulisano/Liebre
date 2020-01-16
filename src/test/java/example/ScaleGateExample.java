@@ -30,14 +30,14 @@ import component.operator.in1.BaseOperator1In;
 import component.sink.Sink;
 import component.source.Source;
 import component.source.SourceFunction;
-import io.palyvos.dcs.common.util.Util;
+import common.util.Util;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import query.Query;
 
-public class SGStreamExample {
+public class ScaleGateExample {
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {

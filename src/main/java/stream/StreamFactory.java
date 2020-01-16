@@ -25,8 +25,8 @@ package stream;
 
 import component.StreamConsumer;
 import component.StreamProducer;
-import io.palyvos.dcs.common.util.backoff.Backoff;
-import io.palyvos.dcs.common.util.backoff.InactiveBackoff;
+import common.util.backoff.Backoff;
+import common.util.backoff.InactiveBackoff;
 import java.util.List;
 
 /** Factory for {@link Stream}s. */

@@ -51,8 +51,8 @@ import component.source.BaseSource;
 import component.source.Source;
 import component.source.SourceFunction;
 import component.source.TextFileSourceFunction;
-import io.palyvos.dcs.common.util.backoff.Backoff;
-import io.palyvos.dcs.common.util.backoff.ExponentialBackoff;
+import common.util.backoff.Backoff;
+import common.util.backoff.ExponentialBackoff;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +63,7 @@ import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import scheduling.LiebreScheduler;
-import scheduling.impl.DefaultLiebreScheduler;
+import scheduling.basic.BasicLiebreScheduler;
 import stream.BackoffStreamFactory;
 import stream.MWMRStream;
 import stream.Stream;
@@ -94,7 +94,7 @@ public final class Query {
 
   /** Construct. */
   public Query() {
-    this(new DefaultLiebreScheduler(), new BackoffStreamFactory());
+    this(new BasicLiebreScheduler(), new BackoffStreamFactory());
   }
 
   /**

@@ -28,7 +28,7 @@ import io.palyvos.dcs.common.Named;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import scheduling.FeatureTranslator;
+import scheduling.haren.HarenFeatureTranslator;
 import stream.Stream;
 
 /**
@@ -110,7 +110,7 @@ public interface StreamConsumer<IN> extends Named, Component {
         latencySum += headTuple.getStimulus();
       }
     }
-    return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
+    return latencySum <= 0 ? HarenFeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
   }
 
   @Override
@@ -120,7 +120,7 @@ public interface StreamConsumer<IN> extends Named, Component {
     for (Stream<?> input : inputs) {
       latencySum += input.averageArrivalTime();
     }
-    return latencySum <= 0 ? FeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
+    return latencySum <= 0 ? HarenFeatureTranslator.NO_ARRIVAL_TIME : latencySum / inputs.size();
   }
 
   default int getPriority() {

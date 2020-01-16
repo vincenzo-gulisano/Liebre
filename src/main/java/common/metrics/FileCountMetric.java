@@ -1,3 +1,5 @@
+package common.metrics;
+
 /*
  * Copyright (C) 2017-2019
  *   Vincenzo Gulisano
@@ -21,54 +23,39 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.thread;
+/** Statistic that records the per-second sum of the recorded value. */
+public class FileCountMetric extends AbstractFileMetric {
+  private long count;
+  long prevSec;
 
-import io.palyvos.dcs.common.Active;
-import common.util.StopJvmUncaughtExceptionHandler;
+  public FileCountMetric(String id, String folder, boolean autoFlush) {
+    super(id, folder, autoFlush);
+  }
 
-/**
- * Thread that can be stopped on demand.
- * 
- * @author palivosd
- *
- */
-public abstract class LiebreThread extends Thread implements Active {
-	private final int index;
+  @Override
+  protected void doRecord(long v) {
+    writePreviousCounts();
+    count += v;
+  }
 
-	public LiebreThread() {
-		this(-1);
-	}
+  @Override
+  public void enable() {
+    this.count = 0;
+    this.prevSec = currentTimeSeconds();
+    super.enable();
+  }
 
-	public LiebreThread(int index) {
-		this.index = index;
-		setDefaultUncaughtExceptionHandler(StopJvmUncaughtExceptionHandler.INSTANCE);
-	}
+  public void disable() {
+    writePreviousCounts();
+    super.disable();
+  }
 
-	@Override
-	public void run() {
-		while (isEnabled()) {
-			doRun();
-		}
-	}
-
-	protected abstract void doRun();
-
-	@Override
-	public void enable() {
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return !isInterrupted();
-	}
-
-	@Override
-	public void disable() {
-		interrupt();
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
+  private void writePreviousCounts() {
+    long thisSec = currentTimeSeconds();
+    while (prevSec < thisSec) {
+      writeCSVLine(prevSec, count);
+      count = 0;
+      prevSec++;
+    }
+  }
 }

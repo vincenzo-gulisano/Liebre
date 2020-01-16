@@ -2,8 +2,8 @@ package example;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
-import io.palyvos.dcs.common.metrics.FileMetricsFactory;
-import io.palyvos.dcs.common.metrics.MetricsFactory;
+import common.metrics.FileMetricsFactory;
+import common.metrics.MetricsFactory;
 import query.LiebreModule;
 
 public class ExampleModule extends AbstractModule {

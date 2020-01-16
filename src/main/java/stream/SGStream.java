@@ -20,12 +20,6 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
 
   public static final String SGSTREAM_UNSUPPORTED = "Cannot invoke this function on SGStream";
 
-  // TODO Am I using id in the right way?
-  // TODO Am I using index in the right way?
-  // TODO Am I using enabled in the right way?
-  // TODO Am I using sources in the right way?
-  // TODO Am I using destinations in the right way?
-
   private ScaleGate<T> sg;
   private List<StreamProducer<T>> producers;
   private List<StreamConsumer<T>> consumers;

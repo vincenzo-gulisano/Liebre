@@ -21,54 +21,29 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.thread;
-
-import io.palyvos.dcs.common.Active;
-import common.util.StopJvmUncaughtExceptionHandler;
+package io.palyvos.dcs.common;
 
 /**
- * Thread that can be stopped on demand.
- * 
- * @author palivosd
+ * Interface for all entities that can be enabled or disabled.
  *
+ * @author palivosd
  */
-public abstract class LiebreThread extends Thread implements Active {
-	private final int index;
+public interface Active {
 
-	public LiebreThread() {
-		this(-1);
-	}
+  /**
+   * Enable the entity.
+   */
+  void enable();
 
-	public LiebreThread(int index) {
-		this.index = index;
-		setDefaultUncaughtExceptionHandler(StopJvmUncaughtExceptionHandler.INSTANCE);
-	}
+  /**
+   * Check the enabled status of the entity.
+   *
+   * @return {@code true} if the entity is enabled
+   */
+  boolean isEnabled();
 
-	@Override
-	public void run() {
-		while (isEnabled()) {
-			doRun();
-		}
-	}
-
-	protected abstract void doRun();
-
-	@Override
-	public void enable() {
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return !isInterrupted();
-	}
-
-	@Override
-	public void disable() {
-		interrupt();
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
+  /**
+   * Disable the entity
+   */
+  void disable();
 }

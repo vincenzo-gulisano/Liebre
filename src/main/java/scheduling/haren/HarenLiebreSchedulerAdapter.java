@@ -21,7 +21,7 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.impl;
+package scheduling.haren;
 
 import io.palyvos.dcs.common.Active;
 import component.Component;

@@ -21,54 +21,23 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.thread;
+package common.metrics;
 
-import io.palyvos.dcs.common.Active;
-import common.util.StopJvmUncaughtExceptionHandler;
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.MetricRegistry;
 
-/**
- * Thread that can be stopped on demand.
- * 
- * @author palivosd
- *
- */
-public abstract class LiebreThread extends Thread implements Active {
-	private final int index;
+/** Statistic that writes the per-second average of the recorded value. */
+public class DropwizardAverageMetric extends AbstractMetric implements Metric {
 
-	public LiebreThread() {
-		this(-1);
-	}
+  private final Histogram histogram;
 
-	public LiebreThread(int index) {
-		this.index = index;
-		setDefaultUncaughtExceptionHandler(StopJvmUncaughtExceptionHandler.INSTANCE);
-	}
+  public DropwizardAverageMetric(String id, MetricRegistry metricRegistry) {
+    super(id);
+    histogram = metricRegistry.histogram(id);
+  }
 
-	@Override
-	public void run() {
-		while (isEnabled()) {
-			doRun();
-		}
-	}
-
-	protected abstract void doRun();
-
-	@Override
-	public void enable() {
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return !isInterrupted();
-	}
-
-	@Override
-	public void disable() {
-		interrupt();
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
+  @Override
+  protected void doRecord(long v) {
+    histogram.update(v);
+  }
 }

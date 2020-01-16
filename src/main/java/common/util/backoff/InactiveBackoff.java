@@ -21,54 +21,24 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package scheduling.thread;
-
-import io.palyvos.dcs.common.Active;
-import common.util.StopJvmUncaughtExceptionHandler;
+package common.util.backoff;
 
 /**
- * Thread that can be stopped on demand.
- * 
- * @author palivosd
- *
+ * {@link Backoff} implementation that does nothing.
  */
-public abstract class LiebreThread extends Thread implements Active {
-	private final int index;
+public enum InactiveBackoff implements Backoff {
+  INSTANCE;
 
-	public LiebreThread() {
-		this(-1);
-	}
+  @Override
+  public void backoff() {
+  }
 
-	public LiebreThread(int index) {
-		this.index = index;
-		setDefaultUncaughtExceptionHandler(StopJvmUncaughtExceptionHandler.INSTANCE);
-	}
+  @Override
+  public void relax() {
+  }
 
-	@Override
-	public void run() {
-		while (isEnabled()) {
-			doRun();
-		}
-	}
-
-	protected abstract void doRun();
-
-	@Override
-	public void enable() {
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return !isInterrupted();
-	}
-
-	@Override
-	public void disable() {
-		interrupt();
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
+  @Override
+  public Backoff newInstance() {
+    return INSTANCE;
+  }
 }

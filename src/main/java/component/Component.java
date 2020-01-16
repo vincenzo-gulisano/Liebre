@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import io.palyvos.haren.Feature;
 import io.palyvos.haren.Task;
-import scheduling.FeatureTranslator;
+import scheduling.haren.HarenFeatureTranslator;
 
 /**
  * Base interface for all stream components such as Sources, Sinks and Operators.
@@ -67,7 +67,7 @@ public interface Component extends Active, Runnable, Named, Task {
 
   default long getInputQueueSize() {
     // Sources can always run
-    return FeatureTranslator.MAX_QUEUE_SIZE;
+    return HarenFeatureTranslator.MAX_QUEUE_SIZE;
   }
 
   default long getOutputQueueSize() {
@@ -92,17 +92,17 @@ public interface Component extends Active, Runnable, Named, Task {
   int getPriority();
 
   default double getAverageArrivalTime() {
-    return FeatureTranslator.NO_ARRIVAL_TIME;
+    return HarenFeatureTranslator.NO_ARRIVAL_TIME;
   }
 
   default double getHeadArrivalTime() {
-    return FeatureTranslator.NO_ARRIVAL_TIME;
+    return HarenFeatureTranslator.NO_ARRIVAL_TIME;
   }
 
   @Override
   default void updateFeatures(Feature[] features, double[] output) {
     for (Feature feature : features) {
-      output[feature.index()] = FeatureTranslator.get(feature, this);
+      output[feature.index()] = HarenFeatureTranslator.get(feature, this);
     }
   }
 

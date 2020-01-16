@@ -1,7 +1,7 @@
 package stream;
 
 import query.LiebreContext;
-import io.palyvos.dcs.common.metrics.Metric;
+import common.metrics.Metric;
 
 public abstract class AbstractStream<T> implements Stream<T> {
 

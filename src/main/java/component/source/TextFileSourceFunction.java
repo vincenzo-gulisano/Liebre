@@ -1,6 +1,6 @@
 package component.source;
 
-import io.palyvos.dcs.common.util.Util;
+import common.util.Util;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
