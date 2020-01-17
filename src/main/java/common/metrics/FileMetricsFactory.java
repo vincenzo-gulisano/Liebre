@@ -1,17 +1,23 @@
 package common.metrics;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 public class FileMetricsFactory implements MetricsFactory {
-  @Inject private MetricName metricName;
+  private final MetricName metricName;
+  private final String folder;
+  private final boolean autoFlush;
 
-  @Inject
-  @Named("metricsFolder")
-  private String folder;
-  @Inject
-  @Named("metricsAutoFlush")
-  private boolean autoFlush;
+  public FileMetricsFactory(String folder, MetricName metricName, boolean autoFlush) {
+    this.metricName = metricName;
+    this.folder = folder;
+    this.autoFlush = autoFlush;
+  }
+
+  public FileMetricsFactory(String folder, MetricName metricName) {
+    this(folder, metricName, true);
+  }
+
+  public FileMetricsFactory(String folder) {
+    this(folder, new DefaultMetricName(), true);
+  }
 
   @Override
   public Metric newAverageMetric(String id, Object type) {

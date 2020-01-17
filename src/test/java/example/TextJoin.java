@@ -23,24 +23,20 @@
 
 package example;
 
-import com.google.inject.Guice;
-import java.util.Random;
-
 import common.tuple.BaseRichTuple;
 import common.util.Util;
 import component.operator.in2.Operator2In;
 import component.operator.in2.join.JoinFunction;
-import query.Query;
 import component.sink.Sink;
 import component.sink.SinkFunction;
 import component.source.Source;
 import component.source.SourceFunction;
+import java.util.Random;
+import query.Query;
 
 public class TextJoin {
 
   public static void main(String[] args) {
-
-    Guice.createInjector(new ExampleModule());
 
     Query q = new Query();
 

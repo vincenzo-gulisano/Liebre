@@ -23,11 +23,10 @@
 
 package example;
 
-import com.google.inject.Guice;
+import common.util.Util;
 import component.operator.Operator;
 import component.sink.Sink;
 import component.source.Source;
-import common.util.Util;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,7 +39,6 @@ public class TextFlatMap {
     final String reportFolder = args[0];
     final String inputFile = args[1];
     final String outputFile = reportFolder + File.separator + "TextFlatMap.out.csv";
-    Guice.createInjector(new ExampleModule());
 
     Query q = new Query();
 

@@ -23,33 +23,16 @@
 
 package query;
 
-import com.codahale.metrics.MetricRegistry;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import common.metrics.InactiveMetricsFactory;
 import common.metrics.MetricsFactory;
 
 public final class LiebreContext {
 
-  @Inject
-  private static MetricRegistry dropwizardMetricRegistry;
+  private static MetricsFactory operatorMetricsFactory = new InactiveMetricsFactory();
 
-  @Inject
-  @Named("operator")
-  private static MetricsFactory operatorMetricsFactory;
+  private static MetricsFactory streamMetricsFactory = new InactiveMetricsFactory();
 
-  @Inject
-  @Named("stream")
-  private static MetricsFactory streamMetricsFactory;
-
-  @Inject
-  @Named("user")
-  private static MetricsFactory userMetricsFactory;
-
-  private LiebreContext() {}
-
-  public static MetricRegistry dropwizardMetricRegistry() {
-    return dropwizardMetricRegistry;
-  }
+  private static MetricsFactory userMetricsFactory = new InactiveMetricsFactory();
 
   public static MetricsFactory operatorMetricsFactory() {
     return operatorMetricsFactory;
@@ -62,4 +45,18 @@ public final class LiebreContext {
   public static MetricsFactory userMetricsFactory() {
     return userMetricsFactory;
   }
+
+  public static void setOperatorMetricsFactory(MetricsFactory operatorMetricsFactory) {
+    LiebreContext.operatorMetricsFactory = operatorMetricsFactory;
+  }
+
+  public static void setStreamMetricsFactory(MetricsFactory streamMetricsFactory) {
+    LiebreContext.streamMetricsFactory = streamMetricsFactory;
+  }
+
+  public static void setUserMetricsFactory(MetricsFactory userMetricsFactory) {
+    LiebreContext.userMetricsFactory = userMetricsFactory;
+  }
+
+  private LiebreContext() {}
 }

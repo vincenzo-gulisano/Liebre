@@ -23,11 +23,10 @@
 
 package example;
 
-import com.google.inject.Guice;
+import common.util.Util;
 import component.operator.Operator;
 import component.sink.Sink;
 import component.source.Source;
-import common.util.Util;
 import java.io.File;
 import query.Query;
 
@@ -38,7 +37,6 @@ public class TextMapFilter {
     final String inputFile = args[1];
     final String outputFile = reportFolder + File.separator + "TextMapFilter.out.csv";
 
-    Guice.createInjector(new ExampleModule());
     Query q = new Query();
 
     Source<String> i1 = q.addTextFileSource("I1", inputFile);

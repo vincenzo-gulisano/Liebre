@@ -1,15 +1,21 @@
 package common.metrics;
 
 import com.codahale.metrics.MetricRegistry;
-import com.google.inject.Inject;
 
 public class DropwizardMetricsFactory implements MetricsFactory {
 
-  @Inject
-  private MetricName metricName;
+  private final MetricName metricName;
 
-  @Inject
-  private MetricRegistry metricRegistry;
+  private final MetricRegistry metricRegistry;
+
+  public DropwizardMetricsFactory(MetricRegistry metricRegistry, MetricName metricName) {
+    this.metricName = metricName;
+    this.metricRegistry = metricRegistry;
+  }
+
+  public DropwizardMetricsFactory(MetricRegistry metricRegistry) {
+    this(metricRegistry, new DefaultMetricName());
+  }
 
   @Override
   public Metric newAverageMetric(String id, Object type) {
@@ -25,6 +31,4 @@ public class DropwizardMetricsFactory implements MetricsFactory {
   public TimeMetric newAverageTimeMetric(String id, Object type) {
     return new DelegatingTimeMetric(newAverageMetric(id, type));
   }
-
-
 }

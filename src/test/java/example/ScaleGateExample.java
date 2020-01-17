@@ -23,14 +23,13 @@
 
 package example;
 
-import com.google.inject.Guice;
 import common.tuple.BaseRichTuple;
+import common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.BaseOperator1In;
 import component.sink.Sink;
 import component.source.Source;
 import component.source.SourceFunction;
-import common.util.Util;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,7 +40,6 @@ public class ScaleGateExample {
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		Guice.createInjector(new ExampleModule());
 
 		Query q = new Query();
 		// q.activateStatistics(reportFolder);

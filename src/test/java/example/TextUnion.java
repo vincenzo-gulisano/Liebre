@@ -23,12 +23,11 @@
 
 package example;
 
-import com.google.inject.Guice;
+import common.util.Util;
+import common.util.backoff.InactiveBackoff;
 import component.operator.Operator;
 import component.sink.Sink;
 import component.source.Source;
-import common.util.Util;
-import common.util.backoff.InactiveBackoff;
 import java.io.File;
 import query.Query;
 
@@ -41,7 +40,6 @@ public class TextUnion {
     final String inputFile2 = args[2];
     final String outputFile = reportFolder + File.separator + "TextUnion.out.csv";
 
-    Guice.createInjector(new ExampleModule());
     Query q = new Query();
 
     Source<String> i1 = q.addTextFileSource("i1", inputFile1);

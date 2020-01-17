@@ -23,14 +23,13 @@
 
 package example;
 
-import com.google.inject.Guice;
 import common.tuple.BaseRichTuple;
+import common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.aggregate.BaseTimeBasedSingleWindow;
 import component.operator.in1.aggregate.TimeBasedSingleWindow;
 import component.sink.Sink;
 import component.source.Source;
-import common.util.Util;
 import java.io.File;
 import query.Query;
 
@@ -43,7 +42,6 @@ public class TextAggregate {
     final long WINDOW_SIZE = 100;
     final long WINDOW_SLIDE = 20;
 
-    Guice.createInjector(new ExampleModule());
 
     Query q = new Query();
 
