@@ -28,34 +28,34 @@ import common.metrics.MetricsFactory;
 
 public final class LiebreContext {
 
-  private static MetricsFactory operatorMetricsFactory = new InactiveMetricsFactory();
+  private static MetricsFactory operatorMetrics = new InactiveMetricsFactory();
 
-  private static MetricsFactory streamMetricsFactory = new InactiveMetricsFactory();
+  private static MetricsFactory streamMetrics = new InactiveMetricsFactory();
 
-  private static MetricsFactory userMetricsFactory = new InactiveMetricsFactory();
+  private static MetricsFactory userMetrics = new InactiveMetricsFactory();
 
-  public static MetricsFactory operatorMetricsFactory() {
-    return operatorMetricsFactory;
+  public static MetricsFactory operatorMetrics() {
+    return operatorMetrics;
   }
 
-  public static MetricsFactory streamMetricsFactory() {
-    return streamMetricsFactory;
+  public static MetricsFactory streamMetrics() {
+    return streamMetrics;
   }
 
-  public static MetricsFactory userMetricsFactory() {
-    return userMetricsFactory;
+  public static MetricsFactory userMetrics() {
+    return userMetrics;
   }
 
-  public static void setOperatorMetricsFactory(MetricsFactory operatorMetricsFactory) {
-    LiebreContext.operatorMetricsFactory = operatorMetricsFactory;
+  public static void setOperatorMetrics(MetricsFactory operatorMetrics) {
+    LiebreContext.operatorMetrics = operatorMetrics;
   }
 
-  public static void setStreamMetricsFactory(MetricsFactory streamMetricsFactory) {
-    LiebreContext.streamMetricsFactory = streamMetricsFactory;
+  public static void setStreamMetrics(MetricsFactory streamMetrics) {
+    LiebreContext.streamMetrics = streamMetrics;
   }
 
-  public static void setUserMetricsFactory(MetricsFactory userMetricsFactory) {
-    LiebreContext.userMetricsFactory = userMetricsFactory;
+  public static void setUserMetrics(MetricsFactory userMetrics) {
+    LiebreContext.userMetrics = userMetrics;
   }
 
   private LiebreContext() {}

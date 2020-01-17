@@ -40,8 +40,9 @@ public class TextMap1 {
     final String inputFile = args[1];
     final String outputFile = reportFolder + File.separator + "TextMap1.out.csv";
 
-    LiebreContext.setOperatorMetricsFactory(Metrics.newFileMetricsFactory(reportFolder));
-    LiebreContext.setStreamMetricsFactory(Metrics.newFileMetricsFactory(reportFolder, false));
+    LiebreContext.setOperatorMetrics(Metrics.file(reportFolder));
+    LiebreContext.setStreamMetrics(Metrics.file(reportFolder, false));
+
     Query q = new Query();
 
     Source<String> i1 = q.addTextFileSource("I1", inputFile);

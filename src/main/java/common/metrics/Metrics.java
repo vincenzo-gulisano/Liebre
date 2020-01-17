@@ -15,15 +15,15 @@ public final class Metrics {
     Metrics.metricName = metricName;
   }
 
-  public static MetricsFactory newFileMetricsFactory(String folder, boolean autoFlush) {
+  public static MetricsFactory file(String folder, boolean autoFlush) {
     return new FileMetricsFactory(folder, metricName, autoFlush);
   }
 
-  public static MetricsFactory newFileMetricsFactory(String folder) {
-    return newFileMetricsFactory(folder, true);
+  public static MetricsFactory file(String folder) {
+    return file(folder, true);
   }
 
-  public static MetricsFactory newDropWizardMetricsFactory() {
+  public static MetricsFactory dropWizard() {
     return new DropwizardMetricsFactory(dropwizardMetricRegistry, metricName);
   }
 

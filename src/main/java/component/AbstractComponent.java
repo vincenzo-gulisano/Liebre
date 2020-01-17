@@ -32,8 +32,8 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
   public AbstractComponent(String id, ComponentType type) {
     this.state = new ComponentState<>(id, type);
     this.executionTimeMetric =
-        LiebreContext.operatorMetricsFactory().newAverageTimeMetric(id, "EXEC");
-    this.rateMetric = LiebreContext.operatorMetricsFactory().newCountMetric(id, "RATE");
+        LiebreContext.operatorMetrics().newAverageTimeMetric(id, "EXEC");
+    this.rateMetric = LiebreContext.operatorMetrics().newCountMetric(id, "RATE");
   }
 
   @Override
