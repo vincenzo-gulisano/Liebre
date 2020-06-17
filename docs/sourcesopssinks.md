@@ -8,93 +8,77 @@ Here you find their description.
 
 #### Source - TextSource (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMap1.java))
 
-If you are reading tuples from a text file, then the TextSource allows you to minimize the information you need to provide to the query in order to instantiate such a source. In the following example, we read tuples composed by attributes _&lt;timestamp,key,value&gt;_ from a file.
+If you are reading tuples from a text file, then the TextSource allows you to minimize the information you need to provide to the query in order to instantiate such a source.
+In the following example, we read lines from a text file and convert them to tuples composed by attributes _&lt;timestamp,key,value&gt;_ from a file.
 
 ```java
-class MyTuple implements Tuple {
-	public long timestamp;
-	public int key;
-	public int value;
+Source<String> i1 = q.addTextFileSource("I1", inputFile);
 
-	public MyTuple(long timestamp, int key, int value) {
-		this.timestamp = timestamp;
-		this.key = key;
-		this.value = value;
-	}
-}
-
-q.addTextSource("inSource",
-	<INPUT FILE>,
-	new TextSourceFunction<MyTuple>() {
-		@Override
-		public MyTuple getNext(String line) {
-			String[] tokens = line.split(",");
-			return new MyTuple(Long.valueOf(tokens[0]), Integer
-				.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
-		}
-	}, inKey);
+Operator<String, MyTuple> inputReader =
+    q.addMapOperator(
+        "map",
+        line -> {
+          Util.sleep(100);
+          String[] tokens = line.split(",");
+          return new MyTuple(
+              Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
+        });
 ```
 
-Please notice:
-
-1. As for the example in [the basics](basics.md), you need to specify an id for the operator you are adding (in this case _inSource_).
-2. Instead of a BaseSource (as in [the basics](basics.md) example), you are now passing a _TextSourceFunction_, for which you only specify the method _getNext(String line)_.
-3. As for the example in [the basics](basics.md), you need to specify the key of the stream to which the Source forwards tuples.
+Please notice: As for the example in [the basics](basics.md), you need to specify an id for the operator you are adding (in this case _i1_).
 
 #### Operator - Map (complete examples [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMap2.java) and [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextMap1.java))
 
 The Map operator allows you to transform each input tuple into a different output tuple (possibly of a different type). In the following example, we transform each input tuple of type _InputTuple_ into a tuple of type _OutputTuple_:
 
 ```java
-class InputTuple implements Tuple {
-	public long timestamp;
-	public int key;
-	public int value;
+class MyTuple {
 
-	public InputTuple(long timestamp, int key, int value) {
-		this.timestamp = timestamp;
-		this.key = key;
-		this.value = value;
-	}
+  public long timestamp;
+  public int key;
+  public int value;
+
+  public MyTuple(long timestamp, int key, int value) {
+    this.timestamp = timestamp;
+    this.key = key;
+    this.value = value;
+  }
+
 }
 
-class OutputTuple implements Tuple {
-	public long timestamp;
-	public int key;
-	public int valueA;
-	public int valueB;
-	public int valueC;
+class OutputTuple {
 
-	public OutputTuple(InputTuple t) {
-		this.timestamp = t.timestamp;
-		this.key = t.key;
-		this.valueA = t.value * 2;
-		this.valueB = t.value / 2;
-		this.valueC = t.value + 10;
-	}
+  public long timestamp;
+  public int key;
+  public int valueA;
+  public int valueB;
+  public int valueC;
+
+  public OutputTuple(MyTuple t) {
+    this.timestamp = t.timestamp;
+    this.key = t.key;
+    this.valueA = t.value * 2;
+    this.valueB = t.value / 2;
+    this.valueC = t.value + 10;
+  }
 }
 
-q.addMapOperator("transform",
-	new MapFunction<InputTuple, OutputTuple>() {
-		@Override
-		public OutputTuple map(InputTuple tuple) {
-			return new OutputTuple(tuple);
-		}
-	}, inKey, outKey);
+Operator<MyTuple, OutputTuple> transform =
+    q.addMapOperator("transform", tuple -> new OutputTuple(tuple));
+
 ```
 
 Please notice:
 
-1. When adding a Map operator, you provide an instance of _MapFunction&lt;T1,T2&gt;_, which defines the method _public T2 map(T1 tuple)_.
-2. You can of course use the same type both for the input and the output, as in the following example (we use again the MyTuple defined for the TextSink).
+1. When adding a Map operator, you provide an instance of _MapFunction&lt;T1,T2&gt;_,.
+2. You can of course use the same type both for the input and the output, as in the following example (we use again the MyTuple defined for the TextSource).
 
 ```java
-q.addMapOperator("multiply", new MapFunction<MyTuple, MyTuple>() {
-	@Override
-	public MyTuple map(MyTuple tuple) {
-		return new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2);
-	}
-}, inKey, outKey);
+
+Operator<MyTuple, MyTuple> multiply =
+    q.addMapOperator(
+        "multiply", tuple -> new MyTuple(tuple.timestamp, tuple.key, tuple.value * 2));
+
 ```
 
 #### Operator - FlatMap (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/main/java/example/TextFlatMap.java))
