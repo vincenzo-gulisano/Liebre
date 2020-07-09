@@ -125,11 +125,11 @@ q.connect(router, filterHigh).connect(router, filterLow)
 #### Operator - Aggregate (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/test/java/example/TextAggregate.java))
 
 Differently from the Map's and the Filter's _stateless_ analysis, the Aggregate runs _stateful_ analysis.
-_Stateless_ means each output tuple depends on exactly onr input tuple (or to be more formal, it means that the operator does not maintain a state that evolves depending on the tuples being processed).
-_Stateful_, on the other hand, means that each output tuple depends on multiple input tuples.
+_Stateless_ means each output tuple depends on exactly one input tuple (or to be more formal, it means that the operator does not maintain a state that evolves depending on the tuples being processed).
+_Stateful_, on the other hand, means that each output tuple (potentially) depends on multiple input tuples.
 
 The Aggregate operator aggregates multiple tuples with functions such as _sum_, _max_, _min_ or any other user-defined function. Since streams are unbounded, the aggregation is performed over _windows_.
-It allows for such functions to be computed over all the incoming tuples or for different _group-by_ values.
+The Aggregate operator allows for such functions to be computed over all the incoming tuples or for different _group-by_ values.
 
 The semantics of streaming aggregation depend on the type and behavior of its _window_, while the memory footprint and the processing cost depend on its internal implementation. Many variations have been discussed in the literature. 
 The Aggregate currently provided by Liebre is for time-based sliding windows and is implemented maintaining a single window for each distinct group-by value.
@@ -219,7 +219,7 @@ class OutputTuple extends BaseRichTuple {
 Once the input and output tuples types are defined, you can specify the function you will use to aggregate the data. In the following example, our window will count the tuples observed in the window and also compute the average for the field _value_:
 
 ```java
-class Win extends BaseTimeBasedSingleWindow<InputTuple, OutputTuple> {
+class AverageWindow extends BaseTimeBasedSingleWindow<InputTuple, OutputTuple> {
 
 	private double count = 0;
 	private double sum = 0;
@@ -261,14 +261,14 @@ Once you define the types for the input and output tuples and the window, you ca
 
 
 ```java
-q.addAggregateOperator("aggOp", new Win(), WS, WA, inKey, outKey);
+q.addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE, WINDOW_SLIDE)
 ```
 
-As shown, aside from the id of the operator, an instance of the window and the keys for the input and output streams, you also specify the window size (WS) and the window advance (WA), using the same unit of measure used by your tuples. For instance, if the timestamp of the tuples are in seconds, the following aggregate defined a window of size 4 weeks and advance 1 week:
+As shown, aside from the id of the operator and an instance of the window, you also specify the window size and the window advance, using the same unit of measure used by your tuples. For instance, if the timestamp of the tuples are in seconds, the following aggregate defined a window of size 4 weeks and advance 1 week:
 
 ```java
-q.addAggregateOperator("aggOp", new Win(), 4 * 7 * 24 * 3600,
-	7 * 24 * 3600, inKey, outKey);	
+q.addAggregateOperator("aggOp", new AverageWindow(), 4 * 7 * 24 * 3600,
+	7 * 24 * 3600);	
 ```
 
 ##### **Please notice:** The Aggregate enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order**.
