@@ -320,41 +320,28 @@ Once the types for input and output tuples are defined, we can proceed adding th
 
 ```java
 q.addJoinOperator("join",
-	new Predicate<InputTuple1, InputTuple2, OutputTuple>() {
-		@Override
-		public OutputTuple compare(InputTuple1 t1, InputTuple2 t2) {
-			if (t1.a < t2.b)
-				return new OutputTuple(t1.getTimestamp(), t1, t2);
-			return null;
-		}
-	}, 3000, in1Key, in2Key, outKey);
+    new JoinFunction<InputTuple1, InputTuple2, OutputTuple>() {
+      @Override
+      public OutputTuple apply(InputTuple1 t1, InputTuple2 t2) {
+        if (t1.a < t2.b) {
+          return new OutputTuple(t1.getTimestamp(), t1, t2);
+        }
+        return null;
+      }
+    }, 10000);
 ```
 
 Please notice:
 
-1. Since the join operates on sliding windows, we specify the window size (3 seconds in the example, because the unit of time for the tuples is millisecond).
-2. We provide 2 keys, one for each input stream, and 1 for the output stream.
-3. Also the Join enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order** from each input stream.
+1. Since the join operates on sliding windows, we specify the window size (10 seconds in the example, because the unit of time for the tuples is millisecond).
+2. Also the Join enforces deterministic processing. Because of this, it assumes **tuples are fed in timestamp order** from each input stream.
 
 #### Sink - TextSink (complete example [here](https://github.com/vincenzo-gulisano/Liebre/blob/master/src/test/java/example/TextMap1.java))
 
 If you are writing tuples to a text file, then the TextSink allows you to minimize the information you need to provide to the query in order to instantiate such a sink. In the following example, we write tuples composed by attributes _&lt;timestamp,key,value&gt;_ to a file (we use again the MyTuple defined for the TextSink).
 
 ```java
-q.addTextSink(
-	"outSink",
-	<OUTPUT FILE>,
-	new TextSinkFunction<MyTuple>() {
-		@Override
-		public String convertTupleToLine(MyTuple tuple) {
-			return tuple.timestamp + "," + tuple.key + ","
-			+ tuple.value;
-		}
-	}, outKey);
+q.addTextFileSink("o1", outputFile, true);
 ```
 
-Please notice:
-
-1. As for the example in [the basics](), you need to specify an id for the operator you are adding (in this case _inSource_).
-2. Instead of a BaseSource (as in [the basics]() example), you are now passing a _TextSourceFunction_, for which you only specify the method _getNext(String line)_.
-3. As for the example in [the basics](), you need to specify the key of the stream to which the Source forwards tuples.
+Please notice: as for the example in [the basics](), you need to specify an id for the operator you are adding (in this case _o1_).
