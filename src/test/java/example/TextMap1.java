@@ -42,6 +42,7 @@ public class TextMap1 {
 
     LiebreContext.setOperatorMetrics(Metrics.file(reportFolder));
     LiebreContext.setStreamMetrics(Metrics.file(reportFolder, false));
+    LiebreContext.setUserMetrics(Metrics.file(reportFolder));
 
     Query q = new Query();
 

@@ -35,12 +35,14 @@ import java.util.Random;
 public class ThreeColumnExampleTextDataGenerator extends ExampleTextDataGenerator {
 
   private static final int KEY = 1;
-  private static final String OUTPUT_FILE = String.format("report/dummy_data_%d.csv", KEY);
   private final Random rand = new Random();
 
   public static void main(String[] args) throws Exception {
+
+    final String outFile = args[0];
+
     ExampleTextDataGenerator generator = new ThreeColumnExampleTextDataGenerator();
-    generator.generate(OUTPUT_FILE);
+    generator.generate(outFile);
   }
 
   @Override
@@ -51,7 +53,7 @@ public class ThreeColumnExampleTextDataGenerator extends ExampleTextDataGenerato
 
   @Override
   protected int numberOfLinesToGenerate() {
-    return 1000000;
+    return 10000;
   }
 
 }
