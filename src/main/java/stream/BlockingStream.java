@@ -92,7 +92,9 @@ public class BlockingStream<T> extends AbstractStream<T> {
     try {
       return stream.take();
     } catch (InterruptedException e) {
-      disable();
+      if (isEnabled()) {
+        disable();
+      }
       Thread.currentThread().interrupt();
       return null;
     }

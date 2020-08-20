@@ -23,12 +23,22 @@ public class DropwizardMetricsFactory implements MetricsFactory {
   }
 
   @Override
-  public Metric newCountMetric(String id, Object type) {
+  public Metric newCountPerSecondMetric(String id, Object type) {
+    return new DropwizardCountPerSecondMetric(metricName.get(id, type), metricRegistry);
+  }
+
+  @Override
+  public Metric newTotalCountMetric(String id, Object type) {
     return new DropwizardCountMetric(metricName.get(id, type), metricRegistry);
   }
 
   @Override
   public TimeMetric newAverageTimeMetric(String id, Object type) {
     return new DelegatingTimeMetric(newAverageMetric(id, type));
+  }
+
+  @Override
+  public Metric newStreamMetric(String id, Object type) {
+    return newTotalCountMetric(id, type);
   }
 }

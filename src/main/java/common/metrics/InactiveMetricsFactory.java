@@ -8,12 +8,22 @@ public class InactiveMetricsFactory implements MetricsFactory {
   }
 
   @Override
-  public Metric newCountMetric(String id, Object type) {
+  public Metric newCountPerSecondMetric(String id, Object type) {
+    return InactiveMetric.INSTANCE;
+  }
+
+  @Override
+  public Metric newTotalCountMetric(String id, Object type) {
     return InactiveMetric.INSTANCE;
   }
 
   @Override
   public TimeMetric newAverageTimeMetric(String id, Object type) {
+    return InactiveMetric.INSTANCE;
+  }
+
+  @Override
+  public Metric newStreamMetric(String id, Object type) {
     return InactiveMetric.INSTANCE;
   }
 }

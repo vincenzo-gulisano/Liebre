@@ -23,33 +23,43 @@
 
 package common.metrics;
 
-import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 
-/** Statistic that records the sum of the recorded value and resets when the metric is read. */
-class DropwizardCountMetric extends AbstractMetric implements Metric {
+/** Statistic that records the per-second sum of the recorded value. */
+class DropwizardCountPerSecondMetric extends AbstractMetric implements Metric {
 
-  static class ResettingCounter extends Counter {
-    private final Object lock = new Object();
-    @Override
-    public long getCount() {
-      synchronized (lock) {
-        long count = super.getCount();
-        dec(count);
-        return count;
+  private final AverageGauge gauge;
+
+  private static class AverageGauge implements Gauge<Long> {
+    private long startTime = System.currentTimeMillis();
+    private long sum = 0;
+
+    void add(long value) {
+      synchronized (this) {
+        sum += value;
       }
+    }
+
+    @Override
+    public Long getValue() {
+      long newTime = System.currentTimeMillis();
+      long value = (1000 * sum) / (newTime - startTime);
+      synchronized (this) {
+        startTime = newTime;
+        sum = 0;
+      }
+      return value;
     }
   }
 
-  private final Counter counter;
-
-  public DropwizardCountMetric(String id, MetricRegistry metricRegistry) {
+  public DropwizardCountPerSecondMetric(String id, MetricRegistry metricRegistry) {
     super(id);
-    counter = metricRegistry.counter(id, ResettingCounter::new);
+    gauge = (AverageGauge) metricRegistry.gauge(id, AverageGauge::new);
   }
 
   @Override
   protected void doRecord(long v) {
-    counter.inc(v);
+    gauge.add(v);
   }
 }

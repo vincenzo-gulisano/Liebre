@@ -17,8 +17,8 @@ public abstract class AbstractStream<T> implements Stream<T> {
   public AbstractStream(String id, int index) {
     this.id = id;
     this.index = index;
-    inMetric = LiebreContext.streamMetrics().newCountMetric(id, METRIC_IN);
-    outMetric = LiebreContext.streamMetrics().newCountMetric(id, METRIC_OUT);
+    inMetric = LiebreContext.streamMetrics().newStreamMetric(id, METRIC_IN);
+    outMetric = LiebreContext.streamMetrics().newStreamMetric(id, METRIC_OUT);
   }
 
   @Override

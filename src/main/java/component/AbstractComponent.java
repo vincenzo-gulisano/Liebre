@@ -33,7 +33,7 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
     this.state = new ComponentState<>(id, type);
     this.executionTimeMetric =
         LiebreContext.operatorMetrics().newAverageTimeMetric(id, "EXEC");
-    this.rateMetric = LiebreContext.operatorMetrics().newCountMetric(id, "RATE");
+    this.rateMetric = LiebreContext.operatorMetrics().newCountPerSecondMetric(id, "RATE");
   }
 
   @Override

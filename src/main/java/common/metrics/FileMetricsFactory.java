@@ -1,5 +1,7 @@
 package common.metrics;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 public class FileMetricsFactory implements MetricsFactory {
   private final MetricName metricName;
   private final String folder;
@@ -25,8 +27,19 @@ public class FileMetricsFactory implements MetricsFactory {
   }
 
   @Override
-  public Metric newCountMetric(String id, Object type) {
+  public Metric newCountPerSecondMetric(String id, Object type) {
     return new FileCountMetric(metricName.get(id, type), folder, autoFlush);
+  }
+
+  @Override
+  public Metric newTotalCountMetric(String id, Object type) {
+    //FIXME: Implement
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public Metric newStreamMetric(String id, Object type) {
+    return newCountPerSecondMetric(id, type);
   }
 
   @Override
