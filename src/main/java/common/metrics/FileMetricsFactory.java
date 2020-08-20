@@ -1,6 +1,5 @@
 package common.metrics;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class FileMetricsFactory implements MetricsFactory {
   private final MetricName metricName;
@@ -34,7 +33,7 @@ public class FileMetricsFactory implements MetricsFactory {
   @Override
   public Metric newTotalCountMetric(String id, Object type) {
     //FIXME: Implement
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException();
   }
 
   @Override
