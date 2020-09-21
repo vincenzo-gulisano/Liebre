@@ -53,12 +53,9 @@ import component.source.SourceFunction;
 import component.source.TextFileSourceFunction;
 import common.util.backoff.Backoff;
 import common.util.backoff.ExponentialBackoff;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
+
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -139,9 +136,44 @@ public final class Query {
         new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window));
   }
 
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  List<Operator<IN, OUT>> addAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide,
+          int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addOperator(
+              new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window)));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addOperator(
+                new TimeBasedSingleWindowAggregate<IN, OUT>(identifier + "_" + i, windowSize, windowSlide, window)));
+      }
+    }
+    return result;
+  }
+
   public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
       String identifier, MapFunction<IN, OUT> mapFunction) {
     return addOperator(new MapOperator<IN, OUT>(identifier, mapFunction));
+  }
+
+  public synchronized <IN, OUT> List<Operator<IN, OUT>> addMapOperator(
+          String identifier, MapFunction<IN, OUT> mapFunction, int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addOperator(new MapOperator<IN, OUT>(identifier, mapFunction)));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addOperator(new MapOperator<IN, OUT>(identifier + "_" + i, mapFunction)));
+      }
+    }
+    return result;
   }
 
   public synchronized <IN, OUT> Operator<IN, OUT> addFlatMapOperator(
@@ -149,15 +181,60 @@ public final class Query {
     return addOperator(new FlatMapOperator<IN, OUT>(identifier, mapFunction));
   }
 
+  public synchronized <IN, OUT> List<Operator<IN, OUT>> addFlatMapOperator(
+          String identifier, FlatMapFunction<IN, OUT> mapFunction,int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addOperator(new FlatMapOperator<IN, OUT>(identifier, mapFunction)));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addOperator(new FlatMapOperator<IN, OUT>(identifier+"_"+i, mapFunction)));
+      }
+    }
+    return result;
+  }
+
   public synchronized <T> Operator<T, T> addFilterOperator(
       String identifier, FilterFunction<T> filterF) {
     return addOperator(new FilterOperator<T>(identifier, filterF));
+  }
+
+  public synchronized <T> List<Operator<T, T>> addFilterOperator(
+          String identifier, FilterFunction<T> filterF,int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<T, T>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addOperator(new FilterOperator<T>(identifier, filterF)));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addOperator(new FilterOperator<T>(identifier+"_"+i, filterF)));
+      }
+    }
+    return result;
   }
 
   public synchronized <T> RouterOperator<T> addRouterOperator(String identifier) {
     RouterOperator<T> router = new BaseRouterOperator<T>(identifier);
     saveComponent(operators, router, OPERATOR);
     return router;
+  }
+
+  public synchronized <T> List<RouterOperator<T>> addRouterOperator(String identifier,int parallelism) {
+    assert (parallelism >= 1);
+    List<RouterOperator<T>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      RouterOperator<T> router = new BaseRouterOperator<T>(identifier);
+      saveComponent(operators, router, OPERATOR);
+      result.add(router);
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        RouterOperator<T> router = new BaseRouterOperator<T>(identifier+"_"+i);
+        saveComponent(operators, router, OPERATOR);
+        result.add(router);
+      }
+    }
+    return result;
   }
 
   public synchronized <T> UnionOperator<T> addUnionOperator(UnionOperator<T> union) {
@@ -168,6 +245,21 @@ public final class Query {
   public synchronized <T> UnionOperator<T> addUnionOperator(String identifier) {
     UnionOperator<T> union = new UnionOperator<>(identifier);
     return addUnionOperator(union);
+  }
+
+  public synchronized <T> List<UnionOperator<T>> addUnionOperator(String identifier,int parallelism) {
+    assert (parallelism >= 1);
+    List<UnionOperator<T>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      UnionOperator<T> union = new UnionOperator<>(identifier);
+      result.add(addUnionOperator(union));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        UnionOperator<T> union = new UnionOperator<>(identifier+"_"+i);
+        result.add(addUnionOperator(union));
+      }
+    }
+    return result;
   }
 
   public synchronized <T> Source<T> addSource(Source<T> source) {
