@@ -335,6 +335,22 @@ public final class Query {
     return this;
   }
 
+  public synchronized <T1 extends Comparable<? super T1>,T2> List<StreamConsumer<T1>> getConsumers(List<Operator<T1,T2>> ops) {
+    List<StreamConsumer<T1>> c = new LinkedList<>();
+    for (Operator<T1, T2> op : ops) {
+      c.add(op);
+    }
+    return c;
+  }
+
+  public synchronized <T1,T2 extends Comparable<? super T2>> List<StreamProducer<T2>> getProducers(List<Operator<T1,T2>> ops) {
+    List<StreamProducer<T2>> c = new LinkedList<>();
+    for (Operator<T1, T2> op : ops) {
+      c.add(op);
+    }
+    return c;
+  }
+
   public synchronized <T> Query connect2inLeft(
       StreamProducer<T> producer, Operator2In<T, ?, ?> consumer) {
     return connect2inLeft(producer, consumer, defaultBackoff);
