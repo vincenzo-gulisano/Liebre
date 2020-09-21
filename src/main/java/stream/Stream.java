@@ -25,8 +25,8 @@ package stream;
 
 import component.StreamConsumer;
 import component.StreamProducer;
-import io.palyvos.dcs.common.Active;
-import io.palyvos.dcs.common.Named;
+import common.Active;
+import common.Named;
 import java.util.List;
 
 /**

@@ -22,7 +22,7 @@
  */
 
 
-package io.palyvos.dcs.common;
+package common;
 
 /**
  * Interface that marks entities that have a unique ID and numerical index.

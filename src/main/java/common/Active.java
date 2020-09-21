@@ -21,7 +21,7 @@
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-package io.palyvos.dcs.common;
+package common;
 
 /**
  * Interface for all entities that can be enabled or disabled.

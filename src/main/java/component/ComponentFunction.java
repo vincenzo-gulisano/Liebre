@@ -1,6 +1,6 @@
 package component;
 
-import io.palyvos.dcs.common.Active;
+import common.Active;
 
 public interface ComponentFunction extends Active {
 

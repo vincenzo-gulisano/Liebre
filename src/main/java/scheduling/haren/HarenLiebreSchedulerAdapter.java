@@ -23,7 +23,7 @@
 
 package scheduling.haren;
 
-import io.palyvos.dcs.common.Active;
+import common.Active;
 import component.Component;
 import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;

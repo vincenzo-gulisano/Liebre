@@ -23,7 +23,7 @@
 
 package scheduling;
 
-import io.palyvos.dcs.common.Active;
+import common.Active;
 import java.util.Collection;
 
 /**

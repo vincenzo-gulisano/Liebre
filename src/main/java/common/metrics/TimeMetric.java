@@ -1,6 +1,6 @@
 package common.metrics;
 
-import io.palyvos.dcs.common.Active;
+import common.Active;
 
 public interface TimeMetric extends Active {
 

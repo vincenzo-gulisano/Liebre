@@ -23,7 +23,7 @@
 
 package component;
 
-import io.palyvos.dcs.common.Named;
+import common.Named;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
