@@ -2,8 +2,6 @@ package component.operator.in2;
 
 import component.AbstractComponent;
 import component.ComponentType;
-import component.StreamConsumer;
-import component.StreamProducer;
 import component.operator.Operator;
 import java.util.Collection;
 import stream.Stream;
@@ -37,17 +35,17 @@ public abstract class AbstractOperator2In<IN, IN2, OUT> extends AbstractComponen
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+  public void addInput(Stream<IN> stream) {
     state.addInput(INPUT1_KEY, (Stream<Object>) stream);
   }
 
   @Override
-  public void addInput2(StreamProducer<IN2> source, Stream<IN2> stream) {
+  public void addInput2(Stream<IN2> stream) {
     state.addInput(INPUT2_KEY, (Stream<Object>) stream);
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+  public void addOutput(Stream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 

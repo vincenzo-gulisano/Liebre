@@ -49,9 +49,9 @@ public interface Stream<T> extends Active, Named {
 
   int size();
 
-  List<StreamProducer<T>> producers();
+  List<? extends StreamProducer<T>> producers();
 
-  List<StreamConsumer<T>> consumers();
+  List<? extends StreamConsumer<T>> consumers();
 
   void resetArrivalTime();
 

@@ -136,13 +136,13 @@ public class BackoffStream<T> extends AbstractStream<T> {
   }
 
   @Override
-  public List<StreamProducer<T>> producers() {
+  public List<? extends StreamProducer<T>> producers() {
 		//FIXME: Optimize
 		return Arrays.asList(source);
   }
 
   @Override
-  public List<StreamConsumer<T>> consumers() {
+  public List<? extends StreamConsumer<T>> consumers() {
     // FIXME: Optimize
     return Arrays.asList(destination);
   }

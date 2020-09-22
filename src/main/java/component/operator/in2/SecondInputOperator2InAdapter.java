@@ -25,8 +25,6 @@ package component.operator.in2;
 
 import component.ComponentType;
 import component.ConnectionsNumber;
-import component.StreamConsumer;
-import component.StreamProducer;
 import component.operator.Operator;
 import java.util.Collection;
 import java.util.List;
@@ -57,8 +55,8 @@ class SecondInputOperator2InAdapter<IN, OUT> implements
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
-    decorated.addInput2(source, stream);
+  public void addInput(Stream<IN> stream) {
+    decorated.addInput2(stream);
   }
 
   @Override
@@ -142,8 +140,8 @@ class SecondInputOperator2InAdapter<IN, OUT> implements
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
-    decorated.addOutput(destination, stream);
+  public void addOutput(Stream<OUT> stream) {
+    decorated.addOutput(stream);
   }
 
   @Override

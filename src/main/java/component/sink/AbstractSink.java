@@ -25,7 +25,7 @@ package component.sink;
 
 import component.AbstractComponent;
 import component.ComponentType;
-import component.StreamProducer;
+
 import java.util.Collection;
 import stream.Stream;
 
@@ -59,7 +59,7 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+  public void addInput(Stream<IN> stream) {
     state.addInput(INPUT_KEY, stream);
   }
 

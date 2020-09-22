@@ -21,8 +21,8 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
   public static final String SGSTREAM_UNSUPPORTED = "Cannot invoke this function on SGStream";
 
   private ScaleGate<T> sg;
-  private List<StreamProducer<T>> producers;
-  private List<StreamConsumer<T>> consumers;
+  private List<? extends StreamProducer<T>> producers;
+  private List<? extends StreamConsumer<T>> consumers;
   private final AtomicInteger producerIndexer = new AtomicInteger(0);
   private final AtomicInteger consumerIndexer = new AtomicInteger(0);
   private Map<Integer, Integer> producerMapping = new HashMap<>();
@@ -36,8 +36,8 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
       int maxLevels,
       int writers,
       int readers,
-      List<StreamProducer<T>> producers,
-      List<StreamConsumer<T>> consumers) {
+      List<? extends StreamProducer<T>> producers,
+      List<? extends StreamConsumer<T>> consumers) {
     super(id, index);
     this.sg = new ScaleGateAArrImpl(maxLevels, writers, readers);
     this.producers = producers;
@@ -80,12 +80,12 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
   }
 
   @Override
-  public List<StreamProducer<T>> producers() {
+  public List<? extends StreamProducer<T>> producers() {
     return producers;
   }
 
   @Override
-  public List<StreamConsumer<T>> consumers() {
+  public List<? extends StreamConsumer<T>> consumers() {
     return consumers;
   }
 

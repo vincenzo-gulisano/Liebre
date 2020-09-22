@@ -24,6 +24,7 @@
 package query;
 
 import common.tuple.RichTuple;
+import common.util.Util;
 import component.Component;
 import component.StreamConsumer;
 import component.StreamProducer;
@@ -170,7 +171,11 @@ public final class Query {
       result.add(addOperator(new MapOperator<IN, OUT>(identifier, mapFunction)));
     } else {
       for (int i = 0; i < parallelism; i++) {
-        result.add(addOperator(new MapOperator<IN, OUT>(identifier + "_" + i, mapFunction)));
+        try {
+          result.add(addOperator(new MapOperator<IN, OUT>(identifier + "_" + i, Util.deepCopy(mapFunction))));
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
       }
     }
     return result;
@@ -311,44 +316,24 @@ public final class Query {
         "Error when connecting '%s': Please use connect2inXX() for Operator2In and subclasses!",
         consumer.getId());
     Stream<T> stream = getStream(producer, consumer, backoff);
-    producer.addOutput(consumer, stream);
-    consumer.addInput(producer, stream);
+    producer.addOutput(stream);
+    consumer.addInput(stream);
     return this;
   }
 
   public synchronized <T extends Comparable<? super T>> Query connect(
-      List<StreamProducer<T>> producers, List<StreamConsumer<T>> consumers) {
+      List<? extends StreamProducer<T>> producers, List<? extends StreamConsumer<T>> consumers) {
     MWMRStream<T> stream =
         streamFactory.newMWMRStream(producers, consumers, DEFAULT_SGSTREAM_MAX_LEVELS);
     for (StreamProducer<T> producer : producers) {
       stream.registerProducer(producer);
-      for (StreamConsumer<T> consumer : consumers) {
-        producer.addOutput(consumer, stream);
-      }
+      producer.addOutput(stream);
     }
     for (StreamConsumer<T> consumer : consumers) {
       stream.registerConsumer(consumer);
-      for (StreamProducer<T> producer : producers) {
-        consumer.addInput(producer, stream);
-      }
+      consumer.addInput(stream);
     }
     return this;
-  }
-
-  public synchronized <T1 extends Comparable<? super T1>,T2> List<StreamConsumer<T1>> getConsumers(List<Operator<T1,T2>> ops) {
-    List<StreamConsumer<T1>> c = new LinkedList<>();
-    for (Operator<T1, T2> op : ops) {
-      c.add(op);
-    }
-    return c;
-  }
-
-  public synchronized <T1,T2 extends Comparable<? super T2>> List<StreamProducer<T2>> getProducers(List<Operator<T1,T2>> ops) {
-    List<StreamProducer<T2>> c = new LinkedList<>();
-    for (Operator<T1, T2> op : ops) {
-      c.add(op);
-    }
-    return c;
   }
 
   public synchronized <T> Query connect2inLeft(
@@ -359,8 +344,8 @@ public final class Query {
   public synchronized <T> Query connect2inLeft(
       StreamProducer<T> producer, Operator2In<T, ?, ?> consumer, Backoff backoff) {
     Stream<T> stream = getStream(producer, consumer, backoff);
-    producer.addOutput(consumer, stream);
-    consumer.addInput(producer, stream);
+    producer.addOutput(stream);
+    consumer.addInput(stream);
     return this;
   }
 
@@ -372,8 +357,8 @@ public final class Query {
   public synchronized <T> Query connect2inRight(
       StreamProducer<T> producer, Operator2In<?, T, ?> consumer, Backoff backoff) {
     Stream<T> stream = getStream(producer, consumer.secondInputView(), backoff);
-    producer.addOutput(consumer.secondInputView(), stream);
-    consumer.addInput2(producer, stream);
+    producer.addOutput(stream);
+    consumer.addInput2(stream);
     return this;
   }
 

@@ -24,7 +24,6 @@
 package component.operator.router;
 
 import component.ComponentType;
-import component.StreamConsumer;
 import component.operator.AbstractOperator;
 import java.util.Collection;
 import stream.Stream;
@@ -59,7 +58,7 @@ public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements Rou
   }
 
   @Override
-  public void addOutput(StreamConsumer<T> destination, Stream<T> stream) {
+  public void addOutput(Stream<T> stream) {
     state.addOutput(stream);
   }
 

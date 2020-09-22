@@ -40,11 +40,10 @@ public interface StreamProducer<OUT> extends Named, Component {
    * Connect this producer with the given {@link StreamConsumer} using the provided stream.
    * Different implementations allow one or more calls to this function.
    *
-   * @param destination The consumer fed by this consumer.
    * @param stream The {@link Stream} that forms the data connection.
    * @see ConnectionsNumber
    */
-  void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream);
+  void addOutput(Stream<OUT> stream);
 
   /**
    * Get the output {@link Stream} of this producer, <emph>if is the type of producer that always

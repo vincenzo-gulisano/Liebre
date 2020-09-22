@@ -24,7 +24,9 @@
 package component.operator.in1.map;
 
 import component.ComponentFunction;
+
+import java.io.Serializable;
 import java.util.function.Function;
 
 /** Function that maps an input tuple to an output tuple. Returns null if no result is produced. */
-public interface MapFunction<IN, OUT> extends ComponentFunction, Function<IN, OUT> {}
+public interface MapFunction<IN, OUT> extends ComponentFunction, Function<IN, OUT>, Serializable {}

@@ -42,11 +42,10 @@ public interface StreamConsumer<IN> extends Named, Component {
    * Connect this consumer with the given {@link StreamProducer} using the provided stream.
    * Different implementations allow one or more calls to this function.
    *
-   * @param source The producer feeding this consumer.
    * @param stream The {@link Stream} that forms the data connection.
    * @see ConnectionsNumber
    */
-  void addInput(StreamProducer<IN> source, Stream<IN> stream);
+  void addInput(Stream<IN> stream);
 
   /**
    * Get the input {@link Stream} of this consumer, if is the type of consumer that always has a

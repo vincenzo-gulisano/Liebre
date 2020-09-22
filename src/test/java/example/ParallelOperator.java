@@ -79,7 +79,7 @@ public class ParallelOperator {
         Sink<MyTuple> sink = q.addBaseSink("O1",
                 tuple -> System.out.println(tuple));
 
-        q.connect(Arrays.asList(source1, source2), q.getConsumers(maps)).connect(q.getProducers(maps), Arrays.asList(sink));
+        q.connect(Arrays.asList(source1, source2), maps).connect(maps, Arrays.asList(sink));
 
         q.activate();
         Util.sleep(30000);

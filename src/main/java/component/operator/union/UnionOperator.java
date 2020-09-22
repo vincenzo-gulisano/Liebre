@@ -24,7 +24,6 @@
 package component.operator.union;
 
 import component.ComponentType;
-import component.StreamProducer;
 import component.operator.AbstractOperator;
 import stream.Stream;
 
@@ -59,7 +58,7 @@ public class UnionOperator<T> extends AbstractOperator<T, T> {
   }
 
   @Override
-  public void addInput(StreamProducer<T> source, Stream<T> stream) {
+  public void addInput(Stream<T> stream) {
     state.addInput(stream);
   }
 

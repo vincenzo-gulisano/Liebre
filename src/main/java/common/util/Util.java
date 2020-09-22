@@ -26,6 +26,8 @@ package common.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.*;
+
 /**
  * General utilities
  */
@@ -58,4 +60,17 @@ public class Util {
     }
   }
 
+  public static <T extends Serializable> T deepCopy(T in) throws Exception
+  {
+    //Serialization of object
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    ObjectOutputStream out = new ObjectOutputStream(bos);
+    out.writeObject(in);
+
+    //De-serialization of object
+    ByteArrayInputStream bis = new   ByteArrayInputStream(bos.toByteArray());
+    ObjectInputStream copy = new ObjectInputStream(bis);
+    return (T) copy.readObject();
+
+  }
 }

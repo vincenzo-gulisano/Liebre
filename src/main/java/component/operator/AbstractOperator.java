@@ -25,8 +25,7 @@ package component.operator;
 
 import component.AbstractComponent;
 import component.ComponentType;
-import component.StreamConsumer;
-import component.StreamProducer;
+
 import java.util.Collection;
 import stream.Stream;
 
@@ -54,12 +53,12 @@ public abstract class AbstractOperator<IN, OUT> extends AbstractComponent<IN, OU
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+  public void addOutput(Stream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 
   @Override
-  public void addInput(StreamProducer<IN> source, Stream<IN> stream) {
+  public void addInput(Stream<IN> stream) {
     state.addInput(INPUT_KEY, stream);
   }
 

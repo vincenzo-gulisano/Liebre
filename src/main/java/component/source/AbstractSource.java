@@ -24,7 +24,7 @@
 package component.source;
 
 import component.ComponentType;
-import component.StreamConsumer;
+
 import java.util.Collection;
 import stream.Stream;
 
@@ -39,7 +39,7 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
   }
 
   @Override
-  public void addOutput(StreamConsumer<OUT> destination, Stream<OUT> stream) {
+  public void addOutput(Stream<OUT> stream) {
     state.addOutput(OUTPUT_KEY, stream);
   }
 

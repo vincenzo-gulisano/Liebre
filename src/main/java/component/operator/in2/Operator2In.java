@@ -23,7 +23,6 @@
 
 package component.operator.in2;
 
-import component.StreamProducer;
 import component.operator.Operator;
 import component.operator.in1.Operator1In;
 import java.util.List;
@@ -50,10 +49,9 @@ public interface Operator2In<IN, IN2, OUT> extends
   /**
    * Set the second input {@link Stream} for this component.operator.
    *
-   * @param source The {@link StreamProducer} feeding this component.operator.
    * @param stream The stream that forms the data connection.
    */
-  void addInput2(StreamProducer<IN2> source, Stream<IN2> stream);
+  void addInput2(Stream<IN2> stream);
 
   /**
    * Get the second input {@link Stream} for this component.operator.
