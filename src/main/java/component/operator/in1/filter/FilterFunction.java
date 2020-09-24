@@ -24,6 +24,8 @@
 package component.operator.in1.filter;
 
 import component.ComponentFunction;
+
+import java.io.Serializable;
 import java.util.function.Predicate;
 
 /**
@@ -31,6 +33,6 @@ import java.util.function.Predicate;
  *
  * @param <T> The type of tuples handled by the predicate.
  */
-public interface FilterFunction<T> extends ComponentFunction, Predicate<T> {
+public interface FilterFunction<T> extends ComponentFunction, Predicate<T>, Serializable {
 
 }

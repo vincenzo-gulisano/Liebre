@@ -24,6 +24,8 @@
 package component.operator.in2.join;
 
 import component.ComponentFunction;
+
+import java.io.Serializable;
 import java.util.function.BiFunction;
 
 /**
@@ -35,7 +37,7 @@ import java.util.function.BiFunction;
  * @param <OUT> The resulting tuple type.
  */
 public interface JoinFunction<IN1, IN2, OUT> extends
-    ComponentFunction, BiFunction<IN1, IN2, OUT> {
+    ComponentFunction, BiFunction<IN1, IN2, OUT>, Serializable {
 
 
 }

@@ -24,6 +24,8 @@
 package component.operator.in1.map;
 
 import component.ComponentFunction;
+
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -33,7 +35,7 @@ import java.util.List;
  * @param <OUT> The type of the output tuple(s).
  */
 @FunctionalInterface
-public interface FlatMapFunction<IN, OUT> extends ComponentFunction {
+public interface FlatMapFunction<IN, OUT> extends ComponentFunction, Serializable {
 
   /**
    * Apply a function mapping the input to zero or more output tuples. If no tuples are to be
