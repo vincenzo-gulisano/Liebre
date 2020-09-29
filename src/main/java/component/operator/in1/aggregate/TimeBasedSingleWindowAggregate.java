@@ -73,7 +73,7 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
     }
 
     public long getEarliestWinStartTS(long ts) {
-        long contributingWins = ts % WA < WS % WA ? WS_WA_ceil : WS_WA_ceil_minus_1;
+        long contributingWins = (ts % WA < WS % WA || WS==WA) ? WS_WA_ceil : WS_WA_ceil_minus_1;
         return (long) Math.max((ts / WA - contributingWins + 1) * WA, 0.0);
     }
 
