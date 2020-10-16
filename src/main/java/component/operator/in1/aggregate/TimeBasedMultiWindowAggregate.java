@@ -40,59 +40,22 @@ import java.util.TreeMap;
  * @param <OUT> The type of output tuples.
  */
 public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends RichTuple>
-        extends BaseOperator1In<IN, OUT> {
-
-    private final long WS_WA_ceil;
-    //    LinkedList<IN> tuples;
-    TreeMap<Long, HashMap<String, TimeBasedSingleWindow<IN, OUT>>> windows;
-    //    TreeMap<Long, HashMap<String, WinCounter>> windowsCounters;
-    private final long WS;
-    private final long WA;
-    private final TimeBasedSingleWindow<IN, OUT> aggregateWindow;
-    private long latestTimestamp;
-    private boolean firstTuple = true;
-    private final long WS_WA_ceil_minus_1;
+        extends TimeBasedAggregate<IN, OUT> {
 
     public TimeBasedMultiWindowAggregate(
             String id,
             long windowSize,
             long windowSlide,
             TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
-        super(id);
-//        tuples = new LinkedList<>();
-        windows = new TreeMap<>();
-//        windowsCounters = new TreeMap<>();
-        this.WS = windowSize;
-        this.WA = windowSlide;
-        this.aggregateWindow = aggregateWindow;
-
-        // this is for speeding up how to find the windows to which a tuple contributes to.
-        WS_WA_ceil = (long) Math.ceil((double) WS / (double) WA);
-        WS_WA_ceil_minus_1 = WS_WA_ceil - 1;
-    }
-
-    public long getEarliestWinStartTS(long ts) {
-        long winStart = (ts / WA) * WA;
-        while (winStart-WA+WS>ts) {
-            winStart-=WA;
-        }
-        return Math.max(0,winStart);
-//        long contributingWins = (ts % WA < WS % WA || WS % WA == 0) ? WS_WA_ceil : WS_WA_ceil_minus_1;
-//        return (long) Math.max((ts / WA - contributingWins + 1) * WA, 0.0);
+        super(id, windowSize, windowSlide, aggregateWindow);
     }
 
     public List<OUT> processTupleIn1(IN t) {
 
         List<OUT> result = new LinkedList<OUT>();
 
-        // make sure timestamps are not decreasing
-        if (firstTuple) {
-            firstTuple = false;
-        } else {
-            if (t.getTimestamp() < latestTimestamp) {
-                throw new RuntimeException("Input tuple's timestamp decreased!");
-            }
-        }
+        checkIncreasingTimestamps(t);
+
         latestTimestamp = t.getTimestamp();
 
         long earliestWinStartTSforT = getEarliestWinStartTS(latestTimestamp);
@@ -156,18 +119,5 @@ public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends Ric
     @Override
     public boolean canRun() {
         return aggregateWindow.canRun() && super.canRun();
-    }
-
-    private static class WinCounter {
-
-        private long count = 0;
-
-        public void add(long v) {
-            count += v;
-        }
-
-        public boolean isZero() {
-            return count == 0;
-        }
     }
 }
