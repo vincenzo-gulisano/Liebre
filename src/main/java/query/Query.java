@@ -25,11 +25,15 @@ package query;
 
 import common.tuple.RichTuple;
 import common.util.Util;
+import common.util.backoff.Backoff;
+import common.util.backoff.ExponentialBackoff;
 import component.Component;
 import component.StreamConsumer;
 import component.StreamProducer;
 import component.operator.Operator;
 import component.operator.in1.Operator1In;
+import component.operator.in1.aggregate.AggregateType;
+import component.operator.in1.aggregate.TimeBasedMultiWindowAggregate;
 import component.operator.in1.aggregate.TimeBasedSingleWindow;
 import component.operator.in1.aggregate.TimeBasedSingleWindowAggregate;
 import component.operator.in1.filter.FilterFunction;
@@ -42,21 +46,11 @@ import component.operator.in2.Operator2In;
 import component.operator.in2.join.JoinFunction;
 import component.operator.in2.join.TimeBasedJoin;
 import component.operator.router.BaseRouterOperator;
+import component.operator.router.HashBasedRouterOperator;
 import component.operator.router.RouterOperator;
 import component.operator.union.UnionOperator;
-import component.sink.BaseSink;
-import component.sink.Sink;
-import component.sink.SinkFunction;
-import component.sink.TextFileSinkFunction;
-import component.source.BaseSource;
-import component.source.Source;
-import component.source.SourceFunction;
-import component.source.TextFileSourceFunction;
-import common.util.backoff.Backoff;
-import common.util.backoff.ExponentialBackoff;
-
-import java.util.*;
-
+import component.sink.*;
+import component.source.*;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,6 +60,9 @@ import stream.BackoffStreamFactory;
 import stream.MWMRStream;
 import stream.Stream;
 import stream.StreamFactory;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * The main execution unit. Acts as a factory for the stream {@link Component}s such as {@link
@@ -127,14 +124,55 @@ public final class Query {
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  Operator<IN, OUT> addAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide,
+          AggregateType type) {
+
+    Operator1In<IN, OUT> op = null;
+    switch (type) {
+      case SINGLEWINDOW:
+        op = new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window);
+        break;
+      case MULTIWINDOW:
+        op = new TimeBasedMultiWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window);
+        break;
+      default:
+        throw new RuntimeException("Unrecognized aggregate type");
+    }
+    return addOperator(op);
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
       Operator<IN, OUT> addAggregateOperator(
           String identifier,
           TimeBasedSingleWindow<IN, OUT> window,
           long windowSize,
           long windowSlide) {
 
-    return addOperator(
-        new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window));
+    return addAggregateOperator(identifier,window,windowSize,windowSlide,AggregateType.SINGLEWINDOW);
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  List<Operator<IN, OUT>> addAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide,
+          AggregateType type,
+          int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addAggregateOperator(identifier, window, windowSize, windowSlide,type));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addAggregateOperator(identifier+ "_" + i, window, windowSize, windowSlide,type));
+      }
+    }
+    return result;
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
@@ -144,18 +182,7 @@ public final class Query {
           long windowSize,
           long windowSlide,
           int parallelism) {
-    assert (parallelism >= 1);
-    List<Operator<IN, OUT>> result = new LinkedList<>();
-    if (parallelism == 1) {
-      result.add(addOperator(
-              new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window)));
-    } else {
-      for (int i = 0; i < parallelism; i++) {
-        result.add(addOperator(
-                new TimeBasedSingleWindowAggregate<IN, OUT>(identifier + "_" + i, windowSize, windowSlide, window)));
-      }
-    }
-    return result;
+    return addAggregateOperator(identifier,window,windowSize,windowSlide,AggregateType.SINGLEWINDOW,parallelism);
   }
 
   public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
@@ -280,6 +307,10 @@ public final class Query {
     return addSource(new BaseSource<>(id, new TextFileSourceFunction(path)));
   }
 
+  public synchronized <T extends Serializable> Source<T> addBinaryFileSource(String id, String path) {
+    return addSource(new BaseSource<>(id, new BinaryFileSourceFunction(path)));
+  }
+
   public synchronized <T> Sink<T> addSink(Sink<T> sink) {
     saveComponent(sinks, sink, SINK);
     return sink;
@@ -291,6 +322,10 @@ public final class Query {
 
   public synchronized <T> Sink<T> addTextFileSink(String id, String path, boolean autoFlush) {
     return addSink(new BaseSink<>(id, new TextFileSinkFunction<>(path, autoFlush)));
+  }
+
+  public synchronized <T extends Serializable> Sink<T> addBinaryFileSink(String id, String path) {
+    return addSink(new BaseSink<>(id, new BinaryFileSinkFunction<>(path)));
   }
 
   public synchronized <OUT, IN, IN2> Operator2In<IN, IN2, OUT> addOperator2In(
@@ -319,6 +354,36 @@ public final class Query {
     producer.addOutput(stream);
     consumer.addInput(stream);
     return this;
+  }
+
+  public synchronized <T extends RichTuple> Query connectKeyBy(
+          StreamProducer<T> producer, List<? extends StreamConsumer<T>> consumers) {
+
+    // Generate id based on producer and consumers
+    String id = producer.getId();
+    for (StreamConsumer<T> cons : consumers) {
+      id += "_" + cons.getId();
+    }
+    // Add a router with unique id
+    RouterOperator<T> router = new HashBasedRouterOperator<T>(id);
+    saveComponent(operators, router, OPERATOR);
+
+    // Now connect everything
+    connect(producer, router);
+    for (StreamConsumer<T> cons : consumers) {
+      connect(router, cons);
+    }
+
+    return this;
+  }
+
+  public synchronized <T extends Comparable<? super T>> Query connect(
+          List<? extends StreamProducer<T>> producers, StreamConsumer<T> consumer) {
+
+    List<StreamConsumer<T>> consumers = new LinkedList<>();
+    consumers.add(consumer);
+
+    return connect(producers, consumers);
   }
 
   public synchronized <T extends Comparable<? super T>> Query connect(

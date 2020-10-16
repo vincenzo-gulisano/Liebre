@@ -26,6 +26,7 @@ package example;
 import common.tuple.BaseRichTuple;
 import common.util.Util;
 import component.operator.Operator;
+import component.operator.in1.aggregate.AggregateType;
 import component.operator.in1.aggregate.BaseTimeBasedSingleWindow;
 import component.operator.in1.aggregate.TimeBasedSingleWindow;
 import component.sink.Sink;
@@ -38,7 +39,7 @@ public class TextAggregate {
   public static void main(String[] args) {
     final String reportFolder = args[0];
     final String inputFile = args[1];
-    final String outputFile = reportFolder + File.separator + "TextAggregate.out.csv";
+    final String outputFile = args[2];
     final long WINDOW_SIZE = 100;
     final long WINDOW_SLIDE = 20;
 
@@ -57,7 +58,7 @@ public class TextAggregate {
             });
 
     Operator<InputTuple, OutputTuple> aggregate =
-        q.addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE, WINDOW_SLIDE);
+        q.addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE, WINDOW_SLIDE, AggregateType.MULTIWINDOW);
 
     Sink<OutputTuple> o1 = q.addTextFileSink("o1", outputFile, true);
 
@@ -87,6 +88,12 @@ public class TextAggregate {
       super(timestamp, key + "");
       this.count = count;
       this.average = average;
+    }
+
+    @Override
+    public String toString() {
+      return timestamp + "," + key + "," + count +
+              "," + average;
     }
   }
 
