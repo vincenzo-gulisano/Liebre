@@ -24,7 +24,6 @@
 package component.operator.in1.aggregate;
 
 import common.tuple.RichTuple;
-import component.operator.in1.BaseOperator1In;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,17 +41,31 @@ import java.util.TreeMap;
 public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends RichTuple>
         extends TimeBasedAggregate<IN, OUT> {
 
+    private final int instanceNumber;
     LinkedList<IN> tuples;
     TreeMap<Long, HashMap<String, WinCounter>> windowsCounters;
+    TimeBasedSingleWindowStoringFilter<IN> filter;
+
+    public TimeBasedSingleWindowAggregate(
+            String id,
+            long windowSize,
+            long windowSlide,
+            TimeBasedSingleWindow<IN, OUT> aggregateWindow,
+            TimeBasedSingleWindowStoringFilter<IN> filter,
+            int instanceNumber) {
+        super(id, windowSize, windowSlide, aggregateWindow);
+        tuples = new LinkedList<>();
+        windowsCounters = new TreeMap<>();
+        this.filter = filter;
+        this.instanceNumber = instanceNumber;
+    }
 
     public TimeBasedSingleWindowAggregate(
             String id,
             long windowSize,
             long windowSlide,
             TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
-        super(id, windowSize, windowSlide, aggregateWindow);
-        tuples = new LinkedList<>();
-        windowsCounters = new TreeMap<>();
+        this(id, windowSize, windowSlide, aggregateWindow, new TimeBasedSingleWindowStoreAllFilter<>(), 0);
     }
 
     public List<OUT> processTupleIn1(IN t) {
@@ -82,8 +95,8 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
                 while (tuples.size() > 0) {
                     IN tuple = tuples.peek();
                     if (tuple.getTimestamp() < earliestWinStartTS + WA) {
-                            windows.get(earliestWinStartTS).get(tuple.getKey()).remove(tuple);
-                            windowsCounters.get(earliestWinStartTS).get(tuple.getKey()).add(-1);
+                        windows.get(earliestWinStartTS).get(tuple.getKey()).remove(tuple);
+                        windowsCounters.get(earliestWinStartTS).get(tuple.getKey()).add(-1);
                         if (windowsCounters.get(earliestWinStartTS).get(tuple.getKey()).isZero()) {
                             windows.get(earliestWinStartTS).remove(tuple.getKey());
                             windowsCounters.get(earliestWinStartTS).remove(tuple.getKey());
@@ -124,14 +137,17 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
             windows.get(earliestWinStartTSforT).put(t.getKey(), aggregateWindow.factory());
             windows.get(earliestWinStartTSforT).get(t.getKey()).setKey(t.getKey());
             windows.get(earliestWinStartTSforT).get(t.getKey()).setStartTimestamp(earliestWinStartTSforT);
+            windows.get(earliestWinStartTSforT).get(t.getKey()).setInstanceNumber(instanceNumber);
             windowsCounters.get(earliestWinStartTSforT).put(t.getKey(), new WinCounter());
         }
 
         windows.get(earliestWinStartTSforT).get(t.getKey()).add(t);
-        windowsCounters.get(earliestWinStartTSforT).get(t.getKey()).add(1);
 
-        // Store tuple
-        tuples.add(t);
+        // Store tuple and increase counter if the tuple is kepy
+        if (filter.keep(t, instanceNumber)) {
+            windowsCounters.get(earliestWinStartTSforT).get(t.getKey()).add(1);
+            tuples.add(t);
+        }
         return result;
     }
 

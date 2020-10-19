@@ -34,6 +34,15 @@ public abstract class BaseTimeBasedSingleWindow<IN extends RichTuple, OUT extend
 
   protected String key;
   protected long startTimestamp;
+  protected int instanceNumber;
+
+  public int getInstanceNumber() {
+    return instanceNumber;
+  }
+
+  public void setInstanceNumber(int aggregateInstanceNumber) {
+    this.instanceNumber = aggregateInstanceNumber;
+  }
 
   @Override
   public abstract TimeBasedSingleWindow<IN, OUT> factory();

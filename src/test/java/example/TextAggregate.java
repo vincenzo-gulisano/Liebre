@@ -101,11 +101,17 @@ public class TextAggregate {
 
     private double count = 0;
     private double sum = 0;
+//    List<tuple> tuples;
+
+    AverageWindow(int id) {
+
+    }
 
     @Override
     public void add(InputTuple t) {
       count++;
       sum += t.value;
+      if (counter%id==0) tuples.add(t)
     }
 
     @Override
