@@ -8,6 +8,7 @@ import java.util.TreeMap;
 
 public abstract class TimeBasedAggregate<IN extends RichTuple, OUT extends RichTuple> extends BaseOperator1In<IN, OUT> {
     protected final long WS_WA_ceil;
+    protected final int instanceNumber;
     protected long WS;
     protected long WA;
     protected TimeBasedSingleWindow<IN, OUT> aggregateWindow;
@@ -16,7 +17,7 @@ public abstract class TimeBasedAggregate<IN extends RichTuple, OUT extends RichT
     protected long WS_WA_ceil_minus_1;
     TreeMap<Long, HashMap<String, TimeBasedSingleWindow<IN, OUT>>> windows;
 
-    public TimeBasedAggregate(String id, long windowSize, long windowSlide, TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
+    public TimeBasedAggregate(String id, long windowSize, long windowSlide, TimeBasedSingleWindow<IN, OUT> aggregateWindow, int instanceNumber) {
         super(id);
         windows = new TreeMap<>();
         this.WS = windowSize;
@@ -24,6 +25,7 @@ public abstract class TimeBasedAggregate<IN extends RichTuple, OUT extends RichT
         this.aggregateWindow = aggregateWindow;
         WS_WA_ceil = (long) Math.ceil((double) WS / (double) WA);
         WS_WA_ceil_minus_1 = WS_WA_ceil - 1;
+        this.instanceNumber = instanceNumber;
     }
 
     public long getEarliestWinStartTS(long ts) {

@@ -41,7 +41,6 @@ import java.util.TreeMap;
 public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends RichTuple>
         extends TimeBasedAggregate<IN, OUT> {
 
-    private final int instanceNumber;
     LinkedList<IN> tuples;
     TreeMap<Long, HashMap<String, WinCounter>> windowsCounters;
     TimeBasedSingleWindowStoringFilter<IN> filter;
@@ -53,11 +52,10 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
             TimeBasedSingleWindow<IN, OUT> aggregateWindow,
             TimeBasedSingleWindowStoringFilter<IN> filter,
             int instanceNumber) {
-        super(id, windowSize, windowSlide, aggregateWindow);
+        super(id, windowSize, windowSlide, aggregateWindow,instanceNumber);
         tuples = new LinkedList<>();
         windowsCounters = new TreeMap<>();
         this.filter = filter;
-        this.instanceNumber = instanceNumber;
     }
 
     public TimeBasedSingleWindowAggregate(
@@ -66,6 +64,15 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
             long windowSlide,
             TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
         this(id, windowSize, windowSlide, aggregateWindow, new TimeBasedSingleWindowStoreAllFilter<>(), 0);
+    }
+
+    public TimeBasedSingleWindowAggregate(
+            String id,
+            long windowSize,
+            long windowSlide,
+            TimeBasedSingleWindow<IN, OUT> aggregateWindow,
+            int instanceNumber) {
+        this(id, windowSize, windowSlide, aggregateWindow, new TimeBasedSingleWindowStoreAllFilter<>(), instanceNumber);
     }
 
     public List<OUT> processTupleIn1(IN t) {
