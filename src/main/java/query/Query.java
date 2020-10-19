@@ -32,10 +32,7 @@ import component.StreamConsumer;
 import component.StreamProducer;
 import component.operator.Operator;
 import component.operator.in1.Operator1In;
-import component.operator.in1.aggregate.AggregateType;
-import component.operator.in1.aggregate.TimeBasedMultiWindowAggregate;
-import component.operator.in1.aggregate.TimeBasedSingleWindow;
-import component.operator.in1.aggregate.TimeBasedSingleWindowAggregate;
+import component.operator.in1.aggregate.*;
 import component.operator.in1.filter.FilterFunction;
 import component.operator.in1.filter.FilterOperator;
 import component.operator.in1.map.FlatMapFunction;
@@ -124,6 +121,29 @@ public final class Query {
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  Operator<IN, OUT> addSingleWindowAggregateOperator(
+          String identifier,
+          int instanceNumber,
+          TimeBasedSingleWindowStoringFilter<IN> filter,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide) {
+
+    return addOperator(new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window, filter, instanceNumber));
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  Operator<IN, OUT> addSingleWindowAggregateOperator(
+          String identifier,
+          int instanceNumber,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide) {
+
+    return addSingleWindowAggregateOperator(identifier, instanceNumber, new TimeBasedSingleWindowStoreAllFilter<>(), window, windowSize, windowSlide);
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
   Operator<IN, OUT> addAggregateOperator(
           String identifier,
           int instanceNumber,
@@ -135,8 +155,7 @@ public final class Query {
     Operator1In<IN, OUT> op = null;
     switch (type) {
       case SINGLEWINDOW:
-        op = new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window,instanceNumber);
-        break;
+        return addSingleWindowAggregateOperator(identifier, instanceNumber, window, windowSize, windowSlide);
       case MULTIWINDOW:
         op = new TimeBasedMultiWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window, instanceNumber);
         break;
@@ -154,6 +173,45 @@ public final class Query {
           long windowSlide) {
 
     return addAggregateOperator(identifier,0,window,windowSize,windowSlide,AggregateType.SINGLEWINDOW);
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  List<Operator<IN, OUT>> addSingleWindowAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindowStoringFilter filter,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide,
+          int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addSingleWindowAggregateOperator(identifier, 0, filter, window, windowSize, windowSlide));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addSingleWindowAggregateOperator(identifier + "_" + i, i, filter, window, windowSize, windowSlide));
+      }
+    }
+    return result;
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  List<Operator<IN, OUT>> addSingleWindowAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide,
+          int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addSingleWindowAggregateOperator(identifier, 0, new TimeBasedSingleWindowStoreAllFilter<>(), window, windowSize, windowSlide));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addSingleWindowAggregateOperator(identifier + "_" + i, i, new TimeBasedSingleWindowStoreAllFilter<>(), window, windowSize, windowSlide));
+      }
+    }
+    return result;
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
