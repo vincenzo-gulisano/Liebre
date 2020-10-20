@@ -166,6 +166,17 @@ public final class Query {
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  Operator<IN, OUT> addAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindow<IN, OUT> window,
+          long windowSize,
+          long windowSlide,
+          AggregateType type) {
+
+    return addAggregateOperator(identifier,0,window,windowSize,windowSlide,type);
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
       Operator<IN, OUT> addAggregateOperator(
           String identifier,
           TimeBasedSingleWindow<IN, OUT> window,
