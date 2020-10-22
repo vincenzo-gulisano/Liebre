@@ -9,6 +9,7 @@ import java.util.TreeMap;
 public abstract class TimeBasedAggregate<IN extends RichTuple, OUT extends RichTuple> extends BaseOperator1In<IN, OUT> {
     protected final long WS_WA_ceil;
     protected final int instanceNumber;
+    protected final int parallelismDegree;
     protected long WS;
     protected long WA;
     protected TimeBasedSingleWindow<IN, OUT> aggregateWindow;
@@ -17,8 +18,9 @@ public abstract class TimeBasedAggregate<IN extends RichTuple, OUT extends RichT
     protected long WS_WA_ceil_minus_1;
     TreeMap<Long, HashMap<String, TimeBasedSingleWindow<IN, OUT>>> windows;
 
-    public TimeBasedAggregate(String id, long windowSize, long windowSlide, TimeBasedSingleWindow<IN, OUT> aggregateWindow, int instanceNumber) {
+    public TimeBasedAggregate(String id, long windowSize, long windowSlide, TimeBasedSingleWindow<IN, OUT> aggregateWindow, int instanceNumber, int parallelismDegree) {
         super(id);
+        this.parallelismDegree = parallelismDegree;
         windows = new TreeMap<>();
         this.WS = windowSize;
         this.WA = windowSlide;

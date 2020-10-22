@@ -24,12 +24,10 @@
 package component.operator.in1.aggregate;
 
 import common.tuple.RichTuple;
-import component.operator.in1.BaseOperator1In;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeMap;
 
 /**
  * Aggregate implementation for sliding time-based windows. Decides which tuples belong to which
@@ -48,7 +46,7 @@ public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends Ric
             long windowSlide,
             TimeBasedSingleWindow<IN, OUT> aggregateWindow,
             int instanceNumber) {
-        super(id, windowSize, windowSlide, aggregateWindow,instanceNumber);
+        super(id, windowSize, windowSlide, aggregateWindow,instanceNumber, parallelismDegree);
     }
 
     public TimeBasedMultiWindowAggregate(

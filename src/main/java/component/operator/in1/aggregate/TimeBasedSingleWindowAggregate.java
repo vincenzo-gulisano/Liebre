@@ -52,7 +52,7 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
             TimeBasedSingleWindow<IN, OUT> aggregateWindow,
             TimeBasedSingleWindowStoringFilter<IN> filter,
             int instanceNumber) {
-        super(id, windowSize, windowSlide, aggregateWindow,instanceNumber);
+        super(id, windowSize, windowSlide, aggregateWindow,instanceNumber, parallelismDegree);
         tuples = new LinkedList<>();
         windowsCounters = new TreeMap<>();
         this.filter = filter;
