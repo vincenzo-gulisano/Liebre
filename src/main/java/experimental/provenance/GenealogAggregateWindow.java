@@ -51,8 +51,4 @@ public class GenealogAggregateWindow<IN extends GenealogTuple, OUT extends Genea
     window.setStartTimestamp(ts);
   }
 
-  @Override
-  public void setInstanceNumber(int instanceNumber) {
-    window.setInstanceNumber(instanceNumber);
-  }
 }

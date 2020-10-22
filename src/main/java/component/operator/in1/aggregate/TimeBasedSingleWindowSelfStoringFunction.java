@@ -80,6 +80,6 @@ public interface TimeBasedSingleWindowSelfStoringFunction<IN extends RichTuple, 
 
   void setParallelismDegree(int parallelismDegree);
 
-  int isEmpty();
+  boolean isEmpty();
 
 }

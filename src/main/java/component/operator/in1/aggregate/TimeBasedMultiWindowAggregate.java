@@ -44,17 +44,8 @@ public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends Ric
             String id,
             long windowSize,
             long windowSlide,
-            TimeBasedSingleWindow<IN, OUT> aggregateWindow,
-            int instanceNumber) {
-        super(id, windowSize, windowSlide, aggregateWindow,instanceNumber, parallelismDegree);
-    }
-
-    public TimeBasedMultiWindowAggregate(
-            String id,
-            long windowSize,
-            long windowSlide,
             TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
-        this(id, windowSize, windowSlide, aggregateWindow,0);
+        super(id, windowSize, windowSlide, aggregateWindow);
     }
 
     public List<OUT> processTupleIn1(IN t) {

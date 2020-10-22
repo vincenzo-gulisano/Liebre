@@ -83,11 +83,4 @@ public interface TimeBasedSingleWindow<IN extends RichTuple, OUT extends RichTup
    */
   void setStartTimestamp(long startTimestamp);
 
-  /**
-   * Setter for the instance number of the aggregate maintaining this window.
-   *
-   * @param instanceNumber The instance number of the aggregate maintaining this window.
-   */
-  void setInstanceNumber(int instanceNumber);
-
 }
