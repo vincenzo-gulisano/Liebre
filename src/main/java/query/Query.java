@@ -32,10 +32,7 @@ import component.StreamConsumer;
 import component.StreamProducer;
 import component.operator.Operator;
 import component.operator.in1.Operator1In;
-import component.operator.in1.aggregate.AggregateType;
-import component.operator.in1.aggregate.TimeBasedMultiWindowAggregate;
-import component.operator.in1.aggregate.TimeBasedSingleWindow;
-import component.operator.in1.aggregate.TimeBasedSingleWindowAggregate;
+import component.operator.in1.aggregate.*;
 import component.operator.in1.filter.FilterFunction;
 import component.operator.in1.filter.FilterOperator;
 import component.operator.in1.map.FlatMapFunction;
@@ -152,6 +149,47 @@ public final class Query {
           long windowSlide) {
 
     return addAggregateOperator(identifier,window,windowSize,windowSlide,AggregateType.SINGLEWINDOW);
+  }
+
+  private synchronized <IN extends RichTuple, OUT extends RichTuple>
+  Operator<IN, OUT> addSelfStoringAggregateOperator(
+          String identifier,
+          int instance,
+          int parallelismDegree,
+          TimeBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          long windowSize,
+          long windowSlide) {
+
+    return addOperator(new TimeBasedSingleWindowSelfStoringAggregate<IN, OUT>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  Operator<IN, OUT> addSelfStoringAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          long windowSize,
+          long windowSlide) {
+
+    return addOperator(new TimeBasedSingleWindowSelfStoringAggregate<IN, OUT>(identifier, 0, 1, windowSize, windowSlide, window));
+  }
+
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  List<Operator<IN, OUT>> addSelfStoringAggregateOperator(
+          String identifier,
+          TimeBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          long windowSize,
+          long windowSlide,
+          int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addSelfStoringAggregateOperator(identifier, window, windowSize, windowSlide));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addSelfStoringAggregateOperator(identifier+ "_" + i,i,parallelism, window, windowSize, windowSlide));
+      }
+    }
+    return result;
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
