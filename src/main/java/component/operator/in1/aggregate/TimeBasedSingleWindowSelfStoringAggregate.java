@@ -87,7 +87,10 @@ public class TimeBasedSingleWindowSelfStoringAggregate<IN extends RichTuple, OUT
 
                 // Produce results for stale windows
                 for (TimeBasedSingleWindowSelfStoringFunction<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
-                    result.add(w.getAggregatedResult());
+                    OUT outT = w.getAggregatedResult();
+                    if (outT!=null) {
+                        result.add(outT);
+                    }
                 }
 
                 // Shift windows

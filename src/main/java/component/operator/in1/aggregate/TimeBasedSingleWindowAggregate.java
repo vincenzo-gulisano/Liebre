@@ -74,7 +74,10 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
 
                 // Produce results for stale windows
                 for (TimeBasedSingleWindow<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
-                    result.add(w.getAggregatedResult());
+                    OUT outT = w.getAggregatedResult();
+                    if (outT!=null) {
+                        result.add(outT);
+                    }
                 }
 
                 // Remove contribution of stale tuples from stale windows
