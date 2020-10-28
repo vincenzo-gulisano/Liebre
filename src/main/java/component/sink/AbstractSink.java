@@ -55,6 +55,10 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
       increaseTuplesRead();
       increaseTuplesWritten();
       processTuple(tuple);
+    } {
+      if (input.isFlushed()) {
+        // Notify the Global Context
+      }
     }
   }
 

@@ -56,4 +56,9 @@ public interface Stream<T> extends Active, Named {
   void resetArrivalTime();
 
   double averageArrivalTime();
+
+  void flush();
+
+  boolean isFlushed();
+
 }

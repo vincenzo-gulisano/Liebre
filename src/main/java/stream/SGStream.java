@@ -119,4 +119,14 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
   public double averageArrivalTime() {
     throw new UnsupportedOperationException(SGSTREAM_UNSUPPORTED);
   }
+
+  @Override
+  public void flush() {
+    //TODO
+  }
+
+  @Override
+  public boolean isFlushed() {
+    return false;
+  }
 }

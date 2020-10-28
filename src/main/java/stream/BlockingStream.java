@@ -26,11 +26,12 @@ package stream;
 import common.tuple.RichTuple;
 import component.StreamConsumer;
 import component.StreamProducer;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class BlockingStream<T> extends AbstractStream<T> {
 
@@ -41,6 +42,7 @@ public class BlockingStream<T> extends AbstractStream<T> {
   private final StreamConsumer<T> destination;
   private volatile long tuplesRead;
   private volatile long tuplesWritten;
+  private boolean isFlushed;
 
   private volatile double averageArrivalTime = -1;
 
@@ -135,6 +137,16 @@ public class BlockingStream<T> extends AbstractStream<T> {
   @Override
   public double averageArrivalTime() {
     return averageArrivalTime;
+  }
+
+  @Override
+  public void flush() {
+    throw new UnsupportedOperationException("flushing is not supported for blocking queues");
+  }
+
+  @Override
+  public boolean isFlushed() {
+    return false;
   }
 
   @Override

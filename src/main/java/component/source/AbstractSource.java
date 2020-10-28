@@ -56,6 +56,8 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
       increaseTuplesRead();
       increaseTuplesWritten();
       output.addTuple(tuple, getIndex());
+    } else {
+      // Notify Global Context
     }
   }
 

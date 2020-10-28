@@ -52,6 +52,8 @@ public abstract class BaseOperator1In<IN, OUT> extends AbstractOperator<IN, OUT>
     Stream<IN> input = getInput();
     Stream<OUT> output = getOutput();
 
+    // Check if the input stream is done
+
     IN inTuple = input.getNextTuple(getIndex());
     if (inTuple != null) {
       increaseTuplesRead();
@@ -61,6 +63,10 @@ public abstract class BaseOperator1In<IN, OUT> extends AbstractOperator<IN, OUT>
           increaseTuplesWritten();
           output.addTuple(t, getIndex());
         }
+      }
+    } else {
+      if (input.isFlushed()) {
+        // Notify the Global Context of Liebre
       }
     }
   }

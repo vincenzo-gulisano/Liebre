@@ -24,16 +24,17 @@
 package stream;
 
 import common.tuple.RichTuple;
-import common.util.backoff.ExponentialBackoff;
 import common.util.backoff.Backoff;
+import common.util.backoff.ExponentialBackoff;
+import common.util.backoff.InactiveBackoff;
 import component.StreamConsumer;
 import component.StreamProducer;
-import common.util.backoff.InactiveBackoff;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Stream implementation that has an (optional) approximate capacity that is enforced by an optional
@@ -56,7 +57,7 @@ public class BackoffStream<T> extends AbstractStream<T> {
   private final Backoff writeBackoff;
   private volatile long tuplesRead;
   private volatile long tuplesWritten;
-
+  private volatile boolean isFlushed = false;
   private volatile double averageArrivalTime = -1;
 
   /**
@@ -155,6 +156,16 @@ public class BackoffStream<T> extends AbstractStream<T> {
   @Override
   public double averageArrivalTime() {
     return averageArrivalTime;
+  }
+
+  @Override
+  public void flush() {
+    isFlushed = true;
+  }
+
+  @Override
+  public boolean isFlushed() {
+    return isFlushed;
   }
 
   @Override
