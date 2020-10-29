@@ -163,6 +163,18 @@ public final class Query {
     return addOperator(new TimeBasedSingleWindowSelfStoringAggregate<IN, OUT>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
   }
 
+  public synchronized <IN, OUT>
+  Operator<IN, OUT> addTupleBasedSelfStoringAggregateOperator(
+          String identifier,
+          int instance,
+          int parallelismDegree,
+          TupleBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          long windowSize,
+          long windowSlide) {
+
+    return addOperator(new TupleBasedSingleWindowSelfStoringAggregate<>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
+  }
+
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
   Operator<IN, OUT> addSelfStoringAggregateOperator(
           String identifier,
