@@ -49,7 +49,7 @@ public interface TupleBasedSingleWindowSelfStoringFunction<IN, OUT> extends
    *
    * @param tuples Number of tuples to be discarded due to the window slide.
    */
-  void slideBy(int tuples);
+  void slideBy(long tuples);
 
   /**
    * Called when a window must produce a result based on its current state, i.e., the tuples
