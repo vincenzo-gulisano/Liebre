@@ -38,14 +38,6 @@ public interface TupleBasedSingleWindowSelfStoringFunction<IN, OUT> extends
     ComponentFunction {
 
   /**
-   * Generate a new {@link TupleBasedSingleWindowSelfStoringFunction} with the same configuration and probably a clear
-   * state.
-   *
-   * @return A new {@link TupleBasedSingleWindowSelfStoringFunction} instance.
-   */
-  TupleBasedSingleWindowSelfStoringFunction<IN, OUT> factory();
-
-  /**
    * Called when a new tuple is added to the window. The state of the window can be updated.
    *
    * @param t The new tuple that is added to the window.

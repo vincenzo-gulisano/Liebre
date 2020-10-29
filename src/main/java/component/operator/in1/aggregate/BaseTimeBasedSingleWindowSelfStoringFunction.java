@@ -42,9 +42,6 @@ public abstract class BaseTimeBasedSingleWindowSelfStoringFunction<IN extends Ri
     }
 
     @Override
-    public abstract TimeBasedSingleWindowSelfStoringFunction<IN, OUT> factory();
-
-    @Override
     public abstract void add(IN t);
 
     @Override
