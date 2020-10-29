@@ -163,7 +163,7 @@ public final class Query {
     return addOperator(new TimeBasedSingleWindowSelfStoringAggregate<IN, OUT>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
   }
 
-  public synchronized <IN, OUT>
+  private synchronized <IN, OUT>
   Operator<IN, OUT> addTupleBasedSelfStoringAggregateOperator(
           String identifier,
           int instance,
@@ -173,6 +173,35 @@ public final class Query {
           long windowSlide) {
 
     return addOperator(new TupleBasedSingleWindowSelfStoringAggregate<>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
+  }
+
+  public synchronized <IN, OUT>
+  Operator<IN, OUT> addTupleBasedSelfStoringAggregateOperator(
+          String identifier,
+          TupleBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          long windowSize,
+          long windowSlide) {
+
+    return addTupleBasedSelfStoringAggregateOperator(identifier, 0, 1, window, windowSize, windowSlide));
+  }
+
+  public synchronized <IN, OUT>
+  List<Operator<IN, OUT>> addTupleBasedSelfStoringAggregateOperator(
+          String identifier,
+          TupleBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          long windowSize,
+          long windowSlide,
+          int parallelism) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addTupleBasedSelfStoringAggregateOperator(identifier, 0, 1, window, windowSize, windowSlide));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addTupleBasedSelfStoringAggregateOperator(identifier+ "_" + i, i, parallelism, window, windowSize, windowSlide));
+      }
+    }
+    return result;
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
