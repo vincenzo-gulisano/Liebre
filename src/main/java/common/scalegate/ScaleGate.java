@@ -26,9 +26,14 @@ package common.scalegate;
 
 public interface ScaleGate<T extends Comparable<? super T>> {
 
-  // Called by each processing thread to get the next ready tuple
-  T getNextReadyTuple(int readerID);
+    // Called by each processing thread to get the next ready tuple
+    T getNextReadyTuple(int readerID);
 
-  // Just add a tuple (used for the output tuples TGate)
-  void addTuple(T tuple, int writerID);
+    // Just add a tuple (used for the output tuples TGate)
+    void addTuple(T tuple, int writerID);
+
+    // Note that this implementation is not synchronized. The behavior is not specified if addTuple method is invoked
+    // by any thread after this method has been invoked
+    void letItFlush();
+
 }

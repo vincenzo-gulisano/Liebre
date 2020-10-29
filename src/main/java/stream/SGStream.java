@@ -5,6 +5,7 @@ import common.scalegate.ScaleGateAArrImpl;
 import common.scalegate.TuplesFromAll;
 import component.StreamConsumer;
 import component.StreamProducer;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
   private final AtomicInteger consumerIndexer = new AtomicInteger(0);
   private Map<Integer, Integer> producerMapping = new HashMap<>();
   private Map<Integer, Integer> consumerMapping = new HashMap<>();
+  private volatile boolean isFlushed = false;
 
   private TuplesFromAll barrier;
 
@@ -122,11 +124,12 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
 
   @Override
   public void flush() {
-    //TODO
+    this.sg.letItFlush();
+    isFlushed = true;
   }
 
   @Override
   public boolean isFlushed() {
-    return false;
+    return isFlushed;
   }
 }
