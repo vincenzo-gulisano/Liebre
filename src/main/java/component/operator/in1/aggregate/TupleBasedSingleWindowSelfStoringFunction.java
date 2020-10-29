@@ -72,10 +72,5 @@ public interface TupleBasedSingleWindowSelfStoringFunction<IN, OUT> extends
    * @param parallelismDegree The number of instances of the aggregate maintaining this window.
    */
   void setParallelismDegree(int parallelismDegree);
-  
-  /**
-   * Called to check whether this window instance is empty
-   */
-  boolean isEmpty();
 
 }

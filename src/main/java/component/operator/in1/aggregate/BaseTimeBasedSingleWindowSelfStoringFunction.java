@@ -37,18 +37,12 @@ public abstract class BaseTimeBasedSingleWindowSelfStoringFunction<IN extends Ri
     protected int parallelismDegree;
 
     @Override
+    public abstract TimeBasedSingleWindowSelfStoringFunction<IN, OUT> factory();
+
+    @Override
     public void setInstanceNumber(int aggregateInstanceNumber) {
         this.instanceNumber = aggregateInstanceNumber;
     }
-
-    @Override
-    public abstract void add(IN t);
-
-    @Override
-    public abstract void slideTo(long startTimestamp);
-
-    @Override
-    public abstract OUT getAggregatedResult();
 
     @Override
     public void setKey(String key) {

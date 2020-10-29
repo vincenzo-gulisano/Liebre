@@ -41,18 +41,6 @@ public abstract class BaseTupleBasedSingleWindowSelfStoringFunction<IN, OUT>
     }
 
     @Override
-    public abstract TupleBasedSingleWindowSelfStoringFunction<IN, OUT> factory();
-
-    @Override
-    public abstract void add(IN t);
-
-    @Override
-    public abstract void slideBy(int tuples);
-
-    @Override
-    public abstract OUT getAggregatedResult();
-
-    @Override
     public void setParallelismDegree(int parallelismDegree) {
         this.parallelismDegree = parallelismDegree;
     }
