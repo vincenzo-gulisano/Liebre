@@ -182,7 +182,7 @@ public final class Query {
           long windowSize,
           long windowSlide) {
 
-    return addTupleBasedSelfStoringAggregateOperator(identifier, 0, 1, window, windowSize, windowSlide));
+    return addTupleBasedSelfStoringAggregateOperator(identifier, 0, 1, window, windowSize, windowSlide);
   }
 
   public synchronized <IN, OUT>

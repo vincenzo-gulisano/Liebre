@@ -59,6 +59,8 @@ public class TupleBasedSingleWindowSelfStoringAggregate<IN, OUT>
         this.WS = windowSize;
         this.WA = windowSlide;
         this.aggregateWindow = aggregateWindow;
+        this.aggregateWindow.setInstanceNumber(this.instance);
+        this.aggregateWindow.setParallelismDegree(this.parallelismDegree);
         assert(WA<=WS);
     }
 
