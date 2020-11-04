@@ -168,17 +168,17 @@ public final class Query {
           String identifier,
           int instance,
           int parallelismDegree,
-          TupleBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          TupleWindow<IN, OUT> window,
           long windowSize,
           long windowSlide) {
 
-    return addOperator(new TupleBasedSingleWindowSelfStoringAggregate<>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
+    return addOperator(new TupleAggregate<>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
   }
 
   public synchronized <IN, OUT>
   Operator<IN, OUT> addTupleBasedSelfStoringAggregateOperator(
           String identifier,
-          TupleBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          TupleWindow<IN, OUT> window,
           long windowSize,
           long windowSlide) {
 
@@ -188,7 +188,7 @@ public final class Query {
   public synchronized <IN, OUT>
   List<Operator<IN, OUT>> addTupleBasedSelfStoringAggregateOperator(
           String identifier,
-          TupleBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          TupleWindow<IN, OUT> window,
           long windowSize,
           long windowSlide,
           int parallelism) {

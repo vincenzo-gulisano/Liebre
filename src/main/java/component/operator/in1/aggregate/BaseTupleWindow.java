@@ -23,14 +23,12 @@
 
 package component.operator.in1.aggregate;
 
-import common.tuple.RichTuple;
-
 /**
- * Default implementation of {@link TupleBasedSingleWindowSelfStoringFunction}, maintaining the trivial state
+ * Default implementation of {@link TupleWindow}, maintaining the trivial state
  * (instanceNumber and parallelismDegree)
  */
-public abstract class BaseTupleBasedSingleWindowSelfStoringFunction<IN, OUT>
-        implements TupleBasedSingleWindowSelfStoringFunction<IN, OUT> {
+public abstract class BaseTupleWindow<IN, OUT>
+        implements TupleWindow<IN, OUT> {
 
     protected int instanceNumber;
     protected int parallelismDegree;

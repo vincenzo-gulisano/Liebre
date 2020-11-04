@@ -23,26 +23,16 @@
 
 package component.operator.in1.aggregate;
 
-import common.tuple.RichTuple;
-import component.ComponentFunction;
-
 /**
  * Tuple-based, stateful window of an aggregate function. The important functions which need to be
- * implemented and define the aggregation logic are {@link TupleBasedSingleWindowSelfStoringFunction#add(Object)},
- * and {@link TupleBasedSingleWindowSelfStoringFunction#getAggregatedResult()}.
+ * implemented and define the aggregation logic are {@link TupleWindow#add(Object)},
+ * and {@link TupleWindow#getAggregatedResult()}.
  *
  * @param <IN> The type of the input tuples.
  * @param <OUT> The type of the output tuples.
  */
-public interface TupleBasedSingleWindowSelfStoringFunction<IN, OUT> extends
-    ComponentFunction {
-
-  /**
-   * Called when a new tuple is added to the window. The state of the window can be updated.
-   *
-   * @param t The new tuple that is added to the window.
-   */
-  void add(IN t);
+public interface TupleWindow<IN, OUT> extends
+    Window {
 
   /**
    * Called when the window is slides by the given amount of tuples
@@ -50,27 +40,5 @@ public interface TupleBasedSingleWindowSelfStoringFunction<IN, OUT> extends
    * @param tuples Number of tuples to be discarded due to the window slide.
    */
   void slideBy(long tuples);
-
-  /**
-   * Called when a window must produce a result based on its current state, i.e., the tuples
-   * currently present in it.
-   *
-   * @return The aggregation result.
-   */
-  OUT getAggregatedResult();
-
-  /**
-   * Setter for the instance number of the aggregate maintaining this window.
-   *
-   * @param instanceNumber The instance number of the aggregate maintaining this window.
-   */
-  void setInstanceNumber(int instanceNumber);
-
-  /**
-   * Setter for the parallelism degree of the aggregate maintaining this window.
-   *
-   * @param parallelismDegree The number of instances of the aggregate maintaining this window.
-   */
-  void setParallelismDegree(int parallelismDegree);
 
 }

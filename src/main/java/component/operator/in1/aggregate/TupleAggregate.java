@@ -23,7 +23,6 @@
 
 package component.operator.in1.aggregate;
 
-import common.tuple.RichTuple;
 import component.operator.in1.BaseOperator1In;
 
 import java.util.*;
@@ -35,24 +34,24 @@ import java.util.*;
  * @param <IN>  The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public class TupleBasedSingleWindowSelfStoringAggregate<IN, OUT>
+public class TupleAggregate<IN, OUT>
         extends BaseOperator1In<IN, OUT> {
 
     private final int instance;
     private final int parallelismDegree;
     private final long WS;
     private final long WA;
-    private TupleBasedSingleWindowSelfStoringFunction<IN, OUT> aggregateWindow;
+    private TupleWindow<IN, OUT> aggregateWindow;
     private boolean firstTuple = true;
     private long tuples;
 
-    public TupleBasedSingleWindowSelfStoringAggregate(
+    public TupleAggregate(
             String id,
             int instance,
             int parallelismDegree,
             long windowSize,
             long windowSlide,
-            TupleBasedSingleWindowSelfStoringFunction<IN, OUT> aggregateWindow) {
+            TupleWindow<IN, OUT> aggregateWindow) {
         super(id);
         this.instance=instance;
         this.parallelismDegree=parallelismDegree;
