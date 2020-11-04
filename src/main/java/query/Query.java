@@ -123,7 +123,7 @@ public final class Query {
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
   Operator<IN, OUT> addAggregateOperator(
           String identifier,
-          TimeBasedSingleWindow<IN, OUT> window,
+          TimeWindowAddRemove<IN, OUT> window,
           long windowSize,
           long windowSlide,
           AggregateType type) {
@@ -131,7 +131,7 @@ public final class Query {
     Operator1In<IN, OUT> op = null;
     switch (type) {
       case SINGLEWINDOW:
-        op = new TimeBasedSingleWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window);
+        op = new TimeBasedSingleWindowAggregateOld<IN, OUT>(identifier, windowSize, windowSlide, window);
       case MULTIWINDOW:
         op = new TimeBasedMultiWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window);
         break;
@@ -144,7 +144,7 @@ public final class Query {
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
       Operator<IN, OUT> addAggregateOperator(
           String identifier,
-          TimeBasedSingleWindow<IN, OUT> window,
+          TimeWindowAddRemove<IN, OUT> window,
           long windowSize,
           long windowSlide) {
 
@@ -156,11 +156,11 @@ public final class Query {
           String identifier,
           int instance,
           int parallelismDegree,
-          TimeBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          TimeWindowAddSlide<IN, OUT> window,
           long windowSize,
           long windowSlide) {
 
-    return addOperator(new TimeBasedSingleWindowSelfStoringAggregate<IN, OUT>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
+    return addOperator(new TimeAggregate<IN, OUT>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
   }
 
   private synchronized <IN, OUT>
@@ -207,17 +207,17 @@ public final class Query {
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
   Operator<IN, OUT> addSelfStoringAggregateOperator(
           String identifier,
-          TimeBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          TimeWindowAddSlide<IN, OUT> window,
           long windowSize,
           long windowSlide) {
 
-    return addOperator(new TimeBasedSingleWindowSelfStoringAggregate<IN, OUT>(identifier, 0, 1, windowSize, windowSlide, window));
+    return addOperator(new TimeAggregate<IN, OUT>(identifier, 0, 1, windowSize, windowSlide, window));
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
   List<Operator<IN, OUT>> addSelfStoringAggregateOperator(
           String identifier,
-          TimeBasedSingleWindowSelfStoringFunction<IN, OUT> window,
+          TimeWindowAddSlide<IN, OUT> window,
           long windowSize,
           long windowSlide,
           int parallelism) {
@@ -236,7 +236,7 @@ public final class Query {
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
   List<Operator<IN, OUT>> addSingleWindowAggregateOperator(
           String identifier,
-          TimeBasedSingleWindow<IN, OUT> window,
+          TimeWindowAddRemove<IN, OUT> window,
           long windowSize,
           long windowSlide,
           int parallelism) {
@@ -247,7 +247,7 @@ public final class Query {
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
   List<Operator<IN, OUT>> addAggregateOperator(
           String identifier,
-          TimeBasedSingleWindow<IN, OUT> window,
+          TimeWindowAddRemove<IN, OUT> window,
           long windowSize,
           long windowSlide,
           AggregateType type,

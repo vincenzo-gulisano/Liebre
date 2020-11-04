@@ -26,18 +26,18 @@ package component.operator.in1.aggregate;
 import common.tuple.RichTuple;
 
 /**
- * Default implementation of {@link TimeBasedSingleWindow}, maintaining the trivial state, including
+ * Default implementation of {@link TimeWindowAddRemove}, maintaining the trivial state, including
  * the {@code key} of the tuples and the {@code timestamp} of the earliest tuple of this window.
  */
 public abstract class BaseTimeBasedSingleWindowSelfStoringFunction<IN extends RichTuple, OUT extends RichTuple>
-        implements TimeBasedSingleWindowSelfStoringFunction<IN, OUT> {
+        implements TimeWindowAddSlide<IN, OUT> {
 
     protected String key;
     protected int instanceNumber;
     protected int parallelismDegree;
 
     @Override
-    public abstract TimeBasedSingleWindowSelfStoringFunction<IN, OUT> factory();
+    public abstract TimeWindowAddSlide<IN, OUT> factory();
 
     @Override
     public void setInstanceNumber(int aggregateInstanceNumber) {

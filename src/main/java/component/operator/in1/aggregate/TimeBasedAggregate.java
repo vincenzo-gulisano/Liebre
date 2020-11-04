@@ -10,13 +10,13 @@ public abstract class TimeBasedAggregate<IN extends RichTuple, OUT extends RichT
     protected final long WS_WA_ceil;
     protected long WS;
     protected long WA;
-    protected TimeBasedSingleWindow<IN, OUT> aggregateWindow;
+    protected TimeWindowAddRemove<IN, OUT> aggregateWindow;
     protected long latestTimestamp;
     protected boolean firstTuple = true;
     protected long WS_WA_ceil_minus_1;
-    TreeMap<Long, HashMap<String, TimeBasedSingleWindow<IN, OUT>>> windows;
+    TreeMap<Long, HashMap<String, TimeWindowAddRemove<IN, OUT>>> windows;
 
-    public TimeBasedAggregate(String id, long windowSize, long windowSlide, TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
+    public TimeBasedAggregate(String id, long windowSize, long windowSlide, TimeWindowAddRemove<IN, OUT> aggregateWindow) {
         super(id);
         windows = new TreeMap<>();
         this.WS = windowSize;

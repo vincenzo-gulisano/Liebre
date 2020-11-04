@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Aggregate implementation for sliding time-based windows. Decides which tuples belong to which
  * windows and takes care of producing aggregation results by delegating to a provided {@link
- * TimeBasedSingleWindow} implementation.
+ * TimeWindowAddRemove} implementation.
  *
  * @param <IN>  The type of input tuples.
  * @param <OUT> The type of output tuples.
@@ -44,7 +44,7 @@ public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends Ric
             String id,
             long windowSize,
             long windowSlide,
-            TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
+            TimeWindowAddRemove<IN, OUT> aggregateWindow) {
         super(id, windowSize, windowSlide, aggregateWindow);
     }
 
@@ -67,7 +67,7 @@ public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends Ric
             if (earliestWinStartTS + WS <= latestTimestamp) {
 
                 // Produce results for stale windows
-                for (TimeBasedSingleWindow<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
+                for (TimeWindowAddRemove<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
                     OUT outT = w.getAggregatedResult();
                     if (outT!=null) {
                         result.add(outT);

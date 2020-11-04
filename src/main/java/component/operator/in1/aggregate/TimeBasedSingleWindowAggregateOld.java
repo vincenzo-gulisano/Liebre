@@ -33,22 +33,22 @@ import java.util.TreeMap;
 /**
  * Aggregate implementation for sliding time-based windows. Decides which tuples belong to which
  * windows and takes care of producing aggregation results by delegating to a provided {@link
- * TimeBasedSingleWindow} implementation.
+ * TimeWindowAddRemove} implementation.
  *
  * @param <IN>  The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends RichTuple>
+public class TimeBasedSingleWindowAggregateOld<IN extends RichTuple, OUT extends RichTuple>
         extends TimeBasedAggregate<IN, OUT> {
 
     LinkedList<IN> tuples;
     TreeMap<Long, HashMap<String, WinCounter>> windowsCounters;
 
-    public TimeBasedSingleWindowAggregate(
+    public TimeBasedSingleWindowAggregateOld(
             String id,
             long windowSize,
             long windowSlide,
-            TimeBasedSingleWindow<IN, OUT> aggregateWindow) {
+            TimeWindowAddRemove<IN, OUT> aggregateWindow) {
         super(id, windowSize, windowSlide, aggregateWindow);
         tuples = new LinkedList<>();
         windowsCounters = new TreeMap<>();
@@ -73,7 +73,7 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
             if (earliestWinStartTS + WS <= latestTimestamp) {
 
                 // Produce results for stale windows
-                for (TimeBasedSingleWindow<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
+                for (TimeWindowAddRemove<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
                     OUT outT = w.getAggregatedResult();
                     if (outT!=null) {
                         result.add(outT);
@@ -107,7 +107,7 @@ public class TimeBasedSingleWindowAggregate<IN extends RichTuple, OUT extends Ri
                 windowsCounters
                         .get(earliestWinStartTS + WA)
                         .putAll(windowsCounters.get(earliestWinStartTS));
-                for (TimeBasedSingleWindow<IN, OUT> w : windows.get(earliestWinStartTS + WA).values()) {
+                for (TimeWindowAddRemove<IN, OUT> w : windows.get(earliestWinStartTS + WA).values()) {
                     w.setStartTimestamp(earliestWinStartTS + WA);
                 }
                 windows.remove(earliestWinStartTS);

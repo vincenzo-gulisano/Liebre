@@ -28,10 +28,9 @@ import common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.aggregate.AggregateType;
 import component.operator.in1.aggregate.BaseTimeBasedSingleWindow;
-import component.operator.in1.aggregate.TimeBasedSingleWindow;
+import component.operator.in1.aggregate.TimeWindowAddRemove;
 import component.sink.Sink;
 import component.source.Source;
-import java.io.File;
 import query.Query;
 
 public class TextAggregate {
@@ -121,7 +120,7 @@ public class TextAggregate {
     }
 
     @Override
-    public TimeBasedSingleWindow<InputTuple, OutputTuple> factory() {
+    public TimeWindowAddRemove<InputTuple, OutputTuple> factory() {
       return new AverageWindow();
     }
   }

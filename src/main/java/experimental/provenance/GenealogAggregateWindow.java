@@ -1,16 +1,16 @@
 package experimental.provenance;
 
-import component.operator.in1.aggregate.TimeBasedSingleWindow;
+import component.operator.in1.aggregate.TimeWindowAddRemove;
 
 public class GenealogAggregateWindow<IN extends GenealogTuple, OUT extends GenealogTuple>
-    implements TimeBasedSingleWindow<IN, OUT> {
+    implements TimeWindowAddRemove<IN, OUT> {
 
   private final IncreasingUID UID = UIDFactory.INSTANCE.newUID();
-  private TimeBasedSingleWindow<IN, OUT> window;
+  private TimeWindowAddRemove<IN, OUT> window;
   private GenealogTuple first;
   private GenealogTuple last;
 
-  public GenealogAggregateWindow(TimeBasedSingleWindow<IN, OUT> window) {
+  public GenealogAggregateWindow(TimeWindowAddRemove<IN, OUT> window) {
     this.window = window;
   }
 
@@ -25,7 +25,7 @@ public class GenealogAggregateWindow<IN extends GenealogTuple, OUT extends Genea
     }
   }
 
-  public TimeBasedSingleWindow<IN, OUT> factory() {
+  public TimeWindowAddRemove<IN, OUT> factory() {
     return new GenealogAggregateWindow<IN, OUT>(window.factory());
   }
 
@@ -45,6 +45,21 @@ public class GenealogAggregateWindow<IN extends GenealogTuple, OUT extends Genea
 
   public void setKey(String arg0) {
     window.setKey(arg0);
+  }
+
+  @Override
+  public void setInstanceNumber(int instanceNumber) {
+
+  }
+
+  @Override
+  public void setParallelismDegree(int parallelismDegree) {
+
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return false;
   }
 
   public void setStartTimestamp(long ts) {

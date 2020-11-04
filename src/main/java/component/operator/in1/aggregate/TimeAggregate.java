@@ -31,30 +31,30 @@ import java.util.*;
 /**
  * Aggregate implementation for sliding time-based windows. Decides which tuples belong to which
  * windows and takes care of producing aggregation results by delegating to a provided {@link
- * TimeBasedSingleWindow} implementation.
+ * TimeWindowAddRemove} implementation.
  *
  * @param <IN>  The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public class TimeBasedSingleWindowSelfStoringAggregate<IN extends RichTuple, OUT extends RichTuple>
+public class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
         extends BaseOperator1In<IN, OUT> {
 
     private final int instance;
     private final int parallelismDegree;
     private final long WS;
     private final long WA;
-    private TimeBasedSingleWindowSelfStoringFunction<IN, OUT> aggregateWindow;
+    private TimeWindowAddSlide<IN, OUT> aggregateWindow;
     private long latestTimestamp;
     private boolean firstTuple = true;
-    private TreeMap<Long, HashMap<String, TimeBasedSingleWindowSelfStoringFunction<IN, OUT>>> windows;
+    private TreeMap<Long, HashMap<String, TimeWindowAddSlide<IN, OUT>>> windows;
 
-    public TimeBasedSingleWindowSelfStoringAggregate(
+    public TimeAggregate(
             String id,
             int instance,
             int parallelismDegree,
             long windowSize,
             long windowSlide,
-            TimeBasedSingleWindowSelfStoringFunction<IN, OUT> aggregateWindow) {
+            TimeWindowAddSlide<IN, OUT> aggregateWindow) {
         super(id);
         this.instance=instance;
         this.parallelismDegree=parallelismDegree;
@@ -62,6 +62,22 @@ public class TimeBasedSingleWindowSelfStoringAggregate<IN extends RichTuple, OUT
         this.WS = windowSize;
         this.WA = windowSlide;
         this.aggregateWindow = aggregateWindow;
+    }
+
+    public TimeAggregate(
+            String id,
+            int instance,
+            int parallelismDegree,
+            long windowSize,
+            long windowSlide,
+            TimeWindowAddRemove<IN, OUT> aggregateWindow) {
+        super(id);
+        this.instance=instance;
+        this.parallelismDegree=parallelismDegree;
+        windows = new TreeMap<>();
+        this.WS = windowSize;
+        this.WA = windowSlide;
+        this.aggregateWindow = new TimeWindowAddRemoveWrapper<>(aggregateWindow);
     }
 
     public List<OUT> processTupleIn1(IN t) {
@@ -86,7 +102,7 @@ public class TimeBasedSingleWindowSelfStoringAggregate<IN extends RichTuple, OUT
             if (earliestWinStartTS + WS <= latestTimestamp) {
 
                 // Produce results for stale windows
-                for (TimeBasedSingleWindowSelfStoringFunction<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
+                for (TimeWindowAddSlide<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
                     OUT outT = w.getAggregatedResult();
                     if (outT!=null) {
                         result.add(outT);
