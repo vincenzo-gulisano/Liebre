@@ -26,7 +26,6 @@ package example;
 import common.tuple.BaseRichTuple;
 import common.util.Util;
 import component.operator.Operator;
-import component.operator.in1.aggregate.AggregateType;
 import component.operator.in1.aggregate.BaseTimeWindowAddRemove;
 import component.operator.in1.aggregate.TimeWindowAddRemove;
 import component.sink.Sink;
