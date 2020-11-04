@@ -1,8 +1,9 @@
 package component.operator.in1.aggregate;
 
 import common.tuple.RichTuple;
+import component.ComponentFunction;
 
-public interface TimeWindow<IN extends RichTuple, OUT extends RichTuple> {
+public interface TimeWindow<IN extends RichTuple, OUT extends RichTuple> extends ComponentFunction {
 
     /**
      * Called when a new tuple is added to the window. The state of the window can be updated.

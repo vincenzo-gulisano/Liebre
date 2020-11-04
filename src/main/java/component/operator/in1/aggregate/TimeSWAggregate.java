@@ -24,7 +24,6 @@
 package component.operator.in1.aggregate;
 
 import common.tuple.RichTuple;
-import component.operator.in1.BaseOperator1In;
 
 import java.util.*;
 
@@ -37,15 +36,9 @@ import java.util.*;
  * @param <OUT> The type of output tuples.
  */
 public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
-        extends BaseOperator1In<IN, OUT> {
+        extends TimeAggregate<IN, OUT> {
 
-    private final int instance;
-    private final int parallelismDegree;
-    private final long WS;
-    private final long WA;
     private TimeWindowAddSlide<IN, OUT> aggregateWindow;
-    private long latestTimestamp;
-    private boolean firstTuple = true;
     private TreeMap<Long, HashMap<String, TimeWindowAddSlide<IN, OUT>>> windows;
 
     public TimeSWAggregate(
@@ -55,12 +48,8 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
             long windowSize,
             long windowSlide,
             TimeWindowAddSlide<IN, OUT> aggregateWindow) {
-        super(id);
-        this.instance=instance;
-        this.parallelismDegree=parallelismDegree;
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow);
         windows = new TreeMap<>();
-        this.WS = windowSize;
-        this.WA = windowSlide;
         this.aggregateWindow = aggregateWindow;
     }
 
@@ -71,12 +60,8 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
             long windowSize,
             long windowSlide,
             TimeWindowAddRemove<IN, OUT> aggregateWindow) {
-        super(id);
-        this.instance=instance;
-        this.parallelismDegree=parallelismDegree;
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow);
         windows = new TreeMap<>();
-        this.WS = windowSize;
-        this.WA = windowSlide;
         this.aggregateWindow = new TimeWindowAddRemoveWrapper<>(aggregateWindow);
     }
 
@@ -149,40 +134,4 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
         return result;
     }
 
-    public long getEarliestWinStartTS(long ts) {
-        long winStart = (ts / WA) * WA;
-        while (winStart - WA + WS > ts) {
-            winStart -= WA;
-        }
-        return Math.max(0, winStart);
-//        long contributingWins = (ts % WA < WS % WA || WS % WA == 0) ? WS_WA_ceil : WS_WA_ceil_minus_1;
-//        return (long) Math.max((ts / WA - contributingWins + 1) * WA, 0.0);
-    }
-
-    @Override
-    public void enable() {
-        aggregateWindow.enable();
-        super.enable();
-    }
-
-    @Override
-    public void disable() {
-        super.disable();
-        aggregateWindow.disable();
-    }
-
-    @Override
-    public boolean canRun() {
-        return aggregateWindow.canRun() && super.canRun();
-    }
-
-    protected void checkIncreasingTimestamps(IN t) {
-        if (firstTuple) {
-            firstTuple = false;
-        } else {
-            if (t.getTimestamp() < latestTimestamp) {
-                throw new RuntimeException("Input tuple's timestamp decreased!");
-            }
-        }
-    }
 }

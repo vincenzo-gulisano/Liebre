@@ -39,26 +39,22 @@ import java.util.TreeMap;
  * @param <OUT> The type of output tuples.
  */
 public class TimeMWAggregate<IN extends RichTuple, OUT extends RichTuple>
-        extends component.operator.in1.BaseOperator1In<IN, OUT> {
+        extends TimeAggregate<IN, OUT> {
 
 //    protected final long WS_WA_ceil;
-    protected long WS;
-    protected long WA;
     protected TimeWindowAdd<IN, OUT> aggregateWindow;
-    protected long latestTimestamp;
-    protected boolean firstTuple = true;
-//    protected long WS_WA_ceil_minus_1;
+    //    protected long WS_WA_ceil_minus_1;
     TreeMap<Long, HashMap<String, TimeWindowAdd<IN, OUT>>> windows;
 
     public TimeMWAggregate(
             String id,
+            int instance,
+            int parallelismDegree,
             long windowSize,
             long windowSlide,
             TimeWindowAdd<IN, OUT> aggregateWindow) {
-        super(id);
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow);
         TimeMWAggregate.this.windows = new TreeMap<>();
-        this.WS = windowSize;
-        this.WA = windowSlide;
         this.aggregateWindow = aggregateWindow;
 //        this.WS_WA_ceil = (long) Math.ceil((double) TimeBasedMultiWindowAggregate.this.WS / (double) TimeBasedMultiWindowAggregate.this.WA);
 //        this.WS_WA_ceil_minus_1 = TimeBasedMultiWindowAggregate.this.WS_WA_ceil - 1;
@@ -121,42 +117,4 @@ public class TimeMWAggregate<IN extends RichTuple, OUT extends RichTuple>
         return result;
     }
 
-    @Override
-    public void enable() {
-        aggregateWindow.enable();
-        aggregateWindow.enable();
-        super.enable();
-    }
-
-    @Override
-    public void disable() {
-        super.disable();
-        aggregateWindow.disable();
-        aggregateWindow.disable();
-    }
-
-    @Override
-    public boolean canRun() {
-        return aggregateWindow.canRun() && aggregateWindow.canRun() && super.canRun();
-    }
-
-    public long getEarliestWinStartTS(long ts) {
-        long winStart = (ts / WA) * WA;
-        while (winStart - WA + WS > ts) {
-            winStart -= WA;
-        }
-        return Math.max(0, winStart);
-//        long contributingWins = (ts % WA < WS % WA || WS % WA == 0) ? WS_WA_ceil : WS_WA_ceil_minus_1;
-//        return (long) Math.max((ts / WA - contributingWins + 1) * WA, 0.0);
-    }
-
-    protected void checkIncreasingTimestamps(IN t) {
-        if (firstTuple) {
-            firstTuple = false;
-        } else {
-            if (t.getTimestamp() < latestTimestamp) {
-                throw new RuntimeException("Input tuple's timestamp decreased!");
-            }
-        }
-    }
 }

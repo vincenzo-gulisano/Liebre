@@ -4,7 +4,7 @@ import common.tuple.RichTuple;
 import component.ComponentFunction;
 
 public interface TimeWindowAdd<IN extends RichTuple, OUT extends RichTuple> extends
-        ComponentFunction, TimeWindow<IN, OUT> {
+        TimeWindow<IN, OUT> {
 
     /**
      * Generate a new {@link TimeWindowAddSlide} with the same configuration and probably a clear
