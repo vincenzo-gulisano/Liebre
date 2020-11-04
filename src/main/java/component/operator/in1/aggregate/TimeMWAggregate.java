@@ -53,7 +53,7 @@ public class TimeMWAggregate<IN extends RichTuple, OUT extends RichTuple>
             long windowSize,
             long windowSlide,
             TimeWindowAdd<IN, OUT> aggregateWindow) {
-        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow);
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor());
         TimeMWAggregate.this.windows = new TreeMap<>();
         this.aggregateWindow = aggregateWindow;
 //        this.WS_WA_ceil = (long) Math.ceil((double) TimeBasedMultiWindowAggregate.this.WS / (double) TimeBasedMultiWindowAggregate.this.WA);
@@ -103,13 +103,13 @@ public class TimeMWAggregate<IN extends RichTuple, OUT extends RichTuple>
             if (!windows.containsKey(timestamp)) {
                 windows.put(timestamp, new HashMap<>());
             }
-            if (!windows.get(timestamp).containsKey(t.getKey())) {
-                windows.get(timestamp).put(t.getKey(), aggregateWindow.factory());
-                windows.get(timestamp).get(t.getKey()).setKey(t.getKey());
-                windows.get(timestamp).get(t.getKey()).setStartTimestamp(timestamp);
+            if (!windows.get(timestamp).containsKey(keyExtractor.getKey(t))) {
+                windows.get(timestamp).put(keyExtractor.getKey(t), aggregateWindow.factory());
+                windows.get(timestamp).get(keyExtractor.getKey(t)).setKey(keyExtractor.getKey(t));
+                windows.get(timestamp).get(keyExtractor.getKey(t)).setStartTimestamp(timestamp);
             }
 
-            windows.get(timestamp).get(t.getKey()).add(t);
+            windows.get(timestamp).get(keyExtractor.getKey(t)).add(t);
 
             timestamp += WA;
         }

@@ -10,16 +10,18 @@ public abstract class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
     protected final long WA;
     protected final TimeWindow w;
     protected long latestTimestamp;
+    protected KeyExtractor keyExtractor;
     private boolean firstTuple = true;
 
 
-    public TimeAggregate(String id, int instance, int parallelismDegree, long ws, long wa, TimeWindow w) {
+    public TimeAggregate(String id, int instance, int parallelismDegree, long ws, long wa, TimeWindow w, KeyExtractor keyExtractor) {
         super(id);
         this.instance = instance;
         this.parallelismDegree = parallelismDegree;
         WS = ws;
         WA = wa;
         this.w = w;
+        this.keyExtractor = keyExtractor;
     }
 
     public long getEarliestWinStartTS(long ts) {
@@ -57,5 +59,9 @@ public abstract class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
                 throw new RuntimeException("Input tuple's timestamp decreased!");
             }
         }
+    }
+
+    public void registerNewKeyExtractor(KeyExtractor k) {
+        this.keyExtractor = k;
     }
 }

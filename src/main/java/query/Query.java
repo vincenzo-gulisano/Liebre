@@ -120,145 +120,98 @@ public final class Query {
     return operator;
   }
 
-  public synchronized <IN extends RichTuple, OUT extends RichTuple>
-  Operator<IN, OUT> addAggregateOperator(
+  private synchronized <IN extends RichTuple, OUT extends RichTuple>
+  Operator<IN, OUT> addTimeAggregateOperator(
           String identifier,
-          TimeWindowAddRemove<IN, OUT> window,
+          int instance,
+          int parallelism,
           long windowSize,
           long windowSlide,
-          AggregateType type) {
+          Window<IN, OUT> window) {
 
     Operator1In<IN, OUT> op = null;
-    switch (type) {
-      case SINGLEWINDOW:
-        op = new TimeSWAggregate<IN, OUT>(identifier,0,1, windowSize, windowSlide, window);
-      case MULTIWINDOW:
-        op = new TimeMWAggregate<IN, OUT>(identifier, windowSize, windowSlide, window);
-        break;
-      default:
-        throw new RuntimeException("Unrecognized aggregate type");
+    if (window instanceof TimeWindowAddSlide) {
+      op = new TimeSWAggregate<IN, OUT>(identifier,instance,parallelism, windowSize, windowSlide, (TimeWindowAddSlide<IN,OUT>) window);
+    } else if (window instanceof TimeWindowAddRemove) {
+      op = new TimeSWAggregate<IN, OUT>(identifier,instance,parallelism, windowSize, windowSlide, (TimeWindowAddRemove<IN,OUT>) window);
+    } else if (window instanceof TimeWindowAdd) {
+      op = new TimeMWAggregate<IN, OUT>(identifier,instance,parallelism, windowSize, windowSlide, (TimeWindowAdd<IN,OUT>) window);
+    } else {
+      throw new RuntimeException("Unrecognized aggregate type");
     }
     return addOperator(op);
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>
-      Operator<IN, OUT> addAggregateOperator(
+  Operator<IN, OUT> addTimeAggregateOperator(
           String identifier,
-          TimeWindowAddRemove<IN, OUT> window,
           long windowSize,
-          long windowSlide) {
-
-    return addAggregateOperator(identifier,window,windowSize,windowSlide,AggregateType.SINGLEWINDOW);
+          long windowSlide,
+          Window<IN, OUT> window) {
+    return addTimeAggregateOperator(identifier,0,1,windowSize,windowSlide,window);
   }
 
-  private synchronized <IN extends RichTuple, OUT extends RichTuple>
-  Operator<IN, OUT> addSelfStoringAggregateOperator(
+  public synchronized <IN extends RichTuple, OUT extends RichTuple>
+  List<Operator<IN, OUT>> addTimeAggregateOperator(
           String identifier,
-          int instance,
-          int parallelismDegree,
-          TimeWindowAddSlide<IN, OUT> window,
+          int parallelism,
           long windowSize,
-          long windowSlide) {
-
-    return addOperator(new TimeSWAggregate<IN, OUT>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
+          long windowSlide,
+          Window<IN, OUT> window) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addTimeAggregateOperator(identifier, 0, 1, windowSize, windowSlide,window));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addTimeAggregateOperator(identifier+ "_" + i, i, parallelism, windowSize, windowSlide,window));
+      }
+    }
+    return result;
   }
+
 
   private synchronized <IN, OUT>
-  Operator<IN, OUT> addTupleBasedSelfStoringAggregateOperator(
+  Operator<IN, OUT> addTupleAggregateOperator(
           String identifier,
           int instance,
-          int parallelismDegree,
-          TupleWindow<IN, OUT> window,
+          int parallelism,
           long windowSize,
-          long windowSlide) {
+          long windowSlide,
+          Window<IN, OUT> window) {
 
-    return addOperator(new TupleAggregate<>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
+    Operator1In<IN, OUT> op = null;
+    if (window instanceof TupleWindow) {
+      op = new TupleAggregate<IN, OUT>(identifier,instance,parallelism, windowSize, windowSlide, (TupleWindow<IN,OUT>) window);
+    } else {
+      throw new RuntimeException("Unrecognized aggregate type");
+    }
+    return addOperator(op);
   }
 
   public synchronized <IN, OUT>
-  Operator<IN, OUT> addTupleBasedSelfStoringAggregateOperator(
+  Operator<IN, OUT> addTupleAggregateOperator(
           String identifier,
-          TupleWindow<IN, OUT> window,
           long windowSize,
-          long windowSlide) {
-
-    return addTupleBasedSelfStoringAggregateOperator(identifier, 0, 1, window, windowSize, windowSlide);
+          long windowSlide,
+          Window<IN, OUT> window) {
+    return addTupleAggregateOperator(identifier,0,1,windowSize,windowSlide,window);
   }
 
   public synchronized <IN, OUT>
-  List<Operator<IN, OUT>> addTupleBasedSelfStoringAggregateOperator(
+  List<Operator<IN, OUT>> addTupleAggregateOperator(
           String identifier,
-          TupleWindow<IN, OUT> window,
+          int parallelism,
           long windowSize,
           long windowSlide,
-          int parallelism) {
+          Window<IN, OUT> window) {
     assert (parallelism >= 1);
     List<Operator<IN, OUT>> result = new LinkedList<>();
     if (parallelism == 1) {
-      result.add(addTupleBasedSelfStoringAggregateOperator(identifier, 0, 1, window, windowSize, windowSlide));
+      result.add(addTupleAggregateOperator(identifier, 0, 1, windowSize, windowSlide,window));
     } else {
       for (int i = 0; i < parallelism; i++) {
-        result.add(addTupleBasedSelfStoringAggregateOperator(identifier+ "_" + i, i, parallelism, window, windowSize, windowSlide));
-      }
-    }
-    return result;
-  }
-
-  public synchronized <IN extends RichTuple, OUT extends RichTuple>
-  Operator<IN, OUT> addSelfStoringAggregateOperator(
-          String identifier,
-          TimeWindowAddSlide<IN, OUT> window,
-          long windowSize,
-          long windowSlide) {
-
-    return addOperator(new TimeSWAggregate<IN, OUT>(identifier, 0, 1, windowSize, windowSlide, window));
-  }
-
-  public synchronized <IN extends RichTuple, OUT extends RichTuple>
-  List<Operator<IN, OUT>> addSelfStoringAggregateOperator(
-          String identifier,
-          TimeWindowAddSlide<IN, OUT> window,
-          long windowSize,
-          long windowSlide,
-          int parallelism) {
-    assert (parallelism >= 1);
-    List<Operator<IN, OUT>> result = new LinkedList<>();
-    if (parallelism == 1) {
-      result.add(addSelfStoringAggregateOperator(identifier, window, windowSize, windowSlide));
-    } else {
-      for (int i = 0; i < parallelism; i++) {
-        result.add(addSelfStoringAggregateOperator(identifier+ "_" + i,i,parallelism, window, windowSize, windowSlide));
-      }
-    }
-    return result;
-  }
-
-  public synchronized <IN extends RichTuple, OUT extends RichTuple>
-  List<Operator<IN, OUT>> addSingleWindowAggregateOperator(
-          String identifier,
-          TimeWindowAddRemove<IN, OUT> window,
-          long windowSize,
-          long windowSlide,
-          int parallelism) {
-    return addAggregateOperator(identifier, window, windowSize, windowSlide, AggregateType.SINGLEWINDOW, parallelism);
-  }
-
-
-  public synchronized <IN extends RichTuple, OUT extends RichTuple>
-  List<Operator<IN, OUT>> addAggregateOperator(
-          String identifier,
-          TimeWindowAddRemove<IN, OUT> window,
-          long windowSize,
-          long windowSlide,
-          AggregateType type,
-          int parallelism) {
-    assert (parallelism >= 1);
-    List<Operator<IN, OUT>> result = new LinkedList<>();
-    if (parallelism == 1) {
-      result.add(addAggregateOperator(identifier, window, windowSize, windowSlide,type));
-    } else {
-      for (int i = 0; i < parallelism; i++) {
-        result.add(addAggregateOperator(identifier+ "_" + i, window, windowSize, windowSlide,type));
+        result.add(addTupleAggregateOperator(identifier+ "_" + i, i, parallelism, windowSize, windowSlide,window));
       }
     }
     return result;

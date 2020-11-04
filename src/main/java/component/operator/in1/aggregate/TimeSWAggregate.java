@@ -48,7 +48,7 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
             long windowSize,
             long windowSlide,
             TimeWindowAddSlide<IN, OUT> aggregateWindow) {
-        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow);
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor());
         windows = new TreeMap<>();
         this.aggregateWindow = aggregateWindow;
     }
@@ -60,7 +60,7 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
             long windowSize,
             long windowSlide,
             TimeWindowAddRemove<IN, OUT> aggregateWindow) {
-        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow);
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor());
         windows = new TreeMap<>();
         this.aggregateWindow = new TimeWindowAddRemoveWrapper<>(aggregateWindow);
     }
@@ -121,15 +121,15 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
         if (!windows.containsKey(earliestWinStartTSforT)) {
             windows.put(earliestWinStartTSforT, new HashMap<>());
         }
-        if (!windows.get(earliestWinStartTSforT).containsKey(t.getKey())) {
-            windows.get(earliestWinStartTSforT).put(t.getKey(), aggregateWindow.factory());
-            windows.get(earliestWinStartTSforT).get(t.getKey()).setKey(t.getKey());
-            windows.get(earliestWinStartTSforT).get(t.getKey()).setInstanceNumber(instance);
-            windows.get(earliestWinStartTSforT).get(t.getKey()).setParallelismDegree(parallelismDegree);
-            windows.get(earliestWinStartTSforT).get(t.getKey()).slideTo(earliestWinStartTSforT);
+        if (!windows.get(earliestWinStartTSforT).containsKey(keyExtractor.getKey(t))) {
+            windows.get(earliestWinStartTSforT).put(keyExtractor.getKey(t), aggregateWindow.factory());
+            windows.get(earliestWinStartTSforT).get(keyExtractor.getKey(t)).setKey(keyExtractor.getKey(t));
+            windows.get(earliestWinStartTSforT).get(keyExtractor.getKey(t)).setInstanceNumber(instance);
+            windows.get(earliestWinStartTSforT).get(keyExtractor.getKey(t)).setParallelismDegree(parallelismDegree);
+            windows.get(earliestWinStartTSforT).get(keyExtractor.getKey(t)).slideTo(earliestWinStartTSforT);
         }
 
-        windows.get(earliestWinStartTSforT).get(t.getKey()).add(t);
+        windows.get(earliestWinStartTSforT).get(keyExtractor.getKey(t)).add(t);
 
         return result;
     }

@@ -56,7 +56,7 @@ public class TextAggregate {
             });
 
     Operator<InputTuple, OutputTuple> aggregate =
-        q.addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE, WINDOW_SLIDE, AggregateType.MULTIWINDOW);
+        q.addTimeAggregateOperator("aggOp", WINDOW_SIZE, WINDOW_SLIDE, new AverageWindow());
 
     Sink<OutputTuple> o1 = q.addTextFileSink("o1", outputFile, true);
 

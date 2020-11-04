@@ -32,7 +32,7 @@ package component.operator.in1.aggregate;
  * @param <OUT> The type of the output tuples.
  */
 public interface TupleWindow<IN, OUT> extends
-    Window {
+    Window<IN,OUT> {
 
   /**
    * Called when the window is slides by the given amount of tuples
