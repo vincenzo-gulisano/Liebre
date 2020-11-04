@@ -29,28 +29,32 @@ import common.tuple.RichTuple;
  * Default implementation of {@link TimeWindowAddRemove}, maintaining the trivial state, including
  * the {@code key} of the tuples and the {@code timestamp} of the earliest tuple of this window.
  */
-public abstract class BaseTimeBasedSingleWindowSelfStoringFunction<IN extends RichTuple, OUT extends RichTuple>
-        implements TimeWindowAddSlide<IN, OUT> {
+public abstract class BaseTimeWindowAddRemove<IN extends RichTuple, OUT extends RichTuple>
+    implements TimeWindowAddRemove<IN, OUT> {
 
-    protected String key;
-    protected int instanceNumber;
-    protected int parallelismDegree;
+  protected String key;
+  protected long startTimestamp;
+  protected int instanceNumber;
+  protected int parallelismDegree;
 
-    @Override
-    public abstract TimeWindowAddSlide<IN, OUT> factory();
+  @Override
+  public void setKey(String key) {
+    this.key = key;
+  }
 
-    @Override
-    public void setInstanceNumber(int aggregateInstanceNumber) {
-        this.instanceNumber = aggregateInstanceNumber;
-    }
+  @Override
+  public void setStartTimestamp(long startTimestamp) {
+    this.startTimestamp = startTimestamp;
+  }
 
-    @Override
-    public void setKey(String key) {
-        this.key = key;
-    }
+  @Override
+  public void setInstanceNumber(int aggregateInstanceNumber) {
+    this.instanceNumber = aggregateInstanceNumber;
+  }
 
-    @Override
-    public void setParallelismDegree(int parallelismDegree) {
-        this.parallelismDegree = parallelismDegree;
-    }
+  @Override
+  public void setParallelismDegree(int parallelismDegree) {
+    this.parallelismDegree = parallelismDegree;
+  }
+
 }

@@ -40,5 +40,4 @@ public interface TimeWindow<IN extends RichTuple, OUT extends RichTuple> {
      */
     void setParallelismDegree(int parallelismDegree);
 
-    boolean isEmpty();
 }

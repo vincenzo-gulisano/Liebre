@@ -131,9 +131,9 @@ public final class Query {
     Operator1In<IN, OUT> op = null;
     switch (type) {
       case SINGLEWINDOW:
-        op = new TimeBasedSingleWindowAggregateOld<IN, OUT>(identifier, windowSize, windowSlide, window);
+        op = new TimeSWAggregate<IN, OUT>(identifier,0,1, windowSize, windowSlide, window);
       case MULTIWINDOW:
-        op = new TimeBasedMultiWindowAggregate<IN, OUT>(identifier, windowSize, windowSlide, window);
+        op = new TimeMWAggregate<IN, OUT>(identifier, windowSize, windowSlide, window);
         break;
       default:
         throw new RuntimeException("Unrecognized aggregate type");
@@ -160,7 +160,7 @@ public final class Query {
           long windowSize,
           long windowSlide) {
 
-    return addOperator(new TimeAggregate<IN, OUT>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
+    return addOperator(new TimeSWAggregate<IN, OUT>(identifier, instance, parallelismDegree, windowSize, windowSlide, window));
   }
 
   private synchronized <IN, OUT>
@@ -211,7 +211,7 @@ public final class Query {
           long windowSize,
           long windowSlide) {
 
-    return addOperator(new TimeAggregate<IN, OUT>(identifier, 0, 1, windowSize, windowSlide, window));
+    return addOperator(new TimeSWAggregate<IN, OUT>(identifier, 0, 1, windowSize, windowSlide, window));
   }
 
   public synchronized <IN extends RichTuple, OUT extends RichTuple>

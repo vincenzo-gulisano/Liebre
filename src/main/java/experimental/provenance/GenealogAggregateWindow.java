@@ -57,11 +57,6 @@ public class GenealogAggregateWindow<IN extends GenealogTuple, OUT extends Genea
 
   }
 
-  @Override
-  public boolean isEmpty() {
-    return false;
-  }
-
   public void setStartTimestamp(long ts) {
     window.setStartTimestamp(ts);
   }

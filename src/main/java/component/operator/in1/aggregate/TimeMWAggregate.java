@@ -28,6 +28,7 @@ import common.tuple.RichTuple;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  * Aggregate implementation for sliding time-based windows. Decides which tuples belong to which
@@ -37,15 +38,30 @@ import java.util.List;
  * @param <IN>  The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends RichTuple>
-        extends TimeBasedAggregate<IN, OUT> {
+public class TimeMWAggregate<IN extends RichTuple, OUT extends RichTuple>
+        extends component.operator.in1.BaseOperator1In<IN, OUT> {
 
-    public TimeBasedMultiWindowAggregate(
+//    protected final long WS_WA_ceil;
+    protected long WS;
+    protected long WA;
+    protected TimeWindowAdd<IN, OUT> aggregateWindow;
+    protected long latestTimestamp;
+    protected boolean firstTuple = true;
+//    protected long WS_WA_ceil_minus_1;
+    TreeMap<Long, HashMap<String, TimeWindowAdd<IN, OUT>>> windows;
+
+    public TimeMWAggregate(
             String id,
             long windowSize,
             long windowSlide,
-            TimeWindowAddRemove<IN, OUT> aggregateWindow) {
-        super(id, windowSize, windowSlide, aggregateWindow);
+            TimeWindowAdd<IN, OUT> aggregateWindow) {
+        super(id);
+        TimeMWAggregate.this.windows = new TreeMap<>();
+        this.WS = windowSize;
+        this.WA = windowSlide;
+        this.aggregateWindow = aggregateWindow;
+//        this.WS_WA_ceil = (long) Math.ceil((double) TimeBasedMultiWindowAggregate.this.WS / (double) TimeBasedMultiWindowAggregate.this.WA);
+//        this.WS_WA_ceil_minus_1 = TimeBasedMultiWindowAggregate.this.WS_WA_ceil - 1;
     }
 
     public List<OUT> processTupleIn1(IN t) {
@@ -67,7 +83,7 @@ public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends Ric
             if (earliestWinStartTS + WS <= latestTimestamp) {
 
                 // Produce results for stale windows
-                for (TimeWindowAddRemove<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
+                for (TimeWindowAdd<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
                     OUT outT = w.getAggregatedResult();
                     if (outT!=null) {
                         result.add(outT);
@@ -108,6 +124,7 @@ public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends Ric
     @Override
     public void enable() {
         aggregateWindow.enable();
+        aggregateWindow.enable();
         super.enable();
     }
 
@@ -115,10 +132,31 @@ public class TimeBasedMultiWindowAggregate<IN extends RichTuple, OUT extends Ric
     public void disable() {
         super.disable();
         aggregateWindow.disable();
+        aggregateWindow.disable();
     }
 
     @Override
     public boolean canRun() {
-        return aggregateWindow.canRun() && super.canRun();
+        return aggregateWindow.canRun() && aggregateWindow.canRun() && super.canRun();
+    }
+
+    public long getEarliestWinStartTS(long ts) {
+        long winStart = (ts / WA) * WA;
+        while (winStart - WA + WS > ts) {
+            winStart -= WA;
+        }
+        return Math.max(0, winStart);
+//        long contributingWins = (ts % WA < WS % WA || WS % WA == 0) ? WS_WA_ceil : WS_WA_ceil_minus_1;
+//        return (long) Math.max((ts / WA - contributingWins + 1) * WA, 0.0);
+    }
+
+    protected void checkIncreasingTimestamps(IN t) {
+        if (firstTuple) {
+            firstTuple = false;
+        } else {
+            if (t.getTimestamp() < latestTimestamp) {
+                throw new RuntimeException("Input tuple's timestamp decreased!");
+            }
+        }
     }
 }

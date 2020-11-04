@@ -49,4 +49,5 @@ public interface TimeWindowAddSlide<IN extends RichTuple, OUT extends RichTuple>
 
   void slideTo(long startTimestamp);
 
+  boolean isEmpty();
 }

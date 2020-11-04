@@ -27,7 +27,7 @@ import common.tuple.BaseRichTuple;
 import common.util.Util;
 import component.operator.Operator;
 import component.operator.in1.aggregate.AggregateType;
-import component.operator.in1.aggregate.BaseTimeBasedSingleWindow;
+import component.operator.in1.aggregate.BaseTimeWindowAddRemove;
 import component.operator.in1.aggregate.TimeWindowAddRemove;
 import component.sink.Sink;
 import component.source.Source;
@@ -96,7 +96,7 @@ public class TextAggregate {
     }
   }
 
-  private static class AverageWindow extends BaseTimeBasedSingleWindow<InputTuple, OutputTuple> {
+  private static class AverageWindow extends BaseTimeWindowAddRemove<InputTuple, OutputTuple> {
 
     private double count = 0;
     private double sum = 0;

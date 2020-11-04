@@ -36,7 +36,7 @@ import java.util.*;
  * @param <IN>  The type of input tuples.
  * @param <OUT> The type of output tuples.
  */
-public class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
+public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
         extends BaseOperator1In<IN, OUT> {
 
     private final int instance;
@@ -48,7 +48,7 @@ public class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
     private boolean firstTuple = true;
     private TreeMap<Long, HashMap<String, TimeWindowAddSlide<IN, OUT>>> windows;
 
-    public TimeAggregate(
+    public TimeSWAggregate(
             String id,
             int instance,
             int parallelismDegree,
@@ -64,7 +64,7 @@ public class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
         this.aggregateWindow = aggregateWindow;
     }
 
-    public TimeAggregate(
+    public TimeSWAggregate(
             String id,
             int instance,
             int parallelismDegree,
