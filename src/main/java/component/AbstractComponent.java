@@ -2,10 +2,14 @@ package component;
 
 import common.metrics.Metric;
 import common.metrics.TimeMetric;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import query.LiebreContext;
+import stream.Stream;
 
 public abstract class AbstractComponent<IN, OUT> implements Component {
 
+  private static final Logger LOG = LogManager.getLogger();
   protected final ComponentState<IN, OUT> state;
 
   // Exponential moving average alpha parameter
@@ -28,6 +32,7 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
 
   private final TimeMetric executionTimeMetric;
   private final Metric rateMetric;
+  private boolean flushed;
 
   public AbstractComponent(String id, ComponentType type) {
     this.state = new ComponentState<>(id, type);
@@ -165,6 +170,23 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
 
   public int getIndex() {
     return state.getIndex();
+  }
+
+  protected <T> boolean isStreamFinished(T tuple, Stream<T> stream) {
+    return (tuple == null) && (stream.isFlushed());
+  }
+
+  protected void flush() {
+    flushAction();
+    LOG.info("{} finished processing", getId());
+    this.flushed = true;
+  }
+
+  protected abstract void flushAction();
+
+
+  protected boolean isFlushed() {
+    return flushed;
   }
 
   @Override

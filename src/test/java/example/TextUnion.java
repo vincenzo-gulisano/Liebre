@@ -46,9 +46,9 @@ public class TextUnion {
 
     Operator<String, MyTuple> inputReader1 =
         q.addMapOperator(
-            "map",
+            "map1",
             line -> {
-              Util.sleep(100);
+              Util.sleep(50);
               String[] tokens = line.split(",");
               return new MyTuple(
                   Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
@@ -58,9 +58,9 @@ public class TextUnion {
 
     Operator<String, MyTuple> inputReader2 =
         q.addMapOperator(
-            "map",
+            "map2",
             line -> {
-              Util.sleep(100);
+              Util.sleep(50);
               String[] tokens = line.split(",");
               return new MyTuple(
                   Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));
@@ -75,7 +75,5 @@ public class TextUnion {
     q.connect(union, o1);
 
     q.activate();
-    Util.sleep(120000);
-    q.deActivate();
   }
 }

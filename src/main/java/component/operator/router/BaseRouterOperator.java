@@ -41,8 +41,18 @@ public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements Rou
 
   @Override
   protected final void process() {
+    if (isFlushed()) {
+      return;
+    }
+
     Stream<T> input = getInput();
     T inTuple = input.getNextTuple(getIndex());
+
+    if (isStreamFinished(inTuple, input)) {
+      flush();
+      return;
+    }
+
     if (inTuple != null) {
       increaseTuplesRead();
       for (Stream<T> output : chooseOutputs(inTuple)) {
@@ -51,6 +61,8 @@ public class BaseRouterOperator<T> extends AbstractOperator<T, T> implements Rou
       }
     }
   }
+
+
 
   @Override
   public Collection<? extends Stream<T>> chooseOutputs(T tuple) {

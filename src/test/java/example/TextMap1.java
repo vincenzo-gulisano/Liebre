@@ -67,7 +67,5 @@ public class TextMap1 {
     q.connect(i1, inputReader).connect(inputReader, multiply).connect(multiply, o1);
 
     q.activate();
-    Util.sleep(30000);
-    q.deActivate();
   }
 }

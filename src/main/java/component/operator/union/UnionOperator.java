@@ -46,14 +46,24 @@ public class UnionOperator<T> extends AbstractOperator<T, T> {
 
   @Override
   protected final void process() {
+    if (isFlushed()) {
+      return;
+    }
     Stream<T> output = getOutput();
+    int finishedInputs = 0;
     for (Stream<T> in : getInputs()) {
       T inTuple = in.getNextTuple(getIndex());
+      finishedInputs += isStreamFinished(inTuple, in) ? 1 : 0;
       if (inTuple != null) {
         increaseTuplesRead();
         increaseTuplesWritten();
         output.addTuple(inTuple, getIndex());
       }
+    }
+    if (finishedInputs == getInputs().size()) {
+      flush();
+      output.flush();
+      return;
     }
   }
 

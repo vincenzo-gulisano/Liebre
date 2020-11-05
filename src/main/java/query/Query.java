@@ -472,9 +472,11 @@ public final class Query {
     return stream;
   }
 
-  /** Activate and start executing the query. */
+  /**
+   * Activate and start executing the query.
+   */
   public synchronized void activate() {
-
+    LiebreContext.init(this);
     LOGGER.info("Activating query...");
     LOGGER.info(
         "Components: {} Sources, {} Operators, {} Sinks, {} Streams",
@@ -514,6 +516,10 @@ public final class Query {
 
   Collection<Source<?>> sources() {
     return sources.values();
+  }
+
+  public Collection<Sink<?>> sinks() {
+    return sinks.values();
   }
 
   private Set<Stream<?>> streams() {

@@ -85,4 +85,8 @@ public abstract class AbstractOperator<IN, OUT> extends AbstractComponent<IN, OU
     return getInput().size() > 0 && getOutput().remainingCapacity() > 0;
   }
 
+  @Override
+  protected void flushAction() {
+    getOutputs().stream().forEach(output -> output.flush());
+  }
 }

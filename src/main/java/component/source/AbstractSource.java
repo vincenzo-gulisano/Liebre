@@ -50,15 +50,27 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
 
   @Override
   protected final void process() {
+
+    if (isFlushed()) {
+      return;
+    }
+
     OUT tuple = getNextTuple();
     Stream<OUT> output = getOutput();
-    if (tuple != null) {
-      increaseTuplesRead();
-      increaseTuplesWritten();
-      output.addTuple(tuple, getIndex());
-    } else {
-      // Notify Global Context
+    final boolean isInputFinished = (tuple == null);
+    if (isInputFinished) {
+      flush();
+      return;
     }
+
+    increaseTuplesRead();
+    increaseTuplesWritten();
+    output.addTuple(tuple, getIndex());
+  }
+
+  @Override
+  protected void flushAction() {
+    getOutput().flush();
   }
 
   @Override
