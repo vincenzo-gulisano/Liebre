@@ -14,6 +14,9 @@ public abstract class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
     private boolean firstTuple = true;
 
 
+    private final long WS_WA_ceil;
+    private final long WS_WA_ceil_minus_1;
+
     public TimeAggregate(String id, int instance, int parallelismDegree, long ws, long wa, TimeWindow w, KeyExtractor keyExtractor) {
         super(id);
         this.instance = instance;
@@ -22,16 +25,20 @@ public abstract class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
         WA = wa;
         this.w = w;
         this.keyExtractor = keyExtractor;
+
+        if ((wa > ws)) throw new AssertionError();
+        WS_WA_ceil = (long) Math.ceil((double)WS / (double)WA);
+        WS_WA_ceil_minus_1 = WS_WA_ceil-1;
     }
 
     public long getEarliestWinStartTS(long ts) {
-        long winStart = (ts / WA) * WA;
-        while (winStart - WA + WS > ts) {
-            winStart -= WA;
-        }
-        return Math.max(0, winStart);
-//        long contributingWins = (ts % WA < WS % WA || WS % WA == 0) ? WS_WA_ceil : WS_WA_ceil_minus_1;
-//        return (long) Math.max((ts / WA - contributingWins + 1) * WA, 0.0);
+//        long winStart = (ts / WA) * WA;
+//        while (winStart - WA + WS > ts) {
+//            winStart -= WA;
+//        }
+//        return Math.max(0, winStart);
+        long contributingWins = (ts % WA < WS % WA || WS % WA == 0) ? WS_WA_ceil : WS_WA_ceil_minus_1;
+        return (long) Math.max((ts / WA - contributingWins + 1) * WA, 0.0);
     }
 
     @Override
