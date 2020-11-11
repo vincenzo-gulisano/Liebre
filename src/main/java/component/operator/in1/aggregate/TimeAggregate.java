@@ -64,7 +64,7 @@ public abstract class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
         }
     }
 
-    public void registerNewKeyExtractor(KeyExtractor k) {
+    public void registerKeyExtractor(KeyExtractor k) {
         this.keyExtractor = k;
     }
 }
