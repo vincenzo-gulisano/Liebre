@@ -36,7 +36,7 @@ public abstract class BaseTimeWindowAdd<IN extends RichTuple, OUT extends RichTu
     protected long startTimestamp;
     protected int instanceNumber;
     protected int parallelismDegree;
-    
+
     @Override
     public void setStartTimestamp(long startTimestamp) {
         this.startTimestamp = startTimestamp;
