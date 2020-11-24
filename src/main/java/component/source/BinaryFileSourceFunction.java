@@ -45,6 +45,11 @@ public class BinaryFileSourceFunction<IN extends Serializable> implements Source
   }
 
   @Override
+  public boolean isInputFinished() {
+    return done;
+  }
+
+  @Override
   public void enable() {
     try {
       this.reader = new ObjectInputStream(new FileInputStream(path));

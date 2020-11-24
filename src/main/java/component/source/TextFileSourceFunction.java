@@ -45,6 +45,11 @@ public class TextFileSourceFunction implements SourceFunction<String> {
   }
 
   @Override
+  public boolean isInputFinished() {
+    return done;
+  }
+
+  @Override
   public void enable() {
     try {
       this.reader = new BufferedReader(new FileReader(path));

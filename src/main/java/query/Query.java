@@ -79,10 +79,10 @@ public final class Query {
   private final Map<String, Operator<?, ?>> operators = new HashMap<>();
   private final Map<String, Source<?>> sources = new HashMap<>();
   private final Map<String, Sink<?>> sinks = new HashMap<>();
-  private final LiebreScheduler LiebreScheduler;
+  private final LiebreScheduler liebreScheduler;
   private final StreamFactory streamFactory;
   private Backoff defaultBackoff = new ExponentialBackoff(1, 10, 3);
-  private boolean active;
+  private volatile boolean active;
 
   /** Construct. */
   public Query() {
@@ -96,7 +96,7 @@ public final class Query {
    *     Query{@link #activate()} is called.
    */
   public Query(LiebreScheduler LiebreScheduler, StreamFactory streamFactory) {
-    this.LiebreScheduler = LiebreScheduler;
+    this.liebreScheduler = LiebreScheduler;
     this.streamFactory = streamFactory;
   }
 
@@ -484,11 +484,11 @@ public final class Query {
         operators.size(),
         sinks.size(),
         streams().size());
-    LiebreScheduler.addTasks(sinks.values());
-    LiebreScheduler.addTasks(operators.values());
-    LiebreScheduler.addTasks(sources.values());
-    LiebreScheduler.enable();
-    LiebreScheduler.startTasks();
+    liebreScheduler.addTasks(sinks.values());
+    liebreScheduler.addTasks(operators.values());
+    liebreScheduler.addTasks(sources.values());
+    liebreScheduler.enable();
+    liebreScheduler.startTasks();
     active = true;
   }
 
@@ -498,11 +498,12 @@ public final class Query {
       return;
     }
     LOGGER.info("Deactivating query...");
-    LiebreScheduler.disable();
+    liebreScheduler.disable();
     LOGGER.info("Waiting for threads to terminate...");
-    LiebreScheduler.stopTasks();
+    liebreScheduler.stopTasks();
     LOGGER.info("DONE!");
     active = false;
+    LiebreContext.terminated(this);
   }
 
   /**

@@ -26,6 +26,7 @@ package component.source;
 import component.ComponentType;
 
 import java.util.Collection;
+import query.LiebreContext;
 import stream.Stream;
 
 public abstract class AbstractSource<OUT> extends component.AbstractComponent<Void, OUT>
@@ -57,20 +58,24 @@ public abstract class AbstractSource<OUT> extends component.AbstractComponent<Vo
 
     OUT tuple = getNextTuple();
     Stream<OUT> output = getOutput();
-    final boolean isInputFinished = (tuple == null);
-    if (isInputFinished) {
+    if (isInputFinished()) {
       flush();
       return;
     }
-
-    increaseTuplesRead();
-    increaseTuplesWritten();
-    output.addTuple(tuple, getIndex());
+    if (tuple != null) {
+      increaseTuplesRead();
+      increaseTuplesWritten();
+      output.addTuple(tuple, getIndex());
+    }
   }
+
+  protected abstract boolean isInputFinished();
 
   @Override
   protected void flushAction() {
-    getOutput().flush();
+    if (LiebreContext.isFlushingEnabled()) {
+      getOutput().flush();
+    }
   }
 
   @Override
