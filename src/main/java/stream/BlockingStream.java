@@ -42,7 +42,6 @@ public class BlockingStream<T> extends AbstractStream<T> {
   private final StreamConsumer<T> destination;
   private volatile long tuplesRead;
   private volatile long tuplesWritten;
-  private boolean isFlushed;
 
   private volatile double averageArrivalTime = -1;
 
@@ -71,6 +70,7 @@ public class BlockingStream<T> extends AbstractStream<T> {
   public void doAddTuple(T tuple, int producerIndex) {
     try {
       stream.put(tuple);
+      tuplesWritten++;
       if (tuple instanceof RichTuple) {
         long arrivalTime = ((RichTuple) tuple).getStimulus();
         averageArrivalTime =
@@ -92,6 +92,7 @@ public class BlockingStream<T> extends AbstractStream<T> {
   @Override
   public T doGetNextTuple(int consumerIndex) {
     try {
+      tuplesRead++;
       return stream.take();
     } catch (InterruptedException e) {
       if (isEnabled()) {
