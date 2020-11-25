@@ -51,7 +51,7 @@ public class QueryGraphExporter {
       for (String upstream : downstreamEdges.keySet()) {
         writer.format("%s:\n", upstream);
         downstreamEdges.get(upstream).forEach(
-            downstream -> writer.format("\t- %s\n", downstream)
+            downstream -> writer.format("    - %s\n", downstream)
         );
         writer.println();
       }
