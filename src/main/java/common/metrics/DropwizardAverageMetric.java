@@ -23,21 +23,44 @@
 
 package common.metrics;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
 
-/** Statistic that writes the per-second average of the recorded value. */
+/**
+ * Statistic that writes the per-second average of the recorded value.
+ */
 public class DropwizardAverageMetric extends AbstractMetric implements Metric {
 
-  private final Histogram histogram;
+  private final AverageGauge gauge;
 
   public DropwizardAverageMetric(String id, MetricRegistry metricRegistry) {
     super(id);
-    histogram = metricRegistry.histogram(id);
+    gauge = new AverageGauge();
+    metricRegistry.register(id, this.gauge);
   }
 
   @Override
   protected void doRecord(long v) {
-    histogram.update(v);
+    gauge.add(v);
+  }
+
+  private static class AverageGauge implements Gauge {
+
+    private double sum;
+    private int count;
+
+    public void add(double value) {
+      sum += value;
+      count += 1;
+    }
+
+    @Override
+    public Object getValue() {
+      double result = sum / count;
+      sum = 0;
+      count = 0;
+      return result;
+    }
   }
 }
