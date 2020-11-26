@@ -75,9 +75,6 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
 
         long earliestWinStartTSforT = getEarliestWinStartTS(latestTimestamp);
 
-        // Keep track of windows that became empty
-        Set<String> emptyWins = new HashSet<>();
-
         // Managing of stale windows
         boolean purgingNotDone = true;
         while (purgingNotDone && windows.size() > 0) {
@@ -89,32 +86,26 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
                 // Produce results for stale windows
                 for (TimeWindowAddSlide<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
                     OUT outT = w.getAggregatedResult();
-                    if (outT!=null) {
+                    if (outT != null) {
                         result.add(outT);
                     }
                 }
 
                 // Shift windows
                 if (!windows.containsKey(earliestWinStartTS + WA)) {
-                    windows.put(
-                            earliestWinStartTS + WA, new HashMap<>());
+                    windows.put(earliestWinStartTS + WA, new HashMap<>());
                 }
-                windows.get(earliestWinStartTS + WA).putAll(windows.get(earliestWinStartTS));
-                for (String s : windows.get(earliestWinStartTS + WA).keySet()) {
-                    windows.get(earliestWinStartTS + WA).get(s).slideTo(earliestWinStartTS + WA);
-                    if (windows.get(earliestWinStartTS + WA).get(s).isEmpty()) {
-                        emptyWins.add(s);
+                for (String s : windows.get(earliestWinStartTS).keySet()) {
+                    windows.get(earliestWinStartTS).get(s).slideTo(earliestWinStartTS + WA);
+                    if (!windows.get(earliestWinStartTS).get(s).isEmpty()) {
+                        windows.get(earliestWinStartTS + WA).put(s,windows.get(earliestWinStartTS).get(s));
                     }
                 }
                 windows.remove(earliestWinStartTS);
+
             } else {
                 purgingNotDone = false;
             }
-        }
-
-        // Remove empty windows
-        for(String s : emptyWins) {
-            windows.firstEntry().getValue().remove(s);
         }
 
         // Add contribution of this tuple
