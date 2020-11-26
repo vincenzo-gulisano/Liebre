@@ -25,14 +25,22 @@ package query;
 
 import common.metrics.InactiveMetricsFactory;
 import common.metrics.MetricsFactory;
+import component.sink.Sink;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class LiebreContext {
+
 
   private static MetricsFactory operatorMetrics = new InactiveMetricsFactory();
 
   private static MetricsFactory streamMetrics = new InactiveMetricsFactory();
 
   private static MetricsFactory userMetrics = new InactiveMetricsFactory();
+
+  private static boolean flushingEnabled;
+
+  private static QueryTerminator queryTerminator;
 
   public static MetricsFactory operatorMetrics() {
     return operatorMetrics;
@@ -58,5 +66,28 @@ public final class LiebreContext {
     LiebreContext.userMetrics = userMetrics;
   }
 
-  private LiebreContext() {}
+  public static void init(Query query) {
+    queryTerminator = new QueryTerminator(query);
+
+  }
+
+  public static void terminated(Query query) {
+    queryTerminator.disable();
+  }
+
+  public static void sinkFinished(Sink<?> sink) {
+    queryTerminator.sinkFinished(sink);
+  }
+
+  public static boolean isFlushingEnabled() {
+    return flushingEnabled;
+  }
+
+  public static void disableFlushing() {
+    flushingEnabled = false;
+  }
+
+  private LiebreContext() {
+  }
+
 }

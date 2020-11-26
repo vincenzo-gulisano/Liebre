@@ -41,4 +41,8 @@ public interface SourceFunction<OUT> extends ComponentFunction, Supplier<OUT> {
   default double getAverageArrivalTime() {
     return HarenFeatureTranslator.NO_ARRIVAL_TIME;
   }
+
+  default boolean isInputFinished() {
+    return false;
+  }
 }

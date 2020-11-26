@@ -30,12 +30,11 @@ import stream.Stream;
 /**
  * Base abstract {@link Operator2In} implementation.
  *
- * @param <IN> The type of the tuples in the first input.
+ * @param <IN>  The type of the tuples in the first input.
  * @param <IN2> The type of the tuples in the second input.
  * @param <OUT> The type of the tuples in the output.
  */
-public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractOperator2In<IN, IN2, OUT>
-     {
+public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractOperator2In<IN, IN2, OUT> {
 
   /**
    * Construct.
@@ -48,12 +47,21 @@ public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractOperator2In<
 
   @Override
   protected final void process() {
+    if (isFlushed()) {
+      return;
+    }
     Stream<IN> input1 = getInput();
     Stream<IN2> input2 = getInput2();
     Stream<OUT> output = getOutput();
 
     IN inTuple1 = input1.getNextTuple(getIndex());
     IN2 inTuple2 = input2.getNextTuple(getIndex());
+
+    if (isStreamFinished(inTuple1, input1) && isStreamFinished(inTuple2, input2)) {
+      flush();
+      return;
+    }
+
     if (inTuple1 != null) {
       increaseTuplesRead();
       List<OUT> outTuples = processTupleIn1(inTuple1);
@@ -64,6 +72,7 @@ public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractOperator2In<
         }
       }
     }
+
     if (inTuple2 != null) {
       increaseTuplesRead();
       List<OUT> outTuples = processTupleIn2(inTuple2);
@@ -76,7 +85,8 @@ public abstract class BaseOperator2In<IN, IN2, OUT> extends AbstractOperator2In<
     }
   }
 
-
-
-
+  @Override
+  protected void flushAction() {
+    getOutput().flush();
+  }
 }

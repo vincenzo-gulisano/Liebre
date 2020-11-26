@@ -61,6 +61,11 @@ public class BaseSource<OUT> extends AbstractSource<OUT> {
   }
 
   @Override
+  protected boolean isInputFinished() {
+    return function.isInputFinished();
+  }
+
+  @Override
   public void enable() {
     function.enable();
     super.enable();

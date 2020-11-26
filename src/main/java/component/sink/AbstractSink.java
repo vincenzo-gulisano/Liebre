@@ -27,6 +27,7 @@ import component.AbstractComponent;
 import component.ComponentType;
 
 import java.util.Collection;
+import query.LiebreContext;
 import stream.Stream;
 
 /**
@@ -49,13 +50,28 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
 
   @Override
   protected final void process() {
+    if (isFlushed()) {
+      return;
+    }
+
     Stream<IN> input = getInput();
     IN tuple = input.getNextTuple(getIndex());
+
+    if (isStreamFinished(tuple, input)) {
+      flush();
+      return;
+    }
+
     if (tuple != null) {
       increaseTuplesRead();
       increaseTuplesWritten();
       processTuple(tuple);
     }
+  }
+
+  @Override
+  protected void flushAction() {
+    LiebreContext.sinkFinished(this);
   }
 
   @Override

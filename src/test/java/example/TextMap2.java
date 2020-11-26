@@ -60,8 +60,6 @@ public class TextMap2 {
     q.connect(i1, inputReader).connect(inputReader, transform).connect(transform, o1);
 
     q.activate();
-    Util.sleep(40000);
-    q.deActivate();
   }
 
   private static class OutputTuple {

@@ -31,7 +31,7 @@ import stream.Stream;
 /**
  * Default abstract implementation of {@link Operator1In}.
  *
- * @param <IN> The type of input tuples.
+ * @param <IN>  The type of input tuples.
  * @param <OUT> The type of output tuples.
  * @author palivosd
  */
@@ -49,10 +49,20 @@ public abstract class BaseOperator1In<IN, OUT> extends AbstractOperator<IN, OUT>
 
   @Override
   protected final void process() {
+    if (isFlushed()) {
+      return;
+    }
+
     Stream<IN> input = getInput();
     Stream<OUT> output = getOutput();
 
     IN inTuple = input.getNextTuple(getIndex());
+
+    if (isStreamFinished(inTuple, input)) {
+      flush();
+      return;
+    }
+
     if (inTuple != null) {
       increaseTuplesRead();
       List<OUT> outTuples = processTupleIn1(inTuple);
@@ -63,5 +73,7 @@ public abstract class BaseOperator1In<IN, OUT> extends AbstractOperator<IN, OUT>
         }
       }
     }
+
   }
+
 }

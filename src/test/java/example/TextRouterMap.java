@@ -56,7 +56,10 @@ public class TextRouterMap {
     Operator<MyTuple, MyTuple> router = q.addRouterOperator("router");
 
     Operator<MyTuple, MyTuple> filterHigh =
-        q.addFilterOperator("fHigh", t -> Integer.valueOf(t.getKey()) < 5);
+        q.addFilterOperator("fHigh", t -> {
+          Util.sleep(100);
+          return Integer.valueOf(t.getKey()) < 5;
+        });
 
     Operator<MyTuple, MyTuple> filterLow =
         q.addFilterOperator("fLow", t -> Integer.valueOf(t.getKey()) > 4);
@@ -72,7 +75,5 @@ public class TextRouterMap {
         .connect(filterLow, o2);
 
     q.activate();
-    Util.sleep(5000);
-    q.deActivate();
   }
 }

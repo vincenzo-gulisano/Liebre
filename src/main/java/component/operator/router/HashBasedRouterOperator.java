@@ -47,6 +47,11 @@ public class HashBasedRouterOperator<T extends RichTuple> extends AbstractOperat
 
   @Override
   protected final void process() {
+
+    if (isFlushed()) {
+      return;
+    }
+
     if (firstInvocation) {
       firstInvocation = false;
       outArray = new Stream[getOutputs().size()];
@@ -56,8 +61,15 @@ public class HashBasedRouterOperator<T extends RichTuple> extends AbstractOperat
         index++;
       }
     }
+
     Stream<T> input = getInput();
     T inTuple = input.getNextTuple(getIndex());
+
+    if (isStreamFinished(inTuple, input)) {
+      flush();
+      return;
+    }
+
     if (inTuple != null) {
       increaseTuplesRead();
       increaseTuplesWritten();

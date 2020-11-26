@@ -63,8 +63,6 @@ public class TextAggregate {
     q.connect(i1, inputReader).connect(inputReader, aggregate).connect(aggregate, o1);
 
     q.activate();
-    Util.sleep(30000);
-    q.deActivate();
   }
 
   private static class InputTuple extends BaseRichTuple {

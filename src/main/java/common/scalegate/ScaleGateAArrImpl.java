@@ -83,7 +83,14 @@ public class ScaleGateAArrImpl<T extends Comparable<T>> implements ScaleGate<T> 
     this.internalAddTuple(tuple, writerID);
   }
 
-  private void insertNode(
+  @Override
+  public void letItFlush() {
+    for (int i = 0; i < numberOfWriters; i++) {
+      getWriterLocal(i).written = tail;
+    }
+  }
+
+    private void insertNode(
       SGNodeAArrImpl fromNode, SGNodeAArrImpl newNode, final T obj, final int level) {
     while (true) {
       SGNodeAArrImpl next = fromNode.getNext(level);
