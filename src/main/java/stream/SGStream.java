@@ -130,6 +130,6 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
 
   @Override
   public boolean isFlushed() {
-    return isFlushed;
+    return isFlushed && this.sg.hasBeenEmptied();
   }
 }

@@ -177,6 +177,7 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
   }
 
   protected void flush() {
+    LOG.info("{} being flushed", getId());
     flushAction();
     LOG.info("{} finished processing", getId());
     this.flushed = true;

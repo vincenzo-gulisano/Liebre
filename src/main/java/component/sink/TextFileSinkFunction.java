@@ -68,6 +68,7 @@ public class TextFileSinkFunction<IN> implements SinkFunction<IN> {
 
   @Override
   public void disable() {
+    System.out.println("Closing sink writer");
     this.enabled = false;
     writer.flush();
     writer.close();
