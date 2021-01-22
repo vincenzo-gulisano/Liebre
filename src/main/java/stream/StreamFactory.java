@@ -40,7 +40,7 @@ public interface StreamFactory {
   }
 
   <T extends Comparable<? super T>> MWMRStream<T> newMWMRStream(
-          List<? extends StreamProducer<T>> sources, List<? extends StreamConsumer<T>> destinations, int maxLevels);
+          List<? extends StreamProducer<T>> sources, List<? extends StreamConsumer<T>> destinations, int maxLevels, Backoff backoff);
 
   default String getStreamId(StreamProducer<?> from, StreamConsumer<?> to) {
     return String.format("%s_%s", from.getId(), to.getId());

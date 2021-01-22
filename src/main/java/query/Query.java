@@ -427,7 +427,7 @@ public final class Query {
   public synchronized <T extends Comparable<? super T>> Query connect(
       List<? extends StreamProducer<T>> producers, List<? extends StreamConsumer<T>> consumers) {
     MWMRStream<T> stream =
-        streamFactory.newMWMRStream(producers, consumers, DEFAULT_SGSTREAM_MAX_LEVELS);
+        streamFactory.newMWMRStream(producers, consumers, DEFAULT_SGSTREAM_MAX_LEVELS,defaultBackoff);
     for (StreamProducer<T> producer : producers) {
       stream.registerProducer(producer);
       producer.addOutput(stream);
