@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class QueryGraphExporter {
 
-  public static void exportAsJson(Query query, String path) {
+  public static void export(Query query, String path) {
     final Map<String, Set<String>> downstreamEdges = new HashMap<>();
     final Queue<Component> queue = new ArrayDeque<>();
     final Set<String> visited = new HashSet<>();

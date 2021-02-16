@@ -23,44 +23,35 @@
 
 package common.metrics;
 
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SlidingTimeWindowArrayReservoir;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Statistic that writes the per-second average of the recorded value.
  */
-public class DropwizardAverageMetric extends AbstractMetric implements Metric {
+public class DropwizardSamplingHistorgramMetric extends AbstractMetric implements Metric {
 
-  private final AverageGauge gauge;
+  private final Histogram histogram;
 
-  public DropwizardAverageMetric(String id, MetricRegistry metricRegistry) {
+  private final long sampleEvery = Metrics.sampleEvery();
+  private long counter;
+
+  public DropwizardSamplingHistorgramMetric(String id, MetricRegistry metricRegistry) {
     super(id);
-    gauge = new AverageGauge();
-    metricRegistry.register(id, this.gauge);
+    histogram = new Histogram(new SlidingTimeWindowArrayReservoir(1, TimeUnit.SECONDS));
+    metricRegistry.register(id, histogram);
   }
 
   @Override
   protected void doRecord(long v) {
-    gauge.add(v);
-  }
-
-  private static class AverageGauge implements Gauge {
-
-    private double sum;
-    private int count;
-
-    public void add(double value) {
-      sum += value;
-      count += 1;
+    if (sampleEvery < 0) {
+      return;
     }
-
-    @Override
-    public Object getValue() {
-      double result = sum / count;
-      sum = 0;
-      count = 0;
-      return result;
+    if (counter++ % sampleEvery == 0) {
+      histogram.update(v);
     }
   }
+
 }

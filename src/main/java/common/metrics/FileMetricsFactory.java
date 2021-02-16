@@ -1,6 +1,8 @@
 package common.metrics;
 
 
+import com.codahale.metrics.Gauge;
+
 public class FileMetricsFactory implements MetricsFactory {
   private final MetricName metricName;
   private final String folder;
@@ -21,7 +23,7 @@ public class FileMetricsFactory implements MetricsFactory {
   }
 
   @Override
-  public Metric newAverageMetric(String id, Object type) {
+  public Metric newSamplingHistogramMetric(String id, Object type) {
     return new FileAverageMetric(metricName.get(id, type), folder, autoFlush);
   }
 
@@ -42,7 +44,12 @@ public class FileMetricsFactory implements MetricsFactory {
   }
 
   @Override
+  public Metric newGaugeMetric(String id, Object type, Gauge<Long> gauge) {
+    return null;
+  }
+
+  @Override
   public TimeMetric newAverageTimeMetric(String id, Object type) {
-    return new DelegatingTimeMetric(newAverageMetric(id, type));
+    return new DelegatingTimeMetric(newSamplingHistogramMetric(id, type));
   }
 }

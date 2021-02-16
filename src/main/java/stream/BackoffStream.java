@@ -55,8 +55,6 @@ public class BackoffStream<T> extends AbstractStream<T> {
   private final StreamConsumer<T> destination;
   private final Backoff readBackoff;
   private final Backoff writeBackoff;
-  private volatile long tuplesRead;
-  private volatile long tuplesWritten;
   private volatile boolean isFlushed = false;
   private volatile double averageArrivalTime = -1;
 

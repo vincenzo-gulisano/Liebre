@@ -38,7 +38,7 @@ public final class LiebreContext {
 
   private static MetricsFactory userMetrics = new InactiveMetricsFactory();
 
-  private static boolean flushingEnabled;
+  private static boolean flushingEnabled = true;
 
   private static QueryTerminator queryTerminator;
 

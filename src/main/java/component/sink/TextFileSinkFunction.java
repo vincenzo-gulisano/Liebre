@@ -43,7 +43,7 @@ public class TextFileSinkFunction<IN> implements SinkFunction<IN> {
   public TextFileSinkFunction(String path, boolean autoFlush) {
     Validate.notBlank(path, "path");
     this.path = path;
-    this.autoFlush = true;
+    this.autoFlush = autoFlush;
   }
 
   @Override

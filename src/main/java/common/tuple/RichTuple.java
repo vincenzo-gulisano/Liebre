@@ -36,4 +36,8 @@ public interface RichTuple {
   default long getStimulus() {
     throw new UnsupportedOperationException();
   }
+
+  default void setStimulus(long stimulus) {
+    throw new UnsupportedOperationException();
+  }
 }

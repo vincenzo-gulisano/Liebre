@@ -40,8 +40,6 @@ public class BlockingStream<T> extends AbstractStream<T> {
   private final int capacity;
   private final StreamProducer<T> source;
   private final StreamConsumer<T> destination;
-  private volatile long tuplesRead;
-  private volatile long tuplesWritten;
 
   private volatile double averageArrivalTime = -1;
 

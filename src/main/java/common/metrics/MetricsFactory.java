@@ -1,8 +1,10 @@
 package common.metrics;
 
+import com.codahale.metrics.Gauge;
+
 public interface MetricsFactory {
 
-  Metric newAverageMetric(String id, Object type);
+  Metric newSamplingHistogramMetric(String id, Object type);
 
   Metric newCountPerSecondMetric(String id, Object type);
 
@@ -11,4 +13,6 @@ public interface MetricsFactory {
   TimeMetric newAverageTimeMetric(String id, Object type);
 
   Metric newStreamMetric(String id, Object type);
+
+  Metric newGaugeMetric(String id, Object type, Gauge<Long> gauge);
 }

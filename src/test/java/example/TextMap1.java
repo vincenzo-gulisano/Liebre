@@ -52,7 +52,7 @@ public class TextMap1 {
         q.addMapOperator(
             "map",
             line -> {
-              Util.sleep(100);
+              Util.sleep(10);
               String[] tokens = line.split(",");
               return new MyTuple(
                   Long.valueOf(tokens[0]), Integer.valueOf(tokens[1]), Integer.valueOf(tokens[2]));

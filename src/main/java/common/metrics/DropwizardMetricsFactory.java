@@ -1,5 +1,6 @@
 package common.metrics;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 
 public class DropwizardMetricsFactory implements MetricsFactory {
@@ -18,8 +19,8 @@ public class DropwizardMetricsFactory implements MetricsFactory {
   }
 
   @Override
-  public Metric newAverageMetric(String id, Object type) {
-    return new DropwizardAverageMetric(metricName.get(id, type), metricRegistry);
+  public Metric newSamplingHistogramMetric(String id, Object type) {
+    return new DropwizardSamplingHistorgramMetric(metricName.get(id, type), metricRegistry);
   }
 
   @Override
@@ -34,11 +35,17 @@ public class DropwizardMetricsFactory implements MetricsFactory {
 
   @Override
   public TimeMetric newAverageTimeMetric(String id, Object type) {
-    return new DelegatingTimeMetric(newAverageMetric(id, type));
+    return new DelegatingTimeMetric(newSamplingHistogramMetric(id, type));
   }
 
   @Override
   public Metric newStreamMetric(String id, Object type) {
     return newTotalCountMetric(id, type);
+  }
+
+  @Override
+  public Metric newGaugeMetric(String id, Object type, Gauge<Long> gauge) {
+    metricRegistry.register(metricName.get(id, type), gauge);
+    return InactiveMetric.INSTANCE;
   }
 }
