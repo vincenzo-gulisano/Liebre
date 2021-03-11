@@ -67,7 +67,7 @@ public interface Component extends Active, Runnable, Named, Task {
 
   default long getInputQueueSize() {
     // Sources can always run
-    return HarenFeatureTranslator.MAX_QUEUE_SIZE;
+    return 0;
   }
 
   default long getOutputQueueSize() {

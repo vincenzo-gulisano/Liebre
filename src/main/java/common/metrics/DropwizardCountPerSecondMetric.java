@@ -26,29 +26,28 @@ package common.metrics;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 
-/** Statistic that records the per-second sum of the recorded value. */
+/**
+ * Statistic that records the per-second sum of the recorded value.
+ */
 class DropwizardCountPerSecondMetric extends AbstractMetric implements Metric {
 
   private final AverageGauge gauge;
 
   private static class AverageGauge implements Gauge<Long> {
+
     private long startTime = System.currentTimeMillis();
-    private long sum = 0;
+    private volatile long sum = 0;
 
     void add(long value) {
-      synchronized (this) {
-        sum += value;
-      }
+      sum += value;
     }
 
     @Override
     public Long getValue() {
       long newTime = System.currentTimeMillis();
       long value = (1000 * sum) / (newTime - startTime);
-      synchronized (this) {
-        startTime = newTime;
-        sum = 0;
-      }
+      startTime = newTime;
+      sum = 0;
       return value;
     }
   }

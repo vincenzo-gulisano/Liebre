@@ -35,10 +35,15 @@ import org.apache.logging.log4j.Logger;
  */
 public enum StopJvmUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
   INSTANCE;
+  public static final int INTERRUPTED_EXIT_CODE = 130;
   private final Logger LOGGER = LogManager.getLogger();
 
   @Override
   public void uncaughtException(Thread t, Throwable e) {
+    if ((e instanceof InterruptedException) || (e.getCause() instanceof InterruptedException)) {
+      LOGGER.warn("Interrupted", e);
+      System.exit(INTERRUPTED_EXIT_CODE);
+    }
     LOGGER.error("{} crashed", t, e);
     LOGGER.error("Details: {}", e);
     LOGGER.error("Shutting down");
