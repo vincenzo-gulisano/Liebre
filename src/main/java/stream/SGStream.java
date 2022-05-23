@@ -3,6 +3,7 @@ package stream;
 import common.scalegate.ScaleGate;
 import common.scalegate.ScaleGateAArrImpl;
 import common.scalegate.TuplesFromAll;
+import common.util.backoff.Backoff;
 import component.StreamConsumer;
 import component.StreamProducer;
 
@@ -30,6 +31,8 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
   private Map<Integer, Integer> consumerMapping = new HashMap<>();
   private volatile boolean isFlushed = false;
 
+  private final Backoff readBackoff;
+
   private TuplesFromAll barrier;
 
   public SGStream(
@@ -39,7 +42,8 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
       int writers,
       int readers,
       List<? extends StreamProducer<T>> producers,
-      List<? extends StreamConsumer<T>> consumers) {
+      List<? extends StreamConsumer<T>> consumers,
+      Backoff backoff) {
     super(id, index);
     this.sg = new ScaleGateAArrImpl(maxLevels, writers, readers);
     this.producers = producers;
@@ -47,6 +51,8 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
 
     barrier = new TuplesFromAll();
     barrier.setSize(writers);
+
+    this.readBackoff = backoff.newInstance();
   }
 
   @Override
@@ -79,7 +85,13 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
   public T doGetNextTuple(int consumerIndex) {
     while (!barrier.receivedTupleFromEachInput()) {}
 
-    return sg.getNextReadyTuple(consumerMapping.get(consumerIndex));
+    T tuple = sg.getNextReadyTuple(consumerMapping.get(consumerIndex));
+    if (tuple != null) {
+      readBackoff.relax();
+      return tuple;
+    }
+    readBackoff.backoff();
+    return null;
   }
 
   @Override
@@ -130,6 +142,6 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
 
   @Override
   public boolean isFlushed() {
-    return isFlushed;
+    return isFlushed && this.sg.hasBeenEmptied();
   }
 }

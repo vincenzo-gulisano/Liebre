@@ -23,39 +23,19 @@
 
 package component.operator.in1.aggregate;
 
-import common.tuple.RichTuple;
-
 /**
- * Default implementation of {@link TimeBasedSingleWindow}, maintaining the trivial state, including
- * the {@code key} of the tuples and the {@code timestamp} of the earliest tuple of this window.
+ * Default implementation of {@link TupleWindow}, maintaining the trivial state
+ * (instanceNumber and parallelismDegree)
  */
-public abstract class BaseTimeBasedSingleWindowSelfStoringFunction<IN extends RichTuple, OUT extends RichTuple>
-        implements TimeBasedSingleWindowSelfStoringFunction<IN, OUT> {
+public abstract class BaseTupleWindow<IN, OUT>
+        implements TupleWindow<IN, OUT> {
 
-    protected String key;
     protected int instanceNumber;
     protected int parallelismDegree;
 
     @Override
     public void setInstanceNumber(int aggregateInstanceNumber) {
         this.instanceNumber = aggregateInstanceNumber;
-    }
-
-    @Override
-    public abstract TimeBasedSingleWindowSelfStoringFunction<IN, OUT> factory();
-
-    @Override
-    public abstract void add(IN t);
-
-    @Override
-    public abstract void slideTo(long startTimestamp);
-
-    @Override
-    public abstract OUT getAggregatedResult();
-
-    @Override
-    public void setKey(String key) {
-        this.key = key;
     }
 
     @Override

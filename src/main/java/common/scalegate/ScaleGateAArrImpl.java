@@ -90,7 +90,15 @@ public class ScaleGateAArrImpl<T extends Comparable<T>> implements ScaleGate<T> 
     }
   }
 
-    private void insertNode(
+  @Override
+  public boolean hasBeenEmptied() {
+      for (int i = 0; i < numberOfReaders; i++)
+          if (getReaderLocal(i).localHead.getNext(0) != tail)
+              return false;
+      return true;
+  }
+
+  private void insertNode(
       SGNodeAArrImpl fromNode, SGNodeAArrImpl newNode, final T obj, final int level) {
     while (true) {
       SGNodeAArrImpl next = fromNode.getNext(level);

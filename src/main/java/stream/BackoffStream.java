@@ -165,7 +165,7 @@ public class BackoffStream<T> extends AbstractStream<T> {
 
   @Override
   public boolean isFlushed() {
-    return isFlushed;
+    return isFlushed && stream.isEmpty();
   }
 
   @Override

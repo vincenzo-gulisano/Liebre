@@ -61,6 +61,7 @@ public class BaseSink<IN> extends AbstractSink<IN> {
 
   @Override
   public void disable() {
+    System.out.println("Deactivating " + this.state.getId());
     super.disable();
     function.disable();
   }

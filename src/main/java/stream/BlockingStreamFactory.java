@@ -22,12 +22,13 @@ public class BlockingStreamFactory implements StreamFactory {
         from, to, capacity);
   }
 
+  // TODO why does BlockingStreamFactory gives a MWMRStream with SGStream if SGStream is by definition non-blocking?
   @Override
   public <T extends Comparable<? super T>> MWMRStream<T> newMWMRStream(
-          List<? extends StreamProducer<T>> sources, List<? extends StreamConsumer<T>> destinations, int maxLevels) {
+          List<? extends StreamProducer<T>> sources, List<? extends StreamConsumer<T>> destinations, int maxLevels, Backoff backoff) {
     return new SGStream<T>(getStreamId(sources.get(0), destinations.get(0)),
         indexes.getAndIncrement(),
         maxLevels, sources.size(),
-        destinations.size(), sources, destinations);
+        destinations.size(), sources, destinations,backoff);
   }
 }

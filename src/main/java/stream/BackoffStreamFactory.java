@@ -21,12 +21,12 @@ public class BackoffStreamFactory implements StreamFactory {
 	@Override
 	public <T extends Comparable<? super T>> MWMRStream<T> newMWMRStream(
 			List<? extends StreamProducer<T>> sources, List<? extends StreamConsumer<T>> destinations,
-			int maxLevels) {
+			int maxLevels, Backoff backoff) {
 		// TODO Ugly to get index 0 by default?
 		return new SGStream<T>(getStreamId(sources.get(0), destinations.get(0)),
 				indexes.getAndIncrement(),
 				maxLevels, sources.size(),
-				destinations.size(), sources, destinations);
+				destinations.size(), sources, destinations, backoff);
 	}
 
 }

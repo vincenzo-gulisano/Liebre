@@ -26,12 +26,10 @@ package example;
 import common.tuple.BaseRichTuple;
 import common.util.Util;
 import component.operator.Operator;
-import component.operator.in1.aggregate.AggregateType;
-import component.operator.in1.aggregate.BaseTimeBasedSingleWindow;
-import component.operator.in1.aggregate.TimeBasedSingleWindow;
+import component.operator.in1.aggregate.BaseTimeWindowAddRemove;
+import component.operator.in1.aggregate.TimeWindowAddRemove;
 import component.sink.Sink;
 import component.source.Source;
-import java.io.File;
 import query.Query;
 
 public class TextAggregate {
@@ -58,7 +56,7 @@ public class TextAggregate {
             });
 
     Operator<InputTuple, OutputTuple> aggregate =
-        q.addAggregateOperator("aggOp", new AverageWindow(), WINDOW_SIZE, WINDOW_SLIDE, AggregateType.MULTIWINDOW);
+        q.addTimeAggregateOperator("aggOp", WINDOW_SIZE, WINDOW_SLIDE, new AverageWindow());
 
     Sink<OutputTuple> o1 = q.addTextFileSink("o1", outputFile, true);
 
@@ -95,7 +93,7 @@ public class TextAggregate {
     }
   }
 
-  private static class AverageWindow extends BaseTimeBasedSingleWindow<InputTuple, OutputTuple> {
+  private static class AverageWindow extends BaseTimeWindowAddRemove<InputTuple, OutputTuple> {
 
     private double count = 0;
     private double sum = 0;
@@ -119,7 +117,7 @@ public class TextAggregate {
     }
 
     @Override
-    public TimeBasedSingleWindow<InputTuple, OutputTuple> factory() {
+    public TimeWindowAddRemove<InputTuple, OutputTuple> factory() {
       return new AverageWindow();
     }
   }

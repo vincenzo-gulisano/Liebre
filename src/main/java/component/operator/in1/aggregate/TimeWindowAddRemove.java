@@ -28,31 +28,25 @@ import component.ComponentFunction;
 
 /**
  * Time-based, stateful window of an aggregate function. The important functions which need to be
- * implemented and define the aggregation logic are {@link TimeBasedSingleWindow#add(RichTuple)},
- * {@link TimeBasedSingleWindow#remove(RichTuple)} and {@link TimeBasedSingleWindow#getAggregatedResult()}.
+ * implemented and define the aggregation logic are {@link TimeWindowAddRemove#add(RichTuple)},
+ * {@link TimeWindowAddRemove#remove(RichTuple)} and {@link TimeWindowAddRemove#getAggregatedResult()}.
  * The actual placement of tuples in the windows is done automatically by {@link
- * TimeBasedSingleWindowAggregate}.
+ * TimeBasedSingleWindowAggregateOld}.
  *
  * @param <IN> The type of the input tuples.
  * @param <OUT> The type of the output tuples.
  */
-public interface TimeBasedSingleWindow<IN extends RichTuple, OUT extends RichTuple> extends
-    ComponentFunction {
+public interface TimeWindowAddRemove<IN extends RichTuple, OUT extends RichTuple> extends
+    TimeWindow<IN, OUT> {
 
   /**
-   * Generate a new {@link TimeBasedSingleWindow} with the same configuration and probably a clear
+   * Generate a new {@link TimeWindowAddSlide} with the same configuration and probably a clear
    * state.
    *
-   * @return A new {@link TimeBasedSingleWindow} instance.
+   * @return A new {@link TimeWindowAddSlide} instance.
    */
-  TimeBasedSingleWindow<IN, OUT> factory();
+  TimeWindowAddRemove<IN, OUT> factory();
 
-  /**
-   * Called when a new tuple is added to the window. The state of the window can be updated.
-   *
-   * @param t The new tuple that is added to the window.
-   */
-  void add(IN t);
 
   /**
    * Called when a tuple is no longer a part of the window. The state of the window can be updated.
@@ -62,25 +56,10 @@ public interface TimeBasedSingleWindow<IN extends RichTuple, OUT extends RichTup
   void remove(IN t);
 
   /**
-   * Called when a window must produce a result based on its current state, i.e., the tuples
-   * currently present in it.
-   *
-   * @return The aggregation result.
-   */
-  OUT getAggregatedResult();
-
-  /**
-   * Setter for the key of the tuples that belong to this window.
-   *
-   * @param key The key of the tuples that belong to this window.
-   */
-  void setKey(String key);
-
-  /**
    * Setter for the timestamp of the earliest tuple in this window.
    *
    * @param startTimestamp The timestamp of the earliest tuple in the window.
    */
-  void setStartTimestamp(long startTimestamp);
+  public void setStartTimestamp(long startTimestamp);
 
 }

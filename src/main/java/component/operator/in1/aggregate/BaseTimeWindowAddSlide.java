@@ -26,35 +26,28 @@ package component.operator.in1.aggregate;
 import common.tuple.RichTuple;
 
 /**
- * Default implementation of {@link TimeBasedSingleWindow}, maintaining the trivial state, including
+ * Default implementation of {@link TimeWindowAddRemove}, maintaining the trivial state, including
  * the {@code key} of the tuples and the {@code timestamp} of the earliest tuple of this window.
  */
-public abstract class BaseTimeBasedSingleWindow<IN extends RichTuple, OUT extends RichTuple>
-    implements TimeBasedSingleWindow<IN, OUT> {
+public abstract class BaseTimeWindowAddSlide<IN extends RichTuple, OUT extends RichTuple>
+        implements TimeWindowAddSlide<IN, OUT> {
 
-  protected String key;
-  protected long startTimestamp;
+    protected String key;
+    protected int instanceNumber;
+    protected int parallelismDegree;
 
-  @Override
-  public abstract TimeBasedSingleWindow<IN, OUT> factory();
+    @Override
+    public void setInstanceNumber(int aggregateInstanceNumber) {
+        this.instanceNumber = aggregateInstanceNumber;
+    }
 
-  @Override
-  public abstract void add(IN t);
+    @Override
+    public void setKey(String key) {
+        this.key = key;
+    }
 
-  @Override
-  public abstract void remove(IN t);
-
-  @Override
-  public abstract OUT getAggregatedResult();
-
-  @Override
-  public void setKey(String key) {
-    this.key = key;
-  }
-
-  @Override
-  public void setStartTimestamp(long startTimestamp) {
-    this.startTimestamp = startTimestamp;
-  }
-
+    @Override
+    public void setParallelismDegree(int parallelismDegree) {
+        this.parallelismDegree = parallelismDegree;
+    }
 }

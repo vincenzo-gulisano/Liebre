@@ -36,4 +36,6 @@ public interface ScaleGate<T extends Comparable<? super T>> {
     // by any thread after this method has been invoked
     void letItFlush();
 
+    boolean hasBeenEmptied();
+
 }
