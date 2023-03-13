@@ -27,13 +27,12 @@ public class FileMetricsFactory implements MetricsFactory {
 
   @Override
   public Metric newCountPerSecondMetric(String id, Object type) {
-    return new FileCountMetric(metricName.get(id, type), folder, autoFlush);
+    return new FileCountMetric(metricName.get(id, type), folder, autoFlush, true);
   }
 
   @Override
   public Metric newTotalCountMetric(String id, Object type) {
-    //FIXME: Implement
-    throw new UnsupportedOperationException();
+    return new FileCountMetric(metricName.get(id, type), folder, autoFlush, false);
   }
 
   @Override

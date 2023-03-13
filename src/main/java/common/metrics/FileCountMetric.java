@@ -27,9 +27,11 @@ package common.metrics;
 public class FileCountMetric extends AbstractFileMetric {
   private long count;
   long prevSec;
+  boolean resetCount;
 
-  public FileCountMetric(String id, String folder, boolean autoFlush) {
+  public FileCountMetric(String id, String folder, boolean autoFlush, boolean resetCount) {
     super(id, folder, autoFlush);
+    this.resetCount = resetCount;
   }
 
   @Override
@@ -54,7 +56,9 @@ public class FileCountMetric extends AbstractFileMetric {
     long thisSec = currentTimeSeconds();
     while (prevSec < thisSec) {
       writeCSVLine(prevSec, count);
-      count = 0;
+      if (resetCount) {
+        count = 0;
+      }
       prevSec++;
     }
   }
