@@ -44,4 +44,14 @@ public class FileMetricsFactory implements MetricsFactory {
   public TimeMetric newAverageTimeMetric(String id, Object type) {
     return new DelegatingTimeMetric(newAverageMetric(id, type));
   }
+
+  @Override
+  public Metric newMaxPerSecondMetric(String id, Object type) {
+    return new FileMaxMetric(metricName.get(id, type), folder, autoFlush, true);
+  }
+
+  @Override
+  public Metric newTotalMaxMetric(String id, Object type) {
+    return new FileMaxMetric(metricName.get(id, type), folder, autoFlush, false);
+  }
 }

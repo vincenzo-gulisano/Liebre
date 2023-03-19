@@ -8,6 +8,10 @@ public interface MetricsFactory {
 
   Metric newTotalCountMetric(String id, Object type);
 
+  Metric newMaxPerSecondMetric(String id, Object type);
+
+  Metric newTotalMaxMetric(String id, Object type);
+
   TimeMetric newAverageTimeMetric(String id, Object type);
 
   Metric newStreamMetric(String id, Object type);
