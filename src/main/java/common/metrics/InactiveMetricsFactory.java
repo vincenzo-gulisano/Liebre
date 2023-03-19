@@ -26,4 +26,14 @@ public class InactiveMetricsFactory implements MetricsFactory {
   public Metric newStreamMetric(String id, Object type) {
     return InactiveMetric.INSTANCE;
   }
+
+  @Override
+  public Metric newMaxPerSecondMetric(String id, Object type) {
+    throw new UnsupportedOperationException("Unimplemented method 'newMaxPerSecondMetric'");
+  }
+
+  @Override
+  public Metric newTotalMaxMetric(String id, Object type) {
+    throw new UnsupportedOperationException("Unimplemented method 'newTotalMaxMetric'");
+  }
 }

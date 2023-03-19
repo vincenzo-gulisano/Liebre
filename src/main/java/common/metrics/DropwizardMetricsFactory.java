@@ -41,4 +41,14 @@ public class DropwizardMetricsFactory implements MetricsFactory {
   public Metric newStreamMetric(String id, Object type) {
     return newTotalCountMetric(id, type);
   }
+
+  @Override
+  public Metric newMaxPerSecondMetric(String id, Object type) {
+    throw new UnsupportedOperationException("Unimplemented method 'newMaxPerSecondMetric'");
+  }
+
+  @Override
+  public Metric newTotalMaxMetric(String id, Object type) {
+    throw new UnsupportedOperationException("Unimplemented method 'newTotalMaxMetric'");
+  }
 }
