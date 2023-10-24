@@ -74,7 +74,8 @@ public class BinaryFileSinkFunction<IN extends Serializable> implements SinkFunc
   public void disable() {
     this.enabled = false;
     try {
-      writer.writeObject(null);
+      // writer.writeObject(null);
+      writer.flush();
       writer.close();
     } catch (IOException e) {
       e.printStackTrace();
