@@ -115,6 +115,11 @@ public final class Query {
     this.defaultBackoff = backoff;
   }
 
+  public synchronized <IN, OUT> Operator<IN, OUT> addOperator(Operator<IN, OUT> operator) {
+    saveComponent(operators, operator, "component/operator");
+    return operator;
+  }
+
   public synchronized <IN, OUT> Operator<IN, OUT> addOperator(Operator1In<IN, OUT> operator) {
     saveComponent(operators, operator, "component/operator");
     return operator;
