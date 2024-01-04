@@ -59,6 +59,8 @@ public interface Stream<T> extends Active, Named {
 
   void flush();
 
+  void clear();
+
   boolean isFlushed();
 
 }

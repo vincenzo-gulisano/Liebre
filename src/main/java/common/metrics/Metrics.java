@@ -1,5 +1,8 @@
 package common.metrics;
 
+import java.util.HashMap;
+import java.util.function.Consumer;
+
 import com.codahale.metrics.MetricRegistry;
 
 public final class Metrics {
@@ -23,9 +26,19 @@ public final class Metrics {
     return file(folder, true);
   }
 
+  public static MetricsFactory fileAndConsumer(String folder, boolean autoFlush,
+      HashMap<String, Consumer<Object[]>> c) {
+    return new FileAndConsumerMetricsFactory(folder, metricName, autoFlush, c);
+  }
+
+  public static MetricsFactory fileAndConsumer(String folder, HashMap<String, Consumer<Object[]>> c) {
+    return fileAndConsumer(folder, true, c);
+  }
+
   public static MetricsFactory dropWizard() {
     return new DropwizardMetricsFactory(dropwizardMetricRegistry, metricName);
   }
 
-  private Metrics() {}
+  private Metrics() {
+  }
 }

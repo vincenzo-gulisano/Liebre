@@ -144,4 +144,10 @@ public class SGStream<T extends Comparable<? super T>> extends AbstractStream<T>
   public boolean isFlushed() {
     return isFlushed && this.sg.hasBeenEmptied();
   }
+
+  @Override
+  public void clear() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'clear'");
+  }
 }

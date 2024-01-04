@@ -191,4 +191,9 @@ public class BackoffStream<T> extends AbstractStream<T> {
         .toString();
   }
 
+  @Override
+  public void clear() {
+    stream.clear();
+  }
+
 }
