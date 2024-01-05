@@ -25,4 +25,10 @@ public class DelegatingTimeMetric extends AbstractTimeMetric {
   public void record(long interval) {
     delegate.record(interval);
   }
+
+  @Override
+  public void reset() {
+    delegate.reset();
+  }
+
 }

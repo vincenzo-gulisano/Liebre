@@ -10,5 +10,7 @@ public interface TimeMetric extends Active {
 
   void record(long interval);
 
+  void reset();
+
   String id();
 }
