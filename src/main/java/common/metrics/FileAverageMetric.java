@@ -63,4 +63,10 @@ public class FileAverageMetric extends AbstractFileMetric {
       prevSec++;
     }
   }
+
+  @Override
+  public void reset() {
+    sum = 0;
+    count = 0;
+  }
 }

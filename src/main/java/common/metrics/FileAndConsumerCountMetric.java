@@ -65,4 +65,9 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
       prevSec++;
     }
   }
+
+  @Override
+  public void reset() {
+    count = 0;
+  }
 }

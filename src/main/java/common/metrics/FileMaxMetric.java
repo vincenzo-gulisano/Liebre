@@ -23,8 +23,9 @@ package common.metrics;
  *   Dimitris Palyvos-Giannas palyvos@chalmers.se
  */
 
-/** Statistic that records the per-second max of the recorded value.
- *  Assumes non-negative records.
+/**
+ * Statistic that records the per-second max of the recorded value.
+ * Assumes non-negative records.
  */
 public class FileMaxMetric extends AbstractFileMetric {
   private long max;
@@ -63,5 +64,10 @@ public class FileMaxMetric extends AbstractFileMetric {
       }
       prevSec++;
     }
+  }
+
+  @Override
+  public void reset() {
+    max = 0;
   }
 }

@@ -65,4 +65,10 @@ public class FileAndConsumerAverageMetric extends AbstractFileAndConsumerMetric 
       prevSec++;
     }
   }
+
+  @Override
+  public void reset() {
+    sum = 0;
+    count = 0;
+  }
 }

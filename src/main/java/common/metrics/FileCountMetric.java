@@ -62,4 +62,9 @@ public class FileCountMetric extends AbstractFileMetric {
       prevSec++;
     }
   }
+
+  @Override
+  public void reset() {
+    count = 0;
+  }
 }

@@ -68,4 +68,9 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
       prevSec++;
     }
   }
+
+  @Override
+  public void reset() {
+    max = 0;
+  }
 }

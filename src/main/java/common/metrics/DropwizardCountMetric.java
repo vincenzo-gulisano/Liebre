@@ -52,4 +52,9 @@ class DropwizardCountMetric extends AbstractMetric implements Metric {
   protected void doRecord(long v) {
     counter.inc(v);
   }
+
+  @Override
+  public void reset() {
+    throw new UnsupportedOperationException("Unimplemented method 'reset'");
+  }
 }

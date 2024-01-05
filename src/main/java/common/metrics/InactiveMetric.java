@@ -7,13 +7,16 @@ public enum InactiveMetric implements Metric, TimeMetric {
   public static final String INACTIVE = "Inactive";
 
   @Override
-  public void startInterval() {}
+  public void startInterval() {
+  }
 
   @Override
-  public void stopInterval() {}
+  public void stopInterval() {
+  }
 
   @Override
-  public void record(long value) {}
+  public void record(long value) {
+  }
 
   @Override
   public String id() {
@@ -21,7 +24,8 @@ public enum InactiveMetric implements Metric, TimeMetric {
   }
 
   @Override
-  public void enable() {}
+  public void enable() {
+  }
 
   @Override
   public boolean isEnabled() {
@@ -29,5 +33,10 @@ public enum InactiveMetric implements Metric, TimeMetric {
   }
 
   @Override
-  public void disable() {}
+  public void disable() {
+  }
+
+  @Override
+  public void reset() {
+  }
 }

@@ -62,4 +62,9 @@ class DropwizardCountPerSecondMetric extends AbstractMetric implements Metric {
   protected void doRecord(long v) {
     gauge.add(v);
   }
+
+  @Override
+  public void reset() {
+    throw new UnsupportedOperationException("Unimplemented method 'reset'");
+  }
 }
