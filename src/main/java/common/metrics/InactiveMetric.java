@@ -39,4 +39,9 @@ public enum InactiveMetric implements Metric, TimeMetric {
   @Override
   public void reset() {
   }
+
+  @Override
+  public void ping() {
+    
+  }
 }

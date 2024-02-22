@@ -67,4 +67,10 @@ public class FileCountMetric extends AbstractFileMetric {
   public void reset() {
     count = 0;
   }
+
+  @Override
+  public void ping() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'ping'");
+  }
 }

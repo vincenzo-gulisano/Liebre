@@ -31,4 +31,9 @@ public class DelegatingTimeMetric extends AbstractTimeMetric {
     delegate.reset();
   }
 
+  @Override
+  public void ping() {
+    delegate.ping();
+  }
+
 }

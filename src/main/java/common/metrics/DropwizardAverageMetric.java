@@ -45,4 +45,10 @@ public class DropwizardAverageMetric extends AbstractMetric implements Metric {
   public void reset() {
     throw new UnsupportedOperationException("Unimplemented method 'reset'");
   }
+
+  @Override
+  public void ping() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'ping'");
+  }
 }

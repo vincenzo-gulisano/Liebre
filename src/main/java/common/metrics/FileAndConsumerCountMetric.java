@@ -70,4 +70,9 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
   public void reset() {
     count = 0;
   }
+
+  @Override
+  public void ping() {
+    writePreviousCounts();
+  }
 }

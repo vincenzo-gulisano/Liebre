@@ -71,4 +71,9 @@ public class FileAndConsumerAverageMetric extends AbstractFileAndConsumerMetric 
     sum = 0;
     count = 0;
   }
+
+  @Override
+  public void ping() {
+    writePreviousAverages();
+  }
 }
