@@ -26,7 +26,8 @@ package component.sink;
 import org.apache.commons.lang3.Validate;
 
 /**
- * Base implementation of {@link Sink} that applies a given {@link SinkFunction} to each input
+ * Base implementation of {@link Sink} that applies a given {@link SinkFunction}
+ * to each input
  * tuple.
  *
  * @param <IN> The type of input tuples.
@@ -37,7 +38,8 @@ public class BaseSink<IN> extends AbstractSink<IN> {
 
   /**
    * Construct.
-   *  @param id The unique ID of this component.
+   * 
+   * @param id       The unique ID of this component.
    * @param function The function to be applied to each input tuple.
    */
   public BaseSink(String id, SinkFunction<IN> function) {
@@ -69,5 +71,9 @@ public class BaseSink<IN> extends AbstractSink<IN> {
   @Override
   public boolean canRun() {
     return function.canRun() && super.canRun();
+  }
+
+  @Override
+  public void ping() {
   }
 }

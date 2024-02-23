@@ -31,7 +31,8 @@ import query.LiebreContext;
 import stream.Stream;
 
 /**
- * Abstract implementation of a {@link Sink}, controlling basic changes to the state.
+ * Abstract implementation of a {@link Sink}, controlling basic changes to the
+ * state.
  *
  * @param <IN> The type of input tuples
  */
@@ -66,6 +67,8 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
       increaseTuplesRead();
       increaseTuplesWritten();
       processTuple(tuple);
+    } else {
+      ping();
     }
   }
 
@@ -95,4 +98,6 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
   }
 
   public abstract void processTuple(IN tuple);
+
+  public abstract void ping();
 }
