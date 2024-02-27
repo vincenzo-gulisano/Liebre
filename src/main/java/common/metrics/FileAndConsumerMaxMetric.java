@@ -76,7 +76,6 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
 
   @Override
   public void ping() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'ping'");
+    writePreviousCounts();
   }
 }
