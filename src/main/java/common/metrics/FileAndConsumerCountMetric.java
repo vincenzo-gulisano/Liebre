@@ -31,6 +31,9 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
   long prevSec;
   boolean resetCount;
 
+  private final long missingValue = -1;
+  private final long neutralValue = 0;
+
   public FileAndConsumerCountMetric(String id, String folder, boolean autoFlush, boolean resetCount,
       Consumer<Object[]> c) {
     super(id, folder, autoFlush, c);
@@ -40,12 +43,15 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
   @Override
   protected void doRecord(long v) {
     writePreviousCounts();
+    if (count == missingValue) {
+      count = neutralValue;
+    }
     count += v;
   }
 
   @Override
   public void enable() {
-    this.count = 0;
+    this.count = missingValue;
     this.prevSec = currentTimeSeconds();
     super.enable();
   }
@@ -60,7 +66,7 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
     while (prevSec < thisSec) {
       writeCSVLineAndConsume(prevSec, count);
       if (resetCount) {
-        count = 0;
+        count = missingValue;
       }
       prevSec++;
     }
@@ -68,7 +74,7 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
 
   @Override
   public void reset() {
-    count = 0;
+    count = missingValue;
   }
 
   @Override

@@ -31,6 +31,9 @@ public class FileAndConsumerAverageMetric extends AbstractFileAndConsumerMetric 
   private long count;
   private long prevSec;
 
+  private final long missingValue = -1;
+  private final long neutralValue = 0;
+
   public FileAndConsumerAverageMetric(String id, String folder, boolean autoFlush, Consumer<Object[]> c) {
     super(id, folder, autoFlush, c);
   }
@@ -38,14 +41,20 @@ public class FileAndConsumerAverageMetric extends AbstractFileAndConsumerMetric 
   @Override
   protected void doRecord(long v) {
     writePreviousAverages();
+    if (sum==missingValue) {
+      sum=neutralValue;
+    }
+    if (count==missingValue) {
+      count=neutralValue;
+    }
     sum += v;
     count++;
   }
 
   @Override
   public void enable() {
-    this.sum = 0;
-    this.count = 0;
+    this.sum = missingValue;
+    this.count = missingValue;
     prevSec = currentTimeSeconds();
     super.enable();
   }
@@ -58,18 +67,18 @@ public class FileAndConsumerAverageMetric extends AbstractFileAndConsumerMetric 
   private void writePreviousAverages() {
     long thisSec = currentTimeSeconds();
     while (prevSec < thisSec) {
-      long average = (count != 0 ? sum / count : -1);
+      long average = (count != missingValue ? sum / count : missingValue);
       writeCSVLineAndConsume(prevSec, average);
-      sum = 0;
-      count = 0;
+      sum = missingValue;
+      count = missingValue;
       prevSec++;
     }
   }
 
   @Override
   public void reset() {
-    sum = 0;
-    count = 0;
+    sum = missingValue;
+    count = missingValue;
   }
 
   @Override
