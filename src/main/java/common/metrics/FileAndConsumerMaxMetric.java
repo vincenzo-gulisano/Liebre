@@ -35,7 +35,10 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
   boolean resetCount;
 
   private final long missingValue = -1;
-  private final long neutralValue = Long.MIN_VALUE;
+
+  // Notice in this case the last max value must become the new neutral value in
+  // case of missing value
+  private long neutralValue = Long.MIN_VALUE;
 
   public FileAndConsumerMaxMetric(String id, String folder, boolean autoFlush, boolean resetCount,
       Consumer<Object[]> c) {
@@ -46,10 +49,11 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
   @Override
   protected void doRecord(long v) {
     writePreviousCounts();
-    if (max==missingValue) {
+    if (max == missingValue) {
       max = neutralValue;
     }
     max = Long.max(max, v);
+    neutralValue = max;
   }
 
   @Override
@@ -69,8 +73,9 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
     while (prevSec < thisSec) {
       writeCSVLineAndConsume(prevSec, max);
       if (resetCount) {
-        max = missingValue;
+        neutralValue = Long.MIN_VALUE;
       }
+      max = missingValue;
       prevSec++;
     }
   }
@@ -78,6 +83,7 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
   @Override
   public void reset() {
     max = missingValue;
+    neutralValue = Long.MIN_VALUE;
   }
 
   @Override
