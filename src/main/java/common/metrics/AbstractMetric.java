@@ -34,7 +34,7 @@ import org.apache.logging.log4j.Logger;
  */
 public abstract class AbstractMetric implements Metric {
 
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(AbstractMetric.class);
   protected final String id;
   private boolean enabled;
 
