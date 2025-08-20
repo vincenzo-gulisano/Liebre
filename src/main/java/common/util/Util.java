@@ -33,7 +33,7 @@ import java.io.*;
  */
 public class Util {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Util.class);
 
   private Util() {
 

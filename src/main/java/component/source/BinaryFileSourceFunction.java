@@ -9,7 +9,7 @@ import java.io.*;
 
 public class BinaryFileSourceFunction<IN extends Serializable> implements SourceFunction<IN> {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(BinaryFileSourceFunction.class);
   private static final long IDLE_SLEEP = 1000;
   private final String path;
   private ObjectInputStream reader;

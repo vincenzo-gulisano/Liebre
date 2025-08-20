@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 class QueryTerminator {
 
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(QueryTerminator.class);
   private static final int TERMINATOR_POLL_INTERVAL_MILLIS = 5000;
 
   private final Query activeQuery;

@@ -9,7 +9,7 @@ import stream.Stream;
 
 public abstract class AbstractComponent<IN, OUT> implements Component {
 
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(AbstractComponent.class);
   protected final ComponentState<IN, OUT> state;
 
   // Exponential moving average alpha parameter

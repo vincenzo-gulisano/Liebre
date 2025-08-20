@@ -34,7 +34,7 @@ public class QueryCostEstimator implements Runnable {
 
   public static final int SAMPLE_FREQUENCY_MILLIS = 10000;
   public static final int NANOS_TO_SEC = 1000000000;
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(QueryCostEstimator.class);
   private final Query query;
   private final boolean scheduling;
 

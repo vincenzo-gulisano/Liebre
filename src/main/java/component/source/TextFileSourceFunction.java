@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 public class TextFileSourceFunction implements SourceFunction<String> {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(TextFileSourceFunction.class);
   private static final long IDLE_SLEEP = 1000;
   private final String path;
   private BufferedReader reader;

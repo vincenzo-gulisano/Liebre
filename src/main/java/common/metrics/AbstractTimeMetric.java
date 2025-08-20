@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public abstract class AbstractTimeMetric implements TimeMetric {
-  private static final Logger LOG = LogManager.getLogger();
+  private static final Logger LOG = LogManager.getLogger(AbstractTimeMetric.class);
   protected final String id;
   private boolean enabled;
   private long startTime = 0;

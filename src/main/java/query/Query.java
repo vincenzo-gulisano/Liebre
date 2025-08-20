@@ -70,7 +70,7 @@ import java.util.*;
  */
 public final class Query {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(Query.class);
   public static final int DEFAULT_STREAM_CAPACITY = 10000;
   public static final int DEFAULT_SGSTREAM_MAX_LEVELS = 3;
   public static final String OPERATOR = "operator";

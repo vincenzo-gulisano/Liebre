@@ -41,7 +41,7 @@ import scheduling.thread.BasicWorkerThread;
  */
 public class BasicLiebreScheduler implements LiebreScheduler<Component> {
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(BasicLiebreScheduler.class);
 
   private final List<Component> tasks = new ArrayList<>();
   private final List<BasicWorkerThread> threads = new ArrayList<>();
