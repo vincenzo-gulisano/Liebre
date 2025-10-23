@@ -29,17 +29,17 @@ public class FileAndConsumerMetricsFactory implements MetricsFactory {
 
   @Override
   public Metric newAverageMetric(String id, Object type) {
-    return new FileAndConsumerAverageMetric(metricName.get(id, type), folder, autoFlush, consumers.get(id));
+    return new FileAndConsumerAverageMetric(metricName.get(id, type), folder, autoFlush, consumers.get(metricName.get(id, type)));
   }
 
   @Override
   public Metric newCountPerSecondMetric(String id, Object type) {
-    return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, true, consumers.get(id));
+    return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, true, consumers.get(metricName.get(id, type)));
   }
 
   @Override
   public Metric newTotalCountMetric(String id, Object type) {
-    return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, false, consumers.get(id));
+    return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, false, consumers.get(metricName.get(id, type)));
   }
 
   @Override
@@ -54,11 +54,11 @@ public class FileAndConsumerMetricsFactory implements MetricsFactory {
 
   @Override
   public Metric newMaxPerSecondMetric(String id, Object type) {
-    return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, true, consumers.get(id));
+    return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, true, consumers.get(metricName.get(id, type)));
   }
 
   @Override
   public Metric newTotalMaxMetric(String id, Object type) {
-    return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, false, consumers.get(id));
+    return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, false, consumers.get(metricName.get(id, type)));
   }
 }
