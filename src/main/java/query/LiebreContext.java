@@ -66,6 +66,30 @@ public final class LiebreContext {
     LiebreContext.userMetrics = userMetrics;
   }
 
+  public static void mergeWithOperatorMetrics(MetricsFactory operatorMetrics) {
+    LiebreContext.operatorMetrics.mergeWith(operatorMetrics);
+  }
+
+  public static void mergeWithStreamMetrics(MetricsFactory streamMetrics) {
+    LiebreContext.streamMetrics.mergeWith(streamMetrics);
+  }
+
+  public static void mergeWithUserMetrics(MetricsFactory userMetrics) {
+    LiebreContext.userMetrics.mergeWith(userMetrics);
+  }
+
+  public static void unmergeFromOperatorMetrics(MetricsFactory operatorMetrics) {
+    LiebreContext.operatorMetrics.unmergeFrom(operatorMetrics);
+  }
+
+  public static void unmergeFromStreamMetrics(MetricsFactory streamMetrics) {
+    LiebreContext.streamMetrics.unmergeFrom(streamMetrics);
+  }
+
+  public static void unmergeFromUserMetrics(MetricsFactory userMetrics) {
+    LiebreContext.userMetrics.unmergeFrom(userMetrics);
+  }
+
   public static void init(Query query) {
     queryTerminator.registerQuery(query);
   }

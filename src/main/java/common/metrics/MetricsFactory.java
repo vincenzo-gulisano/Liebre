@@ -15,4 +15,9 @@ public interface MetricsFactory {
   TimeMetric newAverageTimeMetric(String id, Object type);
 
   Metric newStreamMetric(String id, Object type);
+
+  void mergeWith(MetricsFactory otherMetricsFactory);
+
+  void unmergeFrom(MetricsFactory otherMetricsFactory);
+
 }

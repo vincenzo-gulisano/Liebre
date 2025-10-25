@@ -61,4 +61,25 @@ public class FileAndConsumerMetricsFactory implements MetricsFactory {
   public Metric newTotalMaxMetric(String id, Object type) {
     return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, false, consumers.get(metricName.get(id, type)));
   }
+
+  @Override
+  public void mergeWith(MetricsFactory otherMetricsFactory) {
+    if (!otherMetricsFactory.getClass().equals(FileAndConsumerMetricsFactory.class)) {
+      throw new IllegalArgumentException("Can only merge with other FileAndConsumerMetricsFactory instances");
+    }
+    FileAndConsumerMetricsFactory other = (FileAndConsumerMetricsFactory) otherMetricsFactory;
+    this.consumers.putAll(other.consumers);
+  }
+
+  @Override
+  public void unmergeFrom(MetricsFactory otherMetricsFactory) {
+    if (!otherMetricsFactory.getClass().equals(FileAndConsumerMetricsFactory.class)) {
+      throw new IllegalArgumentException("Can only unmerge from other FileAndConsumerMetricsFactory instances");
+    }
+    FileAndConsumerMetricsFactory other = (FileAndConsumerMetricsFactory) otherMetricsFactory;
+    for (String key : other.consumers.keySet()) {
+      this.consumers.remove(key);
+    }
+  }
+  
 }

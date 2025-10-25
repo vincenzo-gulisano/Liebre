@@ -54,4 +54,14 @@ public class FileMetricsFactory implements MetricsFactory {
   public Metric newTotalMaxMetric(String id, Object type) {
     return new FileMaxMetric(metricName.get(id, type), folder, autoFlush, false);
   }
+
+  @Override
+  public void mergeWith(MetricsFactory otherMetricsFactory) {
+    throw new UnsupportedOperationException("Unimplemented method 'includeOtherMetricsFactory'");
+  }
+
+  @Override
+  public void unmergeFrom(MetricsFactory otherMetricsFactory) {
+    throw new UnsupportedOperationException("Unimplemented method 'unmergeFrom'");
+  }
 }
