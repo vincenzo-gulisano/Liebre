@@ -39,7 +39,7 @@ public class InactiveMetricsFactory implements MetricsFactory {
 
   @Override
   public void mergeWith(MetricsFactory otherMetricsFactory) {
-    throw new UnsupportedOperationException("Unimplemented method 'includeOtherMetricsFactory'");
+    throw new UnsupportedOperationException("Unimplemented method 'mergeWith'");
   }
 
   @Override
