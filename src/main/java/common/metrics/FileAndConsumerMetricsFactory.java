@@ -3,7 +3,12 @@ package common.metrics;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class FileAndConsumerMetricsFactory implements MetricsFactory {
+
+  private static final Logger LOGGER = LogManager.getLogger(FileAndConsumerMetricsFactory.class);
   private final MetricName metricName;
   private final String folder;
   private final boolean autoFlush;
@@ -11,6 +16,15 @@ public class FileAndConsumerMetricsFactory implements MetricsFactory {
 
   public FileAndConsumerMetricsFactory(String folder, MetricName metricName, boolean autoFlush,
       HashMap<String, Consumer<Object[]>> consumers) {
+    if (folder == null || folder.isEmpty()) {
+      throw new IllegalArgumentException("folder cannot be null or empty");
+    }
+    if (metricName == null) {
+      throw new IllegalArgumentException("metricName cannot be null");
+    }
+    if (consumers == null) {
+      throw new IllegalArgumentException("consumers cannot be null");
+    }
     this.metricName = metricName;
     this.folder = folder;
     this.autoFlush = autoFlush;
@@ -29,17 +43,35 @@ public class FileAndConsumerMetricsFactory implements MetricsFactory {
 
   @Override
   public Metric newAverageMetric(String id, Object type) {
-    return new FileAndConsumerAverageMetric(metricName.get(id, type), folder, autoFlush, consumers.get(metricName.get(id, type)));
+    if (!consumers.containsKey(metricName.get(id, type))) {
+      LOGGER.warn("No consumer found for metric {}. Using no-op consumer.", metricName.get(id, type));
+      return new FileAndConsumerAverageMetric(metricName.get(id, type), folder, autoFlush, x -> {
+      });
+    }
+    return new FileAndConsumerAverageMetric(metricName.get(id, type), folder, autoFlush,
+        consumers.get(metricName.get(id, type)));
   }
 
   @Override
   public Metric newCountPerSecondMetric(String id, Object type) {
-    return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, true, consumers.get(metricName.get(id, type)));
+    if (!consumers.containsKey(metricName.get(id, type))) {
+      LOGGER.warn("No consumer found for metric {}. Using no-op consumer.", metricName.get(id, type));
+      return new FileAndConsumerAverageMetric(metricName.get(id, type), folder, autoFlush, x -> {
+      });
+    }
+    return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, true,
+        consumers.get(metricName.get(id, type)));
   }
 
   @Override
   public Metric newTotalCountMetric(String id, Object type) {
-    return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, false, consumers.get(metricName.get(id, type)));
+    if (!consumers.containsKey(metricName.get(id, type))) {
+      LOGGER.warn("No consumer found for metric {}. Using no-op consumer.", metricName.get(id, type));
+      return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, false, x -> {
+      });
+    }
+    return new FileAndConsumerCountMetric(metricName.get(id, type), folder, autoFlush, false,
+        consumers.get(metricName.get(id, type)));
   }
 
   @Override
@@ -54,12 +86,24 @@ public class FileAndConsumerMetricsFactory implements MetricsFactory {
 
   @Override
   public Metric newMaxPerSecondMetric(String id, Object type) {
-    return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, true, consumers.get(metricName.get(id, type)));
+    if (!consumers.containsKey(metricName.get(id, type))) {
+      LOGGER.warn("No consumer found for metric {}. Using no-op consumer.", metricName.get(id, type));
+      return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, true, x -> {
+      });
+    }
+    return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, true,
+        consumers.get(metricName.get(id, type)));
   }
 
   @Override
   public Metric newTotalMaxMetric(String id, Object type) {
-    return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, false, consumers.get(metricName.get(id, type)));
+    if (!consumers.containsKey(metricName.get(id, type))) {
+      LOGGER.warn("No consumer found for metric {}. Using no-op consumer.", metricName.get(id, type));
+      return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, false, x -> {
+      });
+    }
+    return new FileAndConsumerMaxMetric(metricName.get(id, type), folder, autoFlush, false,
+        consumers.get(metricName.get(id, type)));
   }
 
   @Override
@@ -81,5 +125,5 @@ public class FileAndConsumerMetricsFactory implements MetricsFactory {
       this.consumers.remove(key);
     }
   }
-  
+
 }
