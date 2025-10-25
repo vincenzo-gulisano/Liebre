@@ -28,6 +28,7 @@ import component.ComponentType;
 
 import java.util.Collection;
 import query.LiebreContext;
+import query.Query;
 import stream.Stream;
 
 /**
@@ -39,14 +40,16 @@ import stream.Stream;
 public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> implements Sink<IN> {
 
   private static final int INPUT_KEY = 0;
+  private final Query query;
 
   /**
    * Construct.
    *
    * @param id The unique ID of this component.
    */
-  public AbstractSink(String id) {
+  public AbstractSink(Query query, String id) {
     super(id, ComponentType.SINK);
+    this.query = query;
   }
 
   @Override
@@ -74,7 +77,7 @@ public abstract class AbstractSink<IN> extends AbstractComponent<IN, Void> imple
 
   @Override
   protected void flushAction() {
-    LiebreContext.sinkFinished(this);
+    LiebreContext.sinkFinished(query, this);
   }
 
   @Override

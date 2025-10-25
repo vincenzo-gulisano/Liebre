@@ -25,6 +25,8 @@ package component.sink;
 
 import org.apache.commons.lang3.Validate;
 
+import query.Query;
+
 /**
  * Base implementation of {@link Sink} that applies a given {@link SinkFunction}
  * to each input
@@ -42,8 +44,8 @@ public class BaseSink<IN> extends AbstractSink<IN> {
    * @param id       The unique ID of this component.
    * @param function The function to be applied to each input tuple.
    */
-  public BaseSink(String id, SinkFunction<IN> function) {
-    super(id);
+  public BaseSink(Query query, String id, SinkFunction<IN> function) {
+    super(query, id);
     Validate.notNull(function, "function");
     this.function = function;
   }

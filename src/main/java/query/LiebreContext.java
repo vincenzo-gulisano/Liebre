@@ -40,7 +40,7 @@ public final class LiebreContext {
 
   private static boolean flushingEnabled = true;
 
-  private static QueryTerminator queryTerminator;
+  private static QueryTerminator queryTerminator = new QueryTerminator();
 
   public static MetricsFactory operatorMetrics() {
     return operatorMetrics;
@@ -67,20 +67,23 @@ public final class LiebreContext {
   }
 
   public static void init(Query query) {
-    queryTerminator = new QueryTerminator(query);
-
+    queryTerminator.registerQuery(query);
   }
 
   public static void terminated(Query query) {
-    queryTerminator.disable();
+    queryTerminator.deregisterQuery(query);
   }
 
-  public static void sinkFinished(Sink<?> sink) {
-    queryTerminator.sinkFinished(sink);
+  public static void sinkFinished(Query query, Sink<?> sink) {
+    queryTerminator.sinkFinished(query, sink);
   }
 
   public static boolean isFlushingEnabled() {
     return flushingEnabled;
+  }
+
+  public static void interruptTerminator() {
+    queryTerminator.interruptTerminator();
   }
 
   public static void disableFlushing() {

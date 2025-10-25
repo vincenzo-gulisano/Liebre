@@ -1,51 +1,111 @@
 package query;
 
 import component.sink.Sink;
+
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import common.Named;
 
 class QueryTerminator {
 
   private static final Logger LOG = LogManager.getLogger(QueryTerminator.class);
-  private static final int TERMINATOR_POLL_INTERVAL_MILLIS = 5000;
+  private static final int TERMINATOR_POLL_INTERVAL_MILLIS = 1000;
 
-  private final Query activeQuery;
-  private final Set<String> activeSinks = ConcurrentHashMap.newKeySet();
+  private final HashMap<Query, Set<String>> activeQueriesAndSinks = new HashMap<>();
   private final Thread terminatorThread;
 
-  QueryTerminator(Query query) {
-    activeQuery = query;
-    activeSinks.addAll(query.sinks().stream().map(s -> s.getId()).collect(Collectors.toList()));
-    terminatorThread = new Thread(new TerminationAction(activeQuery, activeSinks));
+  /** Protects all accesses to activeQueriesAndSinks */
+  private final Object lock = new Object();
+
+  QueryTerminator() {
+    terminatorThread = new Thread(new TerminationAction(activeQueriesAndSinks, lock),
+        "QueryTerminatorThread");
     terminatorThread.start();
   }
 
-  public void sinkFinished(Sink<?> sink) {
-    activeSinks.remove(sink.getId());
+  public void registerQuery(Query query) {
+    if (query == null) {
+      LOG.error("Cannot register null query");
+      throw new IllegalArgumentException("Cannot register null query");
+    }
+    synchronized (lock) {
+
+      if (activeQueriesAndSinks.containsKey(query)) {
+        LOG.error("Query {} is already registered!", query);
+        return;
+      }
+      Set<String> sinkIds = query.sinks().stream().map(Named::getId).collect(Collectors.toSet());
+      activeQueriesAndSinks.put(query, sinkIds);
+    }
+
   }
 
-  public void disable() {
+  public void deregisterQuery(Query query) {
+    if (query == null) {
+      LOG.error("Cannot deregister null query");
+      throw new IllegalArgumentException("Cannot deregister null query");
+    }
+    synchronized (lock) {
+
+      if (!activeQueriesAndSinks.containsKey(query)) {
+        LOG.error("Query {} is not registered and cannot be deregistered!", query);
+        return;
+      }
+      activeQueriesAndSinks.remove(query);
+    }
+
+  }
+
+  public void sinkFinished(Query query, Sink<?> sink) {
+    synchronized (lock) {
+      if (!activeQueriesAndSinks.containsKey(query)) {
+        LOG.error("Notifying a sink as finished for Query {}, which is not registered!", query);
+        throw new IllegalArgumentException("Notifying a sink as finished for a Query which is not registered!");
+      }
+      if (!activeQueriesAndSinks.get(query).contains(sink.getId())) {
+        LOG.warn("Sink {} for Query {} reported finished more than once or unknown sink", sink.getId(), query);
+        return;
+      }
+      activeQueriesAndSinks.get(query).remove(sink.getId());
+    }
+  }
+
+  public void interruptTerminator() {
     terminatorThread.interrupt();
   }
 
   private static class TerminationAction implements Runnable {
 
-    private final Query activeQuery;
-    private final Set<String> activeSinks;
-
-    public TerminationAction(Query activeQuery, Set<String> activeSinks) {
-      this.activeQuery = activeQuery;
-      this.activeSinks = activeSinks;
+    private final HashMap<Query, Set<String>> activeQueriesAndSinks;
+    private final Object lock;
+    
+    public TerminationAction(HashMap<Query, Set<String>> activeQueriesAndSinks, Object lock) {
+      this.activeQueriesAndSinks = activeQueriesAndSinks;
+      this.lock = lock;
     }
 
     @Override
     public void run() {
       LOG.trace("Terminator started");
-      while (!Thread.currentThread().isInterrupted() && !activeSinks.isEmpty()) {
-        LOG.trace("Active Sinks: {}", activeSinks);
+      while (!Thread.currentThread().isInterrupted()) {
+        synchronized (lock) {
+          if (!activeQueriesAndSinks.isEmpty()) {
+            for (Entry<Query, Set<String>> activeQuery : activeQueriesAndSinks.entrySet()) {
+              LOG.trace("Active Sinks for Query {}: {}", activeQuery.getKey(), activeQuery.getValue());
+              if (activeQuery.getValue().isEmpty()) {
+                LOG.info("All sinks for Query {} have finished. Deactivating query.", activeQuery.getKey());
+                activeQuery.getKey().deActivate();
+                activeQueriesAndSinks.remove(activeQuery.getKey());
+                break; // Break to avoid ConcurrentModificationException
+              }
+            }
+          }
+        }
         try {
           Thread.sleep(TERMINATOR_POLL_INTERVAL_MILLIS);
         } catch (InterruptedException e) {
@@ -53,7 +113,6 @@ class QueryTerminator {
           return;
         }
       }
-      activeQuery.deActivate();
     }
   }
 }

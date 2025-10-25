@@ -126,107 +126,107 @@ public final class Query {
   }
 
     public synchronized <IN extends RichTuple, OUT extends RichTuple> void registerKeyByExtractor(Operator<IN, OUT> o, KeyExtractor keyExtractor) {
-        if (o instanceof TimeAggregate) {
-            ((TimeAggregate<IN, OUT>) o).registerKeyExtractor(keyExtractor);
-        }
+    if (o instanceof TimeAggregate) {
+      ((TimeAggregate<IN, OUT>) o).registerKeyExtractor(keyExtractor);
     }
+  }
 
     private synchronized <IN extends RichTuple, OUT extends RichTuple>
     Operator<IN, OUT> addTimeAggregateOperator(
-            String identifier,
-            int instance,
-            int parallelism,
-            long windowSize,
-            long windowSlide,
-            Window<IN, OUT> window) {
+      String identifier,
+      int instance,
+      int parallelism,
+      long windowSize,
+      long windowSlide,
+      Window<IN, OUT> window) {
 
-        Operator1In<IN, OUT> op = null;
-        if (window instanceof TimeWindowAddSlide) {
+    Operator1In<IN, OUT> op = null;
+    if (window instanceof TimeWindowAddSlide) {
             op = new TimeSWAggregate<IN, OUT>(identifier, instance, parallelism, windowSize, windowSlide, (TimeWindowAddSlide<IN, OUT>) window);
-        } else if (window instanceof TimeWindowAddRemove) {
+    } else if (window instanceof TimeWindowAddRemove) {
             op = new TimeSWAggregate<IN, OUT>(identifier, instance, parallelism, windowSize, windowSlide, (TimeWindowAddRemove<IN, OUT>) window);
-        } else if (window instanceof TimeWindowAdd) {
+    } else if (window instanceof TimeWindowAdd) {
             op = new TimeMWAggregate<IN, OUT>(identifier, instance, parallelism, windowSize, windowSlide, (TimeWindowAdd<IN, OUT>) window);
-        } else {
-            throw new RuntimeException("Unrecognized aggregate type");
-        }
-        return addOperator(op);
+    } else {
+      throw new RuntimeException("Unrecognized aggregate type");
     }
+    return addOperator(op);
+  }
 
     public synchronized <IN extends RichTuple, OUT extends RichTuple>
     Operator<IN, OUT> addTimeAggregateOperator(
-            String identifier,
-            long windowSize,
-            long windowSlide,
-            Window<IN, OUT> window) {
-        return addTimeAggregateOperator(identifier, 0, 1, windowSize, windowSlide, window);
-    }
+      String identifier,
+      long windowSize,
+      long windowSlide,
+      Window<IN, OUT> window) {
+    return addTimeAggregateOperator(identifier, 0, 1, windowSize, windowSlide, window);
+  }
 
     public synchronized <IN extends RichTuple, OUT extends RichTuple>
     List<Operator<IN, OUT>> addTimeAggregateOperator(
-            String identifier,
-            int parallelism,
-            long windowSize,
-            long windowSlide,
-            Window<IN, OUT> window) {
-        assert (parallelism >= 1);
-        List<Operator<IN, OUT>> result = new LinkedList<>();
-        if (parallelism == 1) {
-            result.add(addTimeAggregateOperator(identifier, 0, 1, windowSize, windowSlide, window));
-        } else {
-            for (int i = 0; i < parallelism; i++) {
-                result.add(addTimeAggregateOperator(identifier + "_" + i, i, parallelism, windowSize, windowSlide, window));
-            }
-        }
-        return result;
+      String identifier,
+      int parallelism,
+      long windowSize,
+      long windowSlide,
+      Window<IN, OUT> window) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addTimeAggregateOperator(identifier, 0, 1, windowSize, windowSlide, window));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addTimeAggregateOperator(identifier + "_" + i, i, parallelism, windowSize, windowSlide, window));
+      }
     }
+    return result;
+  }
 
 
     private synchronized <IN, OUT>
     Operator<IN, OUT> addTupleAggregateOperator(
-            String identifier,
-            int instance,
-            int parallelism,
-            long windowSize,
-            long windowSlide,
-            Window<IN, OUT> window) {
+      String identifier,
+      int instance,
+      int parallelism,
+      long windowSize,
+      long windowSlide,
+      Window<IN, OUT> window) {
 
-        Operator1In<IN, OUT> op = null;
-        if (window instanceof TupleWindow) {
+    Operator1In<IN, OUT> op = null;
+    if (window instanceof TupleWindow) {
             op = new TupleAggregate<IN, OUT>(identifier, instance, parallelism, windowSize, windowSlide, (TupleWindow<IN, OUT>) window);
-        } else {
-            throw new RuntimeException("Unrecognized aggregate type");
-        }
-        return addOperator(op);
+    } else {
+      throw new RuntimeException("Unrecognized aggregate type");
     }
+    return addOperator(op);
+  }
 
     public synchronized <IN, OUT>
     Operator<IN, OUT> addTupleAggregateOperator(
-            String identifier,
-            long windowSize,
-            long windowSlide,
-            Window<IN, OUT> window) {
-        return addTupleAggregateOperator(identifier, 0, 1, windowSize, windowSlide, window);
-    }
+      String identifier,
+      long windowSize,
+      long windowSlide,
+      Window<IN, OUT> window) {
+    return addTupleAggregateOperator(identifier, 0, 1, windowSize, windowSlide, window);
+  }
 
     public synchronized <IN, OUT>
     List<Operator<IN, OUT>> addTupleAggregateOperator(
-            String identifier,
-            int parallelism,
-            long windowSize,
-            long windowSlide,
-            Window<IN, OUT> window) {
-        assert (parallelism >= 1);
-        List<Operator<IN, OUT>> result = new LinkedList<>();
-        if (parallelism == 1) {
-            result.add(addTupleAggregateOperator(identifier, 0, 1, windowSize, windowSlide, window));
-        } else {
-            for (int i = 0; i < parallelism; i++) {
-                result.add(addTupleAggregateOperator(identifier + "_" + i, i, parallelism, windowSize, windowSlide, window));
-            }
-        }
-        return result;
+      String identifier,
+      int parallelism,
+      long windowSize,
+      long windowSlide,
+      Window<IN, OUT> window) {
+    assert (parallelism >= 1);
+    List<Operator<IN, OUT>> result = new LinkedList<>();
+    if (parallelism == 1) {
+      result.add(addTupleAggregateOperator(identifier, 0, 1, windowSize, windowSlide, window));
+    } else {
+      for (int i = 0; i < parallelism; i++) {
+        result.add(addTupleAggregateOperator(identifier + "_" + i, i, parallelism, windowSize, windowSlide, window));
+      }
     }
+    return result;
+  }
 
   public synchronized <IN, OUT> Operator<IN, OUT> addMapOperator(
       String identifier, MapFunction<IN, OUT> mapFunction) {
@@ -234,7 +234,7 @@ public final class Query {
   }
 
   public synchronized <IN, OUT> List<Operator<IN, OUT>> addMapOperator(
-          String identifier, MapFunction<IN, OUT> mapFunction, int parallelism) {
+      String identifier, MapFunction<IN, OUT> mapFunction, int parallelism) {
     assert (parallelism >= 1);
     List<Operator<IN, OUT>> result = new LinkedList<>();
     if (parallelism == 1) {
@@ -360,15 +360,15 @@ public final class Query {
   }
 
   public synchronized <T> Sink<T> addBaseSink(String id, SinkFunction<T> sinkFunction) {
-    return addSink(new BaseSink<>(id, sinkFunction));
+    return addSink(new BaseSink<>(this, id, sinkFunction));
   }
 
   public synchronized <T> Sink<T> addTextFileSink(String id, String path, boolean autoFlush) {
-    return addSink(new BaseSink<>(id, new TextFileSinkFunction<>(path, autoFlush)));
+    return addSink(new BaseSink<>(this, id, new TextFileSinkFunction<>(path, autoFlush)));
   }
 
   public synchronized <T extends Serializable> Sink<T> addBinaryFileSink(String id, String path) {
-    return addSink(new BaseSink<>(id, new BinaryFileSinkFunction<>(path)));
+    return addSink(new BaseSink<>(this, id, new BinaryFileSinkFunction<>(path)));
   }
 
   public synchronized <OUT, IN, IN2> Operator2In<IN, IN2, OUT> addOperator2In(
@@ -379,7 +379,7 @@ public final class Query {
 
   public synchronized <IN extends RichTuple, IN2 extends RichTuple, OUT extends RichTuple>
       Operator2In<IN, IN2, OUT> addJoinOperator(
-          String identifier, JoinFunction<IN, IN2, OUT> joinFunction, long windowSize) {
+      String identifier, JoinFunction<IN, IN2, OUT> joinFunction, long windowSize) {
     return addOperator2In(new TimeBasedJoin<>(identifier, windowSize, joinFunction));
   }
 
@@ -400,7 +400,7 @@ public final class Query {
   }
 
   public synchronized <T extends RichTuple> Query connectKeyBy(
-          StreamProducer<T> producer, List<? extends StreamConsumer<T>> consumers) {
+      StreamProducer<T> producer, List<? extends StreamConsumer<T>> consumers) {
 
     // Generate id based on producer and consumers
     String id = producer.getId();
@@ -421,7 +421,7 @@ public final class Query {
   }
 
   public synchronized <T extends Comparable<? super T>> Query connect(
-          List<? extends StreamProducer<T>> producers, StreamConsumer<T> consumer) {
+      List<? extends StreamProducer<T>> producers, StreamConsumer<T> consumer) {
 
     List<StreamConsumer<T>> consumers = new LinkedList<>();
     consumers.add(consumer);
@@ -481,7 +481,7 @@ public final class Query {
    * Activate and start executing the query.
    */
   public synchronized void activate() {
-    LiebreContext.init(this);
+      LiebreContext.init(this);
     LOGGER.info("Activating query...");
     LOGGER.info(
         "Components: {} Sources, {} Operators, {} Sinks, {} Streams",
