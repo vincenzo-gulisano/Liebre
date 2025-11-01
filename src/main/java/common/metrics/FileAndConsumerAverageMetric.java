@@ -40,7 +40,7 @@ public class FileAndConsumerAverageMetric extends AbstractFileAndConsumerMetric 
 
   @Override
   protected void doRecord(long v) {
-    writePreviousAverages();
+    writePreviousCounts(false);
     if (sum==missingValue) {
       sum=neutralValue;
     }
@@ -60,13 +60,14 @@ public class FileAndConsumerAverageMetric extends AbstractFileAndConsumerMetric 
   }
 
   public void disable() {
-    writePreviousAverages();
+    writePreviousCounts(true);
     super.disable();
   }
 
-  private void writePreviousAverages() {
+  private void writePreviousCounts(boolean includeCurrent) {
     long thisSec = currentTimeSeconds();
-    while (prevSec < thisSec) {
+    long limit = includeCurrent ? thisSec + 1 : thisSec;
+    while (prevSec < limit) {
       long average = (count != missingValue ? sum / count : missingValue);
       writeCSVLineAndConsume(prevSec, average);
       sum = missingValue;
@@ -83,6 +84,6 @@ public class FileAndConsumerAverageMetric extends AbstractFileAndConsumerMetric 
 
   @Override
   public void ping() {
-    writePreviousAverages();
+    writePreviousCounts(false);
   }
 }

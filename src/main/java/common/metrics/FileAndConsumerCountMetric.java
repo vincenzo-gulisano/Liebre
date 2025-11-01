@@ -42,7 +42,7 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
 
   @Override
   protected void doRecord(long v) {
-    writePreviousCounts();
+    writePreviousCounts(false);
     if (count == missingValue) {
       count = neutralValue;
     }
@@ -57,13 +57,14 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
   }
 
   public void disable() {
-    writePreviousCounts();
+    writePreviousCounts(true);
     super.disable();
   }
 
-  private void writePreviousCounts() {
+  private void writePreviousCounts(boolean includeCurrent) {
     long thisSec = currentTimeSeconds();
-    while (prevSec < thisSec) {
+    long limit = includeCurrent ? thisSec + 1 : thisSec;
+    while (prevSec < limit) {
       writeCSVLineAndConsume(prevSec, count);
       if (resetCount) {
         count = missingValue;
@@ -79,6 +80,6 @@ public class FileAndConsumerCountMetric extends AbstractFileAndConsumerMetric {
 
   @Override
   public void ping() {
-    writePreviousCounts();
+    writePreviousCounts(false);
   }
 }

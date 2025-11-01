@@ -48,7 +48,7 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
 
   @Override
   protected void doRecord(long v) {
-    writePreviousCounts();
+    writePreviousCounts(false);
     if (max == missingValue) {
       max = neutralValue;
     }
@@ -64,13 +64,14 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
   }
 
   public void disable() {
-    writePreviousCounts();
+    writePreviousCounts(true);
     super.disable();
   }
 
-  private void writePreviousCounts() {
+  private void writePreviousCounts(boolean includeCurrent) {
     long thisSec = currentTimeSeconds();
-    while (prevSec < thisSec) {
+    long limit = includeCurrent ? thisSec + 1 : thisSec;
+    while (prevSec < limit) {
       writeCSVLineAndConsume(prevSec, max);
       if (resetCount) {
         neutralValue = Long.MIN_VALUE;
@@ -88,6 +89,6 @@ public class FileAndConsumerMaxMetric extends AbstractFileAndConsumerMetric {
 
   @Override
   public void ping() {
-    writePreviousCounts();
+    writePreviousCounts(false);
   }
 }
