@@ -10,6 +10,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import common.Named;
 
+/**
+ * Helper class that manages the termination of queries when all their sinks
+ * have finished. By default, the QueryTerminator assumes there's a single query
+ * running. Hence, when all sinks are flushed, it terminates. if parameter
+ * singleQueryExecution is set to false, the QueryTerminator keeps running until
+ * interrupted, checking periodically for active queries and terminating them
+ * when all their sinks have finished.
+ */
 class QueryTerminator {
 
   static final Logger LOG = LogManager.getLogger(QueryTerminator.class);
@@ -18,13 +26,24 @@ class QueryTerminator {
   private final HashMap<Query, Set<String>> activeQueriesAndSinks = new HashMap<>();
   private final Thread terminatorThread;
 
+  private final TerminationAction terminationAction;
+
   /** Protects all accesses to activeQueriesAndSinks */
   private final Object lock = new Object();
 
   QueryTerminator() {
-    terminatorThread = new Thread(new TerminationAction(activeQueriesAndSinks, lock),
-        "QueryTerminatorThread");
+    this(true);
+  }
+
+  QueryTerminator(boolean singleQueryExecution) {
+    this.terminationAction = new TerminationAction(activeQueriesAndSinks, lock,
+        singleQueryExecution);
+    terminatorThread = new Thread(terminationAction, "QueryTerminatorThread");
     terminatorThread.start();
+  }
+
+  public void setSingleQueryExecution(boolean singleQueryExecution) {
+    this.terminationAction.setSingleQueryExecution(singleQueryExecution);
   }
 
   public void registerQuery(Query query) {

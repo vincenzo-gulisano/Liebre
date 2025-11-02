@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 
 public final class LiebreContext {
 
-
   private static MetricsFactory operatorMetrics = new InactiveMetricsFactory();
 
   private static MetricsFactory streamMetrics = new InactiveMetricsFactory();
@@ -41,6 +40,16 @@ public final class LiebreContext {
   private static boolean flushingEnabled = true;
 
   private static QueryTerminator queryTerminator = new QueryTerminator();
+
+  /**
+   * Sets whether the QueryTerminator should assume a single query execution. It
+   * does so by default.
+   * 
+   * @param singleQueryExecution
+   */
+  public static void setSingleQueryExecution(boolean singleQueryExecution) {
+    queryTerminator.setSingleQueryExecution(singleQueryExecution);
+  }
 
   public static MetricsFactory operatorMetrics() {
     return operatorMetrics;
