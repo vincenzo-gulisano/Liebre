@@ -1,6 +1,8 @@
 package query;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -42,13 +44,15 @@ public class TerminationAction implements Runnable {
     while (continueRunning) {
       synchronized (lock) {
         if (!activeQueriesAndSinks.isEmpty()) {
-          for (Entry<Query, Set<String>> activeQuery : activeQueriesAndSinks.entrySet()) {
+          Iterator<Map.Entry<Query, Set<String>>> it = activeQueriesAndSinks.entrySet().iterator();
+          while (it.hasNext()) {
+            Map.Entry<Query, Set<String>> activeQuery = it.next();
             QueryTerminator.LOG.trace("Active Sinks for Query {}: {}", activeQuery.getKey(), activeQuery.getValue());
             if (activeQuery.getValue().isEmpty()) {
               QueryTerminator.LOG.info("All sinks for Query {} have finished. Deactivating query.",
                   activeQuery.getKey());
               activeQuery.getKey().deActivate();
-              activeQueriesAndSinks.remove(activeQuery.getKey());
+              it.remove();
               break; // Break to avoid ConcurrentModificationException
             }
           }
@@ -60,6 +64,8 @@ public class TerminationAction implements Runnable {
         QueryTerminator.LOG.trace("Terminator exiting");
         return;
       }
+      continueRunning = !Thread.currentThread().isInterrupted()
+        || (singleQueryExecution && !activeQueriesAndSinks.isEmpty());
     }
   }
 }
