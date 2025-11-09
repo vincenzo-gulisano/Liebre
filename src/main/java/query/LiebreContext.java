@@ -101,6 +101,9 @@ public final class LiebreContext {
 
   public static void init(Query query) {
     queryTerminator.registerQuery(query);
+    if (!queryTerminator.hasBeenActivated()) {
+      queryTerminator.activate();
+    }
   }
 
   public static void terminated(Query query) {

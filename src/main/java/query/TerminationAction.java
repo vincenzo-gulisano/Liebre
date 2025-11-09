@@ -39,8 +39,7 @@ public class TerminationAction implements Runnable {
   @Override
   public void run() {
     QueryTerminator.LOG.trace("Terminator started");
-    boolean continueRunning = !Thread.currentThread().isInterrupted()
-        || (singleQueryExecution && !activeQueriesAndSinks.isEmpty());
+    boolean continueRunning = !Thread.currentThread().isInterrupted() && (!singleQueryExecution || !activeQueriesAndSinks.isEmpty());
     while (continueRunning) {
       synchronized (lock) {
         if (!activeQueriesAndSinks.isEmpty()) {
@@ -64,8 +63,7 @@ public class TerminationAction implements Runnable {
         QueryTerminator.LOG.trace("Terminator exiting");
         return;
       }
-      continueRunning = !Thread.currentThread().isInterrupted()
-        || (singleQueryExecution && !activeQueriesAndSinks.isEmpty());
+      continueRunning = !Thread.currentThread().isInterrupted() && (!singleQueryExecution || !activeQueriesAndSinks.isEmpty());
     }
   }
 }

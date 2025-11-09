@@ -24,9 +24,11 @@ class QueryTerminator {
   static final int TERMINATOR_POLL_INTERVAL_MILLIS = 1000;
 
   private final HashMap<Query, Set<String>> activeQueriesAndSinks = new HashMap<>();
-  private final Thread terminatorThread;
+  private Thread terminatorThread;
 
   private final TerminationAction terminationAction;
+
+  private boolean hasBeenActivated = false;
 
   /** Protects all accesses to activeQueriesAndSinks */
   private final Object lock = new Object();
@@ -38,6 +40,15 @@ class QueryTerminator {
   QueryTerminator(boolean singleQueryExecution) {
     this.terminationAction = new TerminationAction(activeQueriesAndSinks, lock,
         singleQueryExecution);
+    
+  }
+
+  public boolean hasBeenActivated() {
+    return hasBeenActivated;
+  }
+
+  public void activate() {
+    this.hasBeenActivated = true;
     terminatorThread = new Thread(terminationAction, "QueryTerminatorThread");
     terminatorThread.start();
   }
