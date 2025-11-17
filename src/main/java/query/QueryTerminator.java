@@ -48,13 +48,15 @@ class QueryTerminator {
   }
 
   public void activate() {
-    if (hasBeenActivated) {
-      LOG.warn("QueryTerminator has already been activated.");
-      throw new IllegalStateException("QueryTerminator has already been activated.");
+    synchronized (lock) {
+      if (hasBeenActivated) {
+        LOG.warn("QueryTerminator has already been activated.");
+        return;
+      }
+      this.hasBeenActivated = true;
+      terminatorThread = new Thread(terminationAction, "QueryTerminatorThread");
+      terminatorThread.start();
     }
-    this.hasBeenActivated = true;
-    terminatorThread = new Thread(terminationAction, "QueryTerminatorThread");
-    terminatorThread.start();
   }
 
   public void setSingleQueryExecution(boolean singleQueryExecution) {
