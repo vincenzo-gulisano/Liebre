@@ -21,7 +21,7 @@ import common.Named;
 class QueryTerminator {
 
   static final Logger LOG = LogManager.getLogger(QueryTerminator.class);
-  static final int TERMINATOR_POLL_INTERVAL_MILLIS = 1000;
+  static final int TERMINATOR_POLL_INTERVAL_MILLIS = 50;
 
   private final HashMap<Query, Set<String>> activeQueriesAndSinks = new HashMap<>();
   private Thread terminatorThread;
@@ -48,6 +48,10 @@ class QueryTerminator {
   }
 
   public void activate() {
+    if (hasBeenActivated) {
+      LOG.warn("QueryTerminator has already been activated.");
+      throw new IllegalStateException("QueryTerminator has already been activated.");
+    }
     this.hasBeenActivated = true;
     terminatorThread = new Thread(terminationAction, "QueryTerminatorThread");
     terminatorThread.start();
