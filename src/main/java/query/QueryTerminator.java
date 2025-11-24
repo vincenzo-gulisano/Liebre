@@ -71,7 +71,7 @@ class QueryTerminator {
     synchronized (lock) {
 
       if (activeQueriesAndSinks.containsKey(query)) {
-        LOG.error("Query {} is already registered!", query);
+        LOG.warn("Query {} is already registered!", query);
         return;
       }
       Set<String> sinkIds = query.sinks().stream().map(Named::getId).collect(Collectors.toSet());
@@ -88,7 +88,7 @@ class QueryTerminator {
     synchronized (lock) {
 
       if (!activeQueriesAndSinks.containsKey(query)) {
-        LOG.error("Query {} is not registered and cannot be deregistered!", query);
+        LOG.warn("Query {} is not registered and cannot be deregistered!", query);
         return;
       }
       activeQueriesAndSinks.remove(query);
