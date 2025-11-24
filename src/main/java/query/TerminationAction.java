@@ -48,11 +48,10 @@ public class TerminationAction implements Runnable {
             Map.Entry<Query, Set<String>> activeQuery = it.next();
             QueryTerminator.LOG.trace("Active Sinks for Query {}: {}", activeQuery.getKey(), activeQuery.getValue());
             if (activeQuery.getValue().isEmpty()) {
-              QueryTerminator.LOG.info("All sinks for Query {} have finished. Deactivating query.",
-                  activeQuery.getKey());
-              activeQuery.getKey().deActivate();
+              Query q = activeQuery.getKey();
+              QueryTerminator.LOG.info("All sinks for Query {} have finished. Deactivating query.",q);
               it.remove();
-              break; // Break to avoid ConcurrentModificationException
+              q.deActivate();
             }
           }
         }
