@@ -11,8 +11,12 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
- * Export a simple YAML representation of the query graph, presenting each query Component with its
+ * Export a simple YAML representation of the query graph, presenting each query
+ * Component with its
  * downstream components. For example:
  *
  * <pre>
@@ -27,10 +31,14 @@ import java.util.Set;
  *   - SINK
  * SINK:
  * </pre>
- * Represents a SOURCE feeding operators A and B, both of which are connected to C, which in turn is
+ * 
+ * Represents a SOURCE feeding operators A and B, both of which are connected to
+ * C, which in turn is
  * connected to the SINK.
  */
 public class QueryGraphExporter {
+
+  private static final Logger LOGGER = LogManager.getLogger(QueryGraphExporter.class);
 
   public static void exportAsJson(Query query, String path) {
     final Map<String, Set<String>> downstreamEdges = new HashMap<>();
@@ -51,13 +59,42 @@ public class QueryGraphExporter {
       for (String upstream : downstreamEdges.keySet()) {
         writer.format("%s:\n", upstream);
         downstreamEdges.get(upstream).forEach(
-            downstream -> writer.format("\t- %s\n", downstream)
-        );
+            downstream -> writer.format("\t- %s\n", downstream));
         writer.println();
       }
       writer.flush();
     } catch (FileNotFoundException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public static void printFlushingState(Query query) {
+    final Queue<Component> queue = new ArrayDeque<>();
+    final Set<String> visited = new HashSet<>();
+    for (Source<?> source : query.sources()) {
+      queue.add(source);
+    }
+    while (!queue.isEmpty()) {
+      Component component = queue.remove();
+      if (!visited.add(component.getId())) {
+        continue;
+      }
+      if (component instanceof component.operator.Operator<?, ?>) {
+        component.operator.Operator<?, ?> operator =
+            (component.operator.Operator<?, ?>) component;
+        int outputIndex = 0;
+        for (stream.Stream<?> output : operator.getOutputs()) {
+          LOGGER.info("{} output {} ({}) has {}",
+              operator.getId(),
+              outputIndex,
+              output.getId(),
+              output.isFlushed() ? "been flushed" : "not been flushed");
+          outputIndex++;
+        }
+      }
+      for (Component child : component.getDownstream()) {
+        queue.add(child);
+      }
     }
   }
 
@@ -71,7 +108,7 @@ public class QueryGraphExporter {
   }
 
   private QueryGraphExporter() {
-    //Prevent instantiation
+    // Prevent instantiation
   }
 
 }
