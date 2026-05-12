@@ -69,32 +69,47 @@ public class QueryGraphExporter {
   }
 
   public static void printFlushingState(Query query) {
-    final Queue<Component> queue = new ArrayDeque<>();
-    final Set<String> visited = new HashSet<>();
-    for (Source<?> source : query.sources()) {
-      queue.add(source);
-    }
-    while (!queue.isEmpty()) {
-      Component component = queue.remove();
-      if (!visited.add(component.getId())) {
-        continue;
-      }
-      if (component instanceof component.operator.Operator<?, ?>) {
-        component.operator.Operator<?, ?> operator =
-            (component.operator.Operator<?, ?>) component;
-        int outputIndex = 0;
-        for (stream.Stream<?> output : operator.getOutputs()) {
-          LOGGER.info("{} output {} ({}) has {}",
-              operator.getId(),
-              outputIndex,
-              output.getId(),
-              output.isFlushed() ? "been flushed" : "not been flushed");
-          outputIndex++;
+    class FlushingStatePrinter {
+
+      void print(component.StreamProducer<?> producer, int depth, Set<String> path) {
+        boolean hasOutputs = false;
+        for (stream.Stream<?> output : producer.getOutputs()) {
+          hasOutputs = true;
+          for (component.StreamConsumer<?> consumer : output.consumers()) {
+            LOGGER.info("{}{} --> {} ({})",
+                indentation(depth),
+                producer.getId(),
+                consumer.getId(),
+                output.isFlushed() ? "flushed" : "not flushed");
+            if (consumer instanceof component.StreamProducer<?>) {
+              component.StreamProducer<?> downstreamProducer =
+                  (component.StreamProducer<?>) consumer;
+              if (path.add(downstreamProducer.getId())) {
+                print(downstreamProducer, depth + 1, path);
+                path.remove(downstreamProducer.getId());
+              }
+            }
+          }
+        }
+        if (!hasOutputs) {
+          LOGGER.info("{}{} (no outputs)", indentation(depth), producer.getId());
         }
       }
-      for (Component child : component.getDownstream()) {
-        queue.add(child);
+
+      String indentation(int depth) {
+        StringBuilder indentation = new StringBuilder();
+        for (int i = 0; i < depth; i++) {
+          indentation.append("   ");
+        }
+        return indentation.toString();
       }
+    }
+
+    FlushingStatePrinter printer = new FlushingStatePrinter();
+    for (Source<?> source : query.sources()) {
+      Set<String> path = new HashSet<>();
+      path.add(source.getId());
+      printer.print(source, 0, path);
     }
   }
 

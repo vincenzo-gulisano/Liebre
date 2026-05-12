@@ -173,7 +173,11 @@ public abstract class AbstractComponent<IN, OUT> implements Component {
   }
 
   protected <T> boolean isStreamFinished(T tuple, Stream<T> stream) {
-    return (tuple == null) && (stream.isFlushed());
+    if ((tuple == null) && (stream.isFlushed())) {
+      LOG.info("Stream {} is finished (tuple: {}, flushed: {})", stream.getId(), tuple, stream.isFlushed());
+      return true;
+    }
+    return false;
   }
 
   protected void flush() {
