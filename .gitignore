@@ -5,3 +5,4 @@ report
 .classpath
 .idea
 liebre.iml
+.vscode/settings.json
