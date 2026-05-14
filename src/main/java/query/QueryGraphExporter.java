@@ -71,7 +71,12 @@ public class QueryGraphExporter {
   public static void printFlushingState(Query query) {
     class FlushingStatePrinter {
 
+      private final Set<String> expandedProducers = new HashSet<>();
+
       void print(component.StreamProducer<?> producer, int depth, Set<String> path) {
+        if (!expandedProducers.add(producer.getId())) {
+          return;
+        }
         boolean hasOutputs = false;
         for (stream.Stream<?> output : producer.getOutputs()) {
           hasOutputs = true;
@@ -80,11 +85,12 @@ public class QueryGraphExporter {
                 indentation(depth),
                 producer.getId(),
                 consumer.getId(),
-                output.isFlushed() ? "flushed" : "not flushed");
+                flushingState(output));
             if (consumer instanceof component.StreamProducer<?>) {
               component.StreamProducer<?> downstreamProducer =
                   (component.StreamProducer<?>) consumer;
-              if (path.add(downstreamProducer.getId())) {
+              if (!expandedProducers.contains(downstreamProducer.getId())
+                  && path.add(downstreamProducer.getId())) {
                 print(downstreamProducer, depth + 1, path);
                 path.remove(downstreamProducer.getId());
               }
@@ -102,6 +108,12 @@ public class QueryGraphExporter {
           indentation.append("   ");
         }
         return indentation.toString();
+      }
+
+      String flushingState(stream.Stream<?> output) {
+        return String.format("%s, %d tuples",
+            output.isFlushed() ? "flushed" : "not flushed",
+            output.size());
       }
     }
 
