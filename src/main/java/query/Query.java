@@ -71,7 +71,7 @@ import java.util.*;
 public final class Query {
 
   private static final Logger LOGGER = LogManager.getLogger(Query.class);
-  public static final int DEFAULT_STREAM_CAPACITY = 10000;
+  public final int streamCapacity;
   public static final int DEFAULT_SGSTREAM_MAX_LEVELS = 3;
   public static final String OPERATOR = "operator";
   public static final String SOURCE = "source";
@@ -86,7 +86,11 @@ public final class Query {
 
   /** Construct. */
   public Query() {
-    this(new BasicLiebreScheduler(), new BackoffStreamFactory());
+    this(new BasicLiebreScheduler(), new BackoffStreamFactory(),10000);
+  }
+
+  public Query(int streamCapacity) {
+    this(new BasicLiebreScheduler(), new BackoffStreamFactory(), streamCapacity);
   }
 
   /**
@@ -95,9 +99,10 @@ public final class Query {
    * @param LiebreScheduler The LiebreScheduler implementation to use when executing the query after
    *     Query{@link #activate()} is called.
    */
-  public Query(LiebreScheduler LiebreScheduler, StreamFactory streamFactory) {
+  public Query(LiebreScheduler LiebreScheduler, StreamFactory streamFactory, int streamCapacity) {
     this.liebreScheduler = LiebreScheduler;
     this.streamFactory = streamFactory;
+    this.streamCapacity = streamCapacity;
   }
 
   /**
@@ -473,7 +478,7 @@ public final class Query {
   private synchronized <T> Stream<T> getStream(
       StreamProducer<T> producer, StreamConsumer<T> consumer, Backoff backoff) {
     Stream<T> stream =
-        streamFactory.newStream(producer, consumer, DEFAULT_STREAM_CAPACITY, backoff);
+        streamFactory.newStream(producer, consumer, streamCapacity, backoff);
     return stream;
   }
 
