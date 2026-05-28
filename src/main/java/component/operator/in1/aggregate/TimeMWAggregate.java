@@ -78,16 +78,7 @@ public class TimeMWAggregate<IN extends RichTuple, OUT extends RichTuple>
 
             if (earliestWinStartTS + WS <= latestTimestamp) {
 
-                // Produce results for stale windows
-                for (TimeWindowAdd<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
-                    OUT outT = w.getAggregatedResult();
-                    if (outT!=null) {
-                        result.add(outT);
-                    }
-                }
-
-                // Remove stale windows
-                windows.remove(earliestWinStartTS);
+                closeEarliestWindow(result);
 
             } else {
                 purgingNotDone = false;
@@ -115,6 +106,29 @@ public class TimeMWAggregate<IN extends RichTuple, OUT extends RichTuple>
         }
 
         return result;
+    }
+
+    @Override
+    protected List<OUT> processEndOfInput() {
+        List<OUT> result = new LinkedList<OUT>();
+
+        while (windows.size() > 0) {
+            closeEarliestWindow(result);
+        }
+
+        return result;
+    }
+
+    private void closeEarliestWindow(List<OUT> result) {
+        long earliestWinStartTS = windows.firstKey();
+        HashMap<String, TimeWindowAdd<IN, OUT>> keyedWindows = windows.remove(earliestWinStartTS);
+
+        for (TimeWindowAdd<IN, OUT> w : keyedWindows.values()) {
+            OUT outT = w.getAggregatedResult();
+            if (outT != null) {
+                result.add(outT);
+            }
+        }
     }
 
 }

@@ -83,25 +83,7 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
 
             if (earliestWinStartTS + WS <= latestTimestamp) {
 
-                // Produce results for stale windows
-                for (TimeWindowAddSlide<IN, OUT> w : windows.get(earliestWinStartTS).values()) {
-                    OUT outT = w.getAggregatedResult();
-                    if (outT != null) {
-                        result.add(outT);
-                    }
-                }
-
-                // Shift windows
-                if (!windows.containsKey(earliestWinStartTS + WA)) {
-                    windows.put(earliestWinStartTS + WA, new HashMap<>());
-                }
-                for (String s : windows.get(earliestWinStartTS).keySet()) {
-                    windows.get(earliestWinStartTS).get(s).slideTo(earliestWinStartTS + WA);
-                    if (!windows.get(earliestWinStartTS).get(s).isEmpty()) {
-                        windows.get(earliestWinStartTS + WA).put(s,windows.get(earliestWinStartTS).get(s));
-                    }
-                }
-                windows.remove(earliestWinStartTS);
+                closeEarliestWindow(result);
 
             } else {
                 purgingNotDone = false;
@@ -123,6 +105,41 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
         windows.get(earliestWinStartTSforT).get(keyExtractor.getKey(t)).add(t);
 
         return result;
+    }
+
+    @Override
+    protected List<OUT> processEndOfInput() {
+        List<OUT> result = new LinkedList<OUT>();
+
+        while (windows.size() > 0) {
+            closeEarliestWindow(result);
+        }
+
+        return result;
+    }
+
+    private void closeEarliestWindow(List<OUT> result) {
+        long earliestWinStartTS = windows.firstKey();
+        HashMap<String, TimeWindowAddSlide<IN, OUT>> keyedWindows = windows.remove(earliestWinStartTS);
+
+        for (TimeWindowAddSlide<IN, OUT> w : keyedWindows.values()) {
+            OUT outT = w.getAggregatedResult();
+            if (outT != null) {
+                result.add(outT);
+            }
+        }
+
+        long nextWinStartTS = earliestWinStartTS + WA;
+        for (String key : keyedWindows.keySet()) {
+            TimeWindowAddSlide<IN, OUT> w = keyedWindows.get(key);
+            w.slideTo(nextWinStartTS);
+            if (!w.isEmpty()) {
+                if (!windows.containsKey(nextWinStartTS)) {
+                    windows.put(nextWinStartTS, new HashMap<String, TimeWindowAddSlide<IN, OUT>>());
+                }
+                windows.get(nextWinStartTS).put(key, w);
+            }
+        }
     }
 
 }

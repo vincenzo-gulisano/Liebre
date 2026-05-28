@@ -59,21 +59,29 @@ public abstract class BaseOperator1In<IN, OUT> extends AbstractOperator<IN, OUT>
     IN inTuple = input.getNextTuple(getIndex());
 
     if (isStreamFinished(inTuple, input)) {
+      emit(output, processEndOfInput());
       flush();
       return;
     }
 
     if (inTuple != null) {
       increaseTuplesRead();
-      List<OUT> outTuples = processTupleIn1(inTuple);
-      if (outTuples != null) {
-        for (OUT t : outTuples) {
-          increaseTuplesWritten();
-          output.addTuple(t, getIndex());
-        }
-      }
+      emit(output, processTupleIn1(inTuple));
     }
 
+  }
+
+  protected List<OUT> processEndOfInput() {
+    return null;
+  }
+
+  private void emit(Stream<OUT> output, List<OUT> outTuples) {
+    if (outTuples != null) {
+      for (OUT t : outTuples) {
+        increaseTuplesWritten();
+        output.addTuple(t, getIndex());
+      }
+    }
   }
 
 }
