@@ -9,6 +9,14 @@ public enum UIDFactory {
     this.enabledUIDs = true;
   }
 
+  public void disableUIDs() {
+    this.enabledUIDs = false;
+  }
+
+  public boolean isUIDsEnabled() {
+    return enabledUIDs;
+  }
+
   public IncreasingUID newUID() {
     return enabledUIDs ? new BasicIncreasingUID() : new InactiveIncreasingUID();
   }
