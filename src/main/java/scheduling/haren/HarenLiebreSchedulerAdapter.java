@@ -28,6 +28,7 @@ import component.Component;
 import io.palyvos.haren.HarenScheduler;
 import io.palyvos.haren.Task;
 import io.palyvos.haren.function.VectorIntraThreadSchedulingFunction;
+import java.util.ArrayList;
 import java.util.Collection;
 import scheduling.LiebreScheduler;
 
@@ -48,7 +49,7 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
     if (isEnabled()) {
       tasks.stream().forEach((task -> ((Active) task).enable()));
     }
-    scheduler.addTasks(tasks);
+    scheduler.addTasks(new ArrayList<Task>(tasks));
   }
 
   @Override
@@ -57,7 +58,7 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
     if (isEnabled()) {
       tasks.stream().forEach((task -> ((Active) task).disable()));
     }
-    scheduler.removeTasks(tasks);
+    scheduler.removeTasks(new ArrayList<Task>(tasks));
   }
 
 
