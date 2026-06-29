@@ -24,12 +24,34 @@ import component.sink.BaseSink;
 import component.sink.Sink;
 import component.source.BaseSource;
 import component.source.Source;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Objects;
 import query.Query;
 import query.QueryConnection;
 
 public class ProvenanceQueryTransformer {
+
+  private final ProvenanceTransformationContext context;
+  private final Map<Class<?>, ProvenanceOperatorTransformer<?>> operatorTransformers =
+      new HashMap<>();
+
+  public ProvenanceQueryTransformer() {
+    this(new ProvenanceTransformationContext());
+  }
+
+  public ProvenanceQueryTransformer(ProvenanceTransformationContext context) {
+    this.context = Objects.requireNonNull(context, "context");
+  }
+
+  public <T extends Operator<?, ?>> ProvenanceQueryTransformer register(
+      Class<T> operatorClass, ProvenanceOperatorTransformer<? super T> transformer) {
+    operatorTransformers.put(
+        Objects.requireNonNull(operatorClass, "operatorClass"),
+        Objects.requireNonNull(transformer, "transformer"));
+    return this;
+  }
 
   public Query transform(Query original) {
     if (original.isActive()) {
@@ -77,6 +99,16 @@ public class ProvenanceQueryTransformer {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   private Operator<?, ?> transformOperator(Operator<?, ?> operator, Query transformed) {
+    Operator<?, ?> registeredOperator = transformRegisteredOperator(operator);
+    if (registeredOperator != null) {
+      return addTransformedOperator(operator, registeredOperator, transformed);
+    }
+    if (operator instanceof ProvenanceTransformableOperator) {
+      return addTransformedOperator(
+          operator,
+          ((ProvenanceTransformableOperator) operator).createProvenanceOperator(context),
+          transformed);
+    }
     if (operator instanceof MapOperator) {
       MapOperator map = (MapOperator) operator;
       return transformed.addOperator(
@@ -153,6 +185,56 @@ public class ProvenanceQueryTransformer {
       return transformed.addUnionOperator(new UnionOperator(operator.getId()));
     }
     throw unsupported(operator);
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private Operator<?, ?> transformRegisteredOperator(Operator<?, ?> operator) {
+    ProvenanceOperatorTransformer transformer = operatorTransformers.get(operator.getClass());
+    if (transformer == null) {
+      return null;
+    }
+    return transformer.transform(operator, context);
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private Operator<?, ?> addTransformedOperator(
+      Operator<?, ?> original, Operator<?, ?> transformedOperator, Query transformed) {
+    if (transformedOperator == null) {
+      throw new IllegalStateException(
+          String.format(
+              "Provenance transformer for operator %s returned null", original.getId()));
+    }
+    if (transformedOperator == original) {
+      throw new IllegalStateException(
+          String.format(
+              "Provenance transformer for operator %s returned the original instance",
+              original.getId()));
+    }
+    if (!Objects.equals(original.getId(), transformedOperator.getId())) {
+      throw new IllegalStateException(
+          String.format(
+              "Provenance transformer for operator %s returned operator with different id %s",
+              original.getId(), transformedOperator.getId()));
+    }
+    if (original instanceof Operator2In && !(transformedOperator instanceof Operator2In)) {
+      throw new IllegalStateException(
+          String.format(
+              "Provenance transformer for two-input operator %s returned a one-input operator",
+              original.getId()));
+    }
+    if (!(original instanceof Operator2In) && transformedOperator instanceof Operator2In) {
+      throw new IllegalStateException(
+          String.format(
+              "Provenance transformer for one-input operator %s returned a two-input operator",
+              original.getId()));
+    }
+    if (transformedOperator instanceof UnionOperator) {
+      return transformed.addUnionOperator((UnionOperator) transformedOperator);
+    }
+    if (transformedOperator instanceof Operator2In) {
+      return transformed.addOperator2In((Operator2In) transformedOperator);
+    }
+    return transformed.addOperator((Operator) transformedOperator);
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
