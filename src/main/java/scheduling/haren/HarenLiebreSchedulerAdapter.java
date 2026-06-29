@@ -43,7 +43,7 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
   }
 
   @Override
-  public void addTasks(Collection<Task> tasks) {
+  public void addTasks(Collection<? extends Task> tasks) {
     // In case of live changes, the scheduler explicitly enables the tasks
     if (isEnabled()) {
       tasks.stream().forEach((task -> ((Active) task).enable()));
@@ -52,7 +52,7 @@ public class HarenLiebreSchedulerAdapter implements LiebreScheduler<Task> {
   }
 
   @Override
-  public void removeTasks(Collection<Task> tasks) {
+  public void removeTasks(Collection<? extends Task> tasks) {
     // In case of live changes, the scheduler explicitly disables the tasks
     if (isEnabled()) {
       tasks.stream().forEach((task -> ((Active) task).disable()));

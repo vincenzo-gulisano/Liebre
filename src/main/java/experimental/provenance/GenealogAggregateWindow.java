@@ -31,6 +31,9 @@ public class GenealogAggregateWindow<IN extends GenealogTuple, OUT extends Genea
 
   public OUT getAggregatedResult() {
     OUT result = window.getAggregatedResult();
+    if (result == null) {
+      return null;
+    }
     result.U1 = last;
     result.U2 = first;
     result.type = GenealogTupleType.AGGREGATE;
@@ -49,16 +52,36 @@ public class GenealogAggregateWindow<IN extends GenealogTuple, OUT extends Genea
 
   @Override
   public void setInstanceNumber(int instanceNumber) {
-
+    window.setInstanceNumber(instanceNumber);
   }
 
   @Override
   public void setParallelismDegree(int parallelismDegree) {
-
+    window.setParallelismDegree(parallelismDegree);
   }
 
   public void setStartTimestamp(long ts) {
     window.setStartTimestamp(ts);
+  }
+
+  @Override
+  public boolean canRun() {
+    return window.canRun();
+  }
+
+  @Override
+  public void enable() {
+    window.enable();
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return window.isEnabled();
+  }
+
+  @Override
+  public void disable() {
+    window.disable();
   }
 
 }

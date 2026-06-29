@@ -53,7 +53,7 @@ public class TimeMWAggregate<IN extends RichTuple, OUT extends RichTuple>
             long windowSize,
             long windowSlide,
             TimeWindowAdd<IN, OUT> aggregateWindow) {
-        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor());
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor<IN>());
         TimeMWAggregate.this.windows = new TreeMap<>();
         this.aggregateWindow = aggregateWindow;
 //        this.WS_WA_ceil = (long) Math.ceil((double) TimeBasedMultiWindowAggregate.this.WS / (double) TimeBasedMultiWindowAggregate.this.WA);

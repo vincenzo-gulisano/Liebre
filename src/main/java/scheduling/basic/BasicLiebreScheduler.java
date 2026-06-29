@@ -57,7 +57,7 @@ public class BasicLiebreScheduler implements LiebreScheduler<Component> {
   }
 
   @Override
-  public void addTasks(Collection<Component> tasks) {
+  public void addTasks(Collection<? extends Component> tasks) {
     if (isEnabled()) {
       throw new IllegalStateException();
     }
@@ -65,7 +65,7 @@ public class BasicLiebreScheduler implements LiebreScheduler<Component> {
   }
 
   @Override
-  public void removeTasks(Collection<Component> tasks) {
+  public void removeTasks(Collection<? extends Component> tasks) {
     if (isEnabled()) {
       throw new IllegalStateException();
     }
@@ -125,4 +125,3 @@ public class BasicLiebreScheduler implements LiebreScheduler<Component> {
   }
 
 }
-

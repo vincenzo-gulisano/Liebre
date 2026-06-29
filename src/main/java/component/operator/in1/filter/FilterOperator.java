@@ -45,6 +45,10 @@ public class FilterOperator<T> extends BaseOperator1In<T, T> {
     this.filter = filter;
   }
 
+  public FilterFunction<T> getFilterFunction() {
+    return filter;
+  }
+
   @Override
   public void enable() {
     filter.enable();

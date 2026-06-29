@@ -45,6 +45,10 @@ public class BaseSource<OUT> extends AbstractSource<OUT> {
     this.function = function;
   }
 
+  public SourceFunction<OUT> getFunction() {
+    return function;
+  }
+
   @Override
   public double getHeadArrivalTime() {
     return function.getHeadArrivalTime();

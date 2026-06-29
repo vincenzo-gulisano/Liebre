@@ -48,7 +48,7 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
             long windowSize,
             long windowSlide,
             TimeWindowAddSlide<IN, OUT> aggregateWindow) {
-        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor());
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor<IN>());
         windows = new TreeMap<>();
         this.aggregateWindow = aggregateWindow;
     }
@@ -60,7 +60,7 @@ public class TimeSWAggregate<IN extends RichTuple, OUT extends RichTuple>
             long windowSize,
             long windowSlide,
             TimeWindowAddRemove<IN, OUT> aggregateWindow) {
-        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor());
+        super(id, instance, parallelismDegree, windowSize, windowSlide, aggregateWindow, new BaseKeyExtractor<IN>());
         windows = new TreeMap<>();
         this.aggregateWindow = new TimeWindowAddRemoveWrapper<>(aggregateWindow);
     }

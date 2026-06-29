@@ -50,6 +50,10 @@ public class BaseSink<IN> extends AbstractSink<IN> {
     this.function = function;
   }
 
+  public SinkFunction<IN> getFunction() {
+    return function;
+  }
+
   @Override
   public void processTuple(IN tuple) {
     if (function.isEnabled()) {

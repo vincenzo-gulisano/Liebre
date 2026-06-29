@@ -51,6 +51,10 @@ public class MapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
     this.map = map;
   }
 
+  public MapFunction<IN, OUT> getMapFunction() {
+    return map;
+  }
+
   @Override
   public void enable() {
     map.enable();

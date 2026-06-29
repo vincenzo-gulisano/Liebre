@@ -71,6 +71,7 @@ import java.util.*;
 public final class Query {
 
   private static final Logger LOGGER = LogManager.getLogger(Query.class);
+  public static final int DEFAULT_STREAM_CAPACITY = 10000;
   public final int streamCapacity;
   public static final int DEFAULT_SGSTREAM_MAX_LEVELS = 3;
   public static final String OPERATOR = "operator";
@@ -79,14 +80,15 @@ public final class Query {
   private final Map<String, Operator<?, ?>> operators = new HashMap<>();
   private final Map<String, Source<?>> sources = new HashMap<>();
   private final Map<String, Sink<?>> sinks = new HashMap<>();
-  private final LiebreScheduler liebreScheduler;
+  private final List<QueryConnection> connections = new ArrayList<>();
+  private final LiebreScheduler<? super Component> liebreScheduler;
   private final StreamFactory streamFactory;
   private Backoff defaultBackoff = new ExponentialBackoff(1, 10, 3);
   private volatile boolean active;
 
   /** Construct. */
   public Query() {
-    this(new BasicLiebreScheduler(), new BackoffStreamFactory(),10000);
+    this(new BasicLiebreScheduler(), new BackoffStreamFactory(), DEFAULT_STREAM_CAPACITY);
   }
 
   public Query(int streamCapacity) {
@@ -96,11 +98,14 @@ public final class Query {
   /**
    * Construct.
    *
-   * @param LiebreScheduler The LiebreScheduler implementation to use when executing the query after
+   * @param liebreScheduler The LiebreScheduler implementation to use when executing the query after
    *     Query{@link #activate()} is called.
    */
-  public Query(LiebreScheduler LiebreScheduler, StreamFactory streamFactory, int streamCapacity) {
-    this.liebreScheduler = LiebreScheduler;
+  public Query(
+      LiebreScheduler<? super Component> liebreScheduler,
+      StreamFactory streamFactory,
+      int streamCapacity) {
+    this.liebreScheduler = liebreScheduler;
     this.streamFactory = streamFactory;
     this.streamCapacity = streamCapacity;
   }
@@ -130,7 +135,7 @@ public final class Query {
     return operator;
   }
 
-    public synchronized <IN extends RichTuple, OUT extends RichTuple> void registerKeyByExtractor(Operator<IN, OUT> o, KeyExtractor keyExtractor) {
+    public synchronized <IN extends RichTuple, OUT extends RichTuple> void registerKeyByExtractor(Operator<IN, OUT> o, KeyExtractor<IN> keyExtractor) {
     if (o instanceof TimeAggregate) {
       ((TimeAggregate<IN, OUT>) o).registerKeyExtractor(keyExtractor);
     }
@@ -401,6 +406,8 @@ public final class Query {
     Stream<T> stream = getStream(producer, consumer, backoff);
     producer.addOutput(stream);
     consumer.addInput(stream);
+    connections.add(
+        new QueryConnection(producer, consumer, QueryConnection.InputPort.DEFAULT, stream, backoff));
     return this;
   }
 
@@ -446,6 +453,13 @@ public final class Query {
       stream.registerConsumer(consumer);
       consumer.addInput(stream);
     }
+    for (StreamProducer<T> producer : producers) {
+      for (StreamConsumer<T> consumer : consumers) {
+        connections.add(
+            new QueryConnection(
+                producer, consumer, QueryConnection.InputPort.DEFAULT, stream, defaultBackoff));
+      }
+    }
     return this;
   }
 
@@ -459,6 +473,8 @@ public final class Query {
     Stream<T> stream = getStream(producer, consumer, backoff);
     producer.addOutput(stream);
     consumer.addInput(stream);
+    connections.add(
+        new QueryConnection(producer, consumer, QueryConnection.InputPort.LEFT, stream, backoff));
     return this;
   }
 
@@ -472,6 +488,8 @@ public final class Query {
     Stream<T> stream = getStream(producer, consumer.secondInputView(), backoff);
     producer.addOutput(stream);
     consumer.addInput2(stream);
+    connections.add(
+        new QueryConnection(producer, consumer, QueryConnection.InputPort.RIGHT, stream, backoff));
     return this;
   }
 
@@ -525,12 +543,24 @@ public final class Query {
     return sources.size();
   }
 
-  Collection<Source<?>> sources() {
-    return sources.values();
+  public Collection<Source<?>> sources() {
+    return Collections.unmodifiableCollection(sources.values());
+  }
+
+  public Collection<Operator<?, ?>> operators() {
+    return Collections.unmodifiableCollection(operators.values());
   }
 
   public Collection<Sink<?>> sinks() {
-    return sinks.values();
+    return Collections.unmodifiableCollection(sinks.values());
+  }
+
+  public List<QueryConnection> connections() {
+    return Collections.unmodifiableList(connections);
+  }
+
+  public boolean isActive() {
+    return active;
   }
 
   private Set<Stream<?>> streams() {

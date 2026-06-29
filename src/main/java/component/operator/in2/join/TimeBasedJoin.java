@@ -67,6 +67,14 @@ public class TimeBasedJoin<IN extends RichTuple, IN2 extends RichTuple, OUT exte
     in2TuplesBuffer = new LinkedList<IN2>();
   }
 
+  public long getWindowSize() {
+    return ws;
+  }
+
+  public JoinFunction<IN, IN2, OUT> getJoinFunction() {
+    return joinFunction;
+  }
+
   protected void purge(long ts) {
     while (in1Tuples.size() > 0 && in1Tuples.peek().getTimestamp() < ts - ws) {
       in1Tuples.poll();

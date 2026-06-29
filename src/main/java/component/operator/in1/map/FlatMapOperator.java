@@ -50,6 +50,10 @@ public class FlatMapOperator<IN, OUT> extends BaseOperator1In<IN, OUT> {
 		this.map = map;
 	}
 
+  public FlatMapFunction<IN, OUT> getFlatMapFunction() {
+    return map;
+  }
+
   @Override
   public void enable() {
     map.enable();

@@ -8,14 +8,14 @@ public abstract class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
     protected final int parallelismDegree;
     protected final long WS;
     protected final long WA;
-    protected final TimeWindow w;
+    protected final TimeWindow<IN, OUT> w;
     private final long WS_WA_ceil;
     private final long WS_WA_ceil_minus_1;
     protected long latestTimestamp;
-    protected KeyExtractor keyExtractor;
+    protected KeyExtractor<IN> keyExtractor;
     private boolean firstTuple = true;
 
-    public TimeAggregate(String id, int instance, int parallelismDegree, long ws, long wa, TimeWindow w, KeyExtractor keyExtractor) {
+    public TimeAggregate(String id, int instance, int parallelismDegree, long ws, long wa, TimeWindow<IN, OUT> w, KeyExtractor<IN> keyExtractor) {
         super(id);
         this.instance = instance;
         this.parallelismDegree = parallelismDegree;
@@ -35,6 +35,30 @@ public abstract class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
 
     public long getEarliestWinStartTS(long ts) {
         return (long) Math.max((ts / WA - getContributingWindows(ts) + 1) * WA, 0.0);
+    }
+
+    public int getInstance() {
+        return instance;
+    }
+
+    public int getParallelismDegree() {
+        return parallelismDegree;
+    }
+
+    public long getWindowSize() {
+        return WS;
+    }
+
+    public long getWindowSlide() {
+        return WA;
+    }
+
+    public Window<IN, OUT> getWindow() {
+        return w;
+    }
+
+    public KeyExtractor<IN> getKeyExtractor() {
+        return keyExtractor;
     }
 
     @Override
@@ -64,7 +88,7 @@ public abstract class TimeAggregate<IN extends RichTuple, OUT extends RichTuple>
         }
     }
 
-    public void registerKeyExtractor(KeyExtractor k) {
+    public void registerKeyExtractor(KeyExtractor<IN> k) {
         this.keyExtractor = k;
     }
 }

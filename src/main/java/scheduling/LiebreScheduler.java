@@ -43,7 +43,7 @@ public interface LiebreScheduler<T extends Runnable> extends Active {
    * @throws IllegalStateException if the scheduler does not support live reconfigurations and this
    *     function is called while the SPE is active.
    */
-  void addTasks(Collection<T> tasks);
+  void addTasks(Collection<? extends T> tasks);
 
   /**
    * Remove {@link Runnable}s that were to be scheduled by this entity. If the Scheduler
@@ -55,7 +55,7 @@ public interface LiebreScheduler<T extends Runnable> extends Active {
    * @throws IllegalStateException if the scheduler does not support live reconfigurations and this
    *     function is called while the SPE is active.
    */
-  void removeTasks(Collection<T> tasks);
+  void removeTasks(Collection<? extends T> tasks);
 
   /** Start and schedule the tasks according to the actual scheduler implementation. */
   void startTasks();
