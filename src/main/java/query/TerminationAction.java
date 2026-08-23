@@ -1,10 +1,11 @@
 package query;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 /**
  * Action that terminates queries when all their sinks have finished. By
@@ -41,6 +42,7 @@ public class TerminationAction implements Runnable {
     QueryTerminator.LOG.trace("Terminator started");
     boolean continueRunning = !Thread.currentThread().isInterrupted() && (!singleQueryExecution || !activeQueriesAndSinks.isEmpty());
     while (continueRunning) {
+      List<Query> queriesToDeactivate = new ArrayList<>();
       synchronized (lock) {
         if (!activeQueriesAndSinks.isEmpty()) {
           Iterator<Map.Entry<Query, Set<String>>> it = activeQueriesAndSinks.entrySet().iterator();
@@ -50,11 +52,13 @@ public class TerminationAction implements Runnable {
             if (activeQuery.getValue().isEmpty()) {
               Query q = activeQuery.getKey();
               QueryTerminator.LOG.info("All sinks for Query {} have finished. Deactivating query.",q);
-              it.remove();
-              q.deActivate();
+              queriesToDeactivate.add(q);
             }
           }
         }
+      }
+      for (Query query : queriesToDeactivate) {
+        query.deActivate();
       }
       try {
         Thread.sleep(QueryTerminator.TERMINATOR_POLL_INTERVAL_MILLIS);
